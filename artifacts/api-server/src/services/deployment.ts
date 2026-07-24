@@ -9,7 +9,9 @@ const SIP4AI_BIN =
   process.env["SIP4AI_BIN"] ?? "/home/runner/workspace/.bin/sip4ai";
 const CONFIG_DIR = "/tmp/sip4ai";
 const MAX_LOG_LINES = 300;
-const SIP_LOCAL_PORT_START = 25060;
+// Ports must be exactly 4 digits so they fit in the binary patch (replaces ':5060').
+// Range: 7060–7998 (200 extensions, step 2 for SIP).
+const SIP_LOCAL_PORT_START = 7060;
 const HTTP_PORT_START = 19000;
 
 type AiProviderKey = "openai" | "elevenlabs" | "gemini" | "deepgram" | "cartesia";
@@ -235,19 +237,66 @@ async function upsertDeployment(extensionId: number, patch: Partial<Omit<Deploym
   }
 }
 
+/**
+ * Copy the sip4ai binary for this extension and patch the first ':5060'
+ * occurrence (the local SIP listener default) to ':XXXX' where XXXX is the
+ * allocated 4-digit port.  The binary is statically linked Go so LD_PRELOAD
+ * cannot intercept its syscalls — per-extension binary patching is the only
+ * reliable solution.
+ */
+async function getPatchedBinary(extensionId: number, sipLocalPort: number): Promise<string> {
+  const portStr = String(sipLocalPort);
+  if (portStr.length !== 4) {
+    throw new Error(
+      `SIP local port must be exactly 4 digits for binary patching (got ${sipLocalPort}). ` +
+      `Ports are allocated starting at ${SIP_LOCAL_PORT_START}.`
+    );
+  }
+
+  const patchedPath = path.join(CONFIG_DIR, String(extensionId), "sip4ai");
+
+  const original = await fs.readFile(SIP4AI_BIN);
+  const patched = Buffer.from(original);
+
+  const needle = Buffer.from(":5060");
+  const idx = patched.indexOf(needle);
+  if (idx === -1) {
+    // Binary doesn't hard-code :5060 — copy as-is and let config drive the port.
+    logger.warn({ extensionId }, "sip4ai binary does not contain ':5060' literal; using unpatched copy");
+    await fs.writeFile(patchedPath, patched, { mode: 0o755 });
+    return patchedPath;
+  }
+
+  // Patch in-place: ':5060' → ':{portStr}' (same byte length: 5 bytes each)
+  Buffer.from(":" + portStr).copy(patched, idx);
+  logger.info({ extensionId, sipLocalPort, offset: idx }, "Patched sip4ai binary local SIP port");
+
+  await fs.writeFile(patchedPath, patched, { mode: 0o755 });
+  return patchedPath;
+}
+
 async function allocatePorts(extensionId: number): Promise<{ sipLocalPort: number; httpPort: number }> {
   const existing = await db.query.deploymentsTable.findFirst({
     where: eq(deploymentsTable.extensionId, extensionId),
   });
-  if (existing?.sipLocalPort && existing.httpPort) {
-    return { sipLocalPort: existing.sipLocalPort, httpPort: existing.httpPort };
+
+  // Accept stored ports only if they are exactly 4 digits (required for binary patching).
+  // Previously allocated 5-digit ports (e.g. 25060) are discarded and reallocated.
+  const storedSip = existing?.sipLocalPort;
+  const storedHttp = existing?.httpPort;
+  if (storedSip && storedSip >= 1000 && storedSip <= 9999 && storedHttp) {
+    return { sipLocalPort: storedSip, httpPort: storedHttp };
   }
 
   const rows = await db.select({
     sipLocalPort: deploymentsTable.sipLocalPort,
     httpPort: deploymentsTable.httpPort,
   }).from(deploymentsTable);
-  const usedSipPorts = new Set(rows.flatMap(row => row.sipLocalPort ? [row.sipLocalPort] : []));
+
+  // Only consider valid 4-digit ports as "used"
+  const usedSipPorts = new Set(rows.flatMap(row =>
+    row.sipLocalPort && row.sipLocalPort >= 1000 && row.sipLocalPort <= 9999 ? [row.sipLocalPort] : []
+  ));
   const usedHttpPorts = new Set(rows.flatMap(row => row.httpPort ? [row.httpPort] : []));
 
   let sipLocalPort = SIP_LOCAL_PORT_START;
@@ -292,21 +341,18 @@ export async function startExtension(extensionId: number): Promise<void> {
     lastError: null,
   });
 
-  logger.info({ extensionId, bin: SIP4AI_BIN }, "Spawning sip4ai");
+  // Patch a per-extension copy of the binary so its hardcoded ':5060' local
+  // SIP listener becomes the allocated port.  The binary is statically linked
+  // Go, so LD_PRELOAD cannot intercept its syscalls.
+  const patchedBin = await getPatchedBinary(extensionId, sipLocalPort);
+  logger.info({ extensionId, patchedBin, sipLocalPort }, "Spawning patched sip4ai");
 
-  // The bundled binary still has a legacy :5060 bind in some versions. The
-  // preload shim keeps those versions multi-instance safe while the config and
-  // environment expose the same port to the SIP stack and Contact header.
-  const bindOverrideSo = path.resolve(path.dirname(SIP4AI_BIN), "bind_override.so");
-
-  const proc = spawn(SIP4AI_BIN, [], {
+  const proc = spawn(patchedBin, [], {
     env: {
       ...process.env,
       ...env,
       SIP_LOCAL_PORT: String(sipLocalPort),
       HTTP_PORT: String(httpPort),
-      SIP_OVERRIDE_PORT: String(sipLocalPort),
-      LD_PRELOAD: bindOverrideSo,
     },
     stdio: ["ignore", "pipe", "pipe"],
     detached: false,
