@@ -49,7 +49,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { ProviderBadge } from "@/components/provider-badge";
-import { Plus, Phone, Trash2, ArrowRight } from "lucide-react";
+import { Plus, Phone, Trash2 } from "lucide-react";
 import { useAllDeployStatuses, statusLabel, statusColor } from "@/hooks/use-deploy";
 
 const formSchema = z.object({
@@ -332,10 +332,10 @@ export default function ExtensionsList() {
               extensions.map((ext) => (
                 <TableRow key={ext.id}>
                   <TableCell className="font-medium">
-                    <div className="flex flex-col">
+                    <Link href={`/extensions/${ext.id}`} className="flex flex-col hover:underline">
                       <span className="font-mono text-primary">{ext.extensionNumber}</span>
                       <span className="text-xs text-muted-foreground">{ext.displayName || "—"}</span>
-                    </div>
+                    </Link>
                   </TableCell>
                   <TableCell>
                     {ext.client ? (
@@ -365,11 +365,6 @@ export default function ExtensionsList() {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center justify-end gap-2">
-                      <Link href={`/extensions/${ext.id}`}>
-                        <Button variant="ghost" size="sm" className="gap-1 text-primary hover:text-primary">
-                          Edit <ArrowRight className="h-3 w-3" />
-                        </Button>
-                      </Link>
                       <Button 
                         variant="ghost" 
                         size="icon" 

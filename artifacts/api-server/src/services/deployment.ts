@@ -106,9 +106,21 @@ export function getRunningExtensionIds(): number[] {
 
 function parseRegistration(line: string): "registered" | "error" | null {
   const l = line.toLowerCase();
-  if (l.includes("registr") && (l.includes("success") || l.includes("ok") || l.includes("200"))) return "registered";
-  if (l.includes("registered")) return "registered";
-  if (l.includes("401") || l.includes("403") || l.includes("registration failed") || l.includes("unauthorized")) return "error";
+
+  // ── Success ────────────────────────────────────────────────────────────
+  if (l.includes("registration successful")) return "registered";
+  if (l.includes("registr") && (l.includes("success") || l.includes("200 ok"))) return "registered";
+
+  // ── Real errors ────────────────────────────────────────────────────────
+  // NOTE: 401 Unauthorized is the normal SIP auth challenge (challenge →
+  // re-send with Authorization → 200 OK).  Do NOT treat it as an error.
+  if (l.includes("registration failed")) return "error";
+  if (l.includes("connection refused") || l.includes("no such host")) return "error";
+  if (l.includes("address already in use")) return "error";
+  if (l.includes("error in sip server")) return "error";
+  if (l.includes("403 forbidden") || l.includes("403 not auth")) return "error";
+  if (l.includes("panic:") || l.includes("fatal error")) return "error";
+
   return null;
 }
 
@@ -382,7 +394,8 @@ export async function startExtension(extensionId: number): Promise<void> {
 
       const reg = parseRegistration(line);
       if (reg === "registered") {
-        upsertDeployment(extensionId, { status: "registered", sipRegistered: true }).catch(() => {});
+        // Clear lastError when registration succeeds so the UI shows clean status
+        upsertDeployment(extensionId, { status: "registered", sipRegistered: true, lastError: null }).catch(() => {});
       } else if (reg === "error") {
         upsertDeployment(extensionId, { status: "error", lastError: line }).catch(() => {});
       }

@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "wouter";
-import { useAllDeployStatuses, useDeployLogs, statusLabel, statusColor } from "@/hooks/use-deploy";
+import { useAllDeployStatuses, useDeployLogs, statusLabel, statusColor, logLineClass } from "@/hooks/use-deploy";
 import { useListExtensions } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +26,7 @@ export default function LogsPage() {
     }
   }, [allStatuses, selectedId]);
 
+  // Reset live state when switching extension
   React.useEffect(() => {
     setLiveFromIndex(null);
     setIsLive(false);
@@ -37,15 +38,15 @@ export default function LogsPage() {
     isLive
   );
 
-  // Track lines when live starts, compute displayed lines
+  // Only show lines captured since live was started — stopped state shows nothing
   const displayedLines = React.useMemo(() => {
-    if (!logs?.lines) return [];
-    if (liveFromIndex !== null) return logs.lines.slice(liveFromIndex);
-    return logs.lines;
-  }, [logs?.lines, liveFromIndex]);
+    if (!isLive || !logs?.lines || liveFromIndex === null) return [];
+    return logs.lines.slice(liveFromIndex);
+  }, [isLive, logs?.lines, liveFromIndex]);
 
   const handleLiveToggle = () => {
     if (!isLive) {
+      // Capture current position — only new lines will be shown
       setLiveFromIndex(logs?.lines.length ?? 0);
       setIsLive(true);
     } else {
@@ -147,7 +148,8 @@ export default function LogsPage() {
               </span>
             </span>
           )}
-          {selectedStatus.lastError && (
+          {/* Only show lastError when the agent is NOT registered */}
+          {selectedStatus.lastError && selectedStatus.status !== "registered" && (
             <span className="text-red-500">
               Last error: <span className="font-mono">{selectedStatus.lastError}</span>
             </span>
@@ -168,47 +170,44 @@ export default function LogsPage() {
                 </span>
               )}
             </CardTitle>
-            <span className="text-xs text-muted-foreground">
-              {logs?.lines.length ?? 0} lines
-              {dataUpdatedAt ? ` · ${new Date(dataUpdatedAt).toLocaleTimeString()}` : ""}
-            </span>
+            {isLive && (
+              <span className="text-xs text-muted-foreground">
+                {displayedLines.length} new line{displayedLines.length !== 1 ? "s" : ""}
+                {dataUpdatedAt ? ` · ${new Date(dataUpdatedAt).toLocaleTimeString()}` : ""}
+              </span>
+            )}
           </div>
           <CardDescription>
-            Captures stdout and stderr from the SIP Agent process. SIP registration, AI provider
-            connection, and any runtime errors appear here.
+            Click <strong>Live</strong> to stream new output. Lines are colour-coded:
+            {" "}<span className="text-green-400">INFO</span>{" · "}
+            <span className="text-yellow-400">WARN</span>{" · "}
+            <span className="text-blue-400">DEBUG</span>{" · "}
+            <span className="text-red-400">ERROR</span>
           </CardDescription>
         </CardHeader>
         <CardContent className="p-0">
           <div className="rounded-b-lg bg-black overflow-hidden">
             <div
-              className="p-4 h-[460px] overflow-y-auto font-mono text-xs text-green-400 space-y-0.5 leading-relaxed"
+              className="p-4 h-[460px] overflow-y-auto font-mono text-xs space-y-0.5 leading-relaxed"
             >
               {!selectedId ? (
                 <p className="text-muted-foreground italic">Select an extension above to view its logs.</p>
-              ) : !logs?.lines.length ? (
+              ) : !isLive ? (
+                <div className="flex flex-col items-center justify-center h-full gap-2 text-muted-foreground">
+                  <RefreshCw className="h-6 w-6 opacity-40" />
+                  <p className="italic text-sm">Click <strong className="text-white">Live</strong> to start streaming logs.</p>
+                </div>
+              ) : displayedLines.length === 0 ? (
                 <p className="text-muted-foreground italic">
-                  No logs yet.{" "}
+                  Waiting for new output…
                   {selectedStatus?.status === "stopped"
-                    ? "Deploy the agent from the Extension page to start capturing output."
-                    : "Waiting for output…"}
+                    ? " (deploy the agent first)"
+                    : ""}
                 </p>
               ) : (
-                displayedLines.map((line, i) => {
-                  // Colour-code lines by severity hints
-                  const lower = line.toLowerCase();
-                  const cls = lower.includes("error") || lower.includes("fail") || lower.includes("401") || lower.includes("403")
-                    ? "text-red-400"
-                    : lower.includes("warn")
-                    ? "text-yellow-400"
-                    : lower.includes("register") || lower.includes("success") || lower.includes("connect")
-                    ? "text-green-300"
-                    : "text-green-400";
-                  return (
-                    <p key={i} className={cls}>
-                      {line}
-                    </p>
-                  );
-                })
+                displayedLines.map((line, i) => (
+                  <p key={i} className={logLineClass(line)}>{line}</p>
+                ))
               )}
               <div ref={logsEndRef} />
             </div>

@@ -225,7 +225,7 @@ export default function ClientsList() {
               <TableHead>IPBX Name</TableHead>
               <TableHead>SIP Domain</TableHead>
               <TableHead>Added</TableHead>
-              <TableHead className="w-[100px]"></TableHead>
+              <TableHead className="w-[100px]">Action</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

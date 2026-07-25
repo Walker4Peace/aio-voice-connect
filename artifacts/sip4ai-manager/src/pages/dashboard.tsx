@@ -249,7 +249,6 @@ export default function Dashboard() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground mt-1">Overview of your AI voice agent deployments.</p>
         </div>
       </div>
 
@@ -276,7 +275,6 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-green-600">{registeredCount}</div>
-            <p className="text-xs text-muted-foreground">{runningCount} total running</p>
           </CardContent>
         </Card>
         <Card>

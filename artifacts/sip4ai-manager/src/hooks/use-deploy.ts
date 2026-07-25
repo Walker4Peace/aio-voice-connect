@@ -90,3 +90,68 @@ export function statusColor(status: DeployStatus["status"]) {
     default:           return "text-black dark:text-white";
   }
 }
+
+/**
+ * Classify a raw SIP agent log line into one of four levels.
+ *
+ * ERROR  🔴 – real failures: connection refused, registration failed, panic, etc.
+ * WARN   🟡 – expected-but-notable SIP events: OPTIONS, NOTIFY, retransmissions.
+ * DEBUG  🔵 – low-level SIP protocol details: Authorization headers, SDP, Via, CSeq, etc.
+ * INFO   🟢 – everything else (startup, registration success, AI provider connected).
+ *
+ * Key rule: a 401 Unauthorized inside a REGISTER exchange is a normal SIP
+ * auth challenge (challenge → re-send with credentials → 200 OK).  It must
+ * NOT be classified as an error.
+ */
+export function classifyLogLine(line: string): "error" | "warn" | "info" | "debug" {
+  // Strip ISO timestamp prefix, e.g. "[2026-07-24T21:07:20.432Z] "
+  const body = line.replace(/^\[[^\]]+\]\s*/, "").toLowerCase();
+
+  // ── ERROR ──────────────────────────────────────────────────────────────
+  if (body.includes("panic:") || body.includes("fatal error") || body.includes("fatal:")) return "error";
+  if (body.includes("connection refused") || body.includes("no such host")) return "error";
+  if (body.includes("registration failed")) return "error";
+  if (body.includes("address already in use")) return "error";
+  if (body.includes("error in sip server")) return "error";
+  if (body.includes("403 forbidden") || body.includes("403 not auth")) return "error";
+  // Generic "error" keyword — but skip lines that are just auth/digest protocol detail
+  if (
+    body.includes(" error") &&
+    !body.includes("authorization") &&
+    !body.includes("digest") &&
+    !body.includes("auth:")
+  ) return "error";
+
+  // ── WARN ───────────────────────────────────────────────────────────────
+  if (body.includes("warn")) return "warn";
+  if (body.includes("retransmit")) return "warn";
+  // OPTIONS and NOTIFY are SIP keepalive/event messages — routine but worth noting
+  if (/\boptions\b/.test(body) || /\bnotify\b/.test(body)) return "warn";
+
+  // ── DEBUG ──────────────────────────────────────────────────────────────
+  // SIP auth challenge exchange (401 → re-send with Authorization) — normal, not an error
+  if (body.includes("authorization:") || body.includes("auth:") || body.includes("digest")) return "debug";
+  if (body.includes("resending register")) return "debug";
+  if (body.includes("received register response")) return "debug";
+  // Raw SIP headers
+  if (/^\s*(via|cseq|contact|from|to|call-id|expires|server):/.test(body)) return "debug";
+  if (body.includes("nonce=") || body.includes("realm=") || body.includes("algorithm=")) return "debug";
+  // Network/IP resolution details
+  if (body.includes("outbound ip") || body.includes("local ip") || body.includes("external ip")) return "debug";
+  if (body.includes("debug:")) return "debug";
+  // SDP / RTP
+  if (body.includes(" sdp") || body.includes("rtp") || body.includes("srtp")) return "debug";
+
+  // ── INFO ───────────────────────────────────────────────────────────────
+  return "info";
+}
+
+/** Tailwind class for a log line's foreground colour. */
+export function logLineClass(line: string): string {
+  switch (classifyLogLine(line)) {
+    case "error": return "text-red-400";
+    case "warn":  return "text-yellow-400";
+    case "debug": return "text-blue-300";
+    default:      return "text-green-300";
+  }
+}

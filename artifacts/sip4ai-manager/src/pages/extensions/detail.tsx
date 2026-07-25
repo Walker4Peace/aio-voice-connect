@@ -52,6 +52,7 @@ import {
   useAllDeployStatuses,
   statusLabel,
   statusColor,
+  logLineClass,
 } from "@/hooks/use-deploy";
 
 const agentSchema = z.object({
@@ -74,7 +75,9 @@ export default function ExtensionDetail() {
 
   const [showLogs, setShowLogs] = React.useState(false);
   const [liveLogs, setLiveLogs] = React.useState(false);
+  const [liveFromIndex, setLiveFromIndex] = React.useState<number | null>(null);
   const [editSipOpen, setEditSipOpen] = React.useState(false);
+  const logsEndRef = React.useRef<HTMLDivElement>(null);
 
   const { data: extension, isLoading } = useGetExtension(extensionId, {
     query: { enabled: !!extensionId, queryKey: getGetExtensionQueryKey(extensionId) }
@@ -86,6 +89,27 @@ export default function ExtensionDetail() {
 
   const { data: deployStatus, isLoading: statusLoading } = useDeployStatus(extensionId, !!extensionId);
   const { data: logs } = useDeployLogs(extensionId, showLogs, liveLogs);
+
+  // Lines to display: only new lines since live was activated; nothing when stopped
+  const displayedLogLines = React.useMemo(() => {
+    if (!liveLogs || !logs?.lines || liveFromIndex === null) return [];
+    return logs.lines.slice(liveFromIndex);
+  }, [liveLogs, logs?.lines, liveFromIndex]);
+
+  // Reset live state when logs panel is hidden
+  React.useEffect(() => {
+    if (!showLogs) {
+      setLiveLogs(false);
+      setLiveFromIndex(null);
+    }
+  }, [showLogs]);
+
+  // Auto-scroll to bottom during live mode
+  React.useEffect(() => {
+    if (liveLogs) {
+      logsEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [displayedLogLines.length, liveLogs]);
   const [, navigate] = useLocation();
   const deleteExtension = useDeleteExtension();
 
@@ -248,7 +272,8 @@ export default function ExtensionDetail() {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          {deployStatus?.lastError && (
+          {/* Only show error banner when the agent is actually in error state — not when registered */}
+          {deployStatus?.lastError && deployStatus.status !== "registered" && (
             <div className="flex items-start gap-2 rounded-md bg-destructive/10 border border-destructive/20 p-3 text-sm text-destructive">
               <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
               <span className="font-mono text-xs break-all">{deployStatus.lastError}</span>
@@ -305,9 +330,19 @@ export default function ExtensionDetail() {
           {showLogs && (
             <div className="rounded-md bg-black border border-muted overflow-hidden">
               <div className="flex items-center justify-between px-3 py-1.5 bg-muted/20 border-b border-muted text-xs text-muted-foreground">
-                <span>Process Logs · {logs?.lines.length ?? 0} lines</span>
+                <span>
+                  Process Logs
+                  {liveLogs && liveFromIndex !== null && ` · ${displayedLogLines.length} new line${displayedLogLines.length !== 1 ? "s" : ""}`}
+                </span>
                 <button
-                  onClick={() => setLiveLogs(v => !v)}
+                  onClick={() => {
+                    if (!liveLogs) {
+                      setLiveFromIndex(logs?.lines.length ?? 0);
+                      setLiveLogs(true);
+                    } else {
+                      setLiveLogs(false);
+                    }
+                  }}
                   className={`flex items-center gap-1.5 rounded px-2 py-0.5 font-medium transition-colors ${
                     liveLogs
                       ? "bg-green-500/20 text-green-400 hover:bg-green-500/30"
@@ -315,15 +350,20 @@ export default function ExtensionDetail() {
                   }`}
                 >
                   <span className={`inline-block h-1.5 w-1.5 rounded-full ${liveLogs ? "bg-green-400 animate-pulse" : "bg-muted-foreground"}`} />
-                  {liveLogs ? "Live" : "Paused"}
+                  {liveLogs ? "Live" : "Stopped"}
                 </button>
               </div>
-              <div className="p-3 h-56 overflow-y-auto font-mono text-xs text-green-400 space-y-0.5">
-                {!logs?.lines.length ? (
-                  <p className="text-muted-foreground italic">No logs yet. Deploy the agent to see output.</p>
+              <div className="p-3 h-56 overflow-y-auto font-mono text-xs space-y-0.5">
+                {!liveLogs ? (
+                  <p className="text-muted-foreground italic">Click <strong className="text-white">Live</strong> to start streaming logs.</p>
+                ) : displayedLogLines.length === 0 ? (
+                  <p className="text-muted-foreground italic">Waiting for new output…</p>
                 ) : (
-                  logs.lines.map((line, i) => <p key={i}>{line}</p>)
+                  displayedLogLines.map((line, i) => (
+                    <p key={i} className={logLineClass(line)}>{line}</p>
+                  ))
                 )}
+                <div ref={logsEndRef} />
               </div>
             </div>
           )}

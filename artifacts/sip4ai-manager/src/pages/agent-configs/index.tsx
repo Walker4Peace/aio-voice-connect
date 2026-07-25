@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { ProviderBadge } from "@/components/provider-badge";
-import { Plus, Server, Edit, Trash2 } from "lucide-react";
+import { Plus, Server, Trash2 } from "lucide-react";
 
 export default function AgentConfigsList() {
   const { data: configs, isLoading } = useListAgentConfigs();
@@ -67,7 +67,7 @@ export default function AgentConfigsList() {
               <TableHead>Provider</TableHead>
               <TableHead>Model / Voice</TableHead>
               <TableHead>Language</TableHead>
-              <TableHead className="w-[100px]"></TableHead>
+              <TableHead className="w-[100px]">Action</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -92,7 +92,11 @@ export default function AgentConfigsList() {
             ) : (
               configs.map((config) => (
                 <TableRow key={config.id}>
-                  <TableCell className="font-medium">{config.name}</TableCell>
+                  <TableCell className="font-medium">
+                    <Link href={`/agent-configs/${config.id}/edit`} className="hover:underline text-primary">
+                      {config.name}
+                    </Link>
+                  </TableCell>
                   <TableCell>
                     <ProviderBadge provider={config.provider} />
                   </TableCell>
@@ -106,11 +110,6 @@ export default function AgentConfigsList() {
                   <TableCell>{config.language || "—"}</TableCell>
                   <TableCell>
                     <div className="flex items-center justify-end gap-2">
-                      <Link href={`/agent-configs/${config.id}/edit`}>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary">
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                      </Link>
                       <Button 
                         variant="ghost" 
                         size="icon" 
