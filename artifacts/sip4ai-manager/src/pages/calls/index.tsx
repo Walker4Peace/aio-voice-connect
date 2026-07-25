@@ -4,153 +4,12 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { PhoneCall, PhoneIncoming, PhoneOff, Activity, ChevronDown, ChevronRight, RefreshCw } from "lucide-react";
-
-interface CallEvent {
-  extensionId: number;
-  callId: string;
-  event: "invite" | "answered" | "ended" | "connected_ai" | "error";
-  timestamp: string;
-  detail?: string;
-}
+import { PhoneCall, RefreshCw } from "lucide-react";
+import { CallHistoryTable, groupEventsByCall, type CallEvent } from "@/components/call-history-table";
 
 interface CallEventsResponse {
   events: CallEvent[];
   activeCallCount: number;
-}
-
-const EVENT_ICONS: Record<CallEvent["event"], React.ReactNode> = {
-  invite: <PhoneIncoming className="h-3.5 w-3.5 text-blue-500" />,
-  answered: <PhoneCall className="h-3.5 w-3.5 text-green-500" />,
-  ended: <PhoneOff className="h-3.5 w-3.5 text-muted-foreground" />,
-  connected_ai: <Activity className="h-3.5 w-3.5 text-purple-500" />,
-  error: <PhoneOff className="h-3.5 w-3.5 text-red-500" />,
-};
-
-function eventLabel(ev: CallEvent): string {
-  switch (ev.event) {
-    case "invite":
-      return ev.detail ? `Incoming call from ${ev.detail}` : "Incoming call";
-    case "answered":
-      return "Answered";
-    case "connected_ai":
-      return ev.detail ? `AI responded — ${ev.detail}` : "AI responded";
-    case "ended":
-      return ev.detail ? `Call ended (${ev.detail})` : "Call ended";
-    case "error":
-      return ev.detail ? `Error: ${ev.detail}` : "Error";
-  }
-}
-
-function groupEventsByCall(events: CallEvent[]): Map<string, CallEvent[]> {
-  const map = new Map<string, CallEvent[]>();
-  for (const ev of events) {
-    if (!map.has(ev.callId)) map.set(ev.callId, []);
-    map.get(ev.callId)!.push(ev);
-  }
-  return map;
-}
-
-function callDuration(legs: CallEvent[]): string | null {
-  if (legs.length < 2) return null;
-  const ms = new Date(legs[legs.length - 1].timestamp).getTime() - new Date(legs[0].timestamp).getTime();
-  if (ms < 0) return null;
-  const s = Math.floor(ms / 1000);
-  const m = Math.floor(s / 60);
-  return m > 0 ? `${m}m ${s % 60}s` : `${s}s`;
-}
-
-function CallTableRow({ callId, legs, extNumber }: { callId: string; legs: CallEvent[]; extNumber?: string }) {
-  const [open, setOpen] = React.useState(false);
-
-  const hasEnded = legs.some(l => l.event === "ended");
-  const hasAI = legs.some(l => l.event === "connected_ai");
-  const hasError = legs.some(l => l.event === "error");
-  const firstLeg = legs[0];
-  const duration = callDuration(legs);
-
-  // Inbound: caller = invite.detail (phone number), called = extension number
-  // Outbound: reverse — for now we only have inbound
-  const inviteLeg = legs.find(l => l.event === "invite");
-  const caller = inviteLeg?.detail ?? "—";
-  const called = extNumber ? `ext ${extNumber}` : "—";
-
-  const stateLabel = hasError ? "Error" : hasEnded ? "Ended" : hasAI ? "AI Active" : "Ringing";
-  const stateColor = hasError
-    ? "text-red-500"
-    : hasEnded
-    ? "text-muted-foreground"
-    : hasAI
-    ? "text-purple-600"
-    : "text-blue-500";
-
-  return (
-    <Collapsible open={open} onOpenChange={setOpen} asChild>
-      <>
-        <TableRow
-          className="cursor-pointer hover:bg-muted/40 select-none"
-          onClick={() => setOpen(v => !v)}
-        >
-          {/* Call ID */}
-          <TableCell className="font-mono text-xs text-muted-foreground">
-            <div className="flex items-center gap-1.5">
-              {open
-                ? <ChevronDown className="h-3.5 w-3.5 shrink-0" />
-                : <ChevronRight className="h-3.5 w-3.5 shrink-0" />}
-              <span>{callId.slice(0, 10)}…</span>
-              <span className={`text-[10px] font-medium ${stateColor}`}>{stateLabel}</span>
-            </div>
-          </TableCell>
-          {/* Caller */}
-          <TableCell className="font-mono text-sm">{caller}</TableCell>
-          {/* Called */}
-          <TableCell className="font-mono text-sm">{called}</TableCell>
-          {/* Date */}
-          <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-            {new Date(firstLeg.timestamp).toLocaleString()}
-          </TableCell>
-          {/* Duration */}
-          <TableCell className="text-xs text-muted-foreground tabular-nums">
-            {duration ?? "—"}
-          </TableCell>
-        </TableRow>
-
-        {/* Accordion legs — rendered as a full-width row */}
-        <CollapsibleContent asChild>
-          <TableRow className="hover:bg-transparent">
-            <TableCell colSpan={5} className="p-0 border-t-0">
-              <div className="bg-muted/20 divide-y border-b">
-                {legs.map((leg, i) => (
-                  <div key={i} className="flex items-start gap-3 px-10 py-2.5">
-                    <div className="mt-0.5 shrink-0">{EVENT_ICONS[leg.event]}</div>
-                    <div className="flex-1 min-w-0">
-                      <span className="text-sm">{eventLabel(leg)}</span>
-                    </div>
-                    <time className="text-xs text-muted-foreground shrink-0 tabular-nums">
-                      {new Date(leg.timestamp).toLocaleTimeString()}
-                    </time>
-                  </div>
-                ))}
-              </div>
-            </TableCell>
-          </TableRow>
-        </CollapsibleContent>
-      </>
-    </Collapsible>
-  );
 }
 
 const PAGE_SIZE = 20;
@@ -171,7 +30,7 @@ export default function CallsPage() {
 
   const { data: extensions } = useListExtensions();
 
-  // Only show completed calls (after hang up)
+  // Only completed calls (after hang up), most-recent first
   const callGroups = React.useMemo(() => {
     if (!callEvents?.events?.length) return [];
     const grouped = groupEventsByCall(callEvents.events);
@@ -212,56 +71,27 @@ export default function CallsPage() {
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          {callGroups.length === 0 ? (
-            <div className="text-center py-16 text-muted-foreground">
-              <PhoneCall className="h-10 w-10 mx-auto mb-3 opacity-30" />
-              <p className="text-sm font-medium">No completed calls recorded yet.</p>
-              <p className="text-xs mt-1">Deploy an extension and make a call to see history here.</p>
-            </div>
-          ) : (
-            <>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[200px]">Call ID</TableHead>
-                    <TableHead>Caller</TableHead>
-                    <TableHead>Called</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Duration</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {pageGroups.map(([callId, legs]) => {
-                    const ext = extensions?.find(e => e.id === legs[0]?.extensionId);
-                    return (
-                      <CallTableRow
-                        key={callId}
-                        callId={callId}
-                        legs={legs}
-                        extNumber={ext?.extensionNumber}
-                      />
-                    );
-                  })}
-                </TableBody>
-              </Table>
+          <CallHistoryTable
+            callGroups={pageGroups}
+            extensions={extensions}
+            emptyMessage="No completed calls recorded yet. Deploy an extension and make a call to see history here."
+          />
 
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="flex items-center justify-center gap-1 px-4 py-3 border-t">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                    <Button
-                      key={p}
-                      variant={p === page ? "default" : "outline"}
-                      size="sm"
-                      className="h-8 w-8 p-0 text-xs"
-                      onClick={() => setPage(p)}
-                    >
-                      {p}
-                    </Button>
-                  ))}
-                </div>
-              )}
-            </>
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-1 px-4 py-3 border-t">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                <Button
+                  key={p}
+                  variant={p === page ? "default" : "outline"}
+                  size="sm"
+                  className="h-8 w-8 p-0 text-xs"
+                  onClick={() => setPage(p)}
+                >
+                  {p}
+                </Button>
+              ))}
+            </div>
           )}
         </CardContent>
       </Card>
