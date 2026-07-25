@@ -104,13 +104,13 @@ export default function Dashboard() {
 
   const registeredCount = (allStatuses ?? []).filter(s => s.status === "registered").length;
 
-  // Completed calls only, most-recent first
+  // Completed calls only (must have both invite and ended), most-recent first
   const callGroups = React.useMemo(() => {
     if (!callEvents?.events?.length) return [];
     const grouped = groupEventsByCall(callEvents.events);
     return Array.from(grouped.entries())
-      .filter(([, legs]) => legs.some(l => l.event === "ended"))
-      .reverse();
+      .filter(([, legs]) => legs.some(l => l.event === "invite") && legs.some(l => l.event === "ended"))
+      .sort(([, a], [, b]) => new Date(b[0].timestamp).getTime() - new Date(a[0].timestamp).getTime());
   }, [callEvents]);
 
   if (isLoading) {

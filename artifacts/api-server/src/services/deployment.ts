@@ -396,7 +396,10 @@ export async function startExtension(extensionId: number): Promise<void> {
   const patchedBin = await getPatchedBinary(extensionId, sipLocalPort);
   logger.info({ extensionId, patchedBin, sipLocalPort }, "Spawning patched sip4ai");
 
-  const proc = spawn(patchedBin, [], {
+  // stdbuf forces line-buffered stdout/stderr so log lines (including BYE events)
+  // are delivered to this process immediately instead of waiting for the buffer to
+  // fill or the child process to exit.
+  const proc = spawn("stdbuf", ["-oL", "-eL", patchedBin], {
     env: {
       ...process.env,
       ...env,
