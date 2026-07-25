@@ -55,7 +55,7 @@ const persistedCallEvents: PersistedCallEvent[] = [];
  * Strip everything from the first @, ;, >, or whitespace.
  */
 function normalizeCallId(raw: string): string {
-  return raw.split(/[@;>\s]/)[0];
+  return raw.split(/[@;>,\s]/)[0];
 }
 
 function pushEvent(ev: PersistedCallEvent): void {
