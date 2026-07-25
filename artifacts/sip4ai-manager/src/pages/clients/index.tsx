@@ -253,7 +253,11 @@ export default function ClientsList() {
                       {client.name}
                     </Link>
                   </TableCell>
-                  <TableCell className="font-mono text-xs">{client.sipServer || "—"}</TableCell>
+                  <TableCell className="font-mono text-xs">
+                    {client.sipServer
+                      ? (client.sipServer.includes(":") ? client.sipServer.split(":").slice(0, -1).join(":") : client.sipServer)
+                      : "—"}
+                  </TableCell>
                   <TableCell className="font-mono text-xs">
                     {client.sipServer
                       ? (client.sipServer.includes(":") ? client.sipServer.split(":").pop() : "5060")
