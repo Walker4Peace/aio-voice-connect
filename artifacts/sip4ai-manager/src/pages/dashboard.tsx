@@ -153,11 +153,6 @@ function AgentRow({ ext, status }: { ext: { id: number; extensionNumber: string;
         <span className={`text-sm font-medium ${statusColor(currentStatus)}`}>
           {statusLabel(currentStatus)}
         </span>
-        {status?.uptimeSeconds != null && (
-          <span className="text-xs text-muted-foreground">
-            {Math.floor(status.uptimeSeconds / 60)}m {status.uptimeSeconds % 60}s
-          </span>
-        )}
         <div className="flex gap-1">
           {!isRunning ? (
             <Button

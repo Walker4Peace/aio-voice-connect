@@ -39,20 +39,18 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
-import { ArrowLeft, Phone, Server, Play, Square, RotateCcw, Terminal, Loader2, AlertCircle, Bot, Edit, Trash2 } from "lucide-react";
+import { ArrowLeft, Phone, Server, Play, Square, RotateCcw, Loader2, AlertCircle, Bot, Edit, Trash2 } from "lucide-react";
 import { ProviderBadge } from "@/components/provider-badge";
 import { useToast } from "@/hooks/use-toast";
 import { maskString } from "@/lib/utils";
 import {
   useDeployStatus,
-  useDeployLogs,
   useStartExtension,
   useStopExtension,
   useRestartExtension,
   useAllDeployStatuses,
   statusLabel,
   statusColor,
-  logLineClass,
 } from "@/hooks/use-deploy";
 
 const agentSchema = z.object({
@@ -73,11 +71,7 @@ export default function ExtensionDetail() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const [showLogs, setShowLogs] = React.useState(false);
-  const [liveLogs, setLiveLogs] = React.useState(false);
-  const [liveFromIndex, setLiveFromIndex] = React.useState<number | null>(null);
   const [editSipOpen, setEditSipOpen] = React.useState(false);
-  const logsEndRef = React.useRef<HTMLDivElement>(null);
 
   const { data: extension, isLoading } = useGetExtension(extensionId, {
     query: { enabled: !!extensionId, queryKey: getGetExtensionQueryKey(extensionId) }
@@ -88,28 +82,6 @@ export default function ExtensionDetail() {
   const updateExtension = useUpdateExtension();
 
   const { data: deployStatus, isLoading: statusLoading } = useDeployStatus(extensionId, !!extensionId);
-  const { data: logs } = useDeployLogs(extensionId, showLogs, liveLogs);
-
-  // Lines to display: only new lines since live was activated; nothing when stopped
-  const displayedLogLines = React.useMemo(() => {
-    if (!liveLogs || !logs?.lines || liveFromIndex === null) return [];
-    return logs.lines.slice(liveFromIndex);
-  }, [liveLogs, logs?.lines, liveFromIndex]);
-
-  // Reset live state when logs panel is hidden
-  React.useEffect(() => {
-    if (!showLogs) {
-      setLiveLogs(false);
-      setLiveFromIndex(null);
-    }
-  }, [showLogs]);
-
-  // Auto-scroll to bottom during live mode
-  React.useEffect(() => {
-    if (liveLogs) {
-      logsEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [displayedLogLines.length, liveLogs]);
   const [, navigate] = useLocation();
   const deleteExtension = useDeleteExtension();
 
@@ -258,15 +230,9 @@ export default function ExtensionDetail() {
                   : "Assign an AI Agent below before deploying."}
               </CardDescription>
             </div>
-            {deployStatus && (
-              <div className="text-right text-xs text-muted-foreground space-y-0.5">
-                {deployStatus.pid && <p>PID: {deployStatus.pid}</p>}
-                {deployStatus.uptimeSeconds != null && (
-                  <p>Up {Math.floor(deployStatus.uptimeSeconds / 60)}m {deployStatus.uptimeSeconds % 60}s</p>
-                )}
-                {deployStatus.lastStartedAt && (
-                  <p>Started: {new Date(deployStatus.lastStartedAt).toLocaleTimeString()}</p>
-                )}
+            {deployStatus?.uptimeSeconds != null && (
+              <div className="text-right text-xs text-muted-foreground">
+                <p>Uptime {Math.floor(deployStatus.uptimeSeconds / 60)}m {deployStatus.uptimeSeconds % 60}s</p>
               </div>
             )}
           </div>
@@ -317,56 +283,7 @@ export default function ExtensionDetail() {
                 <Loader2 className="h-3 w-3 animate-spin" /> Waiting for SIP registration…
               </span>
             )}
-            <Button
-              variant="ghost"
-              className="gap-2 ml-auto"
-              onClick={() => setShowLogs(v => !v)}
-            >
-              <Terminal className="h-4 w-4" />
-              {showLogs ? "Hide Logs" : "Show Logs"}
-            </Button>
           </div>
-
-          {showLogs && (
-            <div className="rounded-md bg-black border border-muted overflow-hidden">
-              <div className="flex items-center justify-between px-3 py-1.5 bg-muted/20 border-b border-muted text-xs text-muted-foreground">
-                <span>
-                  Process Logs
-                  {liveLogs && liveFromIndex !== null && ` · ${displayedLogLines.length} new line${displayedLogLines.length !== 1 ? "s" : ""}`}
-                </span>
-                <button
-                  onClick={() => {
-                    if (!liveLogs) {
-                      setLiveFromIndex(logs?.lines.length ?? 0);
-                      setLiveLogs(true);
-                    } else {
-                      setLiveLogs(false);
-                    }
-                  }}
-                  className={`flex items-center gap-1.5 rounded px-2 py-0.5 font-medium transition-colors ${
-                    liveLogs
-                      ? "bg-green-500/20 text-green-400 hover:bg-green-500/30"
-                      : "bg-muted/40 text-muted-foreground hover:bg-muted/60"
-                  }`}
-                >
-                  <span className={`inline-block h-1.5 w-1.5 rounded-full ${liveLogs ? "bg-green-400 animate-pulse" : "bg-muted-foreground"}`} />
-                  {liveLogs ? "Live" : "Stopped"}
-                </button>
-              </div>
-              <div className="p-3 h-56 overflow-y-auto font-mono text-xs space-y-0.5">
-                {!liveLogs ? (
-                  <p className="text-muted-foreground italic">Click <strong className="text-white">Live</strong> to start streaming logs.</p>
-                ) : displayedLogLines.length === 0 ? (
-                  <p className="text-muted-foreground italic">Waiting for new output…</p>
-                ) : (
-                  displayedLogLines.map((line, i) => (
-                    <p key={i} className={logLineClass(line)}>{line}</p>
-                  ))
-                )}
-                <div ref={logsEndRef} />
-              </div>
-            </div>
-          )}
         </CardContent>
       </Card>
 
