@@ -1,8 +1,8 @@
 import { spawn, ChildProcess } from "child_process";
 import path from "path";
 import fs from "fs/promises";
-import { db, extensionsTable, deploymentsTable, type Deployment } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { db, extensionsTable, deploymentsTable, callEventsTable, type Deployment } from "@workspace/db";
+import { eq, inArray } from "drizzle-orm";
 import { logger } from "../lib/logger.js";
 
 const SIP4AI_BIN =
@@ -63,6 +63,14 @@ function normalizeCallId(raw: string): string {
 function pushEvent(ev: PersistedCallEvent): void {
   persistedCallEvents.push(ev);
   if (persistedCallEvents.length > MAX_PERSISTED_EVENTS) persistedCallEvents.shift();
+  // Persist to DB (fire-and-forget)
+  db.insert(callEventsTable).values({
+    extensionId: ev.extensionId,
+    callId: ev.callId,
+    event: ev.event,
+    timestamp: new Date(ev.timestamp),
+    detail: ev.detail ?? null,
+  }).catch(err => logger.error({ err }, "Failed to persist call event to DB"));
 }
 
 function parseAndStoreCallEvents(extensionId: number, line: string, timestamp: string): void {
@@ -140,6 +148,23 @@ function closeOutstandingCalls(extensionId: number): void {
 
 export function getPersistedCallEvents(): PersistedCallEvent[] {
   return persistedCallEvents;
+}
+
+export async function deleteCallByCallId(callId: string): Promise<void> {
+  // Remove from memory
+  const before = persistedCallEvents.length;
+  for (let i = persistedCallEvents.length - 1; i >= 0; i--) {
+    if (persistedCallEvents[i]!.callId === callId) persistedCallEvents.splice(i, 1);
+  }
+  logger.info({ callId, removed: before - persistedCallEvents.length }, "Deleted call from memory");
+  // Remove from DB
+  await db.delete(callEventsTable).where(eq(callEventsTable.callId, callId));
+}
+
+export async function clearAllCallEvents(): Promise<void> {
+  persistedCallEvents.length = 0;
+  await db.delete(callEventsTable);
+  logger.info("Cleared all call events");
 }
 
 export function getRunningExtensionIds(): number[] {
@@ -582,6 +607,26 @@ export async function reconcileOnStartup() {
   await db.update(deploymentsTable)
     .set({ status: "stopped", pid: null, sipRegistered: false, updatedAt: new Date() })
     .where(eq(deploymentsTable.status, "starting"));
+
+  // Load recent call events from DB into memory cache
+  try {
+    const rows = await db.select().from(callEventsTable)
+      .orderBy(callEventsTable.timestamp)
+      .limit(MAX_PERSISTED_EVENTS);
+    for (const row of rows) {
+      persistedCallEvents.push({
+        extensionId: row.extensionId,
+        callId: row.callId,
+        event: row.event as PersistedCallEvent["event"],
+        timestamp: row.timestamp.toISOString(),
+        detail: row.detail ?? undefined,
+      });
+    }
+    logger.info({ count: rows.length }, "Loaded call events from DB");
+  } catch (err) {
+    logger.error({ err }, "Failed to load call events from DB on startup");
+  }
+
   addSystemLog("Deployment state reconciled on startup");
   logger.info("Deployment state reconciled on startup");
 }

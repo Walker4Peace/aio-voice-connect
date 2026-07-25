@@ -9,6 +9,8 @@ import {
   getPersistedCallEvents,
   getRunningExtensionIds,
   getSystemLogs,
+  deleteCallByCallId,
+  clearAllCallEvents,
 } from "../services/deployment.js";
 
 const router = Router();
@@ -52,6 +54,23 @@ router.get("/deploy/call-events", async (_req, res) => {
   );
 
   res.json({ events: sorted.slice(0, 100), activeCallCount: activeCalls.size });
+});
+
+// DELETE /api/deploy/call-events — clear all call history
+router.delete("/deploy/call-events", async (_req, res) => {
+  await clearAllCallEvents();
+  res.json({ ok: true });
+});
+
+// DELETE /api/deploy/call-events/:callId — delete a single call's events
+router.delete("/deploy/call-events/:callId", async (req, res) => {
+  const callId = req.params["callId"];
+  if (!callId) {
+    res.status(400).json({ error: "Missing callId" });
+    return;
+  }
+  await deleteCallByCallId(callId);
+  res.json({ ok: true });
 });
 
 // GET /api/deploy/:extensionId/status

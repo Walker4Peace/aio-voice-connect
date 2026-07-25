@@ -15,7 +15,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { PhoneCall, PhoneIncoming, PhoneOff, Activity, ChevronDown, ChevronRight } from "lucide-react";
+import { PhoneCall, PhoneIncoming, PhoneOff, Activity, ChevronDown, ChevronRight, Trash2 } from "lucide-react";
 
 export interface CallEvent {
   extensionId: number;
@@ -76,9 +76,10 @@ interface CallRowProps {
   extNumber?: string;
   isOpen: boolean;
   onToggle: () => void;
+  onDelete?: (callId: string) => void;
 }
 
-function CallTableRow({ callId, legs, extNumber, isOpen, onToggle }: CallRowProps) {
+function CallTableRow({ callId, legs, extNumber, isOpen, onToggle, onDelete }: CallRowProps) {
   const hasEnded = legs.some(l => l.event === "ended");
   const hasAI    = legs.some(l => l.event === "connected_ai");
   const hasError = legs.some(l => l.event === "error");
@@ -114,7 +115,7 @@ function CallTableRow({ callId, legs, extNumber, isOpen, onToggle }: CallRowProp
     <Collapsible open={isOpen} onOpenChange={onToggle} asChild>
       <>
         <CollapsibleTrigger asChild>
-          <TableRow className="cursor-pointer hover:bg-muted/40 select-none">
+          <TableRow className="cursor-pointer hover:bg-muted/40 select-none group/row">
             {/* Call ID */}
             <TableCell className="font-mono text-xs text-muted-foreground">
               <div className="flex items-center gap-1.5">
@@ -135,7 +136,18 @@ function CallTableRow({ callId, legs, extNumber, isOpen, onToggle }: CallRowProp
             </TableCell>
             {/* Duration */}
             <TableCell className="text-xs text-muted-foreground tabular-nums">
-              {duration ?? "—"}
+              <div className="flex items-center justify-between gap-2">
+                <span>{duration ?? "—"}</span>
+                {onDelete && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onDelete(callId); }}
+                    className="opacity-0 group-hover/row:opacity-100 p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-all"
+                    title="Delete this call"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
             </TableCell>
           </TableRow>
         </CollapsibleTrigger>
@@ -174,6 +186,8 @@ interface CallHistoryTableProps {
   /** If set, a centered "View all" link is rendered below the table */
   viewAllHref?: string;
   emptyMessage?: string;
+  /** Called when the user clicks the delete button on a call row */
+  onDeleteCall?: (callId: string) => void;
 }
 
 export function CallHistoryTable({
@@ -182,6 +196,7 @@ export function CallHistoryTable({
   limit,
   viewAllHref,
   emptyMessage = "No completed calls recorded yet.",
+  onDeleteCall,
 }: CallHistoryTableProps) {
   const [openId, setOpenId] = React.useState<string | null>(null);
 
@@ -222,6 +237,7 @@ export function CallHistoryTable({
                 extNumber={ext?.extensionNumber}
                 isOpen={openId === callId}
                 onToggle={() => toggle(callId)}
+                onDelete={onDeleteCall}
               />
             );
           })}
