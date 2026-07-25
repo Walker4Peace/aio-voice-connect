@@ -1,5 +1,4 @@
 import React from "react";
-import { Link } from "wouter";
 import { useListExtensions } from "@workspace/api-client-react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -86,7 +85,6 @@ function CallRow({ callId, legs, extNumber }: { callId: string; legs: CallEvent[
     ? "text-purple-600"
     : "text-blue-600";
 
-  // Pull the caller number from the invite detail for display in the row header
   const inviteLeg = legs.find(l => l.event === "invite");
   const fromNumber = inviteLeg?.detail;
 
@@ -142,7 +140,11 @@ function CallRow({ callId, legs, extNumber }: { callId: string; legs: CallEvent[
   );
 }
 
+const PAGE_SIZE = 20;
+
 export default function CallsPage() {
+  const [page, setPage] = React.useState(1);
+
   const { data: callEvents, refetch, isFetching } = useQuery<CallEventsResponse>({
     queryKey: ["call-events-all"],
     queryFn: async () => {
@@ -150,28 +152,38 @@ export default function CallsPage() {
       if (!res.ok) return { events: [], activeCallCount: 0 };
       return res.json();
     },
-    refetchInterval: 5000,
+    // No auto-refresh — only refresh on button click
+    refetchInterval: false,
+    refetchOnWindowFocus: false,
   });
 
   const { data: extensions } = useListExtensions();
 
+  // Only show calls that have ended (after hang up)
   const callGroups = React.useMemo(() => {
     if (!callEvents?.events?.length) return [];
     const grouped = groupEventsByCall(callEvents.events);
-    return Array.from(grouped.entries()).reverse(); // most-recent first
+    return Array.from(grouped.entries())
+      .filter(([, legs]) => legs.some(l => l.event === "ended"))
+      .reverse(); // most-recent first
   }, [callEvents]);
 
-  const activeCount = callEvents?.activeCallCount ?? 0;
+  const totalPages = Math.max(1, Math.ceil(callGroups.length / PAGE_SIZE));
+  const pageGroups = callGroups.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  const handleRefresh = () => {
+    setPage(1);
+    refetch();
+  };
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      {/* Page header — no active calls badge here */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Call History</h1>
-          <p className="text-muted-foreground mt-1 text-sm">All call events recorded across your deployed extensions.</p>
+          <p className="text-muted-foreground mt-1 text-sm">Completed calls across your deployed extensions.</p>
         </div>
-        <Button variant="outline" size="sm" className="gap-2" onClick={() => refetch()} disabled={isFetching}>
+        <Button variant="outline" size="sm" className="gap-2" onClick={handleRefresh} disabled={isFetching}>
           <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
           Refresh
         </Button>
@@ -179,45 +191,54 @@ export default function CallsPage() {
 
       <Card>
         <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-base flex items-center gap-2">
-              <PhoneCall className="h-4 w-4" />
-              All Calls
-              {/* Total call count */}
-              {callGroups.length > 0 && (
-                <Badge variant="secondary" className="ml-1">{callGroups.length}</Badge>
-              )}
-              {/* Active calls counter — shown right next to the label */}
-              {activeCount > 0 && (
-                <Badge variant="default" className="gap-1 ml-1">
-                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />
-                  {activeCount} active
-                </Badge>
-              )}
-            </CardTitle>
-          </div>
+          <CardTitle className="text-base flex items-center gap-2">
+            <PhoneCall className="h-4 w-4" />
+            All Calls
+            {callGroups.length > 0 && (
+              <Badge variant="secondary" className="ml-1">{callGroups.length}</Badge>
+            )}
+          </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           {callGroups.length === 0 ? (
             <div className="text-center py-16 text-muted-foreground">
               <PhoneCall className="h-10 w-10 mx-auto mb-3 opacity-30" />
-              <p className="text-sm font-medium">No call events recorded yet.</p>
+              <p className="text-sm font-medium">No completed calls recorded yet.</p>
               <p className="text-xs mt-1">Deploy an extension and make a call to see history here.</p>
             </div>
           ) : (
-            <div className="divide-y">
-              {callGroups.map(([callId, legs]) => {
-                const ext = extensions?.find(e => e.id === legs[0]?.extensionId);
-                return (
-                  <CallRow
-                    key={callId}
-                    callId={callId}
-                    legs={legs}
-                    extNumber={ext?.extensionNumber}
-                  />
-                );
-              })}
-            </div>
+            <>
+              <div className="divide-y">
+                {pageGroups.map(([callId, legs]) => {
+                  const ext = extensions?.find(e => e.id === legs[0]?.extensionId);
+                  return (
+                    <CallRow
+                      key={callId}
+                      callId={callId}
+                      legs={legs}
+                      extNumber={ext?.extensionNumber}
+                    />
+                  );
+                })}
+              </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-1 px-4 py-3 border-t">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                    <Button
+                      key={p}
+                      variant={p === page ? "default" : "outline"}
+                      size="sm"
+                      className="h-8 w-8 p-0 text-xs"
+                      onClick={() => setPage(p)}
+                    >
+                      {p}
+                    </Button>
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </CardContent>
       </Card>

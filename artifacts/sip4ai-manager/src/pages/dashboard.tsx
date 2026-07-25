@@ -332,23 +332,13 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        {/* Calls Information */}
+        {/* Calls History */}
         <Card className="col-span-full">
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <PhoneCall className="h-5 w-5" />
-                Calls Information
-              </CardTitle>
-              {callEvents && (
-                <Badge variant={callEvents.activeCallCount > 0 ? "default" : "secondary"} className="gap-1">
-                  {callEvents.activeCallCount > 0 && (
-                    <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />
-                  )}
-                  {callEvents.activeCallCount} active call{callEvents.activeCallCount !== 1 ? "s" : ""}
-                </Badge>
-              )}
-            </div>
+            <CardTitle className="flex items-center gap-2">
+              <PhoneCall className="h-5 w-5" />
+              Calls History
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {visibleCallGroups.length === 0 ? (
@@ -373,7 +363,7 @@ export default function Dashboard() {
                   })}
                 </div>
                 {callGroups.length > 0 && (
-                  <div className="mt-3 flex justify-end">
+                  <div className="mt-3 flex justify-center">
                     <Link href="/calls">
                       <Button variant="ghost" size="sm" className="text-xs h-7">View all</Button>
                     </Link>

@@ -348,7 +348,7 @@ export default function ExtensionsList() {
                   </TableCell>
                   <TableCell>
                     {ext.agentConfig ? (
-                      <div className="flex flex-col gap-0.5 items-start">
+                      <div className="flex flex-col gap-0.5 items-center">
                         <ProviderBadge provider={ext.agentConfig.provider} />
                         <span className="text-xs text-muted-foreground">{ext.agentConfig.name}</span>
                       </div>

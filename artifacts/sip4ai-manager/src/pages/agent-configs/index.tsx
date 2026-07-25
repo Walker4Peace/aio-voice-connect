@@ -65,7 +65,7 @@ export default function AgentConfigsList() {
             <TableRow>
               <TableHead>Agent Name</TableHead>
               <TableHead>Provider</TableHead>
-              <TableHead>Model / Voice</TableHead>
+              <TableHead>Agent ID</TableHead>
               <TableHead>Language</TableHead>
               <TableHead className="w-[100px]">Action</TableHead>
             </TableRow>
