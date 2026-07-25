@@ -2,11 +2,11 @@ import React from "react";
 import { Link } from "wouter";
 import { useAllDeployStatuses, useDeployLogs, statusLabel, statusColor, logLineClass } from "@/hooks/use-deploy";
 import { useListExtensions } from "@workspace/api-client-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ExternalLink, RefreshCw, Terminal } from "lucide-react";
+import { ExternalLink, RefreshCw } from "lucide-react";
 
 export default function LogsPage() {
   const { data: extensions } = useListExtensions();
@@ -46,7 +46,6 @@ export default function LogsPage() {
 
   const handleLiveToggle = () => {
     if (!isLive) {
-      // Capture current position — only new lines will be shown
       setLiveFromIndex(logs?.lines.length ?? 0);
       setIsLive(true);
     } else {
@@ -68,9 +67,6 @@ export default function LogsPage() {
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Logs</h1>
-        <p className="text-muted-foreground mt-1 text-sm">
-          Live stdout/stderr output from deployed SIP Agent processes.
-        </p>
       </div>
 
       {/* Extension picker + status strip */}
@@ -111,11 +107,11 @@ export default function LogsPage() {
           <Button
             variant={isLive ? "default" : "outline"}
             size="sm"
-            className="gap-2"
+            className={`gap-2 ${!isLive ? "text-muted-foreground" : ""}`}
             onClick={handleLiveToggle}
           >
             <RefreshCw className={`h-4 w-4 ${isLive ? "animate-spin" : ""}`} />
-            {isLive ? "Live" : "Stopped"}
+            {isLive ? "Live" : "Live"}
           </Button>
           {selectedId && (
             <Link href={`/extensions/${selectedId}`}>
@@ -148,7 +144,6 @@ export default function LogsPage() {
               </span>
             </span>
           )}
-          {/* Only show lastError when the agent is NOT registered */}
           {selectedStatus.lastError && selectedStatus.status !== "registered" && (
             <span className="text-red-500">
               Last error: <span className="font-mono">{selectedStatus.lastError}</span>
@@ -159,36 +154,10 @@ export default function LogsPage() {
 
       {/* Log terminal */}
       <Card className="border-muted">
-        <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Terminal className="h-4 w-4" />
-              Process Output
-              {selectedExtension && (
-                <span className="text-muted-foreground font-normal text-sm">
-                  — ext {selectedExtension.extensionNumber}
-                </span>
-              )}
-            </CardTitle>
-            {isLive && (
-              <span className="text-xs text-muted-foreground">
-                {displayedLines.length} new line{displayedLines.length !== 1 ? "s" : ""}
-                {dataUpdatedAt ? ` · ${new Date(dataUpdatedAt).toLocaleTimeString()}` : ""}
-              </span>
-            )}
-          </div>
-          <CardDescription>
-            Click <strong>Live</strong> to stream new output. Lines are colour-coded:
-            {" "}<span className="text-green-400">INFO</span>{" · "}
-            <span className="text-yellow-400">WARN</span>{" · "}
-            <span className="text-blue-400">DEBUG</span>{" · "}
-            <span className="text-red-400">ERROR</span>
-          </CardDescription>
-        </CardHeader>
         <CardContent className="p-0">
-          <div className="rounded-b-lg bg-black overflow-hidden">
+          <div className="rounded-lg bg-black overflow-hidden">
             <div
-              className="p-4 h-[460px] overflow-y-auto font-mono text-xs space-y-0.5 leading-relaxed"
+              className="p-4 h-[520px] overflow-y-auto font-mono text-xs space-y-0.5 leading-relaxed"
             >
               {!selectedId ? (
                 <p className="text-muted-foreground italic">Select an extension above to view its logs.</p>
@@ -214,67 +183,6 @@ export default function LogsPage() {
           </div>
         </CardContent>
       </Card>
-
-      {/* All agents summary */}
-      {allStatuses && allStatuses.length > 0 && (
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">All Agents</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="divide-y divide-border">
-              {allStatuses.map((s) => {
-                const ext = extensions?.find((e) => e.id === s.extensionId);
-                return (
-                  <div
-                    key={s.extensionId}
-                    className="flex items-center justify-between py-2 text-sm cursor-pointer hover:bg-accent/30 rounded px-2 transition-colors"
-                    onClick={() => setSelectedId(s.extensionId)}
-                  >
-                    <div className="flex items-center gap-3">
-                      <Badge
-                        variant="outline"
-                        className={`text-xs ${statusColor(s.status)}`}
-                      >
-                        {s.status}
-                      </Badge>
-                      <span className="font-medium">
-                        {ext?.extensionNumber ?? `#${s.extensionId}`}
-                        {ext?.displayName ? (
-                          <span className="text-muted-foreground font-normal ml-1">
-                            ({ext.displayName})
-                          </span>
-                        ) : null}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                      {s.uptimeSeconds != null && (
-                        <span>
-                          {Math.floor(s.uptimeSeconds / 60)}m {s.uptimeSeconds % 60}s
-                        </span>
-                      )}
-                      {s.sipRegistered && (
-                        <span className="text-green-500 font-medium">SIP ✓</span>
-                      )}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-6 px-2 text-xs"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedId(s.extensionId);
-                        }}
-                      >
-                        View logs
-                      </Button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }
