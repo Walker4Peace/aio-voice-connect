@@ -52,6 +52,15 @@ export function useDeployLogs(extensionId: number, enabled = false, live = false
   });
 }
 
+export function useSystemLogs(enabled = false, live = false) {
+  return useQuery<{ lines: string[] }>({
+    queryKey: ["system-logs"],
+    queryFn: () => apiFetch("/api/deploy/system/logs"),
+    refetchInterval: (enabled && live) ? 2000 : false,
+    enabled,
+  });
+}
+
 function useDeployAction(extensionId: number, action: "start" | "stop" | "restart") {
   const qc = useQueryClient();
   return useMutation<DeployStatus>({

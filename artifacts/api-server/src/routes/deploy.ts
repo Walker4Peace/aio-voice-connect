@@ -8,9 +8,15 @@ import {
   getAllStatuses,
   getPersistedCallEvents,
   getRunningExtensionIds,
+  getSystemLogs,
 } from "../services/deployment.js";
 
 const router = Router();
+
+// GET /api/deploy/system/logs — application-level log buffer
+router.get("/deploy/system/logs", (_req, res) => {
+  res.json({ lines: getSystemLogs() });
+});
 
 // GET /api/deploy/all — status for every deployed extension
 router.get("/deploy/all", async (_req, res) => {

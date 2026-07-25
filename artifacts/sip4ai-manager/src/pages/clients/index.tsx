@@ -223,7 +223,7 @@ export default function ClientsList() {
           <TableHeader>
             <TableRow>
               <TableHead>IPBX Name</TableHead>
-              <TableHead>SIP Domain</TableHead>
+              <TableHead>SIP Server</TableHead>
               <TableHead>Port</TableHead>
               <TableHead className="w-[100px]">Action</TableHead>
             </TableRow>
@@ -253,7 +253,7 @@ export default function ClientsList() {
                       {client.name}
                     </Link>
                   </TableCell>
-                  <TableCell className="font-mono text-xs">{client.sipDomain || "—"}</TableCell>
+                  <TableCell className="font-mono text-xs">{client.sipServer || "—"}</TableCell>
                   <TableCell className="font-mono text-xs">
                     {client.sipServer
                       ? (client.sipServer.includes(":") ? client.sipServer.split(":").pop() : "5060")

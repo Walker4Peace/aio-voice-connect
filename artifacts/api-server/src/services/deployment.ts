@@ -355,6 +355,7 @@ async function allocatePorts(extensionId: number): Promise<{ sipLocalPort: numbe
 }
 
 export async function startExtension(extensionId: number): Promise<void> {
+  addSystemLog(`Starting extension ${extensionId}`);
   const ext = await getExtWithRelations(extensionId);
   if (!ext) throw new Error("Extension not found");
   if (!ext.agentConfig) throw new Error("No AI agent config assigned. Select an Agent in the extension settings first.");
@@ -461,6 +462,7 @@ export async function startExtension(extensionId: number): Promise<void> {
 }
 
 export async function stopExtension(extensionId: number): Promise<void> {
+  addSystemLog(`Stopping extension ${extensionId}`);
   // Close any outstanding calls so they don't ghost as "active" after restart
   closeOutstandingCalls(extensionId);
 
@@ -482,6 +484,20 @@ export async function restartExtension(extensionId: number): Promise<void> {
 
 export function getLogs(extensionId: number): string[] {
   return processes.get(extensionId)?.logs ?? exitedLogs.get(extensionId) ?? [];
+}
+
+// ── System / application log buffer ────────────────────────────────────────
+const MAX_SYSTEM_LOG_LINES = 500;
+const systemLogBuffer: string[] = [];
+
+export function addSystemLog(line: string): void {
+  const timestamp = new Date().toISOString();
+  systemLogBuffer.push(`[${timestamp}] ${line}`);
+  if (systemLogBuffer.length > MAX_SYSTEM_LOG_LINES) systemLogBuffer.shift();
+}
+
+export function getSystemLogs(): string[] {
+  return [...systemLogBuffer];
 }
 
 export async function getStatus(extensionId: number) {
@@ -549,11 +565,13 @@ export async function getAllStatuses() {
 
 // On server start, mark any lingering "running" rows as stopped (processes don't survive restarts)
 export async function reconcileOnStartup() {
+  addSystemLog("Server starting — reconciling deployment state");
   await db.update(deploymentsTable)
     .set({ status: "stopped", pid: null, sipRegistered: false, updatedAt: new Date() })
     .where(eq(deploymentsTable.status, "registered"));
   await db.update(deploymentsTable)
     .set({ status: "stopped", pid: null, sipRegistered: false, updatedAt: new Date() })
     .where(eq(deploymentsTable.status, "starting"));
+  addSystemLog("Deployment state reconciled on startup");
   logger.info("Deployment state reconciled on startup");
 }

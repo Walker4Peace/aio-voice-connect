@@ -9,6 +9,14 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { PhoneCall, PhoneIncoming, PhoneOff, Activity, ChevronDown, ChevronRight, RefreshCw } from "lucide-react";
 
 interface CallEvent {
@@ -56,7 +64,6 @@ function groupEventsByCall(events: CallEvent[]): Map<string, CallEvent[]> {
   return map;
 }
 
-/** Duration string between first and last event */
 function callDuration(legs: CallEvent[]): string | null {
   if (legs.length < 2) return null;
   const ms = new Date(legs[legs.length - 1].timestamp).getTime() - new Date(legs[0].timestamp).getTime();
@@ -66,15 +73,20 @@ function callDuration(legs: CallEvent[]): string | null {
   return m > 0 ? `${m}m ${s % 60}s` : `${s}s`;
 }
 
-function CallRow({ callId, legs, extNumber }: { callId: string; legs: CallEvent[]; extNumber?: string }) {
+function CallTableRow({ callId, legs, extNumber }: { callId: string; legs: CallEvent[]; extNumber?: string }) {
   const [open, setOpen] = React.useState(false);
 
   const hasEnded = legs.some(l => l.event === "ended");
   const hasAI = legs.some(l => l.event === "connected_ai");
   const hasError = legs.some(l => l.event === "error");
   const firstLeg = legs[0];
-  const lastLeg = legs[legs.length - 1];
   const duration = callDuration(legs);
+
+  // Inbound: caller = invite.detail (phone number), called = extension number
+  // Outbound: reverse — for now we only have inbound
+  const inviteLeg = legs.find(l => l.event === "invite");
+  const caller = inviteLeg?.detail ?? "—";
+  const called = extNumber ? `ext ${extNumber}` : "—";
 
   const stateLabel = hasError ? "Error" : hasEnded ? "Ended" : hasAI ? "AI Active" : "Ringing";
   const stateColor = hasError
@@ -83,59 +95,60 @@ function CallRow({ callId, legs, extNumber }: { callId: string; legs: CallEvent[
     ? "text-muted-foreground"
     : hasAI
     ? "text-purple-600"
-    : "text-blue-600";
-
-  const inviteLeg = legs.find(l => l.event === "invite");
-  const fromNumber = inviteLeg?.detail;
+    : "text-blue-500";
 
   return (
-    <Collapsible open={open} onOpenChange={setOpen}>
-      <CollapsibleTrigger asChild>
-        <div className="flex items-center justify-between px-4 py-3 hover:bg-muted/30 cursor-pointer transition-colors select-none">
-          <div className="flex items-center gap-3 min-w-0">
-            {open ? <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />}
-            <PhoneCall className="h-4 w-4 shrink-0 text-muted-foreground" />
-            <div className="min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-sm font-medium font-mono">call {callId.slice(0, 8)}…</span>
-                {extNumber && (
-                  <Badge variant="outline" className="text-xs font-mono px-1.5 py-0">ext {extNumber}</Badge>
-                )}
-                {fromNumber && (
-                  <span className="text-xs text-muted-foreground font-mono">{fromNumber}</span>
-                )}
-                <span className={`text-xs font-medium ${stateColor}`}>{stateLabel}</span>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {legs.length} leg{legs.length !== 1 ? "s" : ""}
-                {" · "}{new Date(firstLeg.timestamp).toLocaleTimeString()}
-                {hasEnded && ` → ${new Date(lastLeg.timestamp).toLocaleTimeString()}`}
-                {duration && ` · ${duration}`}
-              </p>
+    <Collapsible open={open} onOpenChange={setOpen} asChild>
+      <>
+        <TableRow
+          className="cursor-pointer hover:bg-muted/40 select-none"
+          onClick={() => setOpen(v => !v)}
+        >
+          {/* Call ID */}
+          <TableCell className="font-mono text-xs text-muted-foreground">
+            <div className="flex items-center gap-1.5">
+              {open
+                ? <ChevronDown className="h-3.5 w-3.5 shrink-0" />
+                : <ChevronRight className="h-3.5 w-3.5 shrink-0" />}
+              <span>{callId.slice(0, 10)}…</span>
+              <span className={`text-[10px] font-medium ${stateColor}`}>{stateLabel}</span>
             </div>
-          </div>
-          <div className="shrink-0 ml-4">
-            <span className="text-xs text-muted-foreground tabular-nums hidden sm:block">
-              {new Date(firstLeg.timestamp).toLocaleDateString()}
-            </span>
-          </div>
-        </div>
-      </CollapsibleTrigger>
-      <CollapsibleContent>
-        <div className="bg-muted/20 border-t divide-y">
-          {legs.map((leg, i) => (
-            <div key={i} className="flex items-start gap-3 px-8 py-2.5">
-              <div className="mt-0.5 shrink-0">{EVENT_ICONS[leg.event]}</div>
-              <div className="flex-1 min-w-0">
-                <span className="text-sm">{eventLabel(leg)}</span>
+          </TableCell>
+          {/* Caller */}
+          <TableCell className="font-mono text-sm">{caller}</TableCell>
+          {/* Called */}
+          <TableCell className="font-mono text-sm">{called}</TableCell>
+          {/* Date */}
+          <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+            {new Date(firstLeg.timestamp).toLocaleString()}
+          </TableCell>
+          {/* Duration */}
+          <TableCell className="text-xs text-muted-foreground tabular-nums">
+            {duration ?? "—"}
+          </TableCell>
+        </TableRow>
+
+        {/* Accordion legs — rendered as a full-width row */}
+        <CollapsibleContent asChild>
+          <TableRow className="hover:bg-transparent">
+            <TableCell colSpan={5} className="p-0 border-t-0">
+              <div className="bg-muted/20 divide-y border-b">
+                {legs.map((leg, i) => (
+                  <div key={i} className="flex items-start gap-3 px-10 py-2.5">
+                    <div className="mt-0.5 shrink-0">{EVENT_ICONS[leg.event]}</div>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-sm">{eventLabel(leg)}</span>
+                    </div>
+                    <time className="text-xs text-muted-foreground shrink-0 tabular-nums">
+                      {new Date(leg.timestamp).toLocaleTimeString()}
+                    </time>
+                  </div>
+                ))}
               </div>
-              <time className="text-xs text-muted-foreground shrink-0 tabular-nums">
-                {new Date(leg.timestamp).toLocaleTimeString()}
-              </time>
-            </div>
-          ))}
-        </div>
-      </CollapsibleContent>
+            </TableCell>
+          </TableRow>
+        </CollapsibleContent>
+      </>
     </Collapsible>
   );
 }
@@ -152,20 +165,19 @@ export default function CallsPage() {
       if (!res.ok) return { events: [], activeCallCount: 0 };
       return res.json();
     },
-    // No auto-refresh — only refresh on button click
     refetchInterval: false,
     refetchOnWindowFocus: false,
   });
 
   const { data: extensions } = useListExtensions();
 
-  // Only show calls that have ended (after hang up)
+  // Only show completed calls (after hang up)
   const callGroups = React.useMemo(() => {
     if (!callEvents?.events?.length) return [];
     const grouped = groupEventsByCall(callEvents.events);
     return Array.from(grouped.entries())
       .filter(([, legs]) => legs.some(l => l.event === "ended"))
-      .reverse(); // most-recent first
+      .reverse();
   }, [callEvents]);
 
   const totalPages = Math.max(1, Math.ceil(callGroups.length / PAGE_SIZE));
@@ -208,19 +220,30 @@ export default function CallsPage() {
             </div>
           ) : (
             <>
-              <div className="divide-y">
-                {pageGroups.map(([callId, legs]) => {
-                  const ext = extensions?.find(e => e.id === legs[0]?.extensionId);
-                  return (
-                    <CallRow
-                      key={callId}
-                      callId={callId}
-                      legs={legs}
-                      extNumber={ext?.extensionNumber}
-                    />
-                  );
-                })}
-              </div>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[200px]">Call ID</TableHead>
+                    <TableHead>Caller</TableHead>
+                    <TableHead>Called</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Duration</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {pageGroups.map(([callId, legs]) => {
+                    const ext = extensions?.find(e => e.id === legs[0]?.extensionId);
+                    return (
+                      <CallTableRow
+                        key={callId}
+                        callId={callId}
+                        legs={legs}
+                        extNumber={ext?.extensionNumber}
+                      />
+                    );
+                  })}
+                </TableBody>
+              </Table>
 
               {/* Pagination */}
               {totalPages > 1 && (
