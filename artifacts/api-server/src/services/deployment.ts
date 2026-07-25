@@ -45,6 +45,8 @@ interface PersistedCallEvent {
   detail?: string;
 }
 const persistedCallEvents: PersistedCallEvent[] = [];
+// Cache of extensionId → agent name, populated when an extension is started
+const extensionAgentNames = new Map<number, string>();
 
 /**
  * Normalize a raw SIP Call-ID so invite and bye events always share the same key.
@@ -100,7 +102,11 @@ function parseAndStoreCallEvents(extensionId: number, line: string, timestamp: s
   const connMatch = body.match(/Connected to .+AI/i);
   if (connMatch) {
     const prevInvite = [...persistedCallEvents].reverse().find(e => e.extensionId === extensionId && e.event === "invite");
-    pushEvent({ extensionId, callId: prevInvite?.callId ?? "unknown", event: "connected_ai", timestamp, detail: body });
+    // Strip leading "YYYY/MM/DD HH:MM:SS " timestamp from the raw log body
+    const cleaned = body.replace(/^\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2} /, "");
+    const agentName = extensionAgentNames.get(extensionId);
+    const detail = agentName ? `${cleaned} - ${agentName}` : cleaned;
+    pushEvent({ extensionId, callId: prevInvite?.callId ?? "unknown", event: "connected_ai", timestamp, detail });
     return;
   }
 
@@ -359,6 +365,7 @@ export async function startExtension(extensionId: number): Promise<void> {
   const ext = await getExtWithRelations(extensionId);
   if (!ext) throw new Error("Extension not found");
   if (!ext.agentConfig) throw new Error("No AI agent config assigned. Select an Agent in the extension settings first.");
+  extensionAgentNames.set(extensionId, ext.agentConfig.name);
   if (!ext.client?.sipDomain || !ext.client?.sipServer) {
     throw new Error("IPBX SIP Domain and SIP Server must be configured on the linked IPBX before deploying.");
   }
