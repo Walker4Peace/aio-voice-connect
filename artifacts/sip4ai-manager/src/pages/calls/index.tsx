@@ -30,13 +30,14 @@ export default function CallsPage() {
 
   const { data: extensions } = useListExtensions();
 
-  // Only completed calls (after hang up), most-recent first
+  // Only completed calls: must have both an invite and an ended event.
+  // Sorted most-recent first by call start time (first event = invite after ascending sort).
   const callGroups = React.useMemo(() => {
     if (!callEvents?.events?.length) return [];
     const grouped = groupEventsByCall(callEvents.events);
     return Array.from(grouped.entries())
-      .filter(([, legs]) => legs.some(l => l.event === "ended"))
-      .reverse();
+      .filter(([, legs]) => legs.some(l => l.event === "invite") && legs.some(l => l.event === "ended"))
+      .sort(([, a], [, b]) => new Date(b[0].timestamp).getTime() - new Date(a[0].timestamp).getTime());
   }, [callEvents]);
 
   const totalPages = Math.max(1, Math.ceil(callGroups.length / PAGE_SIZE));

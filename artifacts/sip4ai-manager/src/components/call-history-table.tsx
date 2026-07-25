@@ -247,5 +247,9 @@ export function groupEventsByCall(events: CallEvent[]): Map<string, CallEvent[]>
     if (!map.has(ev.callId)) map.set(ev.callId, []);
     map.get(ev.callId)!.push(ev);
   }
+  // Sort each group oldest-first so duration/date calculations are correct
+  for (const legs of map.values()) {
+    legs.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+  }
   return map;
 }
