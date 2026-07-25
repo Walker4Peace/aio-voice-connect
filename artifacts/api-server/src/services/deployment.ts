@@ -46,33 +46,69 @@ interface PersistedCallEvent {
 }
 const persistedCallEvents: PersistedCallEvent[] = [];
 
+/**
+ * Normalize a raw SIP Call-ID so invite and bye events always share the same key.
+ * SIP Call-IDs can appear as:
+ *   abc123
+ *   abc123@proxy.domain.com
+ *   abc123;tag=from-tag
+ * Strip everything from the first @, ;, >, or whitespace.
+ */
+function normalizeCallId(raw: string): string {
+  return raw.split(/[@;>\s]/)[0];
+}
+
+function pushEvent(ev: PersistedCallEvent): void {
+  persistedCallEvents.push(ev);
+  if (persistedCallEvents.length > MAX_PERSISTED_EVENTS) persistedCallEvents.shift();
+}
+
 function parseAndStoreCallEvents(extensionId: number, line: string, timestamp: string): void {
   const body = line.replace(/^\[[^\]]+\]\s*/, "");
 
+  // ── Caller number from SIP Contact header ────────────────────────────────
+  // Log line: "Stored remote Contact for dialog: sip:0661209845@1.2.3.4:5060"
+  const contactMatch = body.match(/Stored remote Contact for dialog:\s*sip:([^@\s>]+)@/i);
+  if (contactMatch) {
+    const fromNumber = contactMatch[1];
+    // Attach the caller number as detail on the most recent invite for this extension
+    for (let i = persistedCallEvents.length - 1; i >= 0; i--) {
+      const e = persistedCallEvents[i];
+      if (e.extensionId === extensionId && e.event === "invite") {
+        e.detail = fromNumber;
+        break;
+      }
+    }
+    return;
+  }
+
+  // ── Incoming INVITE ──────────────────────────────────────────────────────
   const inviteMatch = body.match(/INVITE received for call:\s*(\S+)/i);
   if (inviteMatch) {
-    persistedCallEvents.push({ extensionId, callId: inviteMatch[1], event: "invite", timestamp });
-    if (persistedCallEvents.length > MAX_PERSISTED_EVENTS) persistedCallEvents.shift();
+    pushEvent({ extensionId, callId: normalizeCallId(inviteMatch[1]), event: "invite", timestamp });
     return;
   }
+
+  // ── Call ended / BYE ─────────────────────────────────────────────────────
   const byeMatch = body.match(/(?:Call ended|BYE received for call).*?:\s*(\S+)/i);
   if (byeMatch) {
-    persistedCallEvents.push({ extensionId, callId: byeMatch[1], event: "ended", timestamp });
-    if (persistedCallEvents.length > MAX_PERSISTED_EVENTS) persistedCallEvents.shift();
+    pushEvent({ extensionId, callId: normalizeCallId(byeMatch[1]), event: "ended", timestamp });
     return;
   }
+
+  // ── AI provider connected ────────────────────────────────────────────────
   const connMatch = body.match(/Connected to .+AI/i);
   if (connMatch) {
     const prevInvite = [...persistedCallEvents].reverse().find(e => e.extensionId === extensionId && e.event === "invite");
-    persistedCallEvents.push({ extensionId, callId: prevInvite?.callId ?? "unknown", event: "connected_ai", timestamp, detail: body });
-    if (persistedCallEvents.length > MAX_PERSISTED_EVENTS) persistedCallEvents.shift();
+    pushEvent({ extensionId, callId: prevInvite?.callId ?? "unknown", event: "connected_ai", timestamp, detail: body });
     return;
   }
+
+  // ── AI utterance line ────────────────────────────────────────────────────
   const aiMatch = body.match(/^AI:\s*(.+)/);
   if (aiMatch) {
     const prevInvite = [...persistedCallEvents].reverse().find(e => e.extensionId === extensionId && e.event === "invite");
-    persistedCallEvents.push({ extensionId, callId: prevInvite?.callId ?? "unknown", event: "connected_ai", timestamp, detail: aiMatch[1] });
-    if (persistedCallEvents.length > MAX_PERSISTED_EVENTS) persistedCallEvents.shift();
+    pushEvent({ extensionId, callId: prevInvite?.callId ?? "unknown", event: "connected_ai", timestamp, detail: aiMatch[1] });
   }
 }
 

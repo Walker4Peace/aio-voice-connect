@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "wouter";
 import { useListExtensions } from "@workspace/api-client-react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -32,13 +33,20 @@ const EVENT_ICONS: Record<CallEvent["event"], React.ReactNode> = {
   error: <PhoneOff className="h-3.5 w-3.5 text-red-500" />,
 };
 
-const EVENT_LABELS: Record<CallEvent["event"], string> = {
-  invite: "Incoming call",
-  answered: "Answered",
-  ended: "Call ended",
-  connected_ai: "AI responded",
-  error: "Error",
-};
+function eventLabel(ev: CallEvent): string {
+  switch (ev.event) {
+    case "invite":
+      return ev.detail ? `Incoming call from ${ev.detail}` : "Incoming call";
+    case "answered":
+      return "Answered";
+    case "connected_ai":
+      return ev.detail ? `AI responded — ${ev.detail}` : "AI responded";
+    case "ended":
+      return ev.detail ? `Call ended (${ev.detail})` : "Call ended";
+    case "error":
+      return ev.detail ? `Error: ${ev.detail}` : "Error";
+  }
+}
 
 function groupEventsByCall(events: CallEvent[]): Map<string, CallEvent[]> {
   const map = new Map<string, CallEvent[]>();
@@ -49,6 +57,16 @@ function groupEventsByCall(events: CallEvent[]): Map<string, CallEvent[]> {
   return map;
 }
 
+/** Duration string between first and last event */
+function callDuration(legs: CallEvent[]): string | null {
+  if (legs.length < 2) return null;
+  const ms = new Date(legs[legs.length - 1].timestamp).getTime() - new Date(legs[0].timestamp).getTime();
+  if (ms < 0) return null;
+  const s = Math.floor(ms / 1000);
+  const m = Math.floor(s / 60);
+  return m > 0 ? `${m}m ${s % 60}s` : `${s}s`;
+}
+
 function CallRow({ callId, legs, extNumber }: { callId: string; legs: CallEvent[]; extNumber?: string }) {
   const [open, setOpen] = React.useState(false);
 
@@ -57,6 +75,7 @@ function CallRow({ callId, legs, extNumber }: { callId: string; legs: CallEvent[
   const hasError = legs.some(l => l.event === "error");
   const firstLeg = legs[0];
   const lastLeg = legs[legs.length - 1];
+  const duration = callDuration(legs);
 
   const stateLabel = hasError ? "Error" : hasEnded ? "Ended" : hasAI ? "AI Active" : "Ringing";
   const stateColor = hasError
@@ -67,28 +86,37 @@ function CallRow({ callId, legs, extNumber }: { callId: string; legs: CallEvent[
     ? "text-purple-600"
     : "text-blue-600";
 
+  // Pull the caller number from the invite detail for display in the row header
+  const inviteLeg = legs.find(l => l.event === "invite");
+  const fromNumber = inviteLeg?.detail;
+
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
       <CollapsibleTrigger asChild>
         <div className="flex items-center justify-between px-4 py-3 hover:bg-muted/30 cursor-pointer transition-colors select-none">
-          <div className="flex items-center gap-3">
-            {open ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
-            <PhoneCall className="h-4 w-4 text-muted-foreground" />
-            <div>
+          <div className="flex items-center gap-3 min-w-0">
+            {open ? <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />}
+            <PhoneCall className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-sm font-medium font-mono">call {callId.slice(0, 8)}…</span>
                 {extNumber && (
                   <Badge variant="outline" className="text-xs font-mono px-1.5 py-0">ext {extNumber}</Badge>
                 )}
+                {fromNumber && (
+                  <span className="text-xs text-muted-foreground font-mono">{fromNumber}</span>
+                )}
                 <span className={`text-xs font-medium ${stateColor}`}>{stateLabel}</span>
               </div>
               <p className="text-xs text-muted-foreground">
-                {legs.length} leg{legs.length !== 1 ? "s" : ""} · {new Date(firstLeg.timestamp).toLocaleTimeString()}
+                {legs.length} leg{legs.length !== 1 ? "s" : ""}
+                {" · "}{new Date(firstLeg.timestamp).toLocaleTimeString()}
                 {hasEnded && ` → ${new Date(lastLeg.timestamp).toLocaleTimeString()}`}
+                {duration && ` · ${duration}`}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="shrink-0 ml-4">
             <span className="text-xs text-muted-foreground tabular-nums hidden sm:block">
               {new Date(firstLeg.timestamp).toLocaleDateString()}
             </span>
@@ -101,12 +129,7 @@ function CallRow({ callId, legs, extNumber }: { callId: string; legs: CallEvent[
             <div key={i} className="flex items-start gap-3 px-8 py-2.5">
               <div className="mt-0.5 shrink-0">{EVENT_ICONS[leg.event]}</div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-sm font-medium">{EVENT_LABELS[leg.event]}</span>
-                  {leg.detail && (
-                    <span className="text-xs text-muted-foreground italic truncate max-w-xs">"{leg.detail}"</span>
-                  )}
-                </div>
+                <span className="text-sm">{eventLabel(leg)}</span>
               </div>
               <time className="text-xs text-muted-foreground shrink-0 tabular-nums">
                 {new Date(leg.timestamp).toLocaleTimeString()}
@@ -135,41 +158,44 @@ export default function CallsPage() {
   const callGroups = React.useMemo(() => {
     if (!callEvents?.events?.length) return [];
     const grouped = groupEventsByCall(callEvents.events);
-    return Array.from(grouped.entries()).reverse();
+    return Array.from(grouped.entries()).reverse(); // most-recent first
   }, [callEvents]);
+
+  const activeCount = callEvents?.activeCallCount ?? 0;
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      {/* Page header — no active calls badge here */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Call History</h1>
-          <p className="text-muted-foreground mt-1">All call events recorded across your deployed extensions.</p>
+          <p className="text-muted-foreground mt-1 text-sm">All call events recorded across your deployed extensions.</p>
         </div>
-        <div className="flex items-center gap-3">
-          {callEvents && (
-            <Badge variant={callEvents.activeCallCount > 0 ? "default" : "secondary"} className="gap-1">
-              {callEvents.activeCallCount > 0 && (
-                <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />
-              )}
-              {callEvents.activeCallCount} active call{callEvents.activeCallCount !== 1 ? "s" : ""}
-            </Badge>
-          )}
-          <Button variant="outline" size="sm" className="gap-2" onClick={() => refetch()} disabled={isFetching}>
-            <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
-            Refresh
-          </Button>
-        </div>
+        <Button variant="outline" size="sm" className="gap-2" onClick={() => refetch()} disabled={isFetching}>
+          <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
+          Refresh
+        </Button>
       </div>
 
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
-            <PhoneCall className="h-4 w-4" />
-            All Calls
-            {callGroups.length > 0 && (
-              <Badge variant="secondary" className="ml-1">{callGroups.length}</Badge>
-            )}
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base flex items-center gap-2">
+              <PhoneCall className="h-4 w-4" />
+              All Calls
+              {/* Total call count */}
+              {callGroups.length > 0 && (
+                <Badge variant="secondary" className="ml-1">{callGroups.length}</Badge>
+              )}
+              {/* Active calls counter — shown right next to the label */}
+              {activeCount > 0 && (
+                <Badge variant="default" className="gap-1 ml-1">
+                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />
+                  {activeCount} active
+                </Badge>
+              )}
+            </CardTitle>
+          </div>
         </CardHeader>
         <CardContent className="p-0">
           {callGroups.length === 0 ? (

@@ -66,15 +66,39 @@ function groupEventsByCall(events: CallEvent[]): Map<string, CallEvent[]> {
   return map;
 }
 
+function eventLabel(ev: CallEvent): string {
+  switch (ev.event) {
+    case "invite":
+      return ev.detail ? `Incoming call from ${ev.detail}` : "Incoming call";
+    case "answered":
+      return "Answered";
+    case "connected_ai":
+      return ev.detail ? `AI responded — ${ev.detail}` : "AI responded";
+    case "ended":
+      return ev.detail ? `Call ended (${ev.detail})` : "Call ended";
+    case "error":
+      return ev.detail ? `Error: ${ev.detail}` : "Error";
+  }
+}
+
+function callDuration(legs: CallEvent[]): string | null {
+  if (legs.length < 2) return null;
+  const ms = new Date(legs[legs.length - 1].timestamp).getTime() - new Date(legs[0].timestamp).getTime();
+  if (ms < 0) return null;
+  const s = Math.floor(ms / 1000);
+  const m = Math.floor(s / 60);
+  return m > 0 ? `${m}m ${s % 60}s` : `${s}s`;
+}
+
 function CallAccordionRow({ callId, legs, extNumber }: { callId: string; legs: CallEvent[]; extNumber?: string }) {
   const [open, setOpen] = React.useState(false);
 
-  // Determine overall call state from legs
   const hasEnded = legs.some(l => l.event === "ended");
   const hasAI = legs.some(l => l.event === "connected_ai");
   const hasError = legs.some(l => l.event === "error");
   const firstLeg = legs[0];
   const lastLeg = legs[legs.length - 1];
+  const duration = callDuration(legs);
 
   const stateLabel = hasError ? "Error" : hasEnded ? "Ended" : hasAI ? "AI Active" : "Ringing";
   const stateColor = hasError
@@ -85,24 +109,31 @@ function CallAccordionRow({ callId, legs, extNumber }: { callId: string; legs: C
     ? "text-purple-600"
     : "text-blue-600";
 
+  const fromNumber = legs.find(l => l.event === "invite")?.detail;
+
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
       <CollapsibleTrigger asChild>
         <div className="flex items-center justify-between px-4 py-3 hover:bg-muted/30 cursor-pointer transition-colors select-none">
-          <div className="flex items-center gap-3">
-            {open ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
-            <PhoneCall className="h-4 w-4 text-muted-foreground" />
-            <div>
-              <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3 min-w-0">
+            {open ? <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />}
+            <PhoneCall className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-sm font-medium font-mono">call {callId.slice(0, 8)}…</span>
                 {extNumber && (
                   <Badge variant="outline" className="text-xs font-mono px-1.5 py-0">ext {extNumber}</Badge>
                 )}
+                {fromNumber && (
+                  <span className="text-xs text-muted-foreground font-mono">{fromNumber}</span>
+                )}
                 <span className={`text-xs font-medium ${stateColor}`}>{stateLabel}</span>
               </div>
               <p className="text-xs text-muted-foreground">
-                {legs.length} leg{legs.length !== 1 ? "s" : ""} · {new Date(firstLeg.timestamp).toLocaleTimeString()}
+                {legs.length} leg{legs.length !== 1 ? "s" : ""}
+                {" · "}{new Date(firstLeg.timestamp).toLocaleTimeString()}
                 {hasEnded && ` → ${new Date(lastLeg.timestamp).toLocaleTimeString()}`}
+                {duration && ` · ${duration}`}
               </p>
             </div>
           </div>
@@ -114,12 +145,7 @@ function CallAccordionRow({ callId, legs, extNumber }: { callId: string; legs: C
             <div key={i} className="flex items-start gap-3 px-8 py-2.5">
               <div className="mt-0.5 shrink-0">{EVENT_ICONS[leg.event]}</div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-sm font-medium">{EVENT_LABELS[leg.event]}</span>
-                  {leg.detail && (
-                    <span className="text-xs text-muted-foreground italic truncate max-w-xs">"{leg.detail}"</span>
-                  )}
-                </div>
+                <span className="text-sm">{eventLabel(leg)}</span>
               </div>
               <time className="text-xs text-muted-foreground shrink-0 tabular-nums">
                 {new Date(leg.timestamp).toLocaleTimeString()}
