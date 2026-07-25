@@ -323,11 +323,20 @@ export default function Dashboard() {
                 <p>No extensions yet.</p>
               </div>
             ) : (
-              <div>
-                {extensions.map(ext => (
-                  <AgentRow key={ext.id} ext={ext} status={statusMap.get(ext.id)} />
-                ))}
-              </div>
+              <>
+                <div>
+                  {extensions.slice(0, 5).map(ext => (
+                    <AgentRow key={ext.id} ext={ext} status={statusMap.get(ext.id)} />
+                  ))}
+                </div>
+                {extensions.length > 0 && (
+                  <div className="mt-3 flex justify-center">
+                    <Link href="/extensions">
+                      <Button variant="ghost" size="sm" className="text-xs h-7">View all</Button>
+                    </Link>
+                  </div>
+                )}
+              </>
             )}
           </CardContent>
         </Card>
