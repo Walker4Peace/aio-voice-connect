@@ -50,7 +50,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Plus, Building, Trash2 } from "lucide-react";
+import { Plus, Server, Trash2 } from "lucide-react";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
@@ -250,7 +250,7 @@ export default function ClientsList() {
               <TableRow>
                 <TableCell colSpan={4} className="text-center h-48 text-muted-foreground">
                   <div className="flex flex-col items-center justify-center gap-2">
-                    <Building className="h-8 w-8 text-muted-foreground/50" />
+                    <Server className="h-8 w-8 text-muted-foreground/50" />
                     <p>No IPBXs found.</p>
                     <Button variant="link" onClick={() => setOpen(true)}>Add your first IPBX</Button>
                   </div>
