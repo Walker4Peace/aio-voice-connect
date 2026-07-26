@@ -7,4 +7,4 @@ Vite artifact builds in this workspace require the same `PORT` and `BASE_PATH` e
 
 **Why:** Artifact Vite configs intentionally validate their runtime routing configuration at load time.
 
-**How to apply:** Use the artifact's configured values for standalone verification, such as `PORT=23208 BASE_PATH=/` for the SIP4AI manager and a dedicated port/base path for Canvas.
+**How to apply:** Use the artifact's configured values for standalone verification, such as `PORT=23208 BASE_PATH=/` for the SIP Agent manager and a dedicated port/base path for Canvas.

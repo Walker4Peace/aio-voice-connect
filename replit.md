@@ -1,11 +1,11 @@
-# SIP4AI Configuration Manager
+# SIP Agent Configuration Manager
 
 A web dashboard for Yeastar solution providers to manage AI voice agent deployments. Onboard a new client, configure any AI provider, and generate ready-to-use `config.json` + systemd service files in under 2 minutes.
 
 ## Run & Operate
 
 - `pnpm --filter @workspace/api-server run dev` — run the API server (port 8080, served at /api)
-- `pnpm --filter @workspace/sip4ai-manager run dev` — run the frontend (served at /)
+- `pnpm --filter @workspace/sip-agent-manager run dev` — run the frontend (served at /)
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
@@ -27,7 +27,7 @@ A web dashboard for Yeastar solution providers to manage AI voice agent deployme
 - `lib/api-spec/openapi.yaml` — OpenAPI spec (single source of truth for all API contracts)
 - `lib/db/src/schema/` — Drizzle schema: clients, extensions, agentConfigs, relations
 - `artifacts/api-server/src/routes/` — Express route handlers: clients, extensions, agentConfigs, stats, generate
-- `artifacts/sip4ai-manager/src/` — React frontend
+- `artifacts/sip-agent-manager/src/` — React frontend
 
 ## Architecture decisions
 

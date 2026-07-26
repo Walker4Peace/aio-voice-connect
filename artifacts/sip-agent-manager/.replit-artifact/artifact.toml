@@ -1,8 +1,8 @@
 kind = "web"
 previewPath = "/"
-title = "SIP4AI Manager"
+title = "SIP Agent Manager"
 version = "1.0.0"
-id = "artifacts/sip4ai-manager"
+id = "artifacts/sip-agent-manager"
 router = "path"
 
 [[services]]
@@ -11,12 +11,12 @@ paths = [ "/" ]
 localPort = 23208
 
 [services.development]
-run = "pnpm --filter @workspace/sip4ai-manager run dev"
+run = "pnpm --filter @workspace/sip-agent-manager run dev"
 
 [services.production]
-build = [ "pnpm", "--filter", "@workspace/sip4ai-manager", "run", "build" ]
+build = [ "pnpm", "--filter", "@workspace/sip-agent-manager", "run", "build" ]
 serve = "static"
-publicDir = "artifacts/sip4ai-manager/dist/public"
+publicDir = "artifacts/sip-agent-manager/dist/public"
 
 [[services.production.rewrites]]
 from = "/*"

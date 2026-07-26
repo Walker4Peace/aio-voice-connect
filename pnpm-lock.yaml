@@ -403,7 +403,7 @@ importers:
         specifier: 'catalog:'
         version: 3.25.76
 
-  artifacts/sip4ai-manager:
+  artifacts/sip-agent-manager:
     devDependencies:
       '@hookform/resolvers':
         specifier: ^3.10.0

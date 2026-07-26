@@ -13,7 +13,7 @@ type AiProviderKey = "openai" | "elevenlabs" | "gemini" | "deepgram" | "cartesia
 
 function serviceNameFor(ext: ExtensionWithRelations): string {
   const suffix = ext.extensionNumber.replace(/[^a-zA-Z0-9_.@-]/g, "-");
-  return `sip4ai-${suffix || ext.id}`;
+  return `sip-agent-${suffix || ext.id}`;
 }
 
 const PROVIDER_ENV_KEYS: Record<AiProviderKey, string> = {
@@ -126,16 +126,16 @@ async function buildServiceFile(ext: ExtensionWithRelations): Promise<string | n
   // can run simultaneously without overwriting each other's config.json.
   // WorkingDirectory stays at the always-present parent; the per-extension
   // config directory is created by ExecStartPre before the process starts.
-  const configDir = `/opt/sip4ai/ext-${extensionNumber}`;
+  const configDir = `/opt/sip-agent/ext-${extensionNumber}`;
   const configPath = `${configDir}/config.json`;
   const serviceName = serviceNameFor(ext);
 
   return `[Unit]
-Description=SIP4AI Voice Agent - Extension ${extensionNumber}
+Description=SIP Agent Voice Agent - Extension ${extensionNumber}
 After=network.target
 
 [Service]
-WorkingDirectory=/opt/sip4ai
+WorkingDirectory=/opt/sip-agent
 ExecStartPre=/bin/mkdir -p ${configDir}
 Environment=CONFIG_FILE=${configPath}
 Environment=SIP_USERNAME=${sipUsername}
@@ -147,7 +147,7 @@ Environment=SIP_LOCAL_PORT=${sipLocalPort}
 Environment=HTTP_PORT=${httpPort}
 Environment=SIP_OVERRIDE_PORT=${sipLocalPort}
 Environment=${providerEnvKey}=${cfg.apiKey}
-ExecStart=/usr/local/bin/sip4ai
+ExecStart=/usr/local/bin/sip-agent
 Restart=always
 RestartSec=5
 

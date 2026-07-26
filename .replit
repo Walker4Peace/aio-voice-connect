@@ -22,7 +22,7 @@ args = "artifacts/api-server: API Server"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "artifacts/sip4ai-manager: web"
+args = "artifacts/sip-agent-manager: web"
 
 [[workflows.workflow]]
 name = "artifacts/api-server: API Server"
@@ -37,7 +37,7 @@ args = "PORT=8080 pnpm --filter @workspace/api-server run dev"
 waitForPort = 8080
 
 [[workflows.workflow]]
-name = "artifacts/sip4ai-manager: web"
+name = "artifacts/sip-agent-manager: web"
 author = "agent"
 
 [workflows.workflow.metadata]
@@ -45,7 +45,7 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "PORT=23208 BASE_PATH=/ pnpm --filter @workspace/sip4ai-manager run dev"
+args = "PORT=23208 BASE_PATH=/ pnpm --filter @workspace/sip-agent-manager run dev"
 waitForPort = 23208
 
 [agent]

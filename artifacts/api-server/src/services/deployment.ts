@@ -5,9 +5,9 @@ import { db, extensionsTable, deploymentsTable, callEventsTable, type Deployment
 import { eq, inArray, and } from "drizzle-orm";
 import { logger } from "../lib/logger.js";
 
-const SIP4AI_BIN =
-  process.env["SIP4AI_BIN"] ?? "/home/runner/workspace/.bin/sip4ai";
-const CONFIG_DIR = "/tmp/sip4ai";
+const SIP_AGENT_BIN =
+  process.env["SIP_AGENT_BIN"] ?? "/home/runner/workspace/.bin/sip-agent";
+const CONFIG_DIR = "/tmp/sip-agent";
 const MAX_LOG_LINES = 300;
 // Ports must be exactly 4 digits so they fit in the binary patch (replaces ':5060').
 // Range: 7060–7998 (200 extensions, step 2 for SIP).
@@ -211,7 +211,7 @@ function buildConfig(
   const sipDomain = ext.client?.sipDomain ?? "";
   const sipServer = ext.client?.sipServer ?? "";
   // Each extension gets unique ports so multiple instances can coexist:
-  //   api_port  19000 + id  (sip4ai's own HTTP API, unused by us but must not conflict)
+  //   api_port  19000 + id  (sip-agent's own HTTP API, unused by us but must not conflict)
   //   sip.listen  25060 + id  (local UDP port the SIP stack binds for send/receive)
   // api_port: use a unique port per extension to avoid conflicts with the
   // Express API server (8080) and other extension instances.
@@ -281,7 +281,7 @@ function buildConfig(
 
 function serviceNameFor(ext: NonNullable<Awaited<ReturnType<typeof getExtWithRelations>>>): string {
   const suffix = ext.extensionNumber.replace(/[^a-zA-Z0-9_.@-]/g, "-");
-  return `sip4ai-${suffix || ext.id}`;
+  return `sip-agent-${suffix || ext.id}`;
 }
 
 function buildEnv(ext: NonNullable<Awaited<ReturnType<typeof getExtWithRelations>>>, configPath: string): Record<string, string> {
@@ -326,7 +326,7 @@ async function upsertDeployment(extensionId: number, patch: Partial<Omit<Deploym
 }
 
 /**
- * Copy the sip4ai binary for this extension and patch the first ':5060'
+ * Copy the sip-agent binary for this extension and patch the first ':5060'
  * occurrence (the local SIP listener default) to ':XXXX' where XXXX is the
  * allocated 4-digit port.  The binary is statically linked Go so LD_PRELOAD
  * cannot intercept its syscalls — per-extension binary patching is the only
@@ -341,23 +341,23 @@ async function getPatchedBinary(extensionId: number, sipLocalPort: number): Prom
     );
   }
 
-  const patchedPath = path.join(CONFIG_DIR, String(extensionId), "sip4ai");
+  const patchedPath = path.join(CONFIG_DIR, String(extensionId), "sip-agent");
 
-  const original = await fs.readFile(SIP4AI_BIN);
+  const original = await fs.readFile(SIP_AGENT_BIN);
   const patched = Buffer.from(original);
 
   const needle = Buffer.from(":5060");
   const idx = patched.indexOf(needle);
   if (idx === -1) {
     // Binary doesn't hard-code :5060 — copy as-is and let config drive the port.
-    logger.warn({ extensionId }, "sip4ai binary does not contain ':5060' literal; using unpatched copy");
+    logger.warn({ extensionId }, "sip-agent binary does not contain ':5060' literal; using unpatched copy");
     await fs.writeFile(patchedPath, patched, { mode: 0o755 });
     return patchedPath;
   }
 
   // Patch in-place: ':5060' → ':{portStr}' (same byte length: 5 bytes each)
   Buffer.from(":" + portStr).copy(patched, idx);
-  logger.info({ extensionId, sipLocalPort, offset: idx }, "Patched sip4ai binary local SIP port");
+  logger.info({ extensionId, sipLocalPort, offset: idx }, "Patched sip-agent binary local SIP port");
 
   await fs.writeFile(patchedPath, patched, { mode: 0o755 });
   return patchedPath;
@@ -435,7 +435,7 @@ export async function startExtension(extensionId: number): Promise<void> {
   // SIP listener becomes the allocated port.  The binary is statically linked
   // Go, so LD_PRELOAD cannot intercept its syscalls.
   const patchedBin = await getPatchedBinary(extensionId, sipLocalPort);
-  logger.info({ extensionId, patchedBin, sipLocalPort }, "Spawning patched sip4ai");
+  logger.info({ extensionId, patchedBin, sipLocalPort }, "Spawning patched sip-agent");
 
   // stdbuf forces line-buffered stdout/stderr so log lines (including BYE events)
   // are delivered to this process immediately instead of waiting for the buffer to
@@ -494,13 +494,13 @@ export async function startExtension(extensionId: number): Promise<void> {
     const wasKilled = signal === "SIGTERM" || signal === "SIGKILL";
     const status = wasKilled ? "stopped" : code === 0 ? "stopped" : "error";
     const lastError = (!wasKilled && code !== 0) ? `Process exited with code ${code}` : null;
-    logger.info({ extensionId, code, signal }, "sip4ai process exited");
+    logger.info({ extensionId, code, signal }, "sip-agent process exited");
     upsertDeployment(extensionId, { status, pid: null, lastStoppedAt: new Date(), lastError, sipRegistered: false }).catch(() => {});
   });
 
   proc.on("error", (err) => {
     processes.delete(extensionId);
-    logger.error({ extensionId, err }, "sip4ai process error");
+    logger.error({ extensionId, err }, "sip-agent process error");
     upsertDeployment(extensionId, { status: "error", pid: null, lastError: err.message, sipRegistered: false }).catch(() => {});
   });
 }
