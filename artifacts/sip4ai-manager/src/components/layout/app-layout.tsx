@@ -6,9 +6,9 @@ import { Button } from "@/components/ui/button";
 
 const navItems = [
   { name: "Dashboard", href: "/", icon: Activity },
-  { name: "IPBXs", href: "/ipbxs", icon: Users },
+  { name: "IPBXs", href: "/ipbxs", icon: Server },
   { name: "AI Agents", href: "/agent-configs", icon: Bot },
-  { name: "Extensions", href: "/extensions", icon: Phone },
+  { name: "Extensions", href: "/extensions", icon: Users },
   { name: "Call History", href: "/calls", icon: PhoneCall },
   { name: "Logs", href: "/logs", icon: ScrollText },
 ];
