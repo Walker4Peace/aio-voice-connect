@@ -9,15 +9,19 @@
 #   sudo bash install.sh
 #
 # What this does:
-#   1. Installs system dependencies (Node.js, pnpm, PostgreSQL, nginx)
-#   2. Clones the repository
-#   3. Sets up the PostgreSQL database and user
-#   4. Generates the .env configuration file
-#   5. Installs project dependencies and builds everything
-#   6. Runs database migrations
-#   7. Creates and starts a systemd service
-#   8. Configures nginx as a reverse proxy on port 3100
-#   9. Verifies that every component is healthy
+#   1. Pre-flight checks (OS, arch, RAM, disk, network, ports, PostgreSQL)
+#   2. Installs system dependencies (Node.js, pnpm, PostgreSQL, nginx)
+#   3. Creates a dedicated system user
+#   4. Clones the repository
+#   5. Verifies the sip-agent binary
+#   6. Configures PostgreSQL (user + database)
+#   7. Generates the .env configuration file
+#   8. Installs Node.js dependencies
+#   9. Type-checks and builds all packages (frontend + backend)
+#  10. Runs database migrations
+#  11. Creates and starts a systemd service
+#  12. Configures nginx as a reverse proxy on port 3100
+#  13. Verifies that every component is healthy
 #
 # After installation:
 #   Dashboard: http://<SERVER-IP>:3100
@@ -58,6 +62,68 @@ SESSION_SECRET="$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 48 2>/dev/null || o
 # ── Pre-flight checks ─────────────────────────────────────────────────────────
 [[ "${EUID}" -ne 0 ]] && die "This script must be run as root.\n\n  Try: sudo bash install.sh\n  or:  curl -fsSL https://your-domain/install.sh | sudo bash"
 
+# 1. OS — Ubuntu 22.04 or newer
+if [[ -f /etc/os-release ]]; then
+    . /etc/os-release
+    if [[ "${ID}" != "ubuntu" ]]; then
+        die "Unsupported OS: ${PRETTY_NAME:-${ID}}. This installer requires Ubuntu 22.04 or newer."
+    fi
+    OS_VER_MAJOR="${VERSION_ID%%.*}"
+    OS_VER_MINOR="${VERSION_ID##*.}"
+    if [[ "${OS_VER_MAJOR}" -lt 22 ]] || { [[ "${OS_VER_MAJOR}" -eq 22 ]] && [[ "${OS_VER_MINOR}" -lt 4 ]]; }; then
+        die "Ubuntu ${VERSION_ID} is not supported. Please use Ubuntu 22.04 or newer."
+    fi
+else
+    die "/etc/os-release not found. Cannot determine OS. This installer requires Ubuntu 22.04 or newer."
+fi
+
+# 2. CPU architecture — x86_64 or aarch64 only
+ARCH="$(uname -m)"
+if [[ "${ARCH}" != "x86_64" && "${ARCH}" != "aarch64" ]]; then
+    die "Unsupported CPU architecture: ${ARCH}. This installer supports x86_64 and aarch64 only."
+fi
+
+# 3. Minimum RAM — 1 GB hard minimum, warn below 2 GB
+TOTAL_RAM_KB="$(grep -i MemTotal /proc/meminfo | awk '{print $2}')"
+TOTAL_RAM_MB=$(( TOTAL_RAM_KB / 1024 ))
+if [[ "${TOTAL_RAM_MB}" -lt 1024 ]]; then
+    die "Insufficient RAM: ${TOTAL_RAM_MB} MB detected. At least 1 GB is required (2 GB recommended)."
+fi
+if [[ "${TOTAL_RAM_MB}" -lt 2048 ]]; then
+    warn "Low RAM: ${TOTAL_RAM_MB} MB detected. 2 GB or more is recommended for stable operation."
+fi
+
+# 4. Free disk space — 3 GB minimum on the install partition
+INSTALL_PARENT="$(dirname "${INSTALL_DIR}")"
+mkdir -p "${INSTALL_PARENT}"
+FREE_KB="$(df -k "${INSTALL_PARENT}" | tail -1 | awk '{print $4}')"
+FREE_MB=$(( FREE_KB / 1024 ))
+if [[ "${FREE_MB}" -lt 3072 ]]; then
+    die "Insufficient disk space: ${FREE_MB} MB free on $(df -k "${INSTALL_PARENT}" | tail -1 | awk '{print $6}'). At least 3 GB is required."
+fi
+
+# 5. Internet connectivity
+if ! curl -fsSL --max-time 10 https://registry.npmjs.org/ >/dev/null 2>&1; then
+    die "No internet access or npm registry unreachable. Please check your network connection."
+fi
+
+# 6. Required ports must be free
+for PORT_CHECK in "${API_PORT}" "${DASHBOARD_PORT}"; do
+    if ss -tlnp 2>/dev/null | grep -q ":${PORT_CHECK} " || \
+       netstat -tlnp 2>/dev/null | grep -q ":${PORT_CHECK} "; then
+        die "Port ${PORT_CHECK} is already in use. Free the port or change the configuration at the top of this script."
+    fi
+done
+
+# 7. PostgreSQL — available via apt or already installed
+if ! command -v psql &>/dev/null; then
+    if ! apt-cache show postgresql >/dev/null 2>&1; then
+        die "PostgreSQL is not installed and cannot be found in the apt package cache. Check your apt sources."
+    fi
+fi
+
+# ─────────────────────────────────────────────────────────────────────────────
+
 # Detect the server's primary IP address for the final message
 SERVER_IP="$(hostname -I 2>/dev/null | awk '{print $1}')"
 [[ -z "${SERVER_IP}" ]] && SERVER_IP="<your-server-ip>"
@@ -72,6 +138,10 @@ echo -e "${BOLD}SIP Agent Installer${NC}"
 echo -e "Server IP  : ${SERVER_IP}"
 echo -e "Install dir: ${INSTALL_DIR}"
 echo -e "Dashboard  : http://${SERVER_IP}:${DASHBOARD_PORT}"
+echo -e "OS         : ${PRETTY_NAME}"
+echo -e "Arch       : ${ARCH}"
+echo -e "RAM        : ${TOTAL_RAM_MB} MB"
+echo -e "Free disk  : ${FREE_MB} MB"
 echo ""
 
 # ── Step 1: System dependencies ───────────────────────────────────────────────
@@ -222,32 +292,32 @@ step "Installing project dependencies (this may take a few minutes)"
 sudo -u "${APP_USER}" bash -c "
     set -e
     cd '${INSTALL_DIR}'
-    pnpm install --frozen-lockfile 2>&1
-" || die "pnpm install failed. Check the output above."
+    if [[ -f pnpm-lock.yaml ]]; then
+        echo '[INFO]  Lock file found — using --frozen-lockfile'
+        pnpm install --frozen-lockfile 2>&1
+    else
+        echo '[WARN]  No lock file found — falling back to pnpm install'
+        pnpm install 2>&1
+    fi
+" || die "pnpm install failed. Check the output above for details."
 success "Node.js dependencies installed"
 
-# ── Step 8: Build backend ─────────────────────────────────────────────────────
-step "Building API server"
+# ── Step 8: Type-check and build (frontend + backend) ─────────────────────────
+# The root build script runs: pnpm run typecheck && pnpm -r --if-present run build
+# This builds all workspace packages in the correct dependency order and
+# prevents enabling a broken service by running typecheck first.
+step "Type-checking and building all packages (this may take a few minutes)"
 
 sudo -u "${APP_USER}" bash -c "
     set -e
     cd '${INSTALL_DIR}'
-    pnpm --filter @workspace/api-server run build 2>&1
-" || die "API server build failed."
-success "API server built → artifacts/api-server/dist/index.mjs"
+    # BASE_PATH=/ because nginx serves the SPA from the root of port 3100.
+    # NODE_ENV=production suppresses dev-only Vite plugins.
+    BASE_PATH=/ NODE_ENV=production pnpm run build 2>&1
+" || die "Build failed (typecheck or compilation error). Fix the errors above before re-running the installer."
+success "All packages type-checked and built"
 
-# ── Step 9: Build frontend ────────────────────────────────────────────────────
-step "Building dashboard frontend"
-
-# BASE_PATH=/ because nginx serves the SPA from the root of port 3100
-sudo -u "${APP_USER}" bash -c "
-    set -e
-    cd '${INSTALL_DIR}'
-    BASE_PATH=/ NODE_ENV=production pnpm --filter @workspace/sip-agent-manager run build 2>&1
-" || die "Frontend build failed."
-success "Frontend built → artifacts/sip-agent-manager/dist/public"
-
-# ── Step 10: Database migrations ──────────────────────────────────────────────
+# ── Step 10: Database migrations ─────────────────────────────────────────────
 step "Running database migrations"
 
 sudo -u "${APP_USER}" bash -c "
