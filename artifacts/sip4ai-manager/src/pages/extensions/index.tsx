@@ -59,7 +59,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Plus, Phone, Trash2 } from "lucide-react";
+import { Plus, Users, Trash2 } from "lucide-react";
 import { useAllDeployStatuses, statusLabel, statusColor } from "@/hooks/use-deploy";
 
 const formSchema = z.object({
@@ -333,7 +333,7 @@ export default function ExtensionsList() {
               <TableRow>
                 <TableCell colSpan={5} className="text-center h-48 text-muted-foreground">
                   <div className="flex flex-col items-center justify-center gap-2">
-                    <Phone className="h-8 w-8 text-muted-foreground/50" />
+                    <Users className="h-8 w-8 text-muted-foreground/50" />
                     <p>No extensions configured.</p>
                     <Button variant="link" onClick={() => setOpen(true)}>Add your first extension</Button>
                   </div>
