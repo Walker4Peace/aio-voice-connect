@@ -49,8 +49,8 @@ NODE_MAJOR="20"          # Match the Node.js version used in development
 API_PORT=3101            # Internal port for the Node.js API server
 DASHBOARD_PORT=3100      # Public-facing port served by nginx
 
-DB_NAME="sip-agent"
-DB_USER="sip-agent"
+DB_NAME="sip_agent"
+DB_USER="sip_agent"
 # Generate a random 24-character alphanumeric password
 DB_PASS="$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 24 2>/dev/null || openssl rand -hex 16)"
 SESSION_SECRET="$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 48 2>/dev/null || openssl rand -hex 32)"
