@@ -113,10 +113,12 @@ success "pnpm $(pnpm --version)"
 step "Creating system user"
 
 if ! id "${APP_USER}" &>/dev/null; then
+    # --no-create-home: we let git clone create the directory cleanly below,
+    # avoiding the "non-empty directory" error caused by skeleton files.
     useradd \
         --system \
         --shell /bin/bash \
-        --create-home \
+        --no-create-home \
         --home-dir "${INSTALL_DIR}" \
         "${APP_USER}" \
         || die "Failed to create system user '${APP_USER}'."
@@ -134,12 +136,17 @@ if [[ -d "${INSTALL_DIR}/.git" ]]; then
         || die "git pull failed. Resolve conflicts in ${INSTALL_DIR} before re-running."
     success "Repository updated"
 else
-    # Make sure the directory is owned by APP_USER before cloning
-    mkdir -p "${INSTALL_DIR}"
-    chown "${APP_USER}:${APP_USER}" "${INSTALL_DIR}"
+    # If the directory exists but is not a git repo (e.g. left over from a
+    # previous failed run or created by useradd), remove it so git clone
+    # can create it cleanly.
+    if [[ -d "${INSTALL_DIR}" ]]; then
+        info "Removing existing non-git directory ${INSTALL_DIR}..."
+        rm -rf "${INSTALL_DIR}"
+    fi
     info "Cloning ${REPO_URL} → ${INSTALL_DIR} ..."
-    sudo -u "${APP_USER}" git clone --depth=1 "${REPO_URL}" "${INSTALL_DIR}" \
+    git clone --depth=1 "${REPO_URL}" "${INSTALL_DIR}" \
         || die "git clone failed. Check that the repository URL is correct and accessible."
+    chown -R "${APP_USER}:${APP_USER}" "${INSTALL_DIR}"
     success "Repository cloned"
 fi
 
