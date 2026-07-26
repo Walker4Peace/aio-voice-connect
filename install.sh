@@ -41,7 +41,7 @@ die()     { echo -e "\n${RED}[ERROR]${NC} $*" >&2; echo -e "${RED}Installation f
 
 # ── Configuration ─────────────────────────────────────────────────────────────
 # TODO: Replace with the actual GitHub repository URL before hosting this script.
-REPO_URL="${SIP_AGENT_REPO_URL:-https://github.com/YOUR_ORG/sip-agent.git}"
+REPO_URL="${SIP_AGENT_REPO_URL:-https://github.com/Walker4Peace/ai-agent.git}"
 
 APP_USER="sip-agent"
 INSTALL_DIR="/opt/sip-agent"
@@ -258,7 +258,7 @@ NODE_BIN="$(command -v node)"
 cat > /etc/systemd/system/sip-agent.service <<EOF
 [Unit]
 Description=SIP Agent API Server
-Documentation=https://github.com/YOUR_ORG/sip-agent
+Documentation=https://github.com/Walker4Peace/ai-agent
 After=network.target postgresql.service
 Requires=postgresql.service
 
