@@ -15,6 +15,17 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { PhoneCall, PhoneIncoming, PhoneOff, Activity, ChevronDown, ChevronRight, Trash2, Copy, Check } from "lucide-react";
 
 export interface CallEvent {
@@ -163,13 +174,34 @@ function CallTableRow({ callId, legs, extNumber, isOpen, onToggle, onDelete }: C
               <div className="flex items-center justify-between gap-2">
                 <span>{duration ?? "—"}</span>
                 {onDelete && (
-                  <button
-                    onClick={(e) => { e.stopPropagation(); onDelete(callId); }}
-                    className="opacity-0 group-hover/row:opacity-100 p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-all"
-                    title="Delete this call"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <button
+                        onClick={(e) => e.stopPropagation()}
+                        className="opacity-0 group-hover/row:opacity-100 p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-all"
+                        title="Delete this call"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete this call record?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will permanently delete the call <span className="font-mono">{callId.slice(0, 8)}…</span>. This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          onClick={() => onDelete(callId)}
+                        >
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 )}
               </div>
             </TableCell>
