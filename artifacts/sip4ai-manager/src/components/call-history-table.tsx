@@ -15,7 +15,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { PhoneCall, PhoneIncoming, PhoneOff, Activity, ChevronDown, ChevronRight, Trash2 } from "lucide-react";
+import { PhoneCall, PhoneIncoming, PhoneOff, Activity, ChevronDown, ChevronRight, Trash2, Copy, Check } from "lucide-react";
 
 export interface CallEvent {
   extensionId: number;
@@ -29,6 +29,30 @@ export interface Extension {
   id: number;
   extensionNumber: string;
   displayName?: string | null;
+}
+
+// ── CopyButton ─────────────────────────────────────────────────────────────
+
+function CopyButton({ value }: { value: string }) {
+  const [copied, setCopied] = React.useState(false);
+  const handleCopy = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(value).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    });
+  };
+  return (
+    <button
+      onClick={handleCopy}
+      className="p-0.5 rounded hover:bg-muted text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+      title={value}
+    >
+      {copied
+        ? <Check className="h-3 w-3 text-green-500" />
+        : <Copy className="h-3 w-3" />}
+    </button>
+  );
 }
 
 // ── helpers ────────────────────────────────────────────────────────────────
@@ -122,8 +146,8 @@ function CallTableRow({ callId, legs, extNumber, isOpen, onToggle, onDelete }: C
                 {isOpen
                   ? <ChevronDown  className="h-3.5 w-3.5 shrink-0" />
                   : <ChevronRight className="h-3.5 w-3.5 shrink-0" />}
-                <span>{callId.slice(0, 12)}…</span>
-                <span className={`text-[10px] font-medium ${stateColor}`}>{stateLabel}</span>
+                <span>{callId.slice(0, 8)}…</span>
+                <CopyButton value={callId} />
               </div>
             </TableCell>
             {/* Caller */}
