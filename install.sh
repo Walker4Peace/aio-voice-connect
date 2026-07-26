@@ -303,19 +303,32 @@ sudo -u "${APP_USER}" bash -c "
 success "Node.js dependencies installed"
 
 # ── Step 8: Type-check and build (frontend + backend) ─────────────────────────
-# The root build script runs: pnpm run typecheck && pnpm -r --if-present run build
-# This builds all workspace packages in the correct dependency order and
-# prevents enabling a broken service by running typecheck first.
+# Type-check uses the root script (covers all workspace packages).
+# Build targets only the two production artifacts — Replit-specific dev tools
+# such as mockup-sandbox are intentionally excluded.
 step "Type-checking and building all packages (this may take a few minutes)"
+
+sudo -u "${APP_USER}" bash -c "
+    set -e
+    cd '${INSTALL_DIR}'
+    echo '[INFO]  Running type-check...'
+    pnpm run typecheck 2>&1
+" || die "Type-check failed. Fix the TypeScript errors above before re-running the installer."
+success "Type-check passed"
+
+step "Building production artifacts"
 
 sudo -u "${APP_USER}" bash -c "
     set -e
     cd '${INSTALL_DIR}'
     # BASE_PATH=/ because nginx serves the SPA from the root of port 3100.
     # NODE_ENV=production suppresses dev-only Vite plugins.
-    BASE_PATH=/ NODE_ENV=production pnpm run build 2>&1
-" || die "Build failed (typecheck or compilation error). Fix the errors above before re-running the installer."
-success "All packages type-checked and built"
+    echo '[INFO]  Building API server...'
+    NODE_ENV=production pnpm --filter @workspace/api-server run build 2>&1
+    echo '[INFO]  Building dashboard frontend...'
+    BASE_PATH=/ NODE_ENV=production pnpm --filter @workspace/sip-agent-manager run build 2>&1
+" || die "Build failed. Fix the errors above before re-running the installer."
+success "API server and dashboard built successfully"
 
 # ── Step 10: Database migrations ─────────────────────────────────────────────
 step "Running database migrations"
