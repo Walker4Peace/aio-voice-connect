@@ -28,7 +28,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { ProviderBadge } from "@/components/provider-badge";
-import { Plus, Server, Trash2 } from "lucide-react";
+import { Plus, Bot, Trash2 } from "lucide-react";
 
 export default function AgentConfigsList() {
   const { data: configs, isLoading } = useListAgentConfigs();
@@ -92,7 +92,7 @@ export default function AgentConfigsList() {
               <TableRow>
                 <TableCell colSpan={5} className="text-center h-48 text-muted-foreground">
                   <div className="flex flex-col items-center justify-center gap-2">
-                    <Server className="h-8 w-8 text-muted-foreground/50" />
+                    <Bot className="h-8 w-8 text-muted-foreground/50" />
                     <p>No agents configured yet.</p>
                     <Link href="/agent-configs/new">
                       <Button variant="link">Create your first AI agent</Button>
