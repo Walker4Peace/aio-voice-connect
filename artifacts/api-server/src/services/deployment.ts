@@ -1,6 +1,7 @@
 import { spawn, ChildProcess } from "child_process";
 import path from "path";
 import fs from "fs/promises";
+import net from "net";
 import { db, extensionsTable, deploymentsTable, callEventsTable, type Deployment } from "@workspace/db";
 import { eq, inArray, and } from "drizzle-orm";
 import { logger } from "../lib/logger.js";
@@ -34,6 +35,87 @@ const processes = new Map<number, ProcessInfo>();
 // Keeps the last logs for an extension even after the process exits,
 // so crash output is readable from the UI without restarting the extension.
 const exitedLogs = new Map<number, string[]>();
+
+// ── Watchdog ───────────────────────────────────────────────────────────────
+// Extensions opted-in to automatic restart when the Yeastar server comes back
+const watchdogEnabled = new Set<number>();
+// Extensions intentionally stopped by the user — watchdog must NOT restart these
+const manuallyStopped = new Set<number>();
+// Active interval timers pinging the Yeastar server
+const watchdogTimers = new Map<number, ReturnType<typeof setInterval>>();
+const WATCHDOG_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+
+function cancelWatchdog(extensionId: number): void {
+  const t = watchdogTimers.get(extensionId);
+  if (t) {
+    clearInterval(t);
+    watchdogTimers.delete(extensionId);
+  }
+}
+
+function pingTcp(host: string, port: number, timeoutMs = 5000): Promise<boolean> {
+  return new Promise((resolve) => {
+    const sock = new net.Socket();
+    const timer = setTimeout(() => { sock.destroy(); resolve(false); }, timeoutMs);
+    sock.on("connect", () => { clearTimeout(timer); sock.destroy(); resolve(true); });
+    sock.on("error",   () => { clearTimeout(timer); resolve(false); });
+    sock.connect(port, host);
+  });
+}
+
+async function runWatchdog(extensionId: number): Promise<void> {
+  // Already running or manually stopped — nothing to do
+  if (processes.has(extensionId) || manuallyStopped.has(extensionId)) {
+    cancelWatchdog(extensionId);
+    return;
+  }
+  const ext = await getExtWithRelations(extensionId);
+  const sipServer = ext?.client?.sipServer ?? "";
+  if (!sipServer) {
+    addSystemLog(`Watchdog ext ${extensionId}: no SIP server configured, stopping watchdog`);
+    cancelWatchdog(extensionId);
+    return;
+  }
+  const [host, portStr] = sipServer.includes(":") ? sipServer.split(":") : [sipServer, "5060"];
+  const port = Number(portStr) || 5060;
+  addSystemLog(`Watchdog ext ${extensionId}: pinging ${host}:${port}`);
+  const reachable = await pingTcp(host, port);
+  if (reachable) {
+    addSystemLog(`Watchdog ext ${extensionId}: Yeastar reachable — restarting extension`);
+    cancelWatchdog(extensionId);
+    startExtension(extensionId).catch((err) => {
+      addSystemLog(`Watchdog ext ${extensionId}: restart failed — ${(err as Error).message}`);
+      // Schedule a fresh watchdog so we retry on the next window
+      scheduleWatchdog(extensionId);
+    });
+  } else {
+    addSystemLog(`Watchdog ext ${extensionId}: Yeastar unreachable, will retry`);
+  }
+}
+
+function scheduleWatchdog(extensionId: number): void {
+  cancelWatchdog(extensionId);
+  addSystemLog(`Watchdog ext ${extensionId}: monitoring started (ping every 5 min)`);
+  const t = setInterval(() => { runWatchdog(extensionId).catch(() => {}); }, WATCHDOG_INTERVAL_MS);
+  watchdogTimers.set(extensionId, t);
+}
+
+export function setWatchdogEnabled(extensionId: number, enabled: boolean): void {
+  if (enabled) {
+    watchdogEnabled.add(extensionId);
+  } else {
+    watchdogEnabled.delete(extensionId);
+    cancelWatchdog(extensionId);
+    addSystemLog(`Watchdog ext ${extensionId}: disabled`);
+  }
+}
+
+export function getWatchdogState(extensionId: number): { enabled: boolean; pinging: boolean } {
+  return {
+    enabled: watchdogEnabled.has(extensionId),
+    pinging: watchdogTimers.has(extensionId),
+  };
+}
 
 // Persistent call event store — survives extension stop/restart (cleared only on server restart)
 const MAX_PERSISTED_EVENTS = 200;
@@ -111,7 +193,14 @@ function parseAndStoreCallEvents(extensionId: number, line: string, timestamp: s
   // ── Call ended / BYE ─────────────────────────────────────────────────────
   const byeMatch = body.match(/(?:Call ended|BYE received for call).*?:\s*(\S+)/i);
   if (byeMatch) {
-    pushEvent({ extensionId, callId: normalizeCallId(byeMatch[1]), event: "ended", timestamp });
+    const callId = normalizeCallId(byeMatch[1]);
+    // Deduplicate: skip if an ended event already exists for this call
+    const alreadyEnded = persistedCallEvents.some(
+      e => e.extensionId === extensionId && e.callId === callId && e.event === "ended"
+    );
+    if (!alreadyEnded) {
+      pushEvent({ extensionId, callId, event: "ended", timestamp });
+    }
     return;
   }
 
@@ -396,6 +485,11 @@ async function allocatePorts(extensionId: number): Promise<{ sipLocalPort: numbe
 
 export async function startExtension(extensionId: number): Promise<void> {
   addSystemLog(`Starting extension ${extensionId}`);
+  // Clear manual-stop flag so watchdog can fire after future crashes
+  manuallyStopped.delete(extensionId);
+  // Cancel any pending watchdog ping (we're starting fresh)
+  cancelWatchdog(extensionId);
+
   const ext = await getExtWithRelations(extensionId);
   if (!ext) throw new Error("Extension not found");
   if (!ext.agentConfig) throw new Error("No AI agent config assigned. Select an Agent in the extension settings first.");
@@ -496,6 +590,11 @@ export async function startExtension(extensionId: number): Promise<void> {
     const lastError = (!wasKilled && code !== 0) ? `Process exited with code ${code}` : null;
     logger.info({ extensionId, code, signal }, "sip-agent process exited");
     upsertDeployment(extensionId, { status, pid: null, lastStoppedAt: new Date(), lastError, sipRegistered: false }).catch(() => {});
+
+    // Watchdog: if this was an unexpected crash (not a manual stop) and watchdog is on, start pinging
+    if (!manuallyStopped.has(extensionId) && watchdogEnabled.has(extensionId)) {
+      scheduleWatchdog(extensionId);
+    }
   });
 
   proc.on("error", (err) => {
@@ -507,6 +606,9 @@ export async function startExtension(extensionId: number): Promise<void> {
 
 export async function stopExtension(extensionId: number): Promise<void> {
   addSystemLog(`Stopping extension ${extensionId}`);
+  // Mark as intentionally stopped so watchdog doesn't restart it
+  manuallyStopped.add(extensionId);
+  cancelWatchdog(extensionId);
   // Close any outstanding calls so they don't ghost as "active" after restart
   closeOutstandingCalls(extensionId);
 

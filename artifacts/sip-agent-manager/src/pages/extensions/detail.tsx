@@ -39,7 +39,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
-import { ArrowLeft, Phone, Server, Play, Square, RotateCcw, Loader2, AlertCircle, Bot, Edit, Trash2 } from "lucide-react";
+import { ArrowLeft, Phone, Server, Play, Square, RotateCcw, Loader2, AlertCircle, Bot, Edit, Trash2, ShieldCheck } from "lucide-react";
 import { ProviderBadge } from "@/components/provider-badge";
 import { useToast } from "@/hooks/use-toast";
 import { maskString } from "@/lib/utils";
@@ -49,6 +49,8 @@ import {
   useStopExtension,
   useRestartExtension,
   useAllDeployStatuses,
+  useWatchdogState,
+  useSetWatchdog,
   statusLabel,
   statusColor,
 } from "@/hooks/use-deploy";
@@ -88,6 +90,8 @@ export default function ExtensionDetail() {
   const start = useStartExtension(extensionId);
   const stop = useStopExtension(extensionId);
   const restart = useRestartExtension(extensionId);
+  const { data: watchdog } = useWatchdogState(extensionId, !!extensionId);
+  const setWatchdog = useSetWatchdog(extensionId);
 
   const isRunning = deployStatus?.status === "registered" || deployStatus?.status === "starting";
   const isStarting = deployStatus?.status === "starting";
@@ -283,6 +287,36 @@ export default function ExtensionDetail() {
                 <Loader2 className="h-3 w-3 animate-spin" /> Waiting for SIP registration…
               </span>
             )}
+          </div>
+
+          {/* Watchdog toggle */}
+          <div className="mt-2 pt-3 border-t flex items-start justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className={`h-4 w-4 ${watchdog?.enabled ? "text-green-500" : "text-muted-foreground"}`} />
+              <div>
+                <p className="text-sm font-medium">Auto-reconnect watchdog</p>
+                <p className="text-xs text-muted-foreground">
+                  If the Yeastar server goes offline, ping every 5 min and redeploy automatically when it comes back.
+                  {watchdog?.pinging && (
+                    <span className="ml-1 inline-flex items-center gap-1 text-yellow-600">
+                      <Loader2 className="h-2.5 w-2.5 animate-spin" /> Pinging…
+                    </span>
+                  )}
+                </p>
+              </div>
+            </div>
+            <Button
+              size="sm"
+              variant={watchdog?.enabled ? "default" : "outline"}
+              className={watchdog?.enabled ? "bg-green-600 hover:bg-green-700 text-white shrink-0" : "shrink-0"}
+              disabled={setWatchdog.isPending}
+              onClick={() => setWatchdog.mutate(!watchdog?.enabled, {
+                onSuccess: () => toast({ title: watchdog?.enabled ? "Watchdog disabled" : "Watchdog enabled" }),
+                onError: (e) => toast({ variant: "destructive", title: "Failed to update watchdog", description: e.message }),
+              })}
+            >
+              {watchdog?.enabled ? "On" : "Off"}
+            </Button>
           </div>
         </CardContent>
       </Card>

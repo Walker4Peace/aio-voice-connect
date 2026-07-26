@@ -11,6 +11,8 @@ import {
   getSystemLogs,
   deleteCallByCallId,
   clearAllCallEvents,
+  setWatchdogEnabled,
+  getWatchdogState,
 } from "../services/deployment.js";
 
 const router = Router();
@@ -129,6 +131,32 @@ router.post("/deploy/:extensionId/restart", async (req, res) => {
   await restartExtension(extensionId);
   const status = await getStatus(extensionId);
   res.json(status);
+});
+
+// GET /api/deploy/:extensionId/watchdog — get watchdog state
+router.get("/deploy/:extensionId/watchdog", (req, res) => {
+  const extensionId = Number(req.params["extensionId"]);
+  if (!Number.isFinite(extensionId)) {
+    res.status(400).json({ error: "Invalid extensionId" });
+    return;
+  }
+  res.json(getWatchdogState(extensionId));
+});
+
+// POST /api/deploy/:extensionId/watchdog — enable or disable watchdog
+router.post("/deploy/:extensionId/watchdog", (req, res) => {
+  const extensionId = Number(req.params["extensionId"]);
+  if (!Number.isFinite(extensionId)) {
+    res.status(400).json({ error: "Invalid extensionId" });
+    return;
+  }
+  const { enabled } = req.body as { enabled: boolean };
+  if (typeof enabled !== "boolean") {
+    res.status(400).json({ error: "enabled must be a boolean" });
+    return;
+  }
+  setWatchdogEnabled(extensionId, enabled);
+  res.json(getWatchdogState(extensionId));
 });
 
 export default router;

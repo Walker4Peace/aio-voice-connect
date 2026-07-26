@@ -82,6 +82,35 @@ export function useRestartExtension(extensionId: number) {
   return useDeployAction(extensionId, "restart");
 }
 
+export interface WatchdogState {
+  enabled: boolean;
+  pinging: boolean;
+}
+
+export function useWatchdogState(extensionId: number, enabled = true) {
+  return useQuery<WatchdogState>({
+    queryKey: ["watchdog-state", extensionId],
+    queryFn: () => apiFetch(`/api/deploy/${extensionId}/watchdog`),
+    refetchInterval: 5000,
+    enabled: enabled && !!extensionId,
+  });
+}
+
+export function useSetWatchdog(extensionId: number) {
+  const qc = useQueryClient();
+  return useMutation<WatchdogState, Error, boolean>({
+    mutationFn: (enable: boolean) =>
+      fetch(`/api/deploy/${extensionId}/watchdog`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ enabled: enable }),
+      }).then(r => r.json()),
+    onSuccess: (data) => {
+      qc.setQueryData(["watchdog-state", extensionId], data);
+    },
+  });
+}
+
 export function statusLabel(status: DeployStatus["status"]) {
   switch (status) {
     case "registered": return "Registered";
