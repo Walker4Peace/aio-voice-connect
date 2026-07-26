@@ -2,7 +2,7 @@ import { spawn, ChildProcess } from "child_process";
 import path from "path";
 import fs from "fs/promises";
 import { db, extensionsTable, deploymentsTable, callEventsTable, type Deployment } from "@workspace/db";
-import { eq, inArray } from "drizzle-orm";
+import { eq, inArray, and } from "drizzle-orm";
 import { logger } from "../lib/logger.js";
 
 const SIP4AI_BIN =
@@ -86,6 +86,15 @@ function parseAndStoreCallEvents(extensionId: number, line: string, timestamp: s
       const e = persistedCallEvents[i];
       if (e.extensionId === extensionId && e.event === "invite") {
         e.detail = fromNumber;
+        // Also persist to DB so the caller survives restarts
+        db.update(callEventsTable)
+          .set({ detail: fromNumber })
+          .where(and(
+            eq(callEventsTable.extensionId, extensionId),
+            eq(callEventsTable.callId, e.callId),
+            eq(callEventsTable.event, "invite"),
+          ))
+          .catch(err => logger.error({ err }, "Failed to update caller number in DB"));
         break;
       }
     }
