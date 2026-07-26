@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ExternalLink, RefreshCw } from "lucide-react";
+import { Bot, ExternalLink, RefreshCw } from "lucide-react";
 
 const SYSTEM_VALUE = "__system__";
 
@@ -93,9 +93,12 @@ export default function LogsPage() {
                 const st = allStatuses?.find((s) => s.extensionId === ext.id);
                 return (
                   <SelectItem key={ext.id} value={ext.id.toString()}>
-                    {ext.extensionNumber}
-                    {ext.displayName ? ` (${ext.displayName})` : ""}
-                    {st ? ` — ${st.status}` : ""}
+                    <span className="flex items-center gap-1.5">
+                      <Bot className="h-3.5 w-3.5 shrink-0" />
+                      {ext.extensionNumber}
+                      {ext.displayName ? ` (${ext.displayName})` : ""}
+                      {st ? ` — ${st.status}` : ""}
+                    </span>
                   </SelectItem>
                 );
               })}

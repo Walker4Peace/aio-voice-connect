@@ -49,6 +49,16 @@ import {
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { ProviderBadge } from "@/components/provider-badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Plus, Phone, Trash2 } from "lucide-react";
 import { useAllDeployStatuses, statusLabel, statusColor } from "@/hooks/use-deploy";
 
@@ -75,6 +85,7 @@ export default function ExtensionsList() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [open, setOpen] = React.useState(false);
+  const [deletingId, setDeletingId] = React.useState<number | null>(null);
 
   const createExtension = useCreateExtension();
   const deleteExtension = useDeleteExtension();
@@ -122,11 +133,10 @@ export default function ExtensionsList() {
     );
   };
 
-  const handleDelete = (id: number) => {
-    if (!window.confirm("Are you sure you want to delete this extension?")) return;
-    
+  const confirmDelete = () => {
+    if (deletingId === null) return;
     deleteExtension.mutate(
-      { id },
+      { id: deletingId },
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListExtensionsQueryKey() });
@@ -135,6 +145,7 @@ export default function ExtensionsList() {
             description: "The extension has been removed.",
           });
         },
+        onSettled: () => setDeletingId(null),
       }
     );
   };
@@ -369,7 +380,7 @@ export default function ExtensionsList() {
                         variant="ghost" 
                         size="icon" 
                         className="h-8 w-8 text-muted-foreground hover:text-destructive shrink-0"
-                        onClick={() => handleDelete(ext.id)}
+                        onClick={() => setDeletingId(ext.id)}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -381,6 +392,27 @@ export default function ExtensionsList() {
           </TableBody>
         </Table>
       </div>
+    </div>
+
+      <AlertDialog open={deletingId !== null} onOpenChange={(open) => { if (!open) setDeletingId(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this extension?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the extension and its deployment configuration. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={confirmDelete}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

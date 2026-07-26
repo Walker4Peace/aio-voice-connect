@@ -17,6 +17,16 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { ProviderBadge } from "@/components/provider-badge";
 import { Plus, Server, Trash2 } from "lucide-react";
 
@@ -24,14 +34,14 @@ export default function AgentConfigsList() {
   const { data: configs, isLoading } = useListAgentConfigs();
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const [deletingId, setDeletingId] = React.useState<number | null>(null);
 
   const deleteConfig = useDeleteAgentConfig();
 
-  const handleDelete = (id: number) => {
-    if (!window.confirm("Are you sure you want to delete this agent configuration?")) return;
-    
+  const confirmDelete = () => {
+    if (deletingId === null) return;
     deleteConfig.mutate(
-      { id },
+      { id: deletingId },
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListAgentConfigsQueryKey() });
@@ -40,6 +50,7 @@ export default function AgentConfigsList() {
             description: "The AI agent configuration has been removed.",
           });
         },
+        onSettled: () => setDeletingId(null),
       }
     );
   };
@@ -114,7 +125,7 @@ export default function AgentConfigsList() {
                         variant="ghost" 
                         size="icon" 
                         className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                        onClick={() => handleDelete(config.id)}
+                        onClick={() => setDeletingId(config.id)}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -126,6 +137,26 @@ export default function AgentConfigsList() {
           </TableBody>
         </Table>
       </div>
+
+      <AlertDialog open={deletingId !== null} onOpenChange={(open) => { if (!open) setDeletingId(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this agent?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the AI agent configuration. Extensions using it will lose their agent assignment. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={confirmDelete}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

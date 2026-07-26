@@ -40,6 +40,16 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { formatDate } from "@/lib/utils";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Plus, Building, Trash2 } from "lucide-react";
 
 const formSchema = z.object({
@@ -55,6 +65,7 @@ export default function ClientsList() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [open, setOpen] = React.useState(false);
+  const [deletingId, setDeletingId] = React.useState<number | null>(null);
 
   const createClient = useCreateClient();
   const deleteClient = useDeleteClient();
@@ -95,11 +106,10 @@ export default function ClientsList() {
     );
   };
 
-  const handleDelete = (id: number) => {
-    if (!window.confirm("Are you sure you want to delete this IPBX?")) return;
-    
+  const confirmDelete = () => {
+    if (deletingId === null) return;
     deleteClient.mutate(
-      { id },
+      { id: deletingId },
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListClientsQueryKey() });
@@ -108,6 +118,7 @@ export default function ClientsList() {
             description: "The IPBX has been removed.",
           });
         },
+        onSettled: () => setDeletingId(null),
       }
     );
   };
@@ -269,7 +280,7 @@ export default function ClientsList() {
                         variant="ghost" 
                         size="icon" 
                         className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                        onClick={() => handleDelete(client.id)}
+                        onClick={() => setDeletingId(client.id)}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -281,6 +292,27 @@ export default function ClientsList() {
           </TableBody>
         </Table>
       </div>
+    </div>
+
+      <AlertDialog open={deletingId !== null} onOpenChange={(open) => { if (!open) setDeletingId(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this IPBX?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the IPBX and may affect extensions linked to it. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={confirmDelete}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
