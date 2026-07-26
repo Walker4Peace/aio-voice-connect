@@ -1,0 +1,96 @@
+i was trying to test with SIP4AI because i made this app SIP Agent based on the logique of SIP4AI
+
+i made a test with SIP4AI and here is the log of the call
+
+whats the difference between SIP4AI and SIP Agent 
+
+rootroot@sip4ai:/opt/sip4ai$ sudo journalctl -u sip4ai -f
+juil. 26 18:09:36 sip4ai sip4ai[1475]: Contact: <sip:1005@192.168.11.116:47818>;expires=559
+juil. 26 18:09:36 sip4ai sip4ai[1475]: Contact: <sip:1005@192.168.11.116:52305>;expires=654
+juil. 26 18:09:36 sip4ai sip4ai[1475]: Expires: 627
+juil. 26 18:09:36 sip4ai sip4ai[1475]: Server: Yeastar PSE
+juil. 26 18:09:36 sip4ai sip4ai[1475]: Content-Length: 0
+juil. 26 18:09:36 sip4ai sip4ai[1475]:
+juil. 26 18:09:36 sip4ai sip4ai[1475]: 2026/07/26 18:09:36 Registration successful!
+juil. 26 18:09:36 sip4ai sip4ai[1475]: 2026/07/26 18:09:36 Initial REGISTER request sent.
+juil. 26 18:09:36 sip4ai sip4ai[1475]: 2026/07/26 18:09:36 SIP server is now listening for incoming messages.
+juil. 26 18:09:36 sip4ai sip4ai[1475]: 2026/07/26 18:09:36 WARN SIP request handler not found caller=Server method=NOTIFY
+juil. 26 18:09:57 sip4ai sip4ai[1475]: 2026/07/26 18:09:57 INVITE received for call: d72a4cde-43fa-460f-83af-04d21904d4d8, auto-answering using sipgo.
+juil. 26 18:09:57 sip4ai sip4ai[1475]: 2026/07/26 18:09:57 RTP listener created on 0.0.0.0:35549
+juil. 26 18:09:57 sip4ai sip4ai[1475]: 2026/07/26 18:09:57 200 OK with SDP sent to caller.
+juil. 26 18:09:57 sip4ai sip4ai[1475]: 2026/07/26 18:09:57 Stored remote Contact for dialog: sip:0661209845@192.168.11.90:5060
+juil. 26 18:09:57 sip4ai sip4ai[1475]: 2026/07/26 18:09:57 Registered dialog for call: d72a4cde-43fa-460f-83af-04d21904d4d8
+juil. 26 18:09:57 sip4ai sip4ai[1475]: 2026/07/26 18:09:57 Parsed remote audio port: 16326
+juil. 26 18:09:57 sip4ai sip4ai[1475]: 2026/07/26 18:09:57 Remote RTP destination: 192.168.11.90:16326
+juil. 26 18:09:57 sip4ai sip4ai[1475]: 2026/07/26 18:09:57 Routing call to ElevenLabs Conversational AI
+juil. 26 18:09:57 sip4ai sip4ai[1475]: 2026/07/26 18:09:57 Using AI provider: elevenlabs
+juil. 26 18:09:57 sip4ai sip4ai[1475]: 2026/07/26 18:09:57 Sending NAT hole-punch packets to 192.168.11.90:16326
+juil. 26 18:09:57 sip4ai sip4ai[1475]: 2026/07/26 18:09:57 WARN SIP request handler not found caller=Server method=ACK
+juil. 26 18:09:57 sip4ai sip4ai[1475]: 2026/07/26 18:09:57 Connecting to ElevenLabs Conversational AI (agent: agent_9601kyfqyacnesc95he3z0f363wt)...
+juil. 26 18:09:58 sip4ai sip4ai[1475]: 2026/07/26 18:09:58 Connected to ElevenLabs Conversational AI
+juil. 26 18:09:58 sip4ai sip4ai[1475]: 2026/07/26 18:09:58 DEBUG: appConfig=true
+juil. 26 18:09:58 sip4ai sip4ai[1475]: 2026/07/26 18:09:58 DEBUG: ElevenLabs.FirstMessage='', SystemPrompt='', Functions=0
+juil. 26 18:09:58 sip4ai sip4ai[1475]: 2026/07/26 18:09:58 Sending conversation initiation to ElevenLabs: {"type":"conversation_initiation_client_data"}
+juil. 26 18:09:58 sip4ai sip4ai[1475]: 2026/07/26 18:09:58 Registered bridge for call: d72a4cde-43fa-460f-83af-04d21904d4d8
+juil. 26 18:09:58 sip4ai sip4ai[1475]: 2026/07/26 18:09:58 Starting RTP to ElevenLabs bridge (native μ-law 8kHz)...
+juil. 26 18:09:58 sip4ai sip4ai[1475]: 2026/07/26 18:09:58 RTP packet #1 received from 192.168.11.90:16326, size=172 bytes
+juil. 26 18:09:58 sip4ai sip4ai[1475]: 2026/07/26 18:09:58 Starting ElevenLabs to RTP bridge (native μ-law 8kHz)...
+juil. 26 18:09:58 sip4ai sip4ai[1475]: 2026/07/26 18:09:58 ElevenLabs raw message: {"conversation_initiation_metadata_event":{"conversation_id":"conv_4501kyfsx58mfjg9bea73kskayx7","agent_output_audio_format":"ulaw_8000","user_input_audio_format":"ulaw_8000","persistent_session_token...
+juil. 26 18:09:58 sip4ai sip4ai[1475]: 2026/07/26 18:09:58 ElevenLabs conversation started: conv_4501kyfsx58mfjg9bea73kskayx7 (audio format: ulaw_8000)
+juil. 26 18:09:58 sip4ai sip4ai[1475]: 2026/07/26 18:09:58 ElevenLabs raw message: {"audio_event":{"audio_base_64":"/n7+////////////fv//fv9+fn5+fn7/fv9+fn5+fn5+fn59fn19fX5+fn5+fn5+fn5+fn5+fn5+fv////7///7+//7+/v/+/v7+//7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v3+/v3+/v7+/v7+/v3+/v7...
+juil. 26 18:09:58 sip4ai sip4ai[1475]: 2026/07/26 18:09:58 ElevenLabs audio chunk #1 received (4488 bytes)
+juil. 26 18:09:58 sip4ai sip4ai[1475]: 2026/07/26 18:09:58 Sent 1 RTP packets to 192.168.11.90:16326
+juil. 26 18:09:58 sip4ai sip4ai[1475]: 2026/07/26 18:09:58 ElevenLabs raw message: {"audio_event":{"audio_base_64":"Eh9ip5mVkZKPjo2MjpWk2SsdHBwcHBoXFxsmS6udmJaYmZmWk5GTmqbLOCspLTAtJh0VEhEREhEODA0PGTWynJWRkZGOjo2NkZuyPSEcGxobGxkYGiEyvKGalpaYmZiVlJSYobhELSkqLS0pIBkVEhISEQ8MDA4UKMWflpK...
+juil. 26 18:09:59 sip4ai sip4ai[1475]: 2026/07/26 18:09:59 ElevenLabs raw message: {"audio_event":{"audio_base_64":"/tVrbdrEv8G6ubCysrm3uL3G3v9TRzc0Ly4pKSUnJCUhISIhIB4eHR4cJikxM2nArqainZmWl5iam52ep6ywtMTcaVpgVENGT1ROUGTbwr28u7GysbW4vMHSTT83MColIyEgHx4eHx4eHh4fHx8iJigrMj9SxbSrpJ6bmZe...
+juil. 26 18:09:59 sip4ai sip4ai[1475]: 2026/07/26 18:09:59 ElevenLabs raw message: {"audio_event":{"audio_base_64":"t3AxKR4bFRESDg4NDg0ODhYWGDEozb6lmpmUjY6NjI2Nk5GXn62uXTElIhwVFRgUFRseISpCzL+unp2alpGVlJOVm52hr8VVNCMdGhYQEA8NDQ0NDg8PHRYhS0CwqZiWkI+Li46LjY+WnJy9eDgqHxQbFBMTFxsbJjlG4a2...
+juil. 26 18:09:59 sip4ai sip4ai[1475]: 2026/07/26 18:09:59 ElevenLabs raw message: {"audio_event":{"audio_base_64":"//////////////////////////////////////////////////////////////////////////////////9+fn5+fn7////////////////////////////////////////////////////////////////////////////...
+juil. 26 18:09:59 sip4ai sip4ai[1475]: 2026/07/26 18:09:59 ElevenLabs raw message: {"audio_event":{"audio_base_64":"wsrMzNT8W1tQRz46NjMvLi0sLCwsKyssLi8uLS8yNDU2NTs8Pj06OT9CSLusqKihn5+oraimqa+3uK61wtnKyt1FO0leYE12yrm8vry4ub/Q3tPeb1Nd/+T279THxtPc3drpZFz85G5RSUlFPDU0NTIwLy8vMC8wMjIyNDU...
+juil. 26 18:09:59 sip4ai sip4ai[1475]: 2026/07/26 18:09:59 ElevenLabs raw message: {"agent_response_event":{"agent_response":"[warmly] Bonjour et bienvenue chez AIO PROCESS ! Je suis Yassine. Comment puis-je vous aider aujourd'hui ?","event_id":1},"type":"agent_response"}
+juil. 26 18:09:59 sip4ai sip4ai[1475]: 2026/07/26 18:09:59 AI: [warmly] Bonjour et bienvenue chez AIO PROCESS ! Je suis Yassine. Comment puis-je vous aider aujourd'hui ?
+juil. 26 18:09:59 sip4ai sip4ai[1475]: 2026/07/26 18:09:59 RTP packet #100 received from 192.168.11.90:16326, size=172 bytes
+juil. 26 18:10:00 sip4ai sip4ai[1475]: 2026/07/26 18:10:00 ElevenLabs raw message: {"ping_event":{"event_id":2,"ping_ms":null},"type":"ping"}
+juil. 26 18:10:00 sip4ai sip4ai[1475]: 2026/07/26 18:10:00 ElevenLabs raw message: {"audio_event":{"audio_base_64":"TLuVkpGNioiJipGOk51L7TQhFxQVFh4WHjK33LCfl5iYmpmXnayup7xoQO9MRy02OzoqJykpIhoaGhQQEQ8NDA8RNS83xZKPk4uIhYqKlI6Zryg7KhUQEBkWHhk7v6i5nJOTl5mXnJ/J1M/9KC09SjtGWsC/X1fVSy0oIB0...
+juil. 26 18:10:00 sip4ai sip4ai[1475]: 2026/07/26 18:10:00 Sent 100 RTP packets to 192.168.11.90:16326
+juil. 26 18:10:01 sip4ai sip4ai[1475]: 2026/07/26 18:10:01 RTP packet #200 received from 192.168.11.90:16326, size=172 bytes
+juil. 26 18:10:01 sip4ai sip4ai[1475]: 2026/07/26 18:10:01 ElevenLabs raw message: {"ping_event":{"event_id":3,"ping_ms":150},"type":"ping"}
+juil. 26 18:10:02 sip4ai sip4ai[1475]: 2026/07/26 18:10:02 Sent 200 RTP packets to 192.168.11.90:16326
+juil. 26 18:10:03 sip4ai sip4ai[1475]: 2026/07/26 18:10:03 ElevenLabs raw message: {"ping_event":{"event_id":4,"ping_ms":150},"type":"ping"}
+juil. 26 18:10:03 sip4ai sip4ai[1475]: 2026/07/26 18:10:03 RTP packet #300 received from 192.168.11.90:16326, size=172 bytes
+juil. 26 18:10:04 sip4ai sip4ai[1475]: 2026/07/26 18:10:04 Sent 300 RTP packets to 192.168.11.90:16326
+juil. 26 18:10:05 sip4ai sip4ai[1475]: 2026/07/26 18:10:05 ElevenLabs raw message: {"ping_event":{"event_id":5,"ping_ms":150},"type":"ping"}
+juil. 26 18:10:05 sip4ai sip4ai[1475]: 2026/07/26 18:10:05 RTP packet #400 received from 192.168.11.90:16326, size=172 bytes
+juil. 26 18:10:06 sip4ai sip4ai[1475]: 2026/07/26 18:10:06 ElevenLabs raw message: {"ping_event":{"event_id":6,"ping_ms":150},"type":"ping"}
+juil. 26 18:10:07 sip4ai sip4ai[1475]: 2026/07/26 18:10:07 RTP packet #500 received from 192.168.11.90:16326, size=172 bytes
+juil. 26 18:10:08 sip4ai sip4ai[1475]: 2026/07/26 18:10:08 ElevenLabs raw message: {"ping_event":{"event_id":7,"ping_ms":150},"type":"ping"}
+juil. 26 18:10:09 sip4ai sip4ai[1475]: 2026/07/26 18:10:09 RTP packet #600 received from 192.168.11.90:16326, size=172 bytes
+juil. 26 18:10:10 sip4ai sip4ai[1475]: 2026/07/26 18:10:10 ElevenLabs raw message: {"ping_event":{"event_id":8,"ping_ms":150},"type":"ping"}
+juil. 26 18:10:11 sip4ai sip4ai[1475]: 2026/07/26 18:10:11 ElevenLabs raw message: {"user_transcription_event":{"user_transcript":"Je veux a-aller à Dolévar.","event_id":62},"type":"user_transcript"}
+juil. 26 18:10:11 sip4ai sip4ai[1475]: 2026/07/26 18:10:11 Caller: Je veux a-aller à Dolévar.
+juil. 26 18:10:11 sip4ai sip4ai[1475]: 2026/07/26 18:10:11 ElevenLabs raw message: {"audio_event":{"audio_base_64":"///////////+/v///////////////////////////////////////////////////////////////////////////////////37////////////////////////////////////////////////////////////////////...
+juil. 26 18:10:11 sip4ai sip4ai[1475]: 2026/07/26 18:10:11 ElevenLabs raw message: {"audio_event":{"audio_base_64":"uaqhm5qanaWssK2noZ+iqbPE2HxkUUhBQk11zsTCy917dN7Kv7y9xNHramhkYVVIQj4/RlF629x0TDs0MTM5PkA9My0nJSQlKCorKywtLjE2ODs7PT1CS2fSx8LK1eN5ed7lvK2lnZybnqiut7Kpo56epKu81GNMU1Rc6Nf...
+juil. 26 18:10:11 sip4ai sip4ai[1475]: 2026/07/26 18:10:11 ElevenLabs raw message: {"audio_event":{"audio_base_64":"///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////...
+juil. 26 18:10:11 sip4ai sip4ai[1475]: 2026/07/26 18:10:11 ElevenLabs raw message: {"audio_event":{"audio_base_64":"kI2Ki42MjZGSkZmfpbk6KyMaGBgWExQUExceJTXOsaqfmpiVk5SXmqCpt18uIBcPDQoJCwwMDhMUGC3YrpqPjo6Li42LioyPj5agpa3ePC4dFRMREBMWFBQYGh43vqqfmZmalpSUk5ScqLdJKiAYEA0LBwkMCw0TFxck+ra...
+juil. 26 18:10:11 sip4ai sip4ai[1475]: 2026/07/26 18:10:11 RTP packet #700 received from 192.168.11.90:16326, size=172 bytes
+juil. 26 18:10:12 sip4ai sip4ai[1475]: 2026/07/26 18:10:12 ElevenLabs raw message: {"ping_event":{"event_id":9,"ping_ms":150},"type":"ping"}
+juil. 26 18:10:12 sip4ai sip4ai[1475]: 2026/07/26 18:10:12 ElevenLabs raw message: {"audio_event":{"audio_base_64":"0Odf3s/aZVfw0mxDPlbN6Eo9RNfLWjk2SvRoOy4xPU9JOTQ6TFFAODhDaOvn176xq6imo6GfoKGlqK21v9F5UUdFQkZMV3XazsfAvr7H5F1lWz4tJyQiIB0ZGBcaGBYVFhgYGRkeMHLDu6SYkY6NjIyLioyPl52jr+stIB0...
+juil. 26 18:10:12 sip4ai sip4ai[1475]: 2026/07/26 18:10:12 ElevenLabs raw message: {"audio_event":{"audio_base_64":"nJ24RSwpHBgZJCQnXa2mpZuZnKOrvkAqHhkWFRQUFxseISQnJiQfHBkaGyGvwK2QjI6LhYiIjpCXsyslJRAQFh8dLMGjmZyVkJaqq7YqHBkaFhceOmTOpZqanJqcpsdINCAaGhoZGx8mKy0yOTEpIx4ZFhIQEhkcup2hjYe...
+juil. 26 18:10:12 sip4ai sip4ai[1475]: 2026/07/26 18:10:12 Sent 400 RTP packets to 192.168.11.90:16326
+juil. 26 18:10:13 sip4ai sip4ai[1475]: 2026/07/26 18:10:13 ElevenLabs raw message: {"audio_event":{"audio_base_64":"p5qWmJuWn7tZLCodGRoiMSzYrqGcoJ2eorXj6DQsJR8lIx8fIiAbGhgUEQ8WFCaovJuOi4uNjJKRoTxAJxoVGSAszbuklJOWm5qixDYeIR4XGiRCa7Spnpadn5+luWM6LSwkIiQoKCQmJyAcGxsZEg8aGCKrs5yPjYuOjpW...
+juil. 26 18:10:13 sip4ai sip4ai[1475]: 2026/07/26 18:10:13 ElevenLabs raw message: {"ping_event":{"event_id":10,"ping_ms":150},"type":"ping"}
+juil. 26 18:10:13 sip4ai sip4ai[1475]: 2026/07/26 18:10:13 RTP packet #800 received from 192.168.11.90:16326, size=172 bytes
+juil. 26 18:10:13 sip4ai sip4ai[1475]: 2026/07/26 18:10:13 ElevenLabs raw message: {"audio_event":{"audio_base_64":"HRgTDw0MDAwNDhETFhgZHB4nMtmsn5eTj4+NjIuJiYiLjZGao7fWOC8oHhsWFBETFxojLELvvq2mnZmUkZCRlZqgq8VGLSEbFA8NCwoKCwwODxIUFhkdJC09bL2popuXko+Oi4uJioqMj5GZnqq2VjAnHRoXFhYXGhwgJzB...
+juil. 26 18:10:13 sip4ai sip4ai[1475]: 2026/07/26 18:10:13 ElevenLabs raw message: {"agent_response_event":{"agent_response":"Je comprends. Pourriez-vous me préciser ce que vous entendez par \"aller à Dolévar\" ? Êtes-vous intéressé par l'une de nos solutions technologiques ou...
+juil. 26 18:10:13 sip4ai sip4ai[1475]: 2026/07/26 18:10:13 AI: Je comprends. Pourriez-vous me préciser ce que vous entendez par "aller à Dolévar" ? Êtes-vous intéressé par l'une de nos solutions technologiques ou cherchez-vous à améliorer quelque chose dans votre entreprise ?
+juil. 26 18:10:14 sip4ai sip4ai[1475]: 2026/07/26 18:10:14 ElevenLabs raw message: {"audio_event":{"audio_base_64":"8vZubf72WlhVUF1gXU5EPTk4OTo7OTYzMzIwMzQxMjIwMjM3PEBBPkFLVHbna8y1rqehnp2dnJ2dnqClrLK+ys/8VUc8NTQ3OkJKRkVHS1Jo4dvU2ej6amj93tzpbVFNTk1TT0xDPjo4OTg6OTk2MzAuLiwqLC0vMjIwLCo...
+juil. 26 18:10:14 sip4ai sip4ai[1475]: 2026/07/26 18:10:14 Sent 500 RTP packets to 192.168.11.90:16326
+juil. 26 18:10:15 sip4ai sip4ai[1475]: 2026/07/26 18:10:15 ElevenLabs raw message: {"ping_event":{"event_id":11,"ping_ms":150},"type":"ping"}
+juil. 26 18:10:15 sip4ai sip4ai[1475]: 2026/07/26 18:10:15 RTP packet #900 received from 192.168.11.90:16326, size=172 bytes
+juil. 26 18:10:16 sip4ai sip4ai[1475]: 2026/07/26 18:10:16 Sent 600 RTP packets to 192.168.11.90:16326
+juil. 26 18:10:17 sip4ai sip4ai[1475]: 2026/07/26 18:10:17 ElevenLabs raw message: {"ping_event":{"event_id":12,"ping_ms":150},"type":"ping"}
+juil. 26 18:10:17 sip4ai sip4ai[1475]: 2026/07/26 18:10:17 RTP packet #1000 received from 192.168.11.90:16326, size=172 bytes
+juil. 26 18:10:18 sip4ai sip4ai[1475]: 2026/07/26 18:10:18 BYE received for call: d72a4cde-43fa-460f-83af-04d21904d4d8
+juil. 26 18:10:18 sip4ai sip4ai[1475]: 2026/07/26 18:10:18 Call ended (BYE received): d72a4cde-43fa-460f-83af-04d21904d4d8
+juil. 26 18:10:18 sip4ai sip4ai[1475]: 2026/07/26 18:10:18 RTP to ElevenLabs bridge stopping...
+juil. 26 18:10:18 sip4ai sip4ai[1475]: 2026/07/26 18:10:18 ElevenLabs raw message: {"ping_event":{"event_id":13,"ping_ms":150},"type":"ping"}
+juil. 26 18:10:18 sip4ai sip4ai[1475]: 2026/07/26 18:10:18 ElevenLabs to RTP bridge stopping...
+juil. 26 18:10:18 sip4ai sip4ai[1475]: 2026/07/26 18:10:18 Unregistered bridge for call: d72a4cde-43fa-460f-83af-04d21904d4d8
