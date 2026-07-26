@@ -93,8 +93,9 @@ export default function ExtensionDetail() {
   const { data: watchdog } = useWatchdogState(extensionId, !!extensionId);
   const setWatchdog = useSetWatchdog(extensionId);
 
-  const isRunning = deployStatus?.status === "registered" || deployStatus?.status === "starting";
+  const isRunning = deployStatus?.status === "registered" || deployStatus?.status === "starting" || deployStatus?.status === "reconnecting";
   const isStarting = deployStatus?.status === "starting";
+  const isReconnecting = deployStatus?.status === "reconnecting";
 
   const agentForm = useForm<z.infer<typeof agentSchema>>({
     resolver: zodResolver(agentSchema),
@@ -220,7 +221,7 @@ export default function ExtensionDetail() {
       </div>
 
       {/* ── LIVE DEPLOYMENT PANEL ── */}
-      <Card className={`border-l-4 ${isRunning ? "border-l-green-500" : deployStatus?.status === "error" ? "border-l-red-500" : "border-l-muted"}`}>
+      <Card className={`border-l-4 ${isReconnecting ? "border-l-orange-500" : isRunning ? "border-l-green-500" : deployStatus?.status === "error" ? "border-l-red-500" : "border-l-muted"}`}>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div>
@@ -287,6 +288,11 @@ export default function ExtensionDetail() {
                 <Loader2 className="h-3 w-3 animate-spin" /> Waiting for SIP registration…
               </span>
             )}
+            {isReconnecting && (
+              <span className="flex items-center gap-1 text-sm text-orange-600">
+                <Loader2 className="h-3 w-3 animate-spin" /> Yeastar unreachable — retrying every 2 min…
+              </span>
+            )}
           </div>
 
           {/* Watchdog toggle */}
@@ -296,7 +302,7 @@ export default function ExtensionDetail() {
               <div>
                 <p className="text-sm font-medium">Auto-reconnect watchdog</p>
                 <p className="text-xs text-muted-foreground">
-                  If the Yeastar server goes offline, ping every 5 min and redeploy automatically when it comes back.
+                  Auto-restart if the process <em>crashes</em> (panic / fatal error). Not needed for Yeastar reboots — the agent reconnects automatically.
                   {watchdog?.pinging && (
                     <span className="ml-1 inline-flex items-center gap-1 text-yellow-600">
                       <Loader2 className="h-2.5 w-2.5 animate-spin" /> Pinging…

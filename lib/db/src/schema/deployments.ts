@@ -1,7 +1,7 @@
 import { pgTable, text, serial, timestamp, integer, boolean } from "drizzle-orm/pg-core";
 import { extensionsTable } from "./extensions";
 
-export const DEPLOYMENT_STATUSES = ["stopped", "starting", "registered", "error"] as const;
+export const DEPLOYMENT_STATUSES = ["stopped", "starting", "registered", "reconnecting", "error"] as const;
 export type DeploymentStatus = typeof DEPLOYMENT_STATUSES[number];
 
 export const deploymentsTable = pgTable("deployments", {

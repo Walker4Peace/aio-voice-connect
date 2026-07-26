@@ -269,14 +269,20 @@ export function getRunningExtensionIds(): number[] {
   return Array.from(processes.keys());
 }
 
-function parseRegistration(line: string): "registered" | "error" | null {
+function parseRegistration(line: string): "registered" | "reconnecting" | "error" | null {
   const l = line.toLowerCase();
 
   // ── Success ────────────────────────────────────────────────────────────
   if (l.includes("registration successful")) return "registered";
+  if (l.includes("re-registration successful")) return "registered";
   if (l.includes("registr") && (l.includes("success") || l.includes("200 ok"))) return "registered";
 
-  // ── Real errors ────────────────────────────────────────────────────────
+  // ── Yeastar server unreachable — binary keeps running and retrying every 2 min.
+  // Show "reconnecting" instead of leaving status as "registered".
+  if (l.includes("timer_b timed out") || l.includes("transaction timeout")) return "reconnecting";
+  if (l.includes("error during re-registration")) return "reconnecting";
+
+  // ── Real fatal errors (process will likely exit or be stuck) ──────────
   // NOTE: 401 Unauthorized is the normal SIP auth challenge (challenge →
   // re-send with Authorization → 200 OK).  Do NOT treat it as an error.
   if (l.includes("registration failed")) return "error";
@@ -571,6 +577,9 @@ export async function startExtension(extensionId: number): Promise<void> {
       if (reg === "registered") {
         // Clear lastError when registration succeeds so the UI shows clean status
         upsertDeployment(extensionId, { status: "registered", sipRegistered: true, lastError: null }).catch(() => {});
+      } else if (reg === "reconnecting") {
+        // Yeastar is unreachable but the binary is still running and retrying — reflect that in the UI
+        upsertDeployment(extensionId, { status: "reconnecting", sipRegistered: false }).catch(() => {});
       } else if (reg === "error") {
         upsertDeployment(extensionId, { status: "error", lastError: line }).catch(() => {});
       }
@@ -653,8 +662,8 @@ export async function getStatus(extensionId: number) {
   });
 
   const isAlive = info != null;
-  // If DB says running/registered but process is gone, fix it
-  if (!isAlive && row && (row.status === "registered" || row.status === "starting")) {
+  // If DB says running/registered/reconnecting but process is gone, fix it
+  if (!isAlive && row && (row.status === "registered" || row.status === "starting" || row.status === "reconnecting")) {
     await upsertDeployment(extensionId, { status: "stopped", pid: null, sipRegistered: false });
     return {
       extensionId,
@@ -695,7 +704,7 @@ export async function getAllStatuses() {
     const uptime = isAlive ? Math.floor((Date.now() - info.startedAt.getTime()) / 1000) : null;
     return {
       extensionId: row.extensionId,
-      status: isAlive ? row.status : (row.status === "registered" || row.status === "starting" ? "stopped" : row.status),
+      status: isAlive ? row.status : (row.status === "registered" || row.status === "starting" || row.status === "reconnecting" ? "stopped" : row.status),
       pid: row.pid,
       sipLocalPort: row.sipLocalPort,
       httpPort: row.httpPort,
@@ -714,10 +723,7 @@ export async function reconcileOnStartup() {
   addSystemLog("Server starting — reconciling deployment state");
   await db.update(deploymentsTable)
     .set({ status: "stopped", pid: null, sipRegistered: false, updatedAt: new Date() })
-    .where(eq(deploymentsTable.status, "registered"));
-  await db.update(deploymentsTable)
-    .set({ status: "stopped", pid: null, sipRegistered: false, updatedAt: new Date() })
-    .where(eq(deploymentsTable.status, "starting"));
+    .where(inArray(deploymentsTable.status, ["registered", "reconnecting", "starting"]));
 
   // Load recent call events from DB into memory cache
   try {

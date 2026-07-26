@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 export interface DeployStatus {
   extensionId: number;
-  status: "stopped" | "starting" | "registered" | "error";
+  status: "stopped" | "starting" | "registered" | "reconnecting" | "error";
   pid: number | null;
   sipLocalPort: number | null;
   httpPort: number | null;
@@ -113,19 +113,21 @@ export function useSetWatchdog(extensionId: number) {
 
 export function statusLabel(status: DeployStatus["status"]) {
   switch (status) {
-    case "registered": return "Registered";
-    case "starting":   return "Starting…";
-    case "error":      return "Error";
-    default:           return "Stopped";
+    case "registered":   return "Registered";
+    case "starting":     return "Starting…";
+    case "reconnecting": return "Reconnecting…";
+    case "error":        return "Error";
+    default:             return "Stopped";
   }
 }
 
 export function statusColor(status: DeployStatus["status"]) {
   switch (status) {
-    case "registered": return "text-green-600";
-    case "starting":   return "text-yellow-500";
-    case "error":      return "text-red-500";
-    default:           return "text-black dark:text-white";
+    case "registered":   return "text-green-600";
+    case "starting":     return "text-yellow-500";
+    case "reconnecting": return "text-orange-500";
+    case "error":        return "text-red-500";
+    default:             return "text-black dark:text-white";
   }
 }
 
