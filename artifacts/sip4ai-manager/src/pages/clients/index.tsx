@@ -292,7 +292,6 @@ export default function ClientsList() {
           </TableBody>
         </Table>
       </div>
-    </div>
 
       <AlertDialog open={deletingId !== null} onOpenChange={(open) => { if (!open) setDeletingId(null); }}>
         <AlertDialogContent>

@@ -392,7 +392,6 @@ export default function ExtensionsList() {
           </TableBody>
         </Table>
       </div>
-    </div>
 
       <AlertDialog open={deletingId !== null} onOpenChange={(open) => { if (!open) setDeletingId(null); }}>
         <AlertDialogContent>
