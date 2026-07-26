@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useLocation } from "wouter";
-import { Server, Users, Phone, Settings, Menu, Activity, ScrollText, Bot, PhoneCall } from "lucide-react";
+import { Server, Users, Phone, Settings, Menu, Activity, FileTerminal, Bot, PhoneCall } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -10,7 +10,7 @@ const navItems = [
   { name: "AI Agents", href: "/agent-configs", icon: Bot },
   { name: "Extensions", href: "/extensions", icon: Users },
   { name: "Call History", href: "/calls", icon: PhoneCall },
-  { name: "Logs", href: "/logs", icon: ScrollText },
+  { name: "Logs", href: "/logs", icon: FileTerminal },
 ];
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
