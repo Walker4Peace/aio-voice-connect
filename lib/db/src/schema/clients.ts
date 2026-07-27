@@ -8,6 +8,9 @@ export const clientsTable = pgTable("clients", {
   description: text("description"),
   sipDomain: text("sip_domain"),
   sipServer: text("sip_server"),
+  // Yeastar PBX HTTP API (for outbound call triggering via Make Call API)
+  yeastarApiUrl: text("yeastar_api_url"),
+  yeastarApiToken: text("yeastar_api_token"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

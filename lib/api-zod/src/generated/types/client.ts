@@ -12,6 +12,10 @@ export interface Client {
   description?: string | null;
   sipDomain?: string | null;
   sipServer?: string | null;
+  /** Yeastar PBX HTTP API base URL for outbound call triggering */
+  yeastarApiUrl?: string | null;
+  /** Yeastar API token */
+  yeastarApiToken?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }

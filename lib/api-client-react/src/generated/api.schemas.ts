@@ -31,6 +31,10 @@ export interface Client {
   description?: string | null;
   sipDomain?: string | null;
   sipServer?: string | null;
+  /** Yeastar PBX HTTP API base URL for outbound call triggering */
+  yeastarApiUrl?: string | null;
+  /** Yeastar API token */
+  yeastarApiToken?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -40,6 +44,8 @@ export interface CreateClientInput {
   description?: string | null;
   sipDomain?: string | null;
   sipServer?: string | null;
+  yeastarApiUrl?: string | null;
+  yeastarApiToken?: string | null;
 }
 
 export type AiProvider = typeof AiProvider[keyof typeof AiProvider];
@@ -59,6 +65,7 @@ export type AgentConfigMode = typeof AgentConfigMode[keyof typeof AgentConfigMod
 export const AgentConfigMode = {
   inbound: 'inbound',
   outbound: 'outbound',
+  both: 'both',
 } as const;
 
 export interface AgentConfig {
@@ -103,14 +110,6 @@ export interface CreateExtensionInput {
   sipPassword: string;
 }
 
-export type CreateAgentConfigInputMode = typeof CreateAgentConfigInputMode[keyof typeof CreateAgentConfigInputMode];
-
-
-export const CreateAgentConfigInputMode = {
-  inbound: 'inbound',
-  outbound: 'outbound',
-} as const;
-
 export interface CreateAgentConfigInput {
   name: string;
   provider: AiProvider;
@@ -119,12 +118,136 @@ export interface CreateAgentConfigInput {
   modelId?: string | null;
   systemPrompt?: string | null;
   greeting?: string | null;
-  mode?: CreateAgentConfigInputMode;
+  mode?: AgentConfigMode;
   language?: string | null;
   extraConfig?: string | null;
 }
 
+export type AgentToolExecutionType = typeof AgentToolExecutionType[keyof typeof AgentToolExecutionType];
+
+
+export const AgentToolExecutionType = {
+  http_request: 'http_request',
+  webhook: 'webhook',
+  transfer_call: 'transfer_call',
+  hang_up: 'hang_up',
+  send_dtmf: 'send_dtmf',
+  custom_js: 'custom_js',
+} as const;
+
+export interface AgentTool {
+  id: number;
+  agentConfigId: number;
+  name: string;
+  description: string;
+  /** JSON Schema string describing the tool's parameters */
+  parametersSchema?: string | null;
+  executionType: AgentToolExecutionType;
+  /** JSON config specific to the execution type */
+  executionConfig?: string | null;
+  /** Execution timeout in seconds */
+  timeout: number;
+  requireConfirmation: boolean;
+  enabled: boolean;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateAgentToolInput {
+  agentConfigId: number;
+  name: string;
+  description: string;
+  parametersSchema?: string | null;
+  executionType: AgentToolExecutionType;
+  executionConfig?: string | null;
+  timeout?: number;
+  requireConfirmation?: boolean;
+  enabled?: boolean;
+  sortOrder?: number;
+}
+
+export type OutboundCallStatus = typeof OutboundCallStatus[keyof typeof OutboundCallStatus];
+
+
+export const OutboundCallStatus = {
+  pending: 'pending',
+  dialing: 'dialing',
+  active: 'active',
+  completed: 'completed',
+  failed: 'failed',
+} as const;
+
+export interface OutboundCall {
+  id: number;
+  extensionId?: number | null;
+  phoneNumber: string;
+  callerId?: string | null;
+  /** JSON string of runtime variables */
+  variables?: string | null;
+  firstMessage?: string | null;
+  systemPromptOverride?: string | null;
+  /** JSON string of caller metadata */
+  metadata?: string | null;
+  webhookUrl?: string | null;
+  status: OutboundCallStatus;
+  callId?: string | null;
+  /** JSON string of call outcome */
+  result?: string | null;
+  error?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Runtime context variables injected into the AI conversation
+ */
+export type TriggerOutboundCallInputVariables = { [key: string]: unknown } | null;
+
+/**
+ * Arbitrary metadata stored with the call record
+ */
+export type TriggerOutboundCallInputMetadata = { [key: string]: unknown } | null;
+
+export interface TriggerOutboundCallInput {
+  /** Extension to use for the outbound call */
+  extensionId: number;
+  /** Target phone number to call */
+  phoneNumber: string;
+  /** Caller ID to present to the callee */
+  callerId?: string | null;
+  /** Runtime context variables injected into the AI conversation */
+  variables?: TriggerOutboundCallInputVariables;
+  /** Override the agent's first message for this call */
+  firstMessage?: string | null;
+  /** Override the agent's system prompt for this call */
+  systemPromptOverride?: string | null;
+  /** Arbitrary metadata stored with the call record */
+  metadata?: TriggerOutboundCallInputMetadata;
+  /** URL to POST call result to when the call ends */
+  webhookUrl?: string | null;
+}
+
+export type OutboundContextVariables = { [key: string]: unknown } | null;
+
+export interface OutboundContext {
+  pending: boolean;
+  firstMessage?: string | null;
+  systemPromptOverride?: string | null;
+  variables?: OutboundContextVariables;
+  callId?: number | null;
+}
+
 export type ListExtensionsParams = {
 clientId?: number;
+};
+
+export type ListAgentToolsParams = {
+agentConfigId: number;
+};
+
+export type ListOutboundCallsParams = {
+extensionId?: number;
+limit?: number;
 };
 

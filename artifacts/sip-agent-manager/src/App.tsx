@@ -16,6 +16,7 @@ import AgentConfigsList from '@/pages/agent-configs/index';
 import AgentConfigForm from '@/pages/agent-configs/form';
 import LogsPage from '@/pages/logs/index';
 import CallsPage from '@/pages/calls/index';
+import OutboundPage from '@/pages/outbound/index';
 import SetupWizard from '@/pages/setup/index';
 import LoginPage from '@/pages/login/index';
 import { Loader2 } from 'lucide-react';
@@ -78,6 +79,7 @@ function AppRoutes() {
         <Route path="/agent-configs/new" component={AgentConfigForm} />
         <Route path="/agent-configs/:id/edit" component={AgentConfigForm} />
         <Route path="/calls" component={CallsPage} />
+        <Route path="/outbound" component={OutboundPage} />
         <Route path="/logs" component={LogsPage} />
         <Route component={NotFound} />
       </Switch>

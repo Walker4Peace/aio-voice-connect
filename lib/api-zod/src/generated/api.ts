@@ -39,6 +39,8 @@ export const ListClientsResponseItem = zod.object({
   "description": zod.string().nullish(),
   "sipDomain": zod.string().nullish(),
   "sipServer": zod.string().nullish(),
+  "yeastarApiUrl": zod.string().nullish().describe('Yeastar PBX HTTP API base URL for outbound call triggering'),
+  "yeastarApiToken": zod.string().nullish().describe('Yeastar API token'),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })
@@ -52,7 +54,9 @@ export const CreateClientBody = zod.object({
   "name": zod.string(),
   "description": zod.string().nullish(),
   "sipDomain": zod.string().nullish(),
-  "sipServer": zod.string().nullish()
+  "sipServer": zod.string().nullish(),
+  "yeastarApiUrl": zod.string().nullish(),
+  "yeastarApiToken": zod.string().nullish()
 })
 
 export const CreateClientResponse = zod.object({
@@ -61,6 +65,8 @@ export const CreateClientResponse = zod.object({
   "description": zod.string().nullish(),
   "sipDomain": zod.string().nullish(),
   "sipServer": zod.string().nullish(),
+  "yeastarApiUrl": zod.string().nullish().describe('Yeastar PBX HTTP API base URL for outbound call triggering'),
+  "yeastarApiToken": zod.string().nullish().describe('Yeastar API token'),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })
@@ -79,6 +85,8 @@ export const GetClientResponse = zod.object({
   "description": zod.string().nullish(),
   "sipDomain": zod.string().nullish(),
   "sipServer": zod.string().nullish(),
+  "yeastarApiUrl": zod.string().nullish().describe('Yeastar PBX HTTP API base URL for outbound call triggering'),
+  "yeastarApiToken": zod.string().nullish().describe('Yeastar API token'),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })
@@ -95,7 +103,9 @@ export const UpdateClientBody = zod.object({
   "name": zod.string(),
   "description": zod.string().nullish(),
   "sipDomain": zod.string().nullish(),
-  "sipServer": zod.string().nullish()
+  "sipServer": zod.string().nullish(),
+  "yeastarApiUrl": zod.string().nullish(),
+  "yeastarApiToken": zod.string().nullish()
 })
 
 export const UpdateClientResponse = zod.object({
@@ -104,6 +114,8 @@ export const UpdateClientResponse = zod.object({
   "description": zod.string().nullish(),
   "sipDomain": zod.string().nullish(),
   "sipServer": zod.string().nullish(),
+  "yeastarApiUrl": zod.string().nullish().describe('Yeastar PBX HTTP API base URL for outbound call triggering'),
+  "yeastarApiToken": zod.string().nullish().describe('Yeastar API token'),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })
@@ -143,6 +155,8 @@ export const ListExtensionsResponseItem = zod.object({
   "description": zod.string().nullish(),
   "sipDomain": zod.string().nullish(),
   "sipServer": zod.string().nullish(),
+  "yeastarApiUrl": zod.string().nullish().describe('Yeastar PBX HTTP API base URL for outbound call triggering'),
+  "yeastarApiToken": zod.string().nullish().describe('Yeastar API token'),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 }).nullish(),
@@ -155,7 +169,7 @@ export const ListExtensionsResponseItem = zod.object({
   "modelId": zod.string().nullish(),
   "systemPrompt": zod.string().nullish(),
   "greeting": zod.string().nullish(),
-  "mode": zod.enum(['inbound', 'outbound']).optional(),
+  "mode": zod.enum(['inbound', 'outbound', 'both']).optional(),
   "language": zod.string().nullish(),
   "extraConfig": zod.string().nullish().describe('JSON string for provider-specific extra fields'),
   "createdAt": zod.coerce.date(),
@@ -195,6 +209,8 @@ export const CreateExtensionResponse = zod.object({
   "description": zod.string().nullish(),
   "sipDomain": zod.string().nullish(),
   "sipServer": zod.string().nullish(),
+  "yeastarApiUrl": zod.string().nullish().describe('Yeastar PBX HTTP API base URL for outbound call triggering'),
+  "yeastarApiToken": zod.string().nullish().describe('Yeastar API token'),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 }).nullish(),
@@ -207,7 +223,7 @@ export const CreateExtensionResponse = zod.object({
   "modelId": zod.string().nullish(),
   "systemPrompt": zod.string().nullish(),
   "greeting": zod.string().nullish(),
-  "mode": zod.enum(['inbound', 'outbound']).optional(),
+  "mode": zod.enum(['inbound', 'outbound', 'both']).optional(),
   "language": zod.string().nullish(),
   "extraConfig": zod.string().nullish().describe('JSON string for provider-specific extra fields'),
   "createdAt": zod.coerce.date(),
@@ -240,6 +256,8 @@ export const GetExtensionResponse = zod.object({
   "description": zod.string().nullish(),
   "sipDomain": zod.string().nullish(),
   "sipServer": zod.string().nullish(),
+  "yeastarApiUrl": zod.string().nullish().describe('Yeastar PBX HTTP API base URL for outbound call triggering'),
+  "yeastarApiToken": zod.string().nullish().describe('Yeastar API token'),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 }).nullish(),
@@ -252,7 +270,7 @@ export const GetExtensionResponse = zod.object({
   "modelId": zod.string().nullish(),
   "systemPrompt": zod.string().nullish(),
   "greeting": zod.string().nullish(),
-  "mode": zod.enum(['inbound', 'outbound']).optional(),
+  "mode": zod.enum(['inbound', 'outbound', 'both']).optional(),
   "language": zod.string().nullish(),
   "extraConfig": zod.string().nullish().describe('JSON string for provider-specific extra fields'),
   "createdAt": zod.coerce.date(),
@@ -295,6 +313,8 @@ export const UpdateExtensionResponse = zod.object({
   "description": zod.string().nullish(),
   "sipDomain": zod.string().nullish(),
   "sipServer": zod.string().nullish(),
+  "yeastarApiUrl": zod.string().nullish().describe('Yeastar PBX HTTP API base URL for outbound call triggering'),
+  "yeastarApiToken": zod.string().nullish().describe('Yeastar API token'),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 }).nullish(),
@@ -307,7 +327,7 @@ export const UpdateExtensionResponse = zod.object({
   "modelId": zod.string().nullish(),
   "systemPrompt": zod.string().nullish(),
   "greeting": zod.string().nullish(),
-  "mode": zod.enum(['inbound', 'outbound']).optional(),
+  "mode": zod.enum(['inbound', 'outbound', 'both']).optional(),
   "language": zod.string().nullish(),
   "extraConfig": zod.string().nullish().describe('JSON string for provider-specific extra fields'),
   "createdAt": zod.coerce.date(),
@@ -338,7 +358,7 @@ export const ListAgentConfigsResponseItem = zod.object({
   "modelId": zod.string().nullish(),
   "systemPrompt": zod.string().nullish(),
   "greeting": zod.string().nullish(),
-  "mode": zod.enum(['inbound', 'outbound']).optional(),
+  "mode": zod.enum(['inbound', 'outbound', 'both']).optional(),
   "language": zod.string().nullish(),
   "extraConfig": zod.string().nullish().describe('JSON string for provider-specific extra fields'),
   "createdAt": zod.coerce.date(),
@@ -358,7 +378,7 @@ export const CreateAgentConfigBody = zod.object({
   "modelId": zod.string().nullish(),
   "systemPrompt": zod.string().nullish(),
   "greeting": zod.string().nullish(),
-  "mode": zod.enum(['inbound', 'outbound']).optional(),
+  "mode": zod.enum(['inbound', 'outbound', 'both']).optional(),
   "language": zod.string().nullish(),
   "extraConfig": zod.string().nullish()
 })
@@ -372,7 +392,7 @@ export const CreateAgentConfigResponse = zod.object({
   "modelId": zod.string().nullish(),
   "systemPrompt": zod.string().nullish(),
   "greeting": zod.string().nullish(),
-  "mode": zod.enum(['inbound', 'outbound']).optional(),
+  "mode": zod.enum(['inbound', 'outbound', 'both']).optional(),
   "language": zod.string().nullish(),
   "extraConfig": zod.string().nullish().describe('JSON string for provider-specific extra fields'),
   "createdAt": zod.coerce.date(),
@@ -396,7 +416,7 @@ export const GetAgentConfigResponse = zod.object({
   "modelId": zod.string().nullish(),
   "systemPrompt": zod.string().nullish(),
   "greeting": zod.string().nullish(),
-  "mode": zod.enum(['inbound', 'outbound']).optional(),
+  "mode": zod.enum(['inbound', 'outbound', 'both']).optional(),
   "language": zod.string().nullish(),
   "extraConfig": zod.string().nullish().describe('JSON string for provider-specific extra fields'),
   "createdAt": zod.coerce.date(),
@@ -419,7 +439,7 @@ export const UpdateAgentConfigBody = zod.object({
   "modelId": zod.string().nullish(),
   "systemPrompt": zod.string().nullish(),
   "greeting": zod.string().nullish(),
-  "mode": zod.enum(['inbound', 'outbound']).optional(),
+  "mode": zod.enum(['inbound', 'outbound', 'both']).optional(),
   "language": zod.string().nullish(),
   "extraConfig": zod.string().nullish()
 })
@@ -433,7 +453,7 @@ export const UpdateAgentConfigResponse = zod.object({
   "modelId": zod.string().nullish(),
   "systemPrompt": zod.string().nullish(),
   "greeting": zod.string().nullish(),
-  "mode": zod.enum(['inbound', 'outbound']).optional(),
+  "mode": zod.enum(['inbound', 'outbound', 'both']).optional(),
   "language": zod.string().nullish(),
   "extraConfig": zod.string().nullish().describe('JSON string for provider-specific extra fields'),
   "createdAt": zod.coerce.date(),
@@ -449,5 +469,249 @@ export const DeleteAgentConfigParams = zod.object({
 })
 
 export const DeleteAgentConfigResponse = zod.void()
+
+
+/**
+ * @summary List tools for an agent config
+ */
+export const ListAgentToolsQueryParams = zod.object({
+  "agentConfigId": zod.coerce.number()
+})
+
+export const ListAgentToolsResponseItem = zod.object({
+  "id": zod.number(),
+  "agentConfigId": zod.number(),
+  "name": zod.string(),
+  "description": zod.string(),
+  "parametersSchema": zod.string().nullish().describe('JSON Schema string describing the tool\'s parameters'),
+  "executionType": zod.enum(['http_request', 'webhook', 'transfer_call', 'hang_up', 'send_dtmf', 'custom_js']),
+  "executionConfig": zod.string().nullish().describe('JSON config specific to the execution type'),
+  "timeout": zod.number().describe('Execution timeout in seconds'),
+  "requireConfirmation": zod.boolean(),
+  "enabled": zod.boolean(),
+  "sortOrder": zod.number(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+export const ListAgentToolsResponse = zod.array(ListAgentToolsResponseItem)
+
+
+/**
+ * @summary Create an agent tool
+ */
+export const createAgentToolBodyTimeoutDefault = 10;
+export const createAgentToolBodyRequireConfirmationDefault = false;
+export const createAgentToolBodyEnabledDefault = true;
+export const createAgentToolBodySortOrderDefault = 0;
+
+export const CreateAgentToolBody = zod.object({
+  "agentConfigId": zod.number(),
+  "name": zod.string(),
+  "description": zod.string(),
+  "parametersSchema": zod.string().nullish(),
+  "executionType": zod.enum(['http_request', 'webhook', 'transfer_call', 'hang_up', 'send_dtmf', 'custom_js']),
+  "executionConfig": zod.string().nullish(),
+  "timeout": zod.number().default(createAgentToolBodyTimeoutDefault),
+  "requireConfirmation": zod.boolean().default(createAgentToolBodyRequireConfirmationDefault),
+  "enabled": zod.boolean().default(createAgentToolBodyEnabledDefault),
+  "sortOrder": zod.number().default(createAgentToolBodySortOrderDefault)
+})
+
+export const CreateAgentToolResponse = zod.object({
+  "id": zod.number(),
+  "agentConfigId": zod.number(),
+  "name": zod.string(),
+  "description": zod.string(),
+  "parametersSchema": zod.string().nullish().describe('JSON Schema string describing the tool\'s parameters'),
+  "executionType": zod.enum(['http_request', 'webhook', 'transfer_call', 'hang_up', 'send_dtmf', 'custom_js']),
+  "executionConfig": zod.string().nullish().describe('JSON config specific to the execution type'),
+  "timeout": zod.number().describe('Execution timeout in seconds'),
+  "requireConfirmation": zod.boolean(),
+  "enabled": zod.boolean(),
+  "sortOrder": zod.number(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Get an agent tool by ID
+ */
+export const GetAgentToolParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetAgentToolResponse = zod.object({
+  "id": zod.number(),
+  "agentConfigId": zod.number(),
+  "name": zod.string(),
+  "description": zod.string(),
+  "parametersSchema": zod.string().nullish().describe('JSON Schema string describing the tool\'s parameters'),
+  "executionType": zod.enum(['http_request', 'webhook', 'transfer_call', 'hang_up', 'send_dtmf', 'custom_js']),
+  "executionConfig": zod.string().nullish().describe('JSON config specific to the execution type'),
+  "timeout": zod.number().describe('Execution timeout in seconds'),
+  "requireConfirmation": zod.boolean(),
+  "enabled": zod.boolean(),
+  "sortOrder": zod.number(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Update an agent tool
+ */
+export const UpdateAgentToolParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const updateAgentToolBodyTimeoutDefault = 10;
+export const updateAgentToolBodyRequireConfirmationDefault = false;
+export const updateAgentToolBodyEnabledDefault = true;
+export const updateAgentToolBodySortOrderDefault = 0;
+
+export const UpdateAgentToolBody = zod.object({
+  "agentConfigId": zod.number(),
+  "name": zod.string(),
+  "description": zod.string(),
+  "parametersSchema": zod.string().nullish(),
+  "executionType": zod.enum(['http_request', 'webhook', 'transfer_call', 'hang_up', 'send_dtmf', 'custom_js']),
+  "executionConfig": zod.string().nullish(),
+  "timeout": zod.number().default(updateAgentToolBodyTimeoutDefault),
+  "requireConfirmation": zod.boolean().default(updateAgentToolBodyRequireConfirmationDefault),
+  "enabled": zod.boolean().default(updateAgentToolBodyEnabledDefault),
+  "sortOrder": zod.number().default(updateAgentToolBodySortOrderDefault)
+})
+
+export const UpdateAgentToolResponse = zod.object({
+  "id": zod.number(),
+  "agentConfigId": zod.number(),
+  "name": zod.string(),
+  "description": zod.string(),
+  "parametersSchema": zod.string().nullish().describe('JSON Schema string describing the tool\'s parameters'),
+  "executionType": zod.enum(['http_request', 'webhook', 'transfer_call', 'hang_up', 'send_dtmf', 'custom_js']),
+  "executionConfig": zod.string().nullish().describe('JSON config specific to the execution type'),
+  "timeout": zod.number().describe('Execution timeout in seconds'),
+  "requireConfirmation": zod.boolean(),
+  "enabled": zod.boolean(),
+  "sortOrder": zod.number(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Delete an agent tool
+ */
+export const DeleteAgentToolParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const DeleteAgentToolResponse = zod.void()
+
+
+/**
+ * @summary Trigger an outbound call (public — use X-Api-Key header)
+ */
+export const TriggerOutboundCallBody = zod.object({
+  "extensionId": zod.number().describe('Extension to use for the outbound call'),
+  "phoneNumber": zod.string().describe('Target phone number to call'),
+  "callerId": zod.string().nullish().describe('Caller ID to present to the callee'),
+  "variables": zod.record(zod.string(), zod.unknown()).nullish().describe('Runtime context variables injected into the AI conversation'),
+  "firstMessage": zod.string().nullish().describe('Override the agent\'s first message for this call'),
+  "systemPromptOverride": zod.string().nullish().describe('Override the agent\'s system prompt for this call'),
+  "metadata": zod.record(zod.string(), zod.unknown()).nullish().describe('Arbitrary metadata stored with the call record'),
+  "webhookUrl": zod.string().nullish().describe('URL to POST call result to when the call ends')
+})
+
+export const TriggerOutboundCallResponse = zod.object({
+  "id": zod.number(),
+  "extensionId": zod.number().nullish(),
+  "phoneNumber": zod.string(),
+  "callerId": zod.string().nullish(),
+  "variables": zod.string().nullish().describe('JSON string of runtime variables'),
+  "firstMessage": zod.string().nullish(),
+  "systemPromptOverride": zod.string().nullish(),
+  "metadata": zod.string().nullish().describe('JSON string of caller metadata'),
+  "webhookUrl": zod.string().nullish(),
+  "status": zod.enum(['pending', 'dialing', 'active', 'completed', 'failed']),
+  "callId": zod.string().nullish(),
+  "result": zod.string().nullish().describe('JSON string of call outcome'),
+  "error": zod.string().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary List outbound call history
+ */
+export const listOutboundCallsQueryLimitDefault = 50;
+
+export const ListOutboundCallsQueryParams = zod.object({
+  "extensionId": zod.coerce.number().optional(),
+  "limit": zod.coerce.number().default(listOutboundCallsQueryLimitDefault)
+})
+
+export const ListOutboundCallsResponseItem = zod.object({
+  "id": zod.number(),
+  "extensionId": zod.number().nullish(),
+  "phoneNumber": zod.string(),
+  "callerId": zod.string().nullish(),
+  "variables": zod.string().nullish().describe('JSON string of runtime variables'),
+  "firstMessage": zod.string().nullish(),
+  "systemPromptOverride": zod.string().nullish(),
+  "metadata": zod.string().nullish().describe('JSON string of caller metadata'),
+  "webhookUrl": zod.string().nullish(),
+  "status": zod.enum(['pending', 'dialing', 'active', 'completed', 'failed']),
+  "callId": zod.string().nullish(),
+  "result": zod.string().nullish().describe('JSON string of call outcome'),
+  "error": zod.string().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+export const ListOutboundCallsResponse = zod.array(ListOutboundCallsResponseItem)
+
+
+/**
+ * @summary Get an outbound call by ID
+ */
+export const GetOutboundCallParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetOutboundCallResponse = zod.object({
+  "id": zod.number(),
+  "extensionId": zod.number().nullish(),
+  "phoneNumber": zod.string(),
+  "callerId": zod.string().nullish(),
+  "variables": zod.string().nullish().describe('JSON string of runtime variables'),
+  "firstMessage": zod.string().nullish(),
+  "systemPromptOverride": zod.string().nullish(),
+  "metadata": zod.string().nullish().describe('JSON string of caller metadata'),
+  "webhookUrl": zod.string().nullish(),
+  "status": zod.enum(['pending', 'dialing', 'active', 'completed', 'failed']),
+  "callId": zod.string().nullish(),
+  "result": zod.string().nullish().describe('JSON string of call outcome'),
+  "error": zod.string().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Get pending outbound call context for an extension (called by sip-agent)
+ */
+export const GetOutboundContextParams = zod.object({
+  "extensionId": zod.coerce.number()
+})
+
+export const GetOutboundContextResponse = zod.object({
+  "pending": zod.boolean(),
+  "firstMessage": zod.string().nullish(),
+  "systemPromptOverride": zod.string().nullish(),
+  "variables": zod.record(zod.string(), zod.unknown()).nullish(),
+  "callId": zod.number().nullish()
+})
 
 

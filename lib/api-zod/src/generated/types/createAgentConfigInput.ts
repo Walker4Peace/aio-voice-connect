@@ -5,8 +5,8 @@
  * SIP Agent Configuration Manager API
  * OpenAPI spec version: 0.1.0
  */
+import type { AgentConfigMode } from './agentConfigMode';
 import type { AiProvider } from './aiProvider';
-import type { CreateAgentConfigInputMode } from './createAgentConfigInputMode';
 
 export interface CreateAgentConfigInput {
   name: string;
@@ -16,7 +16,7 @@ export interface CreateAgentConfigInput {
   modelId?: string | null;
   systemPrompt?: string | null;
   greeting?: string | null;
-  mode?: CreateAgentConfigInputMode;
+  mode?: AgentConfigMode;
   language?: string | null;
   extraConfig?: string | null;
 }

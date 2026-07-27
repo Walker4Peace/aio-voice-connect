@@ -8,10 +8,12 @@
 
 export * from './agentConfig';
 export * from './agentConfigMode';
+export * from './agentTool';
+export * from './agentToolExecutionType';
 export * from './aiProvider';
 export * from './client';
 export * from './createAgentConfigInput';
-export * from './createAgentConfigInputMode';
+export * from './createAgentToolInput';
 export * from './createClientInput';
 export * from './createExtensionInput';
 export * from './dashboardStats';
@@ -19,4 +21,13 @@ export * from './dashboardStatsExtensionsByProviderItem';
 export * from './errorResponse';
 export * from './extension';
 export * from './healthStatus';
+export * from './listAgentToolsParams';
 export * from './listExtensionsParams';
+export * from './listOutboundCallsParams';
+export * from './outboundCall';
+export * from './outboundCallStatus';
+export * from './outboundContext';
+export * from './outboundContextVariables';
+export * from './triggerOutboundCallInput';
+export * from './triggerOutboundCallInputMetadata';
+export * from './triggerOutboundCallInputVariables';

@@ -22,12 +22,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { PasswordInput } from "@/components/ui/password-input";
 import { ArrowLeft } from "lucide-react";
+import { ToolsSection } from "./tools-section";
 
 const formSchema = z.object({
   name: z.string().min(1),
   provider: z.enum(["openai", "elevenlabs", "gemini", "deepgram", "cartesia"]),
   apiKey: z.string().min(1),
-  mode: z.enum(["inbound", "outbound"]).default("inbound"),
+  mode: z.enum(["inbound", "outbound", "both"]).default("inbound"),
   voiceId: z.string().optional(),
   modelId: z.string().optional(),
   systemPrompt: z.string().optional(),
@@ -68,7 +69,7 @@ export default function AgentConfigForm() {
         name: existingConfig.name,
         provider: existingConfig.provider,
         apiKey: existingConfig.apiKey,
-        mode: (existingConfig.mode as "inbound" | "outbound") || "inbound",
+        mode: (existingConfig.mode as "inbound" | "outbound" | "both") || "inbound",
         voiceId: existingConfig.voiceId || "",
         modelId: existingConfig.modelId || "",
         systemPrompt: existingConfig.systemPrompt || "",
@@ -196,6 +197,7 @@ export default function AgentConfigForm() {
                       <SelectContent>
                         <SelectItem value="inbound">{t("agentForm.inbound")}</SelectItem>
                         <SelectItem value="outbound">{t("agentForm.outbound")}</SelectItem>
+                        <SelectItem value="both">{t("agentForm.both")}</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -313,6 +315,13 @@ export default function AgentConfigForm() {
                   </FormItem>
                 )} />
               </div>
+
+              {/* Tools section — only shown when editing an existing config */}
+              {isEdit && id && (
+                <div className="pt-6 border-t">
+                  <ToolsSection agentConfigId={Number(id)} />
+                </div>
+              )}
 
               <div className="flex justify-end gap-4 pt-6 border-t">
                 <Button type="button" variant="outline" onClick={() => window.history.back()}>

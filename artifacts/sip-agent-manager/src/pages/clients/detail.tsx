@@ -36,6 +36,8 @@ const editSchema = z.object({
   sipDomain: z.string().optional(),
   sipHost: z.string().optional(),
   sipPort: z.string().min(1),
+  yeastarApiUrl: z.string().optional(),
+  yeastarApiToken: z.string().optional(),
 });
 
 function parseSipServer(sipServer: string | null | undefined): { sipHost: string; sipPort: string } {
@@ -87,7 +89,7 @@ export default function ClientDetail() {
 
   const form = useForm<z.infer<typeof editSchema>>({
     resolver: zodResolver(editSchema),
-    defaultValues: { name: "", description: "", sipDomain: "", sipHost: "", sipPort: "5060" },
+    defaultValues: { name: "", description: "", sipDomain: "", sipHost: "", sipPort: "5060", yeastarApiUrl: "", yeastarApiToken: "" },
   });
 
   React.useEffect(() => {
@@ -99,6 +101,8 @@ export default function ClientDetail() {
         sipDomain: client.sipDomain ?? "",
         sipHost,
         sipPort,
+        yeastarApiUrl: (client as { yeastarApiUrl?: string | null }).yeastarApiUrl ?? "",
+        yeastarApiToken: (client as { yeastarApiToken?: string | null }).yeastarApiToken ?? "",
       });
     }
   }, [client, form]);
@@ -112,7 +116,14 @@ export default function ClientDetail() {
   const onSave = (values: z.infer<typeof editSchema>) => {
     const sipServer = values.sipHost ? `${values.sipHost}:${values.sipPort || "5060"}` : "";
     updateClient.mutate(
-      { id: clientId, data: { name: values.name, description: values.description, sipDomain: values.sipDomain, sipServer } },
+      { id: clientId, data: {
+        name: values.name,
+        description: values.description,
+        sipDomain: values.sipDomain,
+        sipServer,
+        yeastarApiUrl: values.yeastarApiUrl || null,
+        yeastarApiToken: values.yeastarApiToken || null,
+      } as Parameters<typeof updateClient.mutate>[0]["data"] },
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: ['client', clientId] });

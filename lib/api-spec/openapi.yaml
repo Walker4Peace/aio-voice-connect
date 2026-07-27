@@ -16,6 +16,10 @@ tags:
     description: SIP extension management
   - name: agentConfigs
     description: AI agent configuration
+  - name: agentTools
+    description: AI agent tool definitions
+  - name: outbound
+    description: Outbound call management
   - name: stats
     description: Dashboard statistics
 
@@ -330,6 +334,205 @@ paths:
         "204":
           description: Deleted
 
+  /agent-tools:
+    get:
+      operationId: listAgentTools
+      tags: [agentTools]
+      summary: List tools for an agent config
+      parameters:
+        - name: agentConfigId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of agent tools
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AgentTool"
+    post:
+      operationId: createAgentTool
+      tags: [agentTools]
+      summary: Create an agent tool
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAgentToolInput"
+      responses:
+        "201":
+          description: Created agent tool
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentTool"
+
+  /agent-tools/{id}:
+    get:
+      operationId: getAgentTool
+      tags: [agentTools]
+      summary: Get an agent tool by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Agent tool
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentTool"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      operationId: updateAgentTool
+      tags: [agentTools]
+      summary: Update an agent tool
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAgentToolInput"
+      responses:
+        "200":
+          description: Updated agent tool
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentTool"
+    delete:
+      operationId: deleteAgentTool
+      tags: [agentTools]
+      summary: Delete an agent tool
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /outbound/call:
+    post:
+      operationId: triggerOutboundCall
+      tags: [outbound]
+      summary: Trigger an outbound call (public — use X-Api-Key header)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TriggerOutboundCallInput"
+      responses:
+        "202":
+          description: Call accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OutboundCall"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /outbound/calls:
+    get:
+      operationId: listOutboundCalls
+      tags: [outbound]
+      summary: List outbound call history
+      parameters:
+        - name: extensionId
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+      responses:
+        "200":
+          description: List of outbound calls
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OutboundCall"
+
+  /outbound/calls/{id}:
+    get:
+      operationId: getOutboundCall
+      tags: [outbound]
+      summary: Get an outbound call by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Outbound call
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OutboundCall"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /outbound/context/{extensionId}:
+    get:
+      operationId: getOutboundContext
+      tags: [outbound]
+      summary: Get pending outbound call context for an extension (called by sip-agent)
+      parameters:
+        - name: extensionId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Outbound context or empty
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OutboundContext"
+
 components:
   schemas:
     HealthStatus:
@@ -391,6 +594,14 @@ components:
         sipServer:
           type: string
           nullable: true
+        yeastarApiUrl:
+          type: string
+          nullable: true
+          description: Yeastar PBX HTTP API base URL for outbound call triggering
+        yeastarApiToken:
+          type: string
+          nullable: true
+          description: Yeastar API token
         createdAt:
           type: string
           format: date-time
@@ -415,6 +626,12 @@ components:
           type: string
           nullable: true
         sipServer:
+          type: string
+          nullable: true
+        yeastarApiUrl:
+          type: string
+          nullable: true
+        yeastarApiToken:
           type: string
           nullable: true
       required:
@@ -498,6 +715,13 @@ components:
         - deepgram
         - cartesia
 
+    AgentConfigMode:
+      type: string
+      enum:
+        - inbound
+        - outbound
+        - both
+
     AgentConfig:
       type: object
       properties:
@@ -522,8 +746,7 @@ components:
           type: string
           nullable: true
         mode:
-          type: string
-          enum: [inbound, outbound]
+          $ref: "#/components/schemas/AgentConfigMode"
         language:
           type: string
           nullable: true
@@ -567,8 +790,7 @@ components:
           type: string
           nullable: true
         mode:
-          type: string
-          enum: [inbound, outbound]
+          $ref: "#/components/schemas/AgentConfigMode"
         language:
           type: string
           nullable: true
@@ -579,3 +801,221 @@ components:
         - name
         - provider
         - apiKey
+
+    AgentToolExecutionType:
+      type: string
+      enum:
+        - http_request
+        - webhook
+        - transfer_call
+        - hang_up
+        - send_dtmf
+        - custom_js
+
+    AgentTool:
+      type: object
+      properties:
+        id:
+          type: integer
+        agentConfigId:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        parametersSchema:
+          type: string
+          nullable: true
+          description: JSON Schema string describing the tool's parameters
+        executionType:
+          $ref: "#/components/schemas/AgentToolExecutionType"
+        executionConfig:
+          type: string
+          nullable: true
+          description: JSON config specific to the execution type
+        timeout:
+          type: integer
+          description: Execution timeout in seconds
+        requireConfirmation:
+          type: boolean
+        enabled:
+          type: boolean
+        sortOrder:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - agentConfigId
+        - name
+        - description
+        - executionType
+        - timeout
+        - requireConfirmation
+        - enabled
+        - sortOrder
+        - createdAt
+        - updatedAt
+
+    CreateAgentToolInput:
+      type: object
+      properties:
+        agentConfigId:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        parametersSchema:
+          type: string
+          nullable: true
+        executionType:
+          $ref: "#/components/schemas/AgentToolExecutionType"
+        executionConfig:
+          type: string
+          nullable: true
+        timeout:
+          type: integer
+          default: 10
+        requireConfirmation:
+          type: boolean
+          default: false
+        enabled:
+          type: boolean
+          default: true
+        sortOrder:
+          type: integer
+          default: 0
+      required:
+        - agentConfigId
+        - name
+        - description
+        - executionType
+
+    OutboundCallStatus:
+      type: string
+      enum:
+        - pending
+        - dialing
+        - active
+        - completed
+        - failed
+
+    OutboundCall:
+      type: object
+      properties:
+        id:
+          type: integer
+        extensionId:
+          type: integer
+          nullable: true
+        phoneNumber:
+          type: string
+        callerId:
+          type: string
+          nullable: true
+        variables:
+          type: string
+          nullable: true
+          description: JSON string of runtime variables
+        firstMessage:
+          type: string
+          nullable: true
+        systemPromptOverride:
+          type: string
+          nullable: true
+        metadata:
+          type: string
+          nullable: true
+          description: JSON string of caller metadata
+        webhookUrl:
+          type: string
+          nullable: true
+        status:
+          $ref: "#/components/schemas/OutboundCallStatus"
+        callId:
+          type: string
+          nullable: true
+        result:
+          type: string
+          nullable: true
+          description: JSON string of call outcome
+        error:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - phoneNumber
+        - status
+        - createdAt
+        - updatedAt
+
+    TriggerOutboundCallInput:
+      type: object
+      properties:
+        extensionId:
+          type: integer
+          description: Extension to use for the outbound call
+        phoneNumber:
+          type: string
+          description: Target phone number to call
+        callerId:
+          type: string
+          nullable: true
+          description: Caller ID to present to the callee
+        variables:
+          type: object
+          nullable: true
+          description: Runtime context variables injected into the AI conversation
+          additionalProperties: true
+        firstMessage:
+          type: string
+          nullable: true
+          description: Override the agent's first message for this call
+        systemPromptOverride:
+          type: string
+          nullable: true
+          description: Override the agent's system prompt for this call
+        metadata:
+          type: object
+          nullable: true
+          description: Arbitrary metadata stored with the call record
+          additionalProperties: true
+        webhookUrl:
+          type: string
+          nullable: true
+          description: URL to POST call result to when the call ends
+      required:
+        - extensionId
+        - phoneNumber
+
+    OutboundContext:
+      type: object
+      properties:
+        pending:
+          type: boolean
+        firstMessage:
+          type: string
+          nullable: true
+        systemPromptOverride:
+          type: string
+          nullable: true
+        variables:
+          type: object
+          nullable: true
+          additionalProperties: true
+        callId:
+          type: integer
+          nullable: true
+      required:
+        - pending

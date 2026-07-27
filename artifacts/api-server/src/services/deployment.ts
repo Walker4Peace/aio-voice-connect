@@ -2,8 +2,8 @@ import { spawn, ChildProcess } from "child_process";
 import path from "path";
 import fs from "fs/promises";
 import net from "net";
-import { db, extensionsTable, deploymentsTable, callEventsTable, type Deployment } from "@workspace/db";
-import { eq, inArray, and } from "drizzle-orm";
+import { db, extensionsTable, deploymentsTable, callEventsTable, agentToolsTable, type Deployment } from "@workspace/db";
+import { eq, inArray, and, asc } from "drizzle-orm";
 import { logger } from "../lib/logger.js";
 
 const SIP_AGENT_BIN =
@@ -295,7 +295,7 @@ function parseRegistration(line: string): "registered" | "reconnecting" | "error
   return null;
 }
 
-function buildConfig(
+async function buildConfig(
   ext: Awaited<ReturnType<typeof getExtWithRelations>>,
   extensionId: number,
   ports: { sipLocalPort: number; httpPort: number },
@@ -310,6 +310,11 @@ function buildConfig(
   //   sip.listen  25060 + id  (local UDP port the SIP stack binds for send/receive)
   // api_port: use a unique port per extension to avoid conflicts with the
   // Express API server (8080) and other extension instances.
+
+  // API base URL for tool execution callbacks and outbound context
+  const apiPort = process.env["PORT"] ?? "8080";
+  const apiBaseUrl = process.env["API_BASE_URL"] ?? `http://localhost:${apiPort}/api`;
+
   const base: Record<string, unknown> = {
     mode: cfg.mode ?? "inbound",
     api_port: ports.httpPort,
@@ -324,6 +329,9 @@ function buildConfig(
        // `listen` is the local SIP socket and is unique per extension.
        listen: ports.sipLocalPort,
     },
+    // Callback URLs for tool execution and outbound call context injection
+    tools_callback_url: `${apiBaseUrl}/tools/execute`,
+    context_webhook_url: `${apiBaseUrl}/outbound/context/${extensionId}`,
   };
   // API keys are NOT embedded in config.json — passed via environment variables only.
   switch (cfg.provider as AiProviderKey) {
@@ -371,7 +379,26 @@ function buildConfig(
   if (cfg.extraConfig) {
     try { Object.assign(base, JSON.parse(cfg.extraConfig)); } catch { /* ignore */ }
   }
+
+  // Include enabled tools in the config so the sip-agent binary can use them
+  const tools = await getToolsForAgentConfig(cfg.id);
+  const enabledTools = tools.filter(t => t.enabled);
+  if (enabledTools.length > 0) {
+    base["tools"] = enabledTools.map(t => ({
+      name: t.name,
+      description: t.description,
+      ...(t.parametersSchema ? { parameters: safeParseJson(t.parametersSchema) } : { parameters: {} }),
+      execution_type: t.executionType,
+      timeout: t.timeout,
+      require_confirmation: t.requireConfirmation,
+    }));
+  }
+
   return base;
+}
+
+function safeParseJson(str: string): Record<string, unknown> {
+  try { return JSON.parse(str) as Record<string, unknown>; } catch { return {}; }
 }
 
 function serviceNameFor(ext: NonNullable<Awaited<ReturnType<typeof getExtWithRelations>>>): string {
@@ -398,6 +425,14 @@ async function getExtWithRelations(extensionId: number) {
     where: eq(extensionsTable.id, extensionId),
     with: { agentConfig: true, client: true },
   });
+}
+
+async function getToolsForAgentConfig(agentConfigId: number) {
+  return db
+    .select()
+    .from(agentToolsTable)
+    .where(eq(agentToolsTable.agentConfigId, agentConfigId))
+    .orderBy(asc(agentToolsTable.sortOrder), asc(agentToolsTable.createdAt));
 }
 
 async function upsertDeployment(extensionId: number, patch: Partial<Omit<Deployment, "id" | "extensionId" | "createdAt">>) {
@@ -516,7 +551,7 @@ export async function startExtension(extensionId: number): Promise<void> {
   const configPath = path.join(configDir, "config.json");
   const { sipLocalPort, httpPort } = await allocatePorts(extensionId);
   const serviceName = serviceNameFor(ext);
-  const config = buildConfig(ext, extensionId, { sipLocalPort, httpPort });
+  const config = await buildConfig(ext, extensionId, { sipLocalPort, httpPort });
   await fs.writeFile(configPath, JSON.stringify(config, null, 2));
   const env = buildEnv(ext, configPath);
 

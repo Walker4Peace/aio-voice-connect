@@ -21,15 +21,22 @@ import type {
 
 import type {
   AgentConfig,
+  AgentTool,
   Client,
   CreateAgentConfigInput,
+  CreateAgentToolInput,
   CreateClientInput,
   CreateExtensionInput,
   DashboardStats,
   ErrorResponse,
   Extension,
   HealthStatus,
-  ListExtensionsParams
+  ListAgentToolsParams,
+  ListExtensionsParams,
+  ListOutboundCallsParams,
+  OutboundCall,
+  OutboundContext,
+  TriggerOutboundCallInput
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -1323,4 +1330,688 @@ export const useDeleteAgentConfig = <TError = ErrorType<unknown>,
       > => {
       return useMutation(getDeleteAgentConfigMutationOptions(options));
     }
+
+export const getListAgentToolsUrl = (params: ListAgentToolsParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/agent-tools?${stringifiedParams}` : `/api/agent-tools`
+}
+
+/**
+ * @summary List tools for an agent config
+ */
+export const listAgentTools = async (params: ListAgentToolsParams, options?: RequestInit): Promise<AgentTool[]> => {
+
+  return customFetch<AgentTool[]>(getListAgentToolsUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListAgentToolsQueryKey = (params?: ListAgentToolsParams,) => {
+    return [
+    `/api/agent-tools`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getListAgentToolsQueryOptions = <TData = Awaited<ReturnType<typeof listAgentTools>>, TError = ErrorType<unknown>>(params: ListAgentToolsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listAgentTools>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListAgentToolsQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAgentTools>>> = ({ signal }) => listAgentTools(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAgentTools>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListAgentToolsQueryResult = NonNullable<Awaited<ReturnType<typeof listAgentTools>>>
+export type ListAgentToolsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List tools for an agent config
+ */
+
+export function useListAgentTools<TData = Awaited<ReturnType<typeof listAgentTools>>, TError = ErrorType<unknown>>(
+ params: ListAgentToolsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listAgentTools>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListAgentToolsQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateAgentToolUrl = () => {
+
+
+
+
+  return `/api/agent-tools`
+}
+
+/**
+ * @summary Create an agent tool
+ */
+export const createAgentTool = async (createAgentToolInput: CreateAgentToolInput, options?: RequestInit): Promise<AgentTool> => {
+
+  return customFetch<AgentTool>(getCreateAgentToolUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(createAgentToolInput)
+  }
+);}
+
+
+
+
+
+export const getCreateAgentToolMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAgentTool>>, TError,{data: BodyType<CreateAgentToolInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createAgentTool>>, TError,{data: BodyType<CreateAgentToolInput>}, TContext> => {
+
+const mutationKey = ['createAgentTool'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAgentTool>>, {data: BodyType<CreateAgentToolInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createAgentTool(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateAgentToolMutationResult = NonNullable<Awaited<ReturnType<typeof createAgentTool>>>
+    export type CreateAgentToolMutationBody = BodyType<CreateAgentToolInput>
+    export type CreateAgentToolMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Create an agent tool
+ */
+export const useCreateAgentTool = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAgentTool>>, TError,{data: BodyType<CreateAgentToolInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createAgentTool>>,
+        TError,
+        {data: BodyType<CreateAgentToolInput>},
+        TContext
+      > => {
+      return useMutation(getCreateAgentToolMutationOptions(options));
+    }
+
+export const getGetAgentToolUrl = (id: number,) => {
+
+
+
+
+  return `/api/agent-tools/${id}`
+}
+
+/**
+ * @summary Get an agent tool by ID
+ */
+export const getAgentTool = async (id: number, options?: RequestInit): Promise<AgentTool> => {
+
+  return customFetch<AgentTool>(getGetAgentToolUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAgentToolQueryKey = (id: number,) => {
+    return [
+    `/api/agent-tools/${id}`
+    ] as const;
+    }
+
+
+export const getGetAgentToolQueryOptions = <TData = Awaited<ReturnType<typeof getAgentTool>>, TError = ErrorType<ErrorResponse>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAgentTool>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAgentToolQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAgentTool>>> = ({ signal }) => getAgentTool(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAgentTool>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetAgentToolQueryResult = NonNullable<Awaited<ReturnType<typeof getAgentTool>>>
+export type GetAgentToolQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary Get an agent tool by ID
+ */
+
+export function useGetAgentTool<TData = Awaited<ReturnType<typeof getAgentTool>>, TError = ErrorType<ErrorResponse>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAgentTool>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetAgentToolQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getUpdateAgentToolUrl = (id: number,) => {
+
+
+
+
+  return `/api/agent-tools/${id}`
+}
+
+/**
+ * @summary Update an agent tool
+ */
+export const updateAgentTool = async (id: number,
+    createAgentToolInput: CreateAgentToolInput, options?: RequestInit): Promise<AgentTool> => {
+
+  return customFetch<AgentTool>(getUpdateAgentToolUrl(id),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(createAgentToolInput)
+  }
+);}
+
+
+
+
+
+export const getUpdateAgentToolMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAgentTool>>, TError,{id: number;data: BodyType<CreateAgentToolInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateAgentTool>>, TError,{id: number;data: BodyType<CreateAgentToolInput>}, TContext> => {
+
+const mutationKey = ['updateAgentTool'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateAgentTool>>, {id: number;data: BodyType<CreateAgentToolInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateAgentTool(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateAgentToolMutationResult = NonNullable<Awaited<ReturnType<typeof updateAgentTool>>>
+    export type UpdateAgentToolMutationBody = BodyType<CreateAgentToolInput>
+    export type UpdateAgentToolMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Update an agent tool
+ */
+export const useUpdateAgentTool = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAgentTool>>, TError,{id: number;data: BodyType<CreateAgentToolInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateAgentTool>>,
+        TError,
+        {id: number;data: BodyType<CreateAgentToolInput>},
+        TContext
+      > => {
+      return useMutation(getUpdateAgentToolMutationOptions(options));
+    }
+
+export const getDeleteAgentToolUrl = (id: number,) => {
+
+
+
+
+  return `/api/agent-tools/${id}`
+}
+
+/**
+ * @summary Delete an agent tool
+ */
+export const deleteAgentTool = async (id: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteAgentToolUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteAgentToolMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAgentTool>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteAgentTool>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['deleteAgentTool'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteAgentTool>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteAgentTool(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteAgentToolMutationResult = NonNullable<Awaited<ReturnType<typeof deleteAgentTool>>>
+
+    export type DeleteAgentToolMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Delete an agent tool
+ */
+export const useDeleteAgentTool = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAgentTool>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteAgentTool>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteAgentToolMutationOptions(options));
+    }
+
+export const getTriggerOutboundCallUrl = () => {
+
+
+
+
+  return `/api/outbound/call`
+}
+
+/**
+ * @summary Trigger an outbound call (public — use X-Api-Key header)
+ */
+export const triggerOutboundCall = async (triggerOutboundCallInput: TriggerOutboundCallInput, options?: RequestInit): Promise<OutboundCall> => {
+
+  return customFetch<OutboundCall>(getTriggerOutboundCallUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(triggerOutboundCallInput)
+  }
+);}
+
+
+
+
+
+export const getTriggerOutboundCallMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof triggerOutboundCall>>, TError,{data: BodyType<TriggerOutboundCallInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof triggerOutboundCall>>, TError,{data: BodyType<TriggerOutboundCallInput>}, TContext> => {
+
+const mutationKey = ['triggerOutboundCall'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof triggerOutboundCall>>, {data: BodyType<TriggerOutboundCallInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  triggerOutboundCall(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type TriggerOutboundCallMutationResult = NonNullable<Awaited<ReturnType<typeof triggerOutboundCall>>>
+    export type TriggerOutboundCallMutationBody = BodyType<TriggerOutboundCallInput>
+    export type TriggerOutboundCallMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Trigger an outbound call (public — use X-Api-Key header)
+ */
+export const useTriggerOutboundCall = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof triggerOutboundCall>>, TError,{data: BodyType<TriggerOutboundCallInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof triggerOutboundCall>>,
+        TError,
+        {data: BodyType<TriggerOutboundCallInput>},
+        TContext
+      > => {
+      return useMutation(getTriggerOutboundCallMutationOptions(options));
+    }
+
+export const getListOutboundCallsUrl = (params?: ListOutboundCallsParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/outbound/calls?${stringifiedParams}` : `/api/outbound/calls`
+}
+
+/**
+ * @summary List outbound call history
+ */
+export const listOutboundCalls = async (params?: ListOutboundCallsParams, options?: RequestInit): Promise<OutboundCall[]> => {
+
+  return customFetch<OutboundCall[]>(getListOutboundCallsUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListOutboundCallsQueryKey = (params?: ListOutboundCallsParams,) => {
+    return [
+    `/api/outbound/calls`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getListOutboundCallsQueryOptions = <TData = Awaited<ReturnType<typeof listOutboundCalls>>, TError = ErrorType<unknown>>(params?: ListOutboundCallsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listOutboundCalls>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListOutboundCallsQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listOutboundCalls>>> = ({ signal }) => listOutboundCalls(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listOutboundCalls>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListOutboundCallsQueryResult = NonNullable<Awaited<ReturnType<typeof listOutboundCalls>>>
+export type ListOutboundCallsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List outbound call history
+ */
+
+export function useListOutboundCalls<TData = Awaited<ReturnType<typeof listOutboundCalls>>, TError = ErrorType<unknown>>(
+ params?: ListOutboundCallsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listOutboundCalls>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListOutboundCallsQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetOutboundCallUrl = (id: number,) => {
+
+
+
+
+  return `/api/outbound/calls/${id}`
+}
+
+/**
+ * @summary Get an outbound call by ID
+ */
+export const getOutboundCall = async (id: number, options?: RequestInit): Promise<OutboundCall> => {
+
+  return customFetch<OutboundCall>(getGetOutboundCallUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetOutboundCallQueryKey = (id: number,) => {
+    return [
+    `/api/outbound/calls/${id}`
+    ] as const;
+    }
+
+
+export const getGetOutboundCallQueryOptions = <TData = Awaited<ReturnType<typeof getOutboundCall>>, TError = ErrorType<ErrorResponse>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getOutboundCall>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetOutboundCallQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getOutboundCall>>> = ({ signal }) => getOutboundCall(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getOutboundCall>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetOutboundCallQueryResult = NonNullable<Awaited<ReturnType<typeof getOutboundCall>>>
+export type GetOutboundCallQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary Get an outbound call by ID
+ */
+
+export function useGetOutboundCall<TData = Awaited<ReturnType<typeof getOutboundCall>>, TError = ErrorType<ErrorResponse>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getOutboundCall>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetOutboundCallQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetOutboundContextUrl = (extensionId: number,) => {
+
+
+
+
+  return `/api/outbound/context/${extensionId}`
+}
+
+/**
+ * @summary Get pending outbound call context for an extension (called by sip-agent)
+ */
+export const getOutboundContext = async (extensionId: number, options?: RequestInit): Promise<OutboundContext> => {
+
+  return customFetch<OutboundContext>(getGetOutboundContextUrl(extensionId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetOutboundContextQueryKey = (extensionId: number,) => {
+    return [
+    `/api/outbound/context/${extensionId}`
+    ] as const;
+    }
+
+
+export const getGetOutboundContextQueryOptions = <TData = Awaited<ReturnType<typeof getOutboundContext>>, TError = ErrorType<unknown>>(extensionId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getOutboundContext>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetOutboundContextQueryKey(extensionId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getOutboundContext>>> = ({ signal }) => getOutboundContext(extensionId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: extensionId !== null && extensionId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getOutboundContext>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetOutboundContextQueryResult = NonNullable<Awaited<ReturnType<typeof getOutboundContext>>>
+export type GetOutboundContextQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get pending outbound call context for an extension (called by sip-agent)
+ */
+
+export function useGetOutboundContext<TData = Awaited<ReturnType<typeof getOutboundContext>>, TError = ErrorType<unknown>>(
+ extensionId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getOutboundContext>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetOutboundContextQueryOptions(extensionId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 

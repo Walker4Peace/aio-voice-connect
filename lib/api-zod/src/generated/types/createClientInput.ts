@@ -11,4 +11,6 @@ export interface CreateClientInput {
   description?: string | null;
   sipDomain?: string | null;
   sipServer?: string | null;
+  yeastarApiUrl?: string | null;
+  yeastarApiToken?: string | null;
 }
