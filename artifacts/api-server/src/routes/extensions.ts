@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { eq } from "drizzle-orm";
 import { db, extensionsTable, clientsTable, agentConfigsTable } from "@workspace/db";
+import { logger } from "../lib/logger.js";
 import {
   CreateExtensionBody,
   UpdateExtensionBody,
@@ -16,15 +17,20 @@ router.get("/extensions", async (req, res) => {
   const query = ListExtensionsQueryParams.safeParse(req.query);
   const clientId = query.success ? query.data.clientId : undefined;
 
-  const extensions = await db.query.extensionsTable.findMany({
-    where: clientId ? eq(extensionsTable.clientId, clientId) : undefined,
-    with: {
-      client: true,
-      agentConfig: true,
-    },
-    orderBy: extensionsTable.createdAt,
-  });
-  res.json(extensions);
+  try {
+    const extensions = await db.query.extensionsTable.findMany({
+      where: clientId ? eq(extensionsTable.clientId, clientId) : undefined,
+      with: {
+        client: true,
+        agentConfig: true,
+      },
+      orderBy: extensionsTable.createdAt,
+    });
+    res.json(extensions);
+  } catch (err) {
+    logger.error({ err }, "Failed to list extensions — possible missing DB migration (run: pnpm --filter @workspace/db run push)");
+    res.status(500).json({ error: "Database error listing extensions" });
+  }
 });
 
 router.post("/extensions", async (req, res) => {

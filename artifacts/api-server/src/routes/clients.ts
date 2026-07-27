@@ -12,11 +12,17 @@ import {
 import { testYeastarConnection, evictYeastarToken } from "../services/yeastarAuth.js";
 import { logger } from "../lib/logger.js";
 
+
 const router = Router();
 
 router.get("/clients", async (req, res) => {
-  const clients = await db.select().from(clientsTable).orderBy(clientsTable.createdAt);
-  res.json(clients);
+  try {
+    const clients = await db.select().from(clientsTable).orderBy(clientsTable.createdAt);
+    res.json(clients);
+  } catch (err) {
+    logger.error({ err }, "Failed to list clients — possible missing DB migration (run: pnpm --filter @workspace/db run push)");
+    res.status(500).json({ error: "Database error listing IPBXs" });
+  }
 });
 
 router.post("/clients", async (req, res) => {
