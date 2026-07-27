@@ -80,6 +80,13 @@ export default defineConfig(async ({ command }) => {
       fs: {
         strict: true,
       },
+      // Proxy /api requests to the API server so session cookies stay same-origin
+      proxy: {
+        '/api': {
+          target: 'http://localhost:8080',
+          changeOrigin: false,
+        },
+      },
     },
     preview: {
       port,
