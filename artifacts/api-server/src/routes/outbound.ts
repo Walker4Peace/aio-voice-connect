@@ -172,6 +172,25 @@ router.get("/outbound/calls/:id", async (req, res) => {
   res.json(call);
 });
 
+// ── Delete an outbound call record ───────────────────────────────────────────
+
+router.delete("/outbound/calls/:id", async (req, res) => {
+  const id = Number(req.params["id"]);
+  if (!Number.isFinite(id)) {
+    res.status(400).json({ error: "Invalid id" });
+    return;
+  }
+  const [deleted] = await db
+    .delete(outboundCallsTable)
+    .where(eq(outboundCallsTable.id, id))
+    .returning();
+  if (!deleted) {
+    res.status(404).json({ error: "Outbound call not found" });
+    return;
+  }
+  res.json({ success: true, id: deleted.id });
+});
+
 // ── Outbound context endpoint (consumed by sip-agent at call start) ──────────
 
 router.get("/outbound/context/:extensionId", (req, res) => {

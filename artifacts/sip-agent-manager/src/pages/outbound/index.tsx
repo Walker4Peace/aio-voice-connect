@@ -2,7 +2,6 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -16,8 +15,13 @@ import {
 } from "@/components/ui/table";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+  DialogDescription,
 } from "@/components/ui/dialog";
-import { Phone, PhoneOutgoing, RefreshCw, Info } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Phone, PhoneOutgoing, RefreshCw, Info, Trash2 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 
 const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, "") + "/api";
@@ -83,6 +87,14 @@ async function triggerCall(payload: {
   return r.json() as Promise<OutboundCall>;
 }
 
+async function deleteOutboundCall(id: number): Promise<void> {
+  const r = await fetch(`${API_BASE}/outbound/calls/${id}`, { method: "DELETE" });
+  if (!r.ok) {
+    const err = await r.json() as { error?: string };
+    throw new Error(err.error ?? "Failed to delete record");
+  }
+}
+
 // ── Status badge ──────────────────────────────────────────────────────────────
 
 function StatusBadge({ status }: { status: OutboundCall["status"] }) {
@@ -145,7 +157,7 @@ function TriggerDialog({ open, onOpenChange, extensions, onSuccess }: TriggerDia
 
     setSubmitting(true);
     try {
-      await triggerCall({
+      const result = await triggerCall({
         extensionId: Number(extensionId),
         phoneNumber,
         ...(callerId ? { callerId } : {}),
@@ -154,7 +166,17 @@ function TriggerDialog({ open, onOpenChange, extensions, onSuccess }: TriggerDia
         ...(parsedVars ? { variables: parsedVars } : {}),
         ...(webhookUrl ? { webhookUrl } : {}),
       });
-      toast({ title: "Call triggered", description: `Outbound call to ${phoneNumber} initiated.` });
+
+      if (result.status === "failed") {
+        toast({
+          variant: "destructive",
+          title: "Call failed to dial",
+          description: result.error ?? "Yeastar API did not accept the dial request.",
+        });
+      } else {
+        toast({ title: "Call triggered", description: `Outbound call to ${phoneNumber} initiated (${result.status}).` });
+      }
+
       void queryClient.invalidateQueries({ queryKey: ["outbound-calls"] });
       onSuccess();
       onOpenChange(false);
@@ -174,6 +196,9 @@ function TriggerDialog({ open, onOpenChange, extensions, onSuccess }: TriggerDia
             <PhoneOutgoing className="h-5 w-5" />
             Trigger Outbound Call
           </DialogTitle>
+          <DialogDescription>
+            The selected extension must be running. Yeastar will ring it and the AI agent will dial out.
+          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 mt-2">
@@ -280,10 +305,47 @@ function TriggerDialog({ open, onOpenChange, extensions, onSuccess }: TriggerDia
   );
 }
 
+// ── Delete confirmation ───────────────────────────────────────────────────────
+
+interface DeleteConfirmProps {
+  callId: number | null;
+  onCancel: () => void;
+  onConfirm: (id: number) => void;
+  isDeleting: boolean;
+}
+
+function DeleteConfirm({ callId, onCancel, onConfirm, isDeleting }: DeleteConfirmProps) {
+  return (
+    <AlertDialog open={callId !== null}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete this record?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This will permanently remove the outbound call record. This action cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={onCancel} disabled={isDeleting}>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={() => callId !== null && onConfirm(callId)}
+            disabled={isDeleting}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            {isDeleting ? "Deleting…" : "Delete"}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
+
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function OutboundPage() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [triggerOpen, setTriggerOpen] = React.useState(false);
+  const [deleteTargetId, setDeleteTargetId] = React.useState<number | null>(null);
 
   const { data: calls = [], isLoading, refetch } = useQuery({
     queryKey: ["outbound-calls"],
@@ -294,6 +356,19 @@ export default function OutboundPage() {
   const { data: extensions = [] } = useQuery({
     queryKey: ["extensions"],
     queryFn: fetchExtensions,
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: deleteOutboundCall,
+    onSuccess: () => {
+      toast({ title: "Record deleted" });
+      setDeleteTargetId(null);
+      void queryClient.invalidateQueries({ queryKey: ["outbound-calls"] });
+    },
+    onError: (err: Error) => {
+      toast({ variant: "destructive", title: "Delete failed", description: err.message });
+      setDeleteTargetId(null);
+    },
   });
 
   const extensionMap = React.useMemo(
@@ -330,13 +405,11 @@ export default function OutboundPage() {
             <div className="space-y-1.5 text-sm">
               <p className="font-medium text-blue-900 dark:text-blue-100">External API Integration</p>
               <p className="text-blue-700 dark:text-blue-300">
-                Trigger calls from any application with a single HTTP request. Set <code className="bg-blue-100 dark:bg-blue-900 rounded px-1 py-0.5 text-xs">OUTBOUND_API_KEY</code> in your environment to secure the endpoint.
+                Trigger calls from any application with a single HTTP request. The extension must be running and linked to an IPBX with Yeastar API configured. Set <code className="bg-blue-100 dark:bg-blue-900 rounded px-1 py-0.5 text-xs">OUTBOUND_API_KEY</code> in your environment to secure the endpoint.
               </p>
               <div className="mt-2 bg-blue-100 dark:bg-blue-900/50 rounded p-2 font-mono text-xs text-blue-800 dark:text-blue-200 break-all">
-                POST /api/outbound/call
-                <br />
-                X-Api-Key: your-key
-                <br />
+                POST /api/outbound/call<br />
+                X-Api-Key: your-key<br />
                 {`{ "extensionId": 1, "phoneNumber": "+1234567890", "firstMessage": "Hello!" }`}
               </div>
             </div>
@@ -365,6 +438,7 @@ export default function OutboundPage() {
                   <TableHead>Status</TableHead>
                   <TableHead>First Message</TableHead>
                   <TableHead className="text-right">Initiated</TableHead>
+                  <TableHead className="w-10"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -394,6 +468,17 @@ export default function OutboundPage() {
                       <TableCell className="text-right text-sm text-muted-foreground">
                         {formatDate(call.createdAt)}
                       </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                          onClick={() => setDeleteTargetId(call.id)}
+                          title="Delete record"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   );
                 })}
@@ -408,6 +493,13 @@ export default function OutboundPage() {
         onOpenChange={setTriggerOpen}
         extensions={extensions}
         onSuccess={() => void refetch()}
+      />
+
+      <DeleteConfirm
+        callId={deleteTargetId}
+        onCancel={() => setDeleteTargetId(null)}
+        onConfirm={(id) => deleteMutation.mutate(id)}
+        isDeleting={deleteMutation.isPending}
       />
     </div>
   );
