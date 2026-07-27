@@ -38,6 +38,8 @@ const formSchema = z.object({
   sipDomain: z.string().optional(),
   sipHost: z.string().optional(),
   sipPort: z.string().optional(),
+  yeastarApiUrl: z.string().optional(),
+  yeastarApiToken: z.string().optional(),
 });
 
 export default function ClientsList() {
@@ -53,13 +55,13 @@ export default function ClientsList() {
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: { name: "", description: "", sipDomain: "", sipHost: "", sipPort: "5060" },
+    defaultValues: { name: "", description: "", sipDomain: "", sipHost: "", sipPort: "5060", yeastarApiUrl: "", yeastarApiToken: "" },
   });
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     const sipServer = values.sipHost ? `${values.sipHost}:${values.sipPort || "5060"}` : "";
     createClient.mutate(
-      { data: { name: values.name, description: values.description, sipDomain: values.sipDomain, sipServer } },
+      { data: { name: values.name, description: values.description, sipDomain: values.sipDomain, sipServer, yeastarApiUrl: values.yeastarApiUrl || null, yeastarApiToken: values.yeastarApiToken || null } },
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListClientsQueryKey() });
@@ -143,6 +145,23 @@ export default function ClientsList() {
                   )} />
                 </div>
                 
+                <FormField control={form.control} name="yeastarApiUrl" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("clients.yeastarApiUrl")}</FormLabel>
+                    <FormControl><Input placeholder="http://192.168.1.1:8080" {...field} /></FormControl>
+                    <p className="text-xs text-muted-foreground">{t("clients.yeastarApiHint")}</p>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+
+                <FormField control={form.control} name="yeastarApiToken" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("clients.yeastarApiToken")}</FormLabel>
+                    <FormControl><Input type="password" placeholder="••••••••" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+
                 <FormField control={form.control} name="description" render={({ field }) => (
                   <FormItem>
                     <FormLabel>{t("clients.notes")}</FormLabel>
