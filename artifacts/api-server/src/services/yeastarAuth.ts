@@ -11,6 +11,7 @@
  * `rejectUnauthorized: false` so they work without importing the PBX's CA.
  */
 
+import crypto from "node:crypto";
 import http from "node:http";
 import https from "node:https";
 import { URL } from "node:url";
@@ -102,14 +103,14 @@ async function fetchNewToken(
   clientId: string,
   clientSecret: string,
 ): Promise<TokenEntry> {
-  // Yeastar P-Series uses the OpenAPI v1.0 path with OAuth2 client_credentials grant
+  // Yeastar P-Series OpenAPI v1.0: username + MD5-hashed password
   const url = `${pbxUrl.replace(/\/$/, "")}/openapi/v1.0/get_token`;
+  const md5Password = crypto.createHash("md5").update(clientSecret).digest("hex");
   logger.info({ url, clientId }, "Yeastar: requesting new access token");
 
   const res = await yeastarPost(url, {
-    client_id: clientId,
-    client_secret: clientSecret,
-    grant_type: "client_credentials",
+    username: clientId,
+    password: md5Password,
   });
 
   const data = res.json<YeastarTokenResponse>();
