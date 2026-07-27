@@ -11,6 +11,9 @@ import type {} from "./types/session.js";
 
 const app: Express = express();
 
+// nginx sits in front of Express; trust its X-Forwarded-* headers
+app.set("trust proxy", 1);
+
 app.use(
   pinoHttp({
     logger,
@@ -38,7 +41,10 @@ app.use(session({
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
-    secure: process.env["NODE_ENV"] === "production",
+    // nginx terminates SSL; Express always receives plain HTTP internally.
+    // Never set secure:true here — it breaks HTTP access (IP-only, no cert).
+    // Nginx enforces HTTPS at the edge when certbot is configured.
+    secure: false,
     sameSite: "lax",
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   },
