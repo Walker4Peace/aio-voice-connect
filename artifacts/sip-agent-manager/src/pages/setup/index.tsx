@@ -179,10 +179,17 @@ export default function SetupWizard() {
                       {(["en", "fr"] as const).map(l => (
                         <button key={l} type="button"
                           onClick={() => handleLanguageChange(l)}
-                          className={cn("flex-1 rounded-md border px-3 py-2 text-sm font-medium transition-colors",
+                          className={cn("flex-1 flex items-center justify-center gap-1.5 rounded-md border px-3 py-2 text-sm font-medium transition-colors",
                             language === l ? "border-primary bg-primary text-primary-foreground" : "border-input bg-background hover:bg-muted")}
                         >
-                          {l === "en" ? "🇬🇧 EN" : "🇫🇷 FR"}
+                          <img
+                            src={l === "en" ? "https://flagcdn.com/20x15/gb.png" : "https://flagcdn.com/20x15/fr.png"}
+                            srcSet={l === "en" ? "https://flagcdn.com/40x30/gb.png 2x" : "https://flagcdn.com/40x30/fr.png 2x"}
+                            width="20" height="15"
+                            alt={l === "en" ? "UK" : "FR"}
+                            className="rounded-sm"
+                          />
+                          {l === "en" ? "EN" : "FR"}
                         </button>
                       ))}
                     </div>
