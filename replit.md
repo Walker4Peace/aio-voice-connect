@@ -1,59 +1,54 @@
-# SIP Agent Configuration Manager
+# SIP Agent Manager
 
-A web dashboard for Yeastar solution providers to manage AI voice agent deployments. Onboard a new client, configure any AI provider, and generate ready-to-use `config.json` + systemd service files in under 2 minutes.
+A SIP (Session Initiation Protocol) agent management platform with a React dashboard and Express REST API.
 
-## Run & Operate
+## Project Structure
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 8080, served at /api)
-- `pnpm --filter @workspace/sip-agent-manager run dev` — run the frontend (served at /)
-- `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+This is a pnpm monorepo with the following packages:
 
-## Stack
+| Package | Path | Description |
+|---|---|---|
+| `@workspace/sip-agent-manager` | `artifacts/sip-agent-manager/` | React + Vite frontend dashboard |
+| `@workspace/api-server` | `artifacts/api-server/` | Express 5 REST API backend |
+| `@workspace/db` | `lib/db/` | Drizzle ORM schema + database client |
+| `@workspace/api-zod` | `lib/api-zod/` | Shared Zod validation schemas |
+| `@workspace/api-spec` | `lib/api-spec/` | API type definitions |
+| `@workspace/api-client-react` | `lib/api-client-react/` | React Query API client hooks |
 
-- pnpm workspaces, Node.js 24, TypeScript 5.9
-- Frontend: React + Vite + Tailwind CSS + wouter + React Query
-- API: Express 5
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
-- API codegen: Orval (from OpenAPI spec)
-- Build: esbuild (CJS bundle)
+## How to Run
 
-## Where things live
+Both services start automatically via the configured workflows:
 
-- `lib/api-spec/openapi.yaml` — OpenAPI spec (single source of truth for all API contracts)
-- `lib/db/src/schema/` — Drizzle schema: clients, extensions, agentConfigs, relations
-- `artifacts/api-server/src/routes/` — Express route handlers: clients, extensions, agentConfigs, stats, generate
-- `artifacts/sip-agent-manager/src/` — React frontend
+- **Frontend** — Vite dev server on `PORT=23208`, preview path `/`
+- **API Server** — Express on `PORT=8080`, mounted at `/api`
 
-## Architecture decisions
+To start manually:
+```bash
+pnpm --filter @workspace/sip-agent-manager run dev   # frontend
+pnpm --filter @workspace/api-server run dev           # backend
+```
 
-- Extensions have an optional one-to-one relationship with an AgentConfig (one AI config per extension)
-- Config generation (`/generate/:id/config` and `/generate/:id/service`) is read-only — it builds config.json and systemd service files on the fly from the stored credentials and AI config
-- Deployments allocate and persist one local SIP port, HTTP port, process ID, and service name per extension; the Yeastar server remains on its configured SIP port
-- API keys are stored in plaintext in the DB (consider encrypting at rest for production)
-- Drizzle relations are declared in `lib/db/src/schema/relations.ts` — required for `db.query.*` with `with:` clauses
+## Required Secrets
 
-## Product
+| Secret | Description |
+|---|---|
+| `SESSION_SECRET` | Express session signing key |
+| `DATABASE_URL` | PostgreSQL connection string (auto-provisioned by Replit) |
 
-- **Clients** — manage Yeastar PBX installations (company name, server IP)
-- **Extensions** — SIP extension credentials per client (extension number, auth_id, password, domain, server)
-- **Agent Configs** — AI provider config per extension (OpenAI, ElevenLabs, Gemini, Deepgram, Cartesia)
-- **Config Generator** — download ready-to-use `config.json` and systemd `.service` files for any extension
+## Database
 
-## User preferences
+Uses Drizzle ORM with PostgreSQL. To apply schema changes:
+```bash
+cd lib/db && pnpm run push
+```
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+## Tech Stack
 
-## Gotchas
+- **Frontend**: React 19, Vite 7, Tailwind CSS 4, shadcn/ui, TanStack Query, Wouter, Framer Motion
+- **Backend**: Express 5, Pino logger, express-session, bcryptjs, CORS
+- **Database**: PostgreSQL via Drizzle ORM
+- **Language**: TypeScript throughout
 
-- After changing `lib/db/src/schema/`, run `pnpm --filter @workspace/db run push` then `pnpm run typecheck:libs` before checking the API server typecheck
-- Drizzle `db.query.*` with `with:` requires relations defined in `schema/relations.ts` and exported from schema index
-- The `generate.ts` route casts the Drizzle query result to `ExtensionWithRelations` to access `agentConfig` — keep that type in sync with the schema
+## User Preferences
 
-## Pointers
-
-- See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details
+<!-- Agent: add user preferences here when asked to remember something -->
