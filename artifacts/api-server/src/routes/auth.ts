@@ -6,6 +6,8 @@ const router = Router();
 
 // GET /api/auth/me — returns setup status + current user (public)
 router.get("/auth/me", async (req, res) => {
+  // Never cache — browser must always get a fresh session check after login/logout
+  res.set("Cache-Control", "no-store");
   try {
     const config = await db.query.adminConfigTable.findFirst();
     if (!config?.setupComplete) {

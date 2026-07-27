@@ -11,11 +11,9 @@ const router = Router();
 const NGINX_CONF_PATH = "/etc/nginx/sites-available/sip-agent-manager.conf";
 const NGINX_ENABLED_PATH = "/etc/nginx/sites-enabled/sip-agent-manager.conf";
 
-function buildNginxConf(domain: string): string {
-  return `server {
-    listen 80;
-    server_name ${domain};
-
+/** Shared proxy location blocks used by every server block */
+function nginxLocations(): string {
+  return `
     # API backend
     location /api/ {
         proxy_pass http://localhost:8080/api/;
@@ -37,9 +35,42 @@ function buildNginxConf(domain: string): string {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_cache_bypass $http_upgrade;
-    }
+    }`;
+}
+
+/**
+ * Build the nginx config.
+ *
+ * - Always includes a catch-all default_server block so the app is
+ *   reachable by IP address even when no domain is configured.
+ * - When a domain is provided, adds a dedicated server block for it
+ *   (certbot will later upgrade it to HTTPS).
+ */
+function buildNginxConf(domain?: string | null): string {
+  const ipBlock = `# IP access — always reachable regardless of domain
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    server_name _;
+${nginxLocations()}
 }
 `;
+
+  if (!domain) {
+    return ipBlock;
+  }
+
+  const domainBlock = `# Domain access
+server {
+    listen 80;
+    listen [::]:80;
+    server_name ${domain};
+${nginxLocations()}
+}
+`;
+
+  return `${ipBlock}
+${domainBlock}`;
 }
 
 // GET /api/setup/status
