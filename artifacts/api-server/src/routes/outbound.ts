@@ -286,7 +286,7 @@ async function tryYeastarMakeCall(params: YeastarCallParams): Promise<{ error?: 
       callee: params.phoneNumber,
       ...(params.callerId ? { caller_id_number: params.callerId } : {}),
     };
-    const url = `${client.yeastarApiUrl.replace(/\/$/, "")}/api/v2.0.0/call/dial_out`;
+    const url = `${client.yeastarApiUrl.replace(/\/$/, "")}/openapi/v1.0/call/dial_out`;
 
     logger.info({ extensionId: params.ext.id, url, caller: ext.extensionNumber, callee: params.phoneNumber }, "Yeastar: calling dial_out");
 

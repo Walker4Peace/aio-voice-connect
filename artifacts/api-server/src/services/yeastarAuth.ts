@@ -102,13 +102,14 @@ async function fetchNewToken(
   clientId: string,
   clientSecret: string,
 ): Promise<TokenEntry> {
-  const url = `${pbxUrl.replace(/\/$/, "")}/api/v1.0.0/get_token`;
+  // Yeastar P-Series uses the OpenAPI v1.0 path with OAuth2 client_credentials grant
+  const url = `${pbxUrl.replace(/\/$/, "")}/openapi/v1.0/get_token`;
   logger.info({ url, clientId }, "Yeastar: requesting new access token");
 
   const res = await yeastarPost(url, {
-    username: clientId,
-    password: clientSecret,
-    grant_type: "password",
+    client_id: clientId,
+    client_secret: clientSecret,
+    grant_type: "client_credentials",
   });
 
   const data = res.json<YeastarTokenResponse>();
@@ -127,7 +128,7 @@ async function fetchNewToken(
 }
 
 async function doRefreshToken(pbxUrl: string, entry: TokenEntry): Promise<TokenEntry> {
-  const url = `${pbxUrl.replace(/\/$/, "")}/api/v1.0.0/refresh_token`;
+  const url = `${pbxUrl.replace(/\/$/, "")}/openapi/v1.0/refresh_token`;
   logger.info({ url }, "Yeastar: refreshing access token");
 
   const res = await yeastarPost(url, { refreshtoken: entry.refreshToken });
