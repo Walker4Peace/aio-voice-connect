@@ -1,0 +1,33 @@
+test@test:~$ cd /opt/sip-agent
+test@test:/opt/sip-agent$ ls -la
+total 328
+drwxr-xr-x 12 sip-agent sip-agent   4096 juil. 27 01:36 .
+drwxr-xr-x  3 root      root        4096 juil. 27 01:36 ..
+drwxr-xr-x  3 sip-agent sip-agent   4096 juil. 27 01:36 .agents
+drwxr-xr-x  5 sip-agent sip-agent   4096 juil. 27 01:36 artifacts
+drwxr-xr-x  2 sip-agent sip-agent   4096 juil. 27 01:36 attached_assets
+drwxr-xr-x  2 sip-agent sip-agent   4096 juil. 27 01:36 .bin
+drwxrwxr-x  3 sip-agent sip-agent   4096 juil. 27 01:36 .cache
+-rw-------  1 sip-agent sip-agent    468 juil. 27 01:36 .env
+drwxr-xr-x  8 sip-agent sip-agent   4096 juil. 27 01:36 .git
+-rw-r--r--  1 sip-agent sip-agent    668 juil. 27 01:36 .gitignore
+-rwxr-xr-x  1 sip-agent sip-agent  21648 juil. 27 01:36 install.sh
+drwxr-xr-x  6 sip-agent sip-agent   4096 juil. 27 01:36 lib
+drwxrwxr-x  4 sip-agent sip-agent   4096 juil. 27 01:36 .local
+drwxrwxr-x  5 sip-agent sip-agent   4096 juil. 27 01:37 node_modules
+-rw-r--r--  1 sip-agent sip-agent     56 juil. 27 01:36 .npmrc
+-rw-r--r--  1 sip-agent sip-agent    649 juil. 27 01:36 package.json
+-rw-r--r--  1 sip-agent sip-agent 214878 juil. 27 01:36 pnpm-lock.yaml
+-rw-r--r--  1 sip-agent sip-agent   6579 juil. 27 01:36 pnpm-workspace.yaml
+-rw-r--r--  1 sip-agent sip-agent   1193 juil. 27 01:36 .replit
+-rw-r--r--  1 sip-agent sip-agent    201 juil. 27 01:36 .replitignore
+-rw-r--r--  1 sip-agent sip-agent   3266 juil. 27 01:36 replit.md
+drwxr-xr-x  4 sip-agent sip-agent   4096 juil. 27 01:37 scripts
+-rw-r--r--  1 sip-agent sip-agent    692 juil. 27 01:36 tsconfig.base.json
+-rw-r--r--  1 sip-agent sip-agent    236 juil. 27 01:36 tsconfig.json
+test@test:/opt/sip-agent$ find /opt /srv /home -name "package.json" -path "*/api-server/*" 2>/dev/null
+/opt/sip-agent/artifacts/api-server/package.json
+test@test:/opt/sip-agent$ systemctl list-units --type=service | grep -i sip
+  sip-agent.service                                                                         loaded active running SIP Agent API Server
+test@test:/opt/sip-agent$
+test@test:/opt/sip-agent$
