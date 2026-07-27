@@ -61,24 +61,21 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           })}
         </nav>
 
-        {/* Bottom: user info + settings + logout */}
+        {/* Bottom: user info + logout */}
         <div className="absolute bottom-4 left-0 right-0 px-3 space-y-1">
           <div className="flex items-center gap-2 rounded-md bg-sidebar-accent/50 px-3 py-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sidebar-primary/20 text-sidebar-primary shrink-0">
-              <Settings className="h-4 w-4" />
-            </div>
-            <div className="flex flex-col min-w-0 flex-1">
-              <span className="text-xs font-medium text-sidebar-foreground truncate">{user?.username ?? "AIO PROCESS"}</span>
-              <span className="text-[10px] text-sidebar-foreground/50">v1.0.0</span>
-            </div>
-            {/* Settings icon button */}
+            {/* Blue settings button (avatar circle) */}
             <button
               onClick={() => setSettingsOpen(true)}
-              className="shrink-0 p-1 rounded hover:bg-sidebar-accent/70 text-sidebar-foreground/60 hover:text-sidebar-foreground transition-colors"
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-sidebar-primary/20 text-sidebar-primary shrink-0 hover:bg-sidebar-primary/40 transition-colors"
               title={t("nav.settings")}
             >
               <Settings className="h-4 w-4" />
             </button>
+            <div className="flex flex-col min-w-0 flex-1">
+              <span className="text-xs font-medium text-sidebar-foreground truncate">{user?.username ?? "AIO PROCESS"}</span>
+              <span className="text-[10px] text-sidebar-foreground/50">v1.0.0</span>
+            </div>
             {/* Logout button */}
             <button
               onClick={() => logout()}

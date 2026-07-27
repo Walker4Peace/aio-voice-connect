@@ -130,10 +130,6 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
 
           {/* ── Account Tab ── */}
           <TabsContent value="account" className="space-y-4 pt-4">
-            <div className="rounded-md bg-muted/50 px-3 py-2 text-sm">
-              {t("settings.loggedInAs")} <strong>{user?.username}</strong>
-            </div>
-
             <div className="space-y-1.5">
               <Label>{t("settings.newPassword")} <span className="text-muted-foreground text-xs">{t("settings.newPasswordHint")}</span></Label>
               <PasswordInput value={password} onChange={e => setPassword(e.target.value)} placeholder="Min 8 characters" />
