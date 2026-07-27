@@ -49,6 +49,36 @@ cd lib/db && pnpm run push
 - **Database**: PostgreSQL via Drizzle ORM
 - **Language**: TypeScript throughout
 
+## Initial Setup (run once on a fresh clone)
+
+```bash
+# 1. Install all workspace dependencies
+pnpm install
+
+# 2. Push the database schema (requires DATABASE_URL — auto-provisioned by Replit)
+cd lib/db && pnpm run push
+
+# 3. Start both services (or use the Replit "Run" button)
+PORT=8080 pnpm --filter @workspace/api-server run dev                       # API on PORT 8080
+PORT=23208 BASE_PATH=/ pnpm --filter @workspace/sip-agent-manager run dev  # Frontend on PORT 23208
+
+# Note: the Replit "Run" button (or configured workflows) injects PORT and BASE_PATH
+# automatically — the env vars above are only needed for manual terminal runs.
+```
+
+### Startup verification
+
+After setup the following checks should pass:
+
+```bash
+curl http://localhost:8080/api/healthz   # → {"status":"ok"}
+curl -o /dev/null -w "%{http_code}" http://localhost:23208/   # → 200
+```
+
+API server logs should show:
+- `Server listening  port: 8080`
+- `Deployment state reconciled on startup`  (no `42P01` DB errors)
+
 ## User Preferences
 
 <!-- Agent: add user preferences here when asked to remember something -->

@@ -323,8 +323,21 @@ async function buildConfig(
   const apiPort = process.env["PORT"] ?? "8080";
   const apiBaseUrl = process.env["API_BASE_URL"] ?? `http://localhost:${apiPort}/api`;
 
+  // The sip-agent binary must always register with the SIP server so that
+  // Yeastar's dial_out API can reach it.  Yeastar's outbound call flow is:
+  //   1. Our API calls Yeastar dial_out (caller=extension, callee=destination)
+  //   2. Yeastar sends a SIP INVITE *to* the sip-agent (extension)
+  //   3. sip-agent answers → Yeastar bridges the callee → AI conversation starts
+  // Step 2 requires the binary to be registered.  A binary in pure "outbound"
+  // mode does not register (it expects to place calls itself), so we must give
+  // it "both" for any mode that involves outbound calls.  The context_webhook_url
+  // already distinguishes the two: if a pending outbound context is found the
+  // binary uses firstMessage/systemPromptOverride; otherwise it handles the call
+  // as a normal inbound.
+  const binaryMode = cfg.mode === "inbound" ? "inbound" : "both";
+
   const base: Record<string, unknown> = {
-    mode: cfg.mode ?? "inbound",
+    mode: binaryMode,
     api_port: ports.httpPort,
     provider: cfg.provider,
     sip: {
