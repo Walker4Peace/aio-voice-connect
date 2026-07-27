@@ -14,6 +14,7 @@ import { db, outboundCallsTable, extensionsTable, deploymentsTable } from "@work
 import { logger } from "../lib/logger.js";
 import { setPendingContext, consumePendingContext } from "../services/outboundContext.js";
 import { executeTool } from "../services/toolExecutor.js";
+import { getYeastarToken, yeastarPost } from "../services/yeastarAuth.js";
 
 const router = Router();
 
@@ -257,49 +258,61 @@ interface YeastarCallParams {
 }
 
 async function tryYeastarMakeCall(params: YeastarCallParams): Promise<{ error?: string }> {
-  const client = params.ext.client as { yeastarApiUrl?: string | null; yeastarApiToken?: string | null } | null;
-  const apiUrl = client?.yeastarApiUrl;
-  const apiToken = client?.yeastarApiToken;
+  const client = params.ext.client as {
+    id: number;
+    yeastarApiUrl?: string | null;
+    yeastarClientId?: string | null;
+    yeastarClientSecret?: string | null;
+  } | null;
 
-  if (!apiUrl || !apiToken) {
-    // No Yeastar API configured — log and continue (call stored as pending)
-    logger.info({ extensionId: params.ext.id }, "No Yeastar API configured on IPBX — outbound call stored but not dialed");
+  if (!client?.yeastarApiUrl || !client?.yeastarClientId || !client?.yeastarClientSecret) {
+    // Yeastar API not configured — store the call record but skip dialing
+    logger.info({ extensionId: params.ext.id }, "Yeastar API not configured on IPBX — outbound call stored but not dialed");
     return {};
   }
 
   try {
-    const ext = params.ext as { extensionNumber: string };
-    const url = `${apiUrl.replace(/\/$/, "")}/api/v2.0.0/call/dial_out`;
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 10_000);
-
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${apiToken}`,
-      },
-      body: JSON.stringify({
-        caller: ext.extensionNumber,
-        callee: params.phoneNumber,
-        ...(params.callerId ? { caller_id_number: params.callerId } : {}),
-      }),
-      signal: controller.signal,
+    // Get (or refresh) the OAuth access token
+    const accessToken = await getYeastarToken({
+      id: client.id,
+      yeastarApiUrl: client.yeastarApiUrl,
+      yeastarClientId: client.yeastarClientId,
+      yeastarClientSecret: client.yeastarClientSecret,
     });
 
-    clearTimeout(timer);
+    const ext = params.ext as { extensionNumber: string };
+    const dialBody = {
+      caller: ext.extensionNumber,
+      callee: params.phoneNumber,
+      ...(params.callerId ? { caller_id_number: params.callerId } : {}),
+    };
+    const url = `${client.yeastarApiUrl.replace(/\/$/, "")}/api/v2.0.0/call/dial_out`;
 
-    if (!response.ok) {
-      const text = await response.text();
-      logger.error({ status: response.status, body: text }, "Yeastar Make Call API error");
-      return { error: `Yeastar API returned ${response.status}: ${text}` };
+    logger.info({ extensionId: params.ext.id, url, caller: ext.extensionNumber, callee: params.phoneNumber }, "Yeastar: calling dial_out");
+
+    const response = await yeastarPost(url, dialBody, {
+      Authorization: `Bearer ${accessToken}`,
+    });
+
+    interface DialOutResponse { errcode?: number; errmsg?: string }
+    const data = response.json<DialOutResponse>();
+
+    logger.info(
+      { extensionId: params.ext.id, status: response.status, errcode: data.errcode, errmsg: data.errmsg, body: response.text },
+      "Yeastar: dial_out response",
+    );
+
+    if (!response.ok || (data.errcode !== undefined && data.errcode !== 0)) {
+      const detail = data.errmsg ?? response.text;
+      logger.error({ status: response.status, errcode: data.errcode, body: response.text }, "Yeastar Make Call API error");
+      return { error: `Yeastar API error (HTTP ${response.status}): errcode=${data.errcode ?? "?"} — ${detail}` };
     }
 
     logger.info({ extensionId: params.ext.id, phoneNumber: params.phoneNumber }, "Yeastar Make Call API called successfully");
     return {};
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    logger.error({ err }, "Yeastar Make Call API request failed");
+    logger.error({ err, extensionId: params.ext.id }, "Yeastar Make Call API request failed");
     return { error: `Failed to reach Yeastar API: ${message}` };
   }
 }

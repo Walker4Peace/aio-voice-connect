@@ -23,12 +23,14 @@ import {
 import {
   Form, FormControl, FormField, FormItem, FormLabel, FormMessage,
 } from "@/components/ui/form";
-import { ArrowLeft, Phone, Edit, Save, X, Link2, Trash2 } from "lucide-react";
+import { ArrowLeft, Phone, Edit, Save, X, Link2, Trash2, FlaskConical, CheckCircle, XCircle, Loader2 } from "lucide-react";
 import { ProviderBadge } from "@/components/provider-badge";
 import { formatDate } from "@/lib/utils";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
+
+const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, "") + "/api";
 
 const editSchema = z.object({
   name: z.string().min(2),
@@ -37,7 +39,8 @@ const editSchema = z.object({
   sipHost: z.string().optional(),
   sipPort: z.string().min(1),
   yeastarApiUrl: z.string().optional(),
-  yeastarApiToken: z.string().optional(),
+  yeastarClientId: z.string().optional(),
+  yeastarClientSecret: z.string().optional(),
 });
 
 function parseSipServer(sipServer: string | null | undefined): { sipHost: string; sipPort: string } {
@@ -46,6 +49,8 @@ function parseSipServer(sipServer: string | null | undefined): { sipHost: string
   if (lastColon === -1) return { sipHost: sipServer, sipPort: "5060" };
   return { sipHost: sipServer.slice(0, lastColon), sipPort: sipServer.slice(lastColon + 1) || "5060" };
 }
+
+type TestStatus = "idle" | "testing" | "success" | "error";
 
 export default function ClientDetail() {
   const { id } = useParams();
@@ -57,6 +62,8 @@ export default function ClientDetail() {
   const [linkDialogOpen, setLinkDialogOpen] = React.useState(false);
   const [selectedExtIds, setSelectedExtIds] = React.useState<number[]>([]);
   const [linking, setLinking] = React.useState(false);
+  const [testStatus, setTestStatus] = React.useState<TestStatus>("idle");
+  const [testError, setTestError] = React.useState<string>("");
 
   const { data: client, isLoading: isLoadingClient } = useGetClient(clientId, { 
     query: { enabled: !!clientId, queryKey: ['client', clientId] } 
@@ -89,11 +96,21 @@ export default function ClientDetail() {
 
   const form = useForm<z.infer<typeof editSchema>>({
     resolver: zodResolver(editSchema),
-    defaultValues: { name: "", description: "", sipDomain: "", sipHost: "", sipPort: "5060", yeastarApiUrl: "", yeastarApiToken: "" },
+    defaultValues: {
+      name: "", description: "", sipDomain: "", sipHost: "", sipPort: "5060",
+      yeastarApiUrl: "", yeastarClientId: "", yeastarClientSecret: "",
+    },
   });
+
+  type ClientWithYeastar = typeof client & {
+    yeastarApiUrl?: string | null;
+    yeastarClientId?: string | null;
+    yeastarClientSecret?: string | null;
+  };
 
   React.useEffect(() => {
     if (client) {
+      const c = client as ClientWithYeastar;
       const { sipHost, sipPort } = parseSipServer(client.sipServer);
       form.reset({
         name: client.name,
@@ -101,8 +118,9 @@ export default function ClientDetail() {
         sipDomain: client.sipDomain ?? "",
         sipHost,
         sipPort,
-        yeastarApiUrl: (client as { yeastarApiUrl?: string | null }).yeastarApiUrl ?? "",
-        yeastarApiToken: (client as { yeastarApiToken?: string | null }).yeastarApiToken ?? "",
+        yeastarApiUrl: c.yeastarApiUrl ?? "",
+        yeastarClientId: c.yeastarClientId ?? "",
+        yeastarClientSecret: c.yeastarClientSecret ?? "",
       });
     }
   }, [client, form]);
@@ -122,17 +140,51 @@ export default function ClientDetail() {
         sipDomain: values.sipDomain,
         sipServer,
         yeastarApiUrl: values.yeastarApiUrl || null,
-        yeastarApiToken: values.yeastarApiToken || null,
+        yeastarClientId: values.yeastarClientId || null,
+        yeastarClientSecret: values.yeastarClientSecret || null,
       } as Parameters<typeof updateClient.mutate>[0]["data"] },
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: ['client', clientId] });
           setEditing(false);
+          setTestStatus("idle");
           toast({ title: t("clientDetail.updated") });
         },
         onError: () => toast({ variant: "destructive", title: t("common.error"), description: t("clientDetail.updateError") }),
       }
     );
+  };
+
+  const handleTestConnection = async () => {
+    const values = form.getValues();
+    const pbxUrl = values.yeastarApiUrl?.trim();
+    const clientIdVal = values.yeastarClientId?.trim();
+    const clientSecret = values.yeastarClientSecret?.trim();
+
+    if (!pbxUrl || !clientIdVal || !clientSecret) {
+      toast({ variant: "destructive", title: t("clients.yeastarTestMissing") });
+      return;
+    }
+    setTestStatus("testing");
+    setTestError("");
+    try {
+      const res = await fetch(`${API_BASE}/clients/${clientId}/yeastar/test`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pbxUrl, clientId: clientIdVal, clientSecret }),
+      });
+      const data = await res.json() as { success: boolean; error?: string };
+      if (data.success) {
+        setTestStatus("success");
+        toast({ title: t("clients.yeastarTestSuccess") });
+      } else {
+        setTestStatus("error");
+        setTestError(data.error ?? t("clients.yeastarTestFailed"));
+      }
+    } catch (err) {
+      setTestStatus("error");
+      setTestError((err as Error).message);
+    }
   };
 
   const handleDelete = () => {
@@ -194,6 +246,9 @@ export default function ClientDetail() {
     return <div className="p-8 text-destructive">{t("clientDetail.notFound")}</div>;
   }
 
+  const c = client as ClientWithYeastar;
+  const hasYeastarConfig = !!(c.yeastarApiUrl && c.yeastarClientId && c.yeastarClientSecret);
+
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex items-center gap-4">
@@ -220,7 +275,7 @@ export default function ClientDetail() {
                 <Edit className="h-3.5 w-3.5" /> {t("clientDetail.edit")}
               </Button>
             ) : (
-              <Button variant="ghost" size="sm" className="gap-2 h-7 text-xs" onClick={() => setEditing(false)}>
+              <Button variant="ghost" size="sm" className="gap-2 h-7 text-xs" onClick={() => { setEditing(false); setTestStatus("idle"); }}>
                 <X className="h-3.5 w-3.5" /> {t("clientDetail.cancel")}
               </Button>
             )}
@@ -266,7 +321,74 @@ export default function ClientDetail() {
                       <FormMessage />
                     </FormItem>
                   )} />
-                  <Button type="submit" size="sm" className="w-full gap-2" disabled={updateClient.isPending}>
+
+                  {/* Yeastar API section */}
+                  <div className="pt-2 border-t space-y-3">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      {t("clients.yeastarSection")}
+                    </p>
+                    <FormField control={form.control} name="yeastarApiUrl" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("clients.yeastarApiUrl")}</FormLabel>
+                        <FormControl>
+                          <Input placeholder="https://192.168.11.90:8088" {...field} onChange={e => { field.onChange(e); setTestStatus("idle"); }} />
+                        </FormControl>
+                        <p className="text-xs text-muted-foreground">{t("clients.yeastarApiHint")}</p>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                    <FormField control={form.control} name="yeastarClientId" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("clients.yeastarClientId")}</FormLabel>
+                        <FormControl>
+                          <Input placeholder="STasWojiy…" {...field} onChange={e => { field.onChange(e); setTestStatus("idle"); }} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                    <FormField control={form.control} name="yeastarClientSecret" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("clients.yeastarClientSecret")}</FormLabel>
+                        <FormControl>
+                          <Input type="password" placeholder="••••••••" {...field} onChange={e => { field.onChange(e); setTestStatus("idle"); }} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+
+                    {/* Test connection button + status */}
+                    <div className="space-y-1.5">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="w-full gap-2"
+                        onClick={handleTestConnection}
+                        disabled={testStatus === "testing"}
+                      >
+                        {testStatus === "testing" ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <FlaskConical className="h-3.5 w-3.5" />
+                        )}
+                        {t("clients.yeastarTest")}
+                      </Button>
+                      {testStatus === "success" && (
+                        <div className="flex items-center gap-1.5 text-xs text-green-600 dark:text-green-400">
+                          <CheckCircle className="h-3.5 w-3.5 shrink-0" />
+                          {t("clients.yeastarTestSuccess")}
+                        </div>
+                      )}
+                      {testStatus === "error" && (
+                        <div className="flex items-start gap-1.5 text-xs text-destructive">
+                          <XCircle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+                          <span className="break-all">{testError || t("clients.yeastarTestFailed")}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <Button type="submit" size="sm" className="w-full gap-2 mt-2" disabled={updateClient.isPending}>
                     <Save className="h-4 w-4" />
                     {updateClient.isPending ? t("clientDetail.saving") : t("clientDetail.saveChanges")}
                   </Button>
@@ -292,6 +414,22 @@ export default function ClientDetail() {
                   <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">{t("clients.notes")}</div>
                   <div className="text-sm">{client.description || "—"}</div>
                 </div>
+
+                {/* Yeastar API status */}
+                <div className="pt-2 border-t">
+                  <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">{t("clients.yeastarSection")}</div>
+                  {hasYeastarConfig ? (
+                    <div className="space-y-1">
+                      <div className="text-sm font-mono truncate">{c.yeastarApiUrl}</div>
+                      <div className="flex items-center gap-1.5 text-xs text-green-600 dark:text-green-400">
+                        <CheckCircle className="h-3 w-3" /> {t("clients.yeastarConfigured")}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-sm text-muted-foreground italic">{t("clients.yeastarNotConfigured")}</div>
+                  )}
+                </div>
+
                 <div>
                   <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Added On</div>
                   <div className="text-sm">{formatDate(client.createdAt)}</div>

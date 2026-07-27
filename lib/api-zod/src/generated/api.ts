@@ -40,7 +40,8 @@ export const ListClientsResponseItem = zod.object({
   "sipDomain": zod.string().nullish(),
   "sipServer": zod.string().nullish(),
   "yeastarApiUrl": zod.string().nullish().describe('Yeastar PBX HTTP API base URL for outbound call triggering'),
-  "yeastarApiToken": zod.string().nullish().describe('Yeastar API token'),
+  "yeastarClientId": zod.string().nullish().describe('Yeastar API OAuth Client ID'),
+  "yeastarClientSecret": zod.string().nullish().describe('Yeastar API OAuth Client Secret'),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })
@@ -56,7 +57,8 @@ export const CreateClientBody = zod.object({
   "sipDomain": zod.string().nullish(),
   "sipServer": zod.string().nullish(),
   "yeastarApiUrl": zod.string().nullish(),
-  "yeastarApiToken": zod.string().nullish()
+  "yeastarClientId": zod.string().nullish(),
+  "yeastarClientSecret": zod.string().nullish()
 })
 
 export const CreateClientResponse = zod.object({
@@ -66,7 +68,8 @@ export const CreateClientResponse = zod.object({
   "sipDomain": zod.string().nullish(),
   "sipServer": zod.string().nullish(),
   "yeastarApiUrl": zod.string().nullish().describe('Yeastar PBX HTTP API base URL for outbound call triggering'),
-  "yeastarApiToken": zod.string().nullish().describe('Yeastar API token'),
+  "yeastarClientId": zod.string().nullish().describe('Yeastar API OAuth Client ID'),
+  "yeastarClientSecret": zod.string().nullish().describe('Yeastar API OAuth Client Secret'),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })
@@ -86,7 +89,8 @@ export const GetClientResponse = zod.object({
   "sipDomain": zod.string().nullish(),
   "sipServer": zod.string().nullish(),
   "yeastarApiUrl": zod.string().nullish().describe('Yeastar PBX HTTP API base URL for outbound call triggering'),
-  "yeastarApiToken": zod.string().nullish().describe('Yeastar API token'),
+  "yeastarClientId": zod.string().nullish().describe('Yeastar API OAuth Client ID'),
+  "yeastarClientSecret": zod.string().nullish().describe('Yeastar API OAuth Client Secret'),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })
@@ -105,7 +109,8 @@ export const UpdateClientBody = zod.object({
   "sipDomain": zod.string().nullish(),
   "sipServer": zod.string().nullish(),
   "yeastarApiUrl": zod.string().nullish(),
-  "yeastarApiToken": zod.string().nullish()
+  "yeastarClientId": zod.string().nullish(),
+  "yeastarClientSecret": zod.string().nullish()
 })
 
 export const UpdateClientResponse = zod.object({
@@ -115,7 +120,8 @@ export const UpdateClientResponse = zod.object({
   "sipDomain": zod.string().nullish(),
   "sipServer": zod.string().nullish(),
   "yeastarApiUrl": zod.string().nullish().describe('Yeastar PBX HTTP API base URL for outbound call triggering'),
-  "yeastarApiToken": zod.string().nullish().describe('Yeastar API token'),
+  "yeastarClientId": zod.string().nullish().describe('Yeastar API OAuth Client ID'),
+  "yeastarClientSecret": zod.string().nullish().describe('Yeastar API OAuth Client Secret'),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })
@@ -156,7 +162,8 @@ export const ListExtensionsResponseItem = zod.object({
   "sipDomain": zod.string().nullish(),
   "sipServer": zod.string().nullish(),
   "yeastarApiUrl": zod.string().nullish().describe('Yeastar PBX HTTP API base URL for outbound call triggering'),
-  "yeastarApiToken": zod.string().nullish().describe('Yeastar API token'),
+  "yeastarClientId": zod.string().nullish().describe('Yeastar API OAuth Client ID'),
+  "yeastarClientSecret": zod.string().nullish().describe('Yeastar API OAuth Client Secret'),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 }).nullish(),
@@ -210,7 +217,8 @@ export const CreateExtensionResponse = zod.object({
   "sipDomain": zod.string().nullish(),
   "sipServer": zod.string().nullish(),
   "yeastarApiUrl": zod.string().nullish().describe('Yeastar PBX HTTP API base URL for outbound call triggering'),
-  "yeastarApiToken": zod.string().nullish().describe('Yeastar API token'),
+  "yeastarClientId": zod.string().nullish().describe('Yeastar API OAuth Client ID'),
+  "yeastarClientSecret": zod.string().nullish().describe('Yeastar API OAuth Client Secret'),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 }).nullish(),
@@ -257,7 +265,8 @@ export const GetExtensionResponse = zod.object({
   "sipDomain": zod.string().nullish(),
   "sipServer": zod.string().nullish(),
   "yeastarApiUrl": zod.string().nullish().describe('Yeastar PBX HTTP API base URL for outbound call triggering'),
-  "yeastarApiToken": zod.string().nullish().describe('Yeastar API token'),
+  "yeastarClientId": zod.string().nullish().describe('Yeastar API OAuth Client ID'),
+  "yeastarClientSecret": zod.string().nullish().describe('Yeastar API OAuth Client Secret'),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 }).nullish(),
@@ -314,7 +323,8 @@ export const UpdateExtensionResponse = zod.object({
   "sipDomain": zod.string().nullish(),
   "sipServer": zod.string().nullish(),
   "yeastarApiUrl": zod.string().nullish().describe('Yeastar PBX HTTP API base URL for outbound call triggering'),
-  "yeastarApiToken": zod.string().nullish().describe('Yeastar API token'),
+  "yeastarClientId": zod.string().nullish().describe('Yeastar API OAuth Client ID'),
+  "yeastarClientSecret": zod.string().nullish().describe('Yeastar API OAuth Client Secret'),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 }).nullish(),

@@ -598,7 +598,11 @@ components:
           type: string
           nullable: true
           description: Yeastar PBX HTTP API base URL for outbound call triggering
-        yeastarApiToken:
+        yeastarClientId:
+          type: string
+          nullable: true
+          description: Yeastar API OAuth Client ID
+        yeastarClientSecret:
           type: string
           nullable: true
           description: Yeastar API token
@@ -631,7 +635,11 @@ components:
         yeastarApiUrl:
           type: string
           nullable: true
-        yeastarApiToken:
+        yeastarClientId:
+          type: string
+          nullable: true
+          description: Yeastar API OAuth Client ID
+        yeastarClientSecret:
           type: string
           nullable: true
       required:
