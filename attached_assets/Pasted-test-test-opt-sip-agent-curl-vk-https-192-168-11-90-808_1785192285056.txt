@@ -1,0 +1,51 @@
+test@test:/opt/sip-agent$ curl -vk https://192.168.11.90:8088/openapi/v1.0.0/get_token
+*   Trying 192.168.11.90:8088...
+* Connected to 192.168.11.90 (192.168.11.90) port 8088 (#0)
+* ALPN, offering h2
+* ALPN, offering http/1.1
+* TLSv1.0 (OUT), TLS header, Certificate Status (22):
+* TLSv1.3 (OUT), TLS handshake, Client hello (1):
+* TLSv1.2 (IN), TLS header, Certificate Status (22):
+* TLSv1.3 (IN), TLS handshake, Server hello (2):
+* TLSv1.2 (IN), TLS header, Certificate Status (22):
+* TLSv1.2 (IN), TLS handshake, Certificate (11):
+* TLSv1.2 (IN), TLS header, Certificate Status (22):
+* TLSv1.2 (IN), TLS handshake, Server key exchange (12):
+* TLSv1.2 (IN), TLS header, Certificate Status (22):
+* TLSv1.2 (IN), TLS handshake, Server finished (14):
+* TLSv1.2 (OUT), TLS header, Certificate Status (22):
+* TLSv1.2 (OUT), TLS handshake, Client key exchange (16):
+* TLSv1.2 (OUT), TLS header, Finished (20):
+* TLSv1.2 (OUT), TLS change cipher, Change cipher spec (1):
+* TLSv1.2 (OUT), TLS header, Certificate Status (22):
+* TLSv1.2 (OUT), TLS handshake, Finished (20):
+* TLSv1.2 (IN), TLS header, Finished (20):
+* TLSv1.2 (IN), TLS header, Certificate Status (22):
+* TLSv1.2 (IN), TLS handshake, Finished (20):
+* SSL connection using TLSv1.2 / ECDHE-RSA-AES256-GCM-SHA384
+* ALPN, server accepted to use http/1.1
+* Server certificate:
+*  subject: C=CN; ST=FuJian; L=XiaMen; O=Software; CN=UCCPBX
+*  start date: Aug 13 07:56:26 2021 GMT
+*  expire date: Jul 20 07:56:26 2121 GMT
+*  issuer: C=CN; ST=FuJian; L=XiaMen; O=Software; CN=PBX
+*  SSL certificate verify result: self-signed certificate in certificate chain (19), continuing anyway.
+* TLSv1.2 (OUT), TLS header, Supplemental data (23):
+> GET /openapi/v1.0.0/get_token HTTP/1.1
+> Host: 192.168.11.90:8088
+> User-Agent: curl/7.81.0
+> Accept: */*
+>
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+* Mark bundle as not supporting multiuse
+< HTTP/1.1 200 OK
+< Server: nginx
+< Date: Mon, 27 Jul 2026 22:44:34 GMT
+< Content-Type: application/json; charset=utf-8
+< Content-Length: 159
+< Connection: keep-alive
+< Access-Control-Allow-Origin: *
+< Access-Control-Allow-Headers: Authorization, Content-Type
+<
+* Connection #0 to host 192.168.11.90 left intact
+{"errcode":10001,"errmsg":"INTERFACE NOT EXISTED","invalid_param_list":[{"value":"No route for /openapi/v1.0.0/get_token","validation_type":"ApiErrResponse"}]}test@test:/opt/sip-agent$
