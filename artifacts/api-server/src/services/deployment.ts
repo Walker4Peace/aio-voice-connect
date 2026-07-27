@@ -2,7 +2,7 @@ import { spawn, ChildProcess } from "child_process";
 import path from "path";
 import fs from "fs/promises";
 import net from "net";
-import { db, extensionsTable, deploymentsTable, callEventsTable, agentToolsTable, type Deployment } from "@workspace/db";
+import { db, extensionsTable, deploymentsTable, callEventsTable, agentToolsTable, outboundCallsTable, type Deployment } from "@workspace/db";
 import { eq, inArray, and, asc } from "drizzle-orm";
 import { logger } from "../lib/logger.js";
 
@@ -200,6 +200,8 @@ function parseAndStoreCallEvents(extensionId: number, line: string, timestamp: s
     );
     if (!alreadyEnded) {
       pushEvent({ extensionId, callId, event: "ended", timestamp });
+      // Complete any active outbound call for this extension
+      finalizeOutboundCall(extensionId, "completed");
     }
     return;
   }
@@ -225,7 +227,7 @@ function parseAndStoreCallEvents(extensionId: number, line: string, timestamp: s
 }
 
 /** On extension stop, synthesize `ended` events for any call that has an invite but no ended,
- *  so they never ghost as "active" after restart. */
+ *  so they never ghost as "active" after restart. Also marks any active outbound call as failed. */
 function closeOutstandingCalls(extensionId: number): void {
   const timestamp = new Date().toISOString();
   // Find all call IDs for this extension that have an invite but no ended event
@@ -236,11 +238,17 @@ function closeOutstandingCalls(extensionId: number): void {
     if (e.event === "invite") inviteIds.add(e.callId);
     if (e.event === "ended") endedIds.add(e.callId);
   }
+  let hadOpenCalls = false;
   for (const callId of inviteIds) {
     if (!endedIds.has(callId)) {
+      hadOpenCalls = true;
       persistedCallEvents.push({ extensionId, callId, event: "ended", timestamp, detail: "extension stopped" });
       if (persistedCallEvents.length > MAX_PERSISTED_EVENTS) persistedCallEvents.shift();
     }
+  }
+  // Fail any active outbound call — extension going down means the call is lost
+  if (hadOpenCalls) {
+    finalizeOutboundCall(extensionId, "failed", "Extension stopped while call was active");
   }
 }
 
@@ -399,6 +407,72 @@ async function buildConfig(
 
 function safeParseJson(str: string): Record<string, unknown> {
   try { return JSON.parse(str) as Record<string, unknown>; } catch { return {}; }
+}
+
+/**
+ * Fire-and-forget: update any still-active outbound call for this extension
+ * to the given terminal status, then POST to its webhookUrl if configured.
+ *
+ * Called when a call-ended log line is detected (status → "completed") or
+ * when the extension process stops (status → "failed").
+ */
+function finalizeOutboundCall(
+  extensionId: number,
+  status: "completed" | "failed",
+  error?: string,
+): void {
+  void (async () => {
+    try {
+      const [call] = await db
+        .update(outboundCallsTable)
+        .set({
+          status,
+          ...(error ? { error } : {}),
+          updatedAt: new Date(),
+        })
+        .where(
+          and(
+            eq(outboundCallsTable.extensionId, extensionId),
+            inArray(outboundCallsTable.status, ["pending", "dialing", "active"]),
+          ),
+        )
+        .returning();
+
+      if (call?.webhookUrl) {
+        const payload = {
+          callId: call.id,
+          extensionId: call.extensionId,
+          phoneNumber: call.phoneNumber,
+          status: call.status,
+          error: call.error ?? null,
+          variables: call.variables ? safeParseJson(call.variables) : null,
+          metadata: call.metadata ? safeParseJson(call.metadata) : null,
+          endedAt: new Date().toISOString(),
+        };
+        fetch(call.webhookUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }).catch((err: Error) =>
+          logger.error(
+            { err, webhookUrl: call.webhookUrl },
+            "Outbound call webhook delivery failed",
+          ),
+        );
+        logger.info(
+          { extensionId, callId: call.id, status, webhookUrl: call.webhookUrl },
+          "Outbound call finalized, webhook fired",
+        );
+      } else if (call) {
+        logger.info(
+          { extensionId, callId: call.id, status },
+          "Outbound call finalized (no webhook configured)",
+        );
+      }
+    } catch (err) {
+      logger.error({ err, extensionId }, "finalizeOutboundCall error");
+    }
+  })();
 }
 
 function serviceNameFor(ext: NonNullable<Awaited<ReturnType<typeof getExtWithRelations>>>): string {

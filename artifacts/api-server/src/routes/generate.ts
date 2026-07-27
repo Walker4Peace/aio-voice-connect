@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { eq } from "drizzle-orm";
-import { db, extensionsTable, type Extension, type AgentConfig, type Client } from "@workspace/db";
+import { eq, asc } from "drizzle-orm";
+import { db, extensionsTable, agentToolsTable, type Extension, type AgentConfig, type Client } from "@workspace/db";
 
 const router = Router();
 
@@ -37,6 +37,10 @@ async function buildConfigJson(ext: ExtensionWithRelations): Promise<Record<stri
   const sipLocalPort = deployment?.sipLocalPort ?? 25060 + ext.id * 2;
   const httpPort = deployment?.httpPort ?? 19000 + ext.id;
 
+  // API base URL for callback URLs (same derivation as deployment.ts)
+  const apiPort = process.env["PORT"] ?? "8080";
+  const apiBaseUrl = process.env["API_BASE_URL"] ?? `http://localhost:${apiPort}/api`;
+
   const base: Record<string, unknown> = {
     mode: cfg.mode ?? "inbound",
     api_port: httpPort,
@@ -49,6 +53,9 @@ async function buildConfigJson(ext: ExtensionWithRelations): Promise<Record<stri
       server: sipServer,
       listen: sipLocalPort,
     },
+    // Callback URLs so the binary can execute tools and fetch outbound context
+    tools_callback_url: `${apiBaseUrl}/tools/execute`,
+    context_webhook_url: `${apiBaseUrl}/outbound/context/${ext.id}`,
   };
 
   // API keys are NOT embedded in config.json — they are passed via environment
@@ -105,7 +112,29 @@ async function buildConfigJson(ext: ExtensionWithRelations): Promise<Record<stri
     }
   }
 
+  // Include enabled tools so standalone deployments have full tool support
+  const tools = await db
+    .select()
+    .from(agentToolsTable)
+    .where(eq(agentToolsTable.agentConfigId, cfg.id))
+    .orderBy(asc(agentToolsTable.sortOrder), asc(agentToolsTable.createdAt));
+  const enabledTools = tools.filter(t => t.enabled);
+  if (enabledTools.length > 0) {
+    base["tools"] = enabledTools.map(t => ({
+      name: t.name,
+      description: t.description,
+      ...(t.parametersSchema ? { parameters: safeParseJsonGenerate(t.parametersSchema) } : { parameters: {} }),
+      execution_type: t.executionType,
+      timeout: t.timeout,
+      require_confirmation: t.requireConfirmation,
+    }));
+  }
+
   return base;
+}
+
+function safeParseJsonGenerate(str: string): Record<string, unknown> {
+  try { return JSON.parse(str) as Record<string, unknown>; } catch { return {}; }
 }
 
 async function buildServiceFile(ext: ExtensionWithRelations): Promise<string | null> {
