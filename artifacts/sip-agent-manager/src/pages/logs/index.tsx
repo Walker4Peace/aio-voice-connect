@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "wouter";
 import { useTranslation } from "react-i18next";
+import { useTimezone } from "@/contexts/timezone-context";
 import { useAllDeployStatuses, useDeployLogs, useSystemLogs, statusColor, logLineClass } from "@/hooks/use-deploy";
 import { useListExtensions } from "@workspace/api-client-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,6 +14,7 @@ const SYSTEM_VALUE = "__system__";
 
 export default function LogsPage() {
   const { t } = useTranslation();
+  const { formatDateTime } = useTimezone();
   const { data: extensions } = useListExtensions();
   const { data: allStatuses } = useAllDeployStatuses();
 
@@ -132,7 +134,7 @@ export default function LogsPage() {
           {selectedStatus.lastStartedAt && (
             <span>
               {t("logs.lastStart")}{" "}
-              <span className="font-mono">{new Date(selectedStatus.lastStartedAt).toLocaleString()}</span>
+              <span className="font-mono">{formatDateTime(selectedStatus.lastStartedAt)}</span>
             </span>
           )}
           {selectedStatus.lastError && selectedStatus.status !== "registered" && (

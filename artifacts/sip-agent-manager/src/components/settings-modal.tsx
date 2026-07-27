@@ -13,13 +13,7 @@ import { useAuth } from "@/contexts/auth-context";
 import { CheckCircle2, Globe, Loader2, User, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
-
-const TIMEZONES = [
-  "UTC", "Europe/Paris", "Europe/London", "Europe/Berlin", "Europe/Madrid",
-  "Africa/Casablanca", "Africa/Algiers", "Africa/Tunis", "Africa/Cairo",
-  "America/New_York", "America/Chicago", "America/Denver", "America/Los_Angeles",
-  "America/Montreal", "America/Toronto", "Asia/Dubai", "Asia/Riyadh", "Asia/Beirut",
-];
+import { TimezoneSelect } from "@/components/ui/timezone-select";
 
 interface DomainResult {
   ok: boolean;
@@ -163,13 +157,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
               </div>
               <div className="space-y-1.5">
                 <Label>{t("setup.timezone")}</Label>
-                <select
-                  value={timezone}
-                  onChange={e => setTimezone(e.target.value)}
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                >
-                  {TIMEZONES.map(tz => <option key={tz} value={tz}>{tz}</option>)}
-                </select>
+                <TimezoneSelect value={timezone} onChange={setTimezone} />
               </div>
             </div>
 

@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "wouter";
+import { useTimezone } from "@/contexts/timezone-context";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -115,6 +116,7 @@ interface CallRowProps {
 }
 
 function CallTableRow({ callId, legs, extNumber, isOpen, onToggle, onDelete }: CallRowProps) {
+  const { formatDateTime, formatTime } = useTimezone();
   const hasEnded = legs.some(l => l.event === "ended");
   const hasAI    = legs.some(l => l.event === "connected_ai");
   const hasError = legs.some(l => l.event === "error");
@@ -167,7 +169,7 @@ function CallTableRow({ callId, legs, extNumber, isOpen, onToggle, onDelete }: C
             <TableCell className="font-mono text-sm">{called}</TableCell>
             {/* Date */}
             <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-              {new Date(firstLeg.timestamp).toLocaleString()}
+              {formatDateTime(firstLeg.timestamp)}
             </TableCell>
             {/* Duration */}
             <TableCell className="text-xs text-muted-foreground tabular-nums">
@@ -218,7 +220,7 @@ function CallTableRow({ callId, legs, extNumber, isOpen, onToggle, onDelete }: C
                     <div className="shrink-0">{EVENT_ICONS[leg.event]}</div>
                     <div className="flex-1 min-w-0 text-sm">{eventLabel(leg)}</div>
                     <time className="text-xs text-muted-foreground shrink-0 tabular-nums">
-                      {new Date(leg.timestamp).toLocaleTimeString()}
+                      {formatTime(leg.timestamp)}
                     </time>
                   </div>
                 ))}

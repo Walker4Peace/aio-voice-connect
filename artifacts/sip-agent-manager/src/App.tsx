@@ -4,6 +4,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { Route, Switch, Router as WouterRouter } from 'wouter';
 
 import { AuthProvider, useAuth } from '@/contexts/auth-context';
+import { TimezoneProvider } from '@/contexts/timezone-context';
 import { AppLayout } from '@/components/layout/app-layout';
 
 import Dashboard from '@/pages/dashboard';
@@ -89,11 +90,13 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <AuthProvider>
-          <LanguageSync />
-          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
-            <AppRoutes />
-          </WouterRouter>
-          <Toaster />
+          <TimezoneProvider>
+            <LanguageSync />
+            <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
+              <AppRoutes />
+            </WouterRouter>
+            <Toaster />
+          </TimezoneProvider>
         </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>

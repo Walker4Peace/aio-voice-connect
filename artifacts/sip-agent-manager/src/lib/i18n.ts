@@ -127,8 +127,8 @@ const en = {
   // ── Dashboard ─────────────────────────────────────────────────────────────
   "dashboard.title":          "Dashboard",
   "dashboard.loadingCard":    "Loading…",
-  "dashboard.totalIPBXs":     "Total IPBXs",
-  "dashboard.extensions":     "Extensions",
+  "dashboard.totalIPBXs":     "All IPBXs",
+  "dashboard.extensions":     "All extensions",
   "dashboard.registered":     "Registered",
   "dashboard.agentConfigs":   "Agent Configs",
   "dashboard.liveAgentStatus":"Live Agent Status",
@@ -142,7 +142,7 @@ const en = {
 
   // ── IPBXs list ────────────────────────────────────────────────────────────
   "clients.title":            "IPBXs",
-  "clients.description":      "Manage your Yeastar IPBX systems and their SIP credentials.",
+  "clients.description":      "Manage your IPBX systems and their SIP credentials.",
   "clients.addIPBX":          "Add IPBX",
   "clients.dialogTitle":      "Add New IPBX",
   "clients.dialogDescription":"Register a Yeastar IPBX and configure its SIP connection details.",
@@ -492,8 +492,8 @@ const fr: typeof en = {
   // ── Dashboard ─────────────────────────────────────────────────────────────
   "dashboard.title":          "Tableau de bord",
   "dashboard.loadingCard":    "Chargement…",
-  "dashboard.totalIPBXs":     "Total IPBX",
-  "dashboard.extensions":     "Extensions",
+  "dashboard.totalIPBXs":     "Tous les IPBX",
+  "dashboard.extensions":     "Toutes les extensions",
   "dashboard.registered":     "Enregistrées",
   "dashboard.agentConfigs":   "Configs agents",
   "dashboard.liveAgentStatus":"Statut des agents en direct",
@@ -507,7 +507,7 @@ const fr: typeof en = {
 
   // ── IPBXs list ────────────────────────────────────────────────────────────
   "clients.title":            "IPBX",
-  "clients.description":      "Gérez vos systèmes Yeastar IPBX et leurs identifiants SIP.",
+  "clients.description":      "Gérez vos systèmes IPBX et leurs identifiants SIP.",
   "clients.addIPBX":          "Ajouter un IPBX",
   "clients.dialogTitle":      "Ajouter un nouvel IPBX",
   "clients.dialogDescription":"Enregistrez un IPBX Yeastar et configurez ses paramètres de connexion SIP.",

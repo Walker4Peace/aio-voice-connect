@@ -9,27 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { PasswordInput } from "@/components/ui/password-input";
 import { CheckCircle2, Globe, Loader2, ShieldCheck, User, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-const TIMEZONES = [
-  "UTC",
-  "Europe/Paris",
-  "Europe/London",
-  "Europe/Berlin",
-  "Europe/Madrid",
-  "Africa/Casablanca",
-  "Africa/Algiers",
-  "Africa/Tunis",
-  "Africa/Cairo",
-  "America/New_York",
-  "America/Chicago",
-  "America/Denver",
-  "America/Los_Angeles",
-  "America/Montreal",
-  "America/Toronto",
-  "Asia/Dubai",
-  "Asia/Riyadh",
-  "Asia/Beirut",
-];
+import { TimezoneSelect } from "@/components/ui/timezone-select";
 
 type Step = "account" | "domain" | "finish";
 
@@ -122,7 +102,7 @@ export default function SetupWizard() {
       <div className="w-full max-w-lg space-y-6">
         {/* Logo */}
         <div className="flex flex-col items-center gap-3">
-          <img src="/favicon.png" alt="SIP Agent" className="h-16 w-16 object-contain" />
+          <img src="/logo.png" alt="SIP Agent" className="h-20 w-auto object-contain" />
           <div className="text-center">
             <h1 className="text-2xl font-bold tracking-tight">{t("setup.welcome")}</h1>
             <p className="text-sm text-muted-foreground mt-1">{t("setup.subtitle")}</p>
@@ -196,14 +176,7 @@ export default function SetupWizard() {
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="tz">{t("setup.timezone")}</Label>
-                    <select
-                      id="tz"
-                      value={timezone}
-                      onChange={e => setTimezone(e.target.value)}
-                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    >
-                      {TIMEZONES.map(tz => <option key={tz} value={tz}>{tz}</option>)}
-                    </select>
+                    <TimezoneSelect value={timezone} onChange={setTimezone} />
                   </div>
                 </div>
 

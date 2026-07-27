@@ -44,7 +44,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm space-y-6">
         {/* Logo + title */}
         <div className="flex flex-col items-center gap-3">
-          <img src="/favicon.png" alt="SIP Agent" className="h-16 w-16 object-contain" />
+          <img src="/logo.png" alt="SIP Agent" className="h-20 w-auto object-contain" />
           <div className="text-center">
             <h1 className="text-2xl font-bold tracking-tight">SIP Agent Manager</h1>
             <p className="text-sm text-muted-foreground mt-1">{t("login.subtitle")}</p>
