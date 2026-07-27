@@ -19,6 +19,11 @@ import SetupWizard from '@/pages/setup/index';
 import LoginPage from '@/pages/login/index';
 import { Loader2 } from 'lucide-react';
 
+// i18n — must be imported before any component that uses useTranslation
+import '@/lib/i18n';
+import i18n from '@/lib/i18n';
+import { useEffect } from 'react';
+
 function NotFound() {
   return (
     <div className="flex h-[50vh] flex-col items-center justify-center space-y-4">
@@ -33,6 +38,18 @@ const queryClient = new QueryClient({
     queries: { retry: false, refetchOnWindowFocus: false },
   },
 });
+
+/** Syncs the i18next language whenever the logged-in user's preference changes. */
+function LanguageSync() {
+  const { user } = useAuth();
+  useEffect(() => {
+    const lang = user?.language ?? 'en';
+    if (i18n.language !== lang) {
+      i18n.changeLanguage(lang);
+    }
+  }, [user?.language]);
+  return null;
+}
 
 function AppRoutes() {
   const { isLoading, setupComplete, user } = useAuth();
@@ -72,6 +89,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <AuthProvider>
+          <LanguageSync />
           <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
             <AppRoutes />
           </WouterRouter>

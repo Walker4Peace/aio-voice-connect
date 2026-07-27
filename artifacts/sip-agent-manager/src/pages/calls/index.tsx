@@ -1,18 +1,13 @@
 import React from "react";
 import { useListExtensions } from "@workspace/api-client-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { PhoneCall, RefreshCw, Trash2 } from "lucide-react";
@@ -26,6 +21,7 @@ interface CallEventsResponse {
 const PAGE_SIZE = 20;
 
 export default function CallsPage() {
+  const { t } = useTranslation();
   const [page, setPage] = React.useState(1);
   const queryClient = useQueryClient();
 
@@ -61,7 +57,6 @@ export default function CallsPage() {
     },
   });
 
-  // Only completed calls: must have both an invite and an ended event.
   const callGroups = React.useMemo(() => {
     if (!callEvents?.events?.length) return [];
     const grouped = groupEventsByCall(callEvents.events);
@@ -82,36 +77,36 @@ export default function CallsPage() {
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Call History</h1>
-          <p className="text-muted-foreground mt-1 text-sm">Completed calls across your deployed extensions.</p>
+          <h1 className="text-3xl font-bold tracking-tight">{t("calls.title")}</h1>
+          <p className="text-muted-foreground mt-1 text-sm">{t("calls.description")}</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" className="gap-2" onClick={handleRefresh} disabled={isFetching}>
             <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
-            Refresh
+            {t("calls.refresh")}
           </Button>
           {callGroups.length > 0 && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="outline" size="sm" className="gap-2 text-destructive hover:text-destructive">
                   <Trash2 className="h-4 w-4" />
-                  Clear All
+                  {t("calls.clearAll")}
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Clear all call history?</AlertDialogTitle>
+                  <AlertDialogTitle>{t("calls.clearTitle")}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This will permanently delete all {callGroups.length} call records. This action cannot be undone.
+                    {t("calls.clearDesc", { count: callGroups.length })}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
                   <AlertDialogAction
                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                     onClick={() => clearAll.mutate()}
                   >
-                    Clear All
+                    {t("calls.clearAll")}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
@@ -124,7 +119,7 @@ export default function CallsPage() {
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
             <PhoneCall className="h-4 w-4" />
-            All Calls
+            {t("calls.allCalls")}
             {callGroups.length > 0 && (
               <Badge variant="secondary" className="ml-1">{callGroups.length}</Badge>
             )}
@@ -134,7 +129,7 @@ export default function CallsPage() {
           <CallHistoryTable
             callGroups={pageGroups}
             extensions={extensions}
-            emptyMessage="No completed calls recorded yet. Deploy an extension and make a call to see history here."
+            emptyMessage={t("calls.emptyMessage")}
             onDeleteCall={(callId) => deleteCall.mutate(callId)}
           />
 

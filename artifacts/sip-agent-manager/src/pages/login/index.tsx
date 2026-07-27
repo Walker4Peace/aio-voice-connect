@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,6 +9,7 @@ import { Loader2, LogIn } from "lucide-react";
 
 export default function LoginPage() {
   const { refetch } = useAuth();
+  const { t } = useTranslation();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -26,12 +28,12 @@ export default function LoginPage() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error ?? "Login failed");
+        setError(data.error ?? t("login.failed"));
       } else {
         await refetch();
       }
     } catch {
-      setError("Connection error — please try again");
+      setError(t("login.connectionError"));
     } finally {
       setLoading(false);
     }
@@ -45,19 +47,19 @@ export default function LoginPage() {
           <img src="/favicon.png" alt="SIP Agent" className="h-16 w-16 object-contain" />
           <div className="text-center">
             <h1 className="text-2xl font-bold tracking-tight">SIP Agent Manager</h1>
-            <p className="text-sm text-muted-foreground mt-1">Sign in to your account</p>
+            <p className="text-sm text-muted-foreground mt-1">{t("login.subtitle")}</p>
           </div>
         </div>
 
         <Card>
           <CardHeader className="pb-4">
-            <CardTitle className="text-lg">Sign In</CardTitle>
-            <CardDescription>Enter your credentials to access the dashboard</CardDescription>
+            <CardTitle className="text-lg">{t("login.cardTitle")}</CardTitle>
+            <CardDescription>{t("login.cardDescription")}</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-1.5">
-                <Label htmlFor="username">Username</Label>
+                <Label htmlFor="username">{t("login.username")}</Label>
                 <Input
                   id="username"
                   type="text"
@@ -69,7 +71,7 @@ export default function LoginPage() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">{t("login.password")}</Label>
                 <Input
                   id="password"
                   type="password"
@@ -89,7 +91,7 @@ export default function LoginPage() {
 
               <Button type="submit" className="w-full gap-2" disabled={loading}>
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogIn className="h-4 w-4" />}
-                {loading ? "Signing in…" : "Sign In"}
+                {loading ? t("login.submitting") : t("login.submit")}
               </Button>
             </form>
           </CardContent>

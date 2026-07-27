@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "wouter";
-import { useAllDeployStatuses, useDeployLogs, useSystemLogs, statusLabel, statusColor, logLineClass } from "@/hooks/use-deploy";
+import { useTranslation } from "react-i18next";
+import { useAllDeployStatuses, useDeployLogs, useSystemLogs, statusColor, logLineClass } from "@/hooks/use-deploy";
 import { useListExtensions } from "@workspace/api-client-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -11,10 +12,10 @@ import { Bot, ExternalLink, RefreshCw } from "lucide-react";
 const SYSTEM_VALUE = "__system__";
 
 export default function LogsPage() {
+  const { t } = useTranslation();
   const { data: extensions } = useListExtensions();
   const { data: allStatuses } = useAllDeployStatuses();
 
-  // "system" is always selected by default
   const [selectedValue, setSelectedValue] = React.useState<string>(SYSTEM_VALUE);
   const [isLive, setIsLive] = React.useState(false);
   const [liveFromIndex, setLiveFromIndex] = React.useState<number | null>(null);
@@ -23,25 +24,16 @@ export default function LogsPage() {
   const isSystem = selectedValue === SYSTEM_VALUE;
   const selectedExtId = isSystem ? null : Number(selectedValue);
 
-  // Fetch extension logs
-  const { data: extLogs } = useDeployLogs(
-    selectedExtId ?? 0,
-    !isSystem && selectedExtId != null,
-    isLive
-  );
-
-  // Fetch system logs
+  const { data: extLogs } = useDeployLogs(selectedExtId ?? 0, !isSystem && selectedExtId != null, isLive);
   const { data: sysLogs } = useSystemLogs(isSystem, isLive);
 
   const allLines = isSystem ? (sysLogs?.lines ?? []) : (extLogs?.lines ?? []);
 
-  // Only show lines captured since live was started
   const displayedLines = React.useMemo(() => {
     if (!isLive || liveFromIndex === null) return [];
     return allLines.slice(liveFromIndex);
   }, [isLive, allLines, liveFromIndex]);
 
-  // Reset live state when switching source
   React.useEffect(() => {
     setLiveFromIndex(null);
     setIsLive(false);
@@ -56,7 +48,6 @@ export default function LogsPage() {
     }
   };
 
-  // Scroll to bottom during live mode
   React.useEffect(() => {
     if (isLive) {
       logsEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -70,25 +61,18 @@ export default function LogsPage() {
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Logs</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{t("logs.title")}</h1>
       </div>
 
       {/* Source picker + status strip */}
       <div className="flex flex-wrap items-center gap-3">
         <div className="w-64">
-          <Select
-            value={selectedValue}
-            onValueChange={setSelectedValue}
-          >
+          <Select value={selectedValue} onValueChange={setSelectedValue}>
             <SelectTrigger>
-              <SelectValue placeholder="Select source…" />
+              <SelectValue placeholder={t("logs.selectSource")} />
             </SelectTrigger>
             <SelectContent>
-              {/* System is always first */}
-              <SelectItem value={SYSTEM_VALUE}>
-                🖥 System
-              </SelectItem>
-              {/* SIP extension logs below */}
+              <SelectItem value={SYSTEM_VALUE}>🖥 {t("logs.system")}</SelectItem>
               {extensions?.map((ext) => {
                 const st = allStatuses?.find((s) => s.extensionId === ext.id);
                 return (
@@ -97,7 +81,7 @@ export default function LogsPage() {
                       <Bot className="h-3.5 w-3.5 shrink-0" />
                       {ext.extensionNumber}
                       {ext.displayName ? ` (${ext.displayName})` : ""}
-                      {st ? ` — ${st.status}` : ""}
+                      {st ? ` — ${t(`deploy.status.${st.status}`)}` : ""}
                     </span>
                   </SelectItem>
                 );
@@ -107,11 +91,8 @@ export default function LogsPage() {
         </div>
 
         {selectedStatus && (
-          <Badge
-            variant="outline"
-            className={`text-sm px-3 py-1 font-semibold ${statusColor(selectedStatus.status)}`}
-          >
-            {statusLabel(selectedStatus.status)}
+          <Badge variant="outline" className={`text-sm px-3 py-1 font-semibold ${statusColor(selectedStatus.status)}`}>
+            {t(`deploy.status.${selectedStatus.status}`)}
           </Badge>
         )}
 
@@ -123,13 +104,13 @@ export default function LogsPage() {
             onClick={handleLiveToggle}
           >
             <RefreshCw className={`h-4 w-4 ${isLive ? "animate-spin" : ""}`} />
-            Live
+            {t("logs.live")}
           </Button>
           {!isSystem && selectedExtId && (
             <Link href={`/extensions/${selectedExtId}`}>
               <Button variant="ghost" size="sm" className="gap-2">
                 <ExternalLink className="h-4 w-4" />
-                Extension
+                {t("logs.extension")}
               </Button>
             </Link>
           )}
@@ -139,10 +120,10 @@ export default function LogsPage() {
       {/* Status details row — extension only */}
       {selectedStatus && (
         <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
-          {selectedStatus.pid && <span>PID: <span className="font-mono">{selectedStatus.pid}</span></span>}
+          {selectedStatus.pid && <span>{t("logs.pid")} <span className="font-mono">{selectedStatus.pid}</span></span>}
           {selectedStatus.uptimeSeconds != null && (
             <span>
-              Uptime:{" "}
+              {t("logs.uptime")}{" "}
               <span className="font-mono">
                 {Math.floor(selectedStatus.uptimeSeconds / 60)}m {selectedStatus.uptimeSeconds % 60}s
               </span>
@@ -150,15 +131,13 @@ export default function LogsPage() {
           )}
           {selectedStatus.lastStartedAt && (
             <span>
-              Last start:{" "}
-              <span className="font-mono">
-                {new Date(selectedStatus.lastStartedAt).toLocaleString()}
-              </span>
+              {t("logs.lastStart")}{" "}
+              <span className="font-mono">{new Date(selectedStatus.lastStartedAt).toLocaleString()}</span>
             </span>
           )}
           {selectedStatus.lastError && selectedStatus.status !== "registered" && (
             <span className="text-red-500">
-              Last error: <span className="font-mono">{selectedStatus.lastError}</span>
+              {t("logs.lastError")} <span className="font-mono">{selectedStatus.lastError}</span>
             </span>
           )}
         </div>
@@ -172,13 +151,11 @@ export default function LogsPage() {
               {!isLive ? (
                 <div className="flex flex-col items-center justify-center h-full gap-2 text-muted-foreground">
                   <RefreshCw className="h-6 w-6 opacity-40" />
-                  <p className="italic text-sm">Click <strong className="text-white">Live</strong> to start streaming logs.</p>
+                  <p className="italic text-sm" dangerouslySetInnerHTML={{ __html: t("logs.clickLive") }} />
                 </div>
               ) : displayedLines.length === 0 ? (
                 <p className="text-muted-foreground italic">
-                  {isSystem
-                    ? "Waiting for system events…"
-                    : `Waiting for new output…${selectedStatus?.status === "stopped" ? " (deploy the agent first)" : ""}`}
+                  {isSystem ? t("logs.waitingSystem") : t("logs.waitingOutput")}
                 </p>
               ) : (
                 displayedLines.map((line, i) => (

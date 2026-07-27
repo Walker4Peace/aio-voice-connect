@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
@@ -37,6 +38,7 @@ interface SettingsModalProps {
 export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
   const { user, refetch } = useAuth();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   // Account tab
   const [password, setPassword] = useState("");
@@ -59,11 +61,11 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
 
   const handleAccountSave = async () => {
     if (password && password !== repeatPassword) {
-      toast({ variant: "destructive", title: "Passwords do not match" });
+      toast({ variant: "destructive", title: t("settings.passwordMismatch") });
       return;
     }
     if (password && password.length < 8) {
-      toast({ variant: "destructive", title: "Password must be at least 8 characters" });
+      toast({ variant: "destructive", title: t("settings.passwordTooShort") });
       return;
     }
     setAccountLoading(true);
@@ -78,15 +80,15 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
       });
       if (!res.ok) {
         const d = await res.json();
-        toast({ variant: "destructive", title: d.error ?? "Failed to save" });
+        toast({ variant: "destructive", title: d.error ?? t("settings.saveFailed") });
       } else {
         setPassword("");
         setRepeatPassword("");
         await refetch();
-        toast({ title: "Settings saved" });
+        toast({ title: t("settings.settingsSaved") });
       }
     } catch {
-      toast({ variant: "destructive", title: "Connection error" });
+      toast({ variant: "destructive", title: t("settings.connectionError") });
     } finally {
       setAccountLoading(false);
     }
@@ -107,7 +109,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
       setDomainResult(data);
       if (data.ok) await refetch();
     } catch {
-      setDomainResult({ ok: false, error: "Connection error" });
+      setDomainResult({ ok: false, error: t("settings.connectionError") });
     } finally {
       setDomainLoading(false);
     }
@@ -117,33 +119,33 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Settings</DialogTitle>
+          <DialogTitle>{t("settings.title")}</DialogTitle>
         </DialogHeader>
 
         <Tabs defaultValue="account">
           <TabsList className="w-full">
-            <TabsTrigger value="account" className="flex-1 gap-2"><User className="h-4 w-4" /> Account</TabsTrigger>
-            <TabsTrigger value="domain" className="flex-1 gap-2"><Globe className="h-4 w-4" /> Domain</TabsTrigger>
+            <TabsTrigger value="account" className="flex-1 gap-2"><User className="h-4 w-4" /> {t("settings.account")}</TabsTrigger>
+            <TabsTrigger value="domain" className="flex-1 gap-2"><Globe className="h-4 w-4" /> {t("settings.domain")}</TabsTrigger>
           </TabsList>
 
           {/* ── Account Tab ── */}
           <TabsContent value="account" className="space-y-4 pt-4">
             <div className="rounded-md bg-muted/50 px-3 py-2 text-sm">
-              Logged in as <strong>{user?.username}</strong>
+              {t("settings.loggedInAs")} <strong>{user?.username}</strong>
             </div>
 
             <div className="space-y-1.5">
-              <Label>New Password <span className="text-muted-foreground text-xs">(leave blank to keep current)</span></Label>
+              <Label>{t("settings.newPassword")} <span className="text-muted-foreground text-xs">{t("settings.newPasswordHint")}</span></Label>
               <PasswordInput value={password} onChange={e => setPassword(e.target.value)} placeholder="Min 8 characters" />
             </div>
             <div className="space-y-1.5">
-              <Label>Repeat Password</Label>
+              <Label>{t("settings.repeatPassword")}</Label>
               <PasswordInput value={repeatPassword} onChange={e => setRepeatPassword(e.target.value)} placeholder="••••••••" />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label>Language</Label>
+                <Label>{t("setup.language")}</Label>
                 <div className="flex gap-2">
                   {(["en", "fr"] as const).map(l => (
                     <button key={l} type="button"
@@ -157,7 +159,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                 </div>
               </div>
               <div className="space-y-1.5">
-                <Label>Timezone</Label>
+                <Label>{t("setup.timezone")}</Label>
                 <select
                   value={timezone}
                   onChange={e => setTimezone(e.target.value)}
@@ -171,7 +173,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
             <div className="flex justify-end pt-2 border-t">
               <Button onClick={handleAccountSave} disabled={accountLoading} className="gap-2">
                 {accountLoading && <Loader2 className="h-4 w-4 animate-spin" />}
-                {accountLoading ? "Saving…" : "Save Changes"}
+                {accountLoading ? t("common.saving") : t("settings.saveChanges")}
               </Button>
             </div>
           </TabsContent>
@@ -183,26 +185,26 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                 <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0" />
                 <div>
                   <p className="text-sm font-medium">{user.domain}</p>
-                  <Badge variant="outline" className="text-green-600 border-green-400 text-xs mt-1">Connected</Badge>
+                  <Badge variant="outline" className="text-green-600 border-green-400 text-xs mt-1">{t("settings.domainConnected")}</Badge>
                 </div>
               </div>
             ) : (
               <div className="rounded-md bg-muted/50 border border-dashed p-3 text-sm text-muted-foreground">
-                No domain configured yet.
+                {t("settings.noDomain")}
               </div>
             )}
 
             <div className="rounded-md bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 p-3 text-xs text-blue-800 dark:text-blue-300 space-y-1">
-              <p className="font-medium">To add or change your domain:</p>
+              <p className="font-medium">{t("settings.domainInstTitle")}</p>
               <ol className="list-decimal list-inside space-y-0.5">
-                <li>Create a domain/subdomain in your hosting panel</li>
-                <li>Point it to your server's public IP (A record)</li>
-                <li>Enter the domain below and click Validate</li>
+                <li>{t("settings.domainStep1")}</li>
+                <li>{t("settings.domainStep2")}</li>
+                <li>{t("settings.domainStep3")}</li>
               </ol>
             </div>
 
             <div className="space-y-1.5">
-              <Label>Domain / Subdomain</Label>
+              <Label>{t("settings.domainLabel")}</Label>
               <div className="flex gap-2">
                 <Input
                   value={domain}
@@ -212,7 +214,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                 />
                 <Button onClick={handleDomainValidate} disabled={!domain.trim() || domainLoading} className="gap-2 shrink-0">
                   {domainLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                  {domainLoading ? "…" : "Validate"}
+                  {domainLoading ? t("settings.validating") : t("settings.validate")}
                 </Button>
               </div>
             </div>
@@ -221,7 +223,9 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
               <div className={cn("rounded-md border p-3 space-y-2", domainResult.ok ? "border-green-300 bg-green-50 dark:bg-green-950/30" : "border-red-300 bg-red-50 dark:bg-red-950/30")}>
                 <div className="flex items-center gap-2 text-sm font-medium">
                   {domainResult.ok ? <CheckCircle2 className="h-4 w-4 text-green-600" /> : <XCircle className="h-4 w-4 text-red-600" />}
-                  {domainResult.ok ? `Domain configured${domainResult.sslOk ? " with HTTPS" : ""}` : domainResult.error}
+                  {domainResult.ok
+                    ? (domainResult.sslOk ? t("settings.domainConfiguredHttps") : t("settings.domainConfigured"))
+                    : domainResult.error}
                 </div>
                 {domainResult.steps && (
                   <ul className="space-y-0.5 text-xs font-mono">

@@ -1,13 +1,10 @@
 import React from "react";
 import { Link, useParams, useLocation } from "wouter";
+import { useTranslation } from "react-i18next";
 import { 
-  useGetClient,
-  useUpdateClient,
-  useDeleteClient,
-  useListExtensions,
-  useUpdateExtension,
-  getListExtensionsQueryKey,
-  getListClientsQueryKey
+  useGetClient, useUpdateClient, useDeleteClient,
+  useListExtensions, useUpdateExtension,
+  getListExtensionsQueryKey, getListClientsQueryKey
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -21,38 +18,24 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
+  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+  Form, FormControl, FormField, FormItem, FormLabel, FormMessage,
 } from "@/components/ui/form";
-import { ArrowLeft, Phone, Edit, Save, X, Plus, Link2, Trash2 } from "lucide-react";
+import { ArrowLeft, Phone, Edit, Save, X, Link2, Trash2 } from "lucide-react";
 import { ProviderBadge } from "@/components/provider-badge";
 import { formatDate } from "@/lib/utils";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 
 const editSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters."),
+  name: z.string().min(2),
   description: z.string().optional(),
   sipDomain: z.string().optional(),
   sipHost: z.string().optional(),
-  sipPort: z.string().min(1, "Port is required."),
+  sipPort: z.string().min(1),
 });
 
 function parseSipServer(sipServer: string | null | undefined): { sipHost: string; sipPort: string } {
@@ -66,6 +49,7 @@ export default function ClientDetail() {
   const { id } = useParams();
   const clientId = Number(id);
   const { toast } = useToast();
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [editing, setEditing] = React.useState(false);
   const [linkDialogOpen, setLinkDialogOpen] = React.useState(false);
@@ -76,25 +60,21 @@ export default function ClientDetail() {
     query: { enabled: !!clientId, queryKey: ['client', clientId] } 
   });
   
-  // Extensions already linked to this IPBX
   const { data: extensions, isLoading: isLoadingExtensions } = useListExtensions(
     { clientId }, 
     { query: { enabled: !!clientId, queryKey: getListExtensionsQueryKey({ clientId }) } }
   );
 
-  // All extensions (to find unlinked ones for the modal)
   const { data: allExtensions } = useListExtensions(
     {},
     { query: { queryKey: getListExtensionsQueryKey({}) } }
   );
 
-  // Extensions not yet linked to any IPBX or linked to this one
   const availableExtensions = React.useMemo(() => {
     if (!allExtensions) return [];
     return allExtensions.filter(e => !e.clientId || e.clientId === clientId);
   }, [allExtensions, clientId]);
 
-  // Already linked extension IDs
   const linkedExtIds = React.useMemo(
     () => new Set((extensions ?? []).map(e => e.id)),
     [extensions]
@@ -123,7 +103,6 @@ export default function ClientDetail() {
     }
   }, [client, form]);
 
-  // Pre-select already linked extensions when dialog opens
   React.useEffect(() => {
     if (linkDialogOpen) {
       setSelectedExtIds(Array.from(linkedExtIds) as number[]);
@@ -138,24 +117,24 @@ export default function ClientDetail() {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: ['client', clientId] });
           setEditing(false);
-          toast({ title: "IPBX updated" });
+          toast({ title: t("clientDetail.updated") });
         },
-        onError: () => toast({ variant: "destructive", title: "Error", description: "Failed to update IPBX." }),
+        onError: () => toast({ variant: "destructive", title: t("common.error"), description: t("clientDetail.updateError") }),
       }
     );
   };
 
   const handleDelete = () => {
-    if (!client || !window.confirm(`Delete "${client.name}"? This cannot be undone.`)) return;
+    if (!client || !window.confirm(t("clientDetail.deleteConfirm", { name: client.name }))) return;
     deleteClient.mutate(
       { id: clientId },
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListClientsQueryKey() });
-          toast({ title: "IPBX deleted" });
+          toast({ title: t("clientDetail.deleted") });
           navigate("/ipbxs");
         },
-        onError: () => toast({ variant: "destructive", title: "Failed to delete IPBX" }),
+        onError: () => toast({ variant: "destructive", title: t("clientDetail.deleteError") }),
       }
     );
   };
@@ -163,9 +142,7 @@ export default function ClientDetail() {
   const handleLinkExtensions = async () => {
     if (!allExtensions) return;
     setLinking(true);
-
     try {
-      // Determine which to link and which to unlink
       const toLink = selectedExtIds.filter(eid => !linkedExtIds.has(eid));
       const toUnlink = Array.from(linkedExtIds).filter(eid => !selectedExtIds.includes(eid));
 
@@ -173,60 +150,37 @@ export default function ClientDetail() {
         ...toLink.map(eid => {
           const ext = allExtensions.find(e => e.id === eid);
           if (!ext) return null;
-          return updateExtension.mutateAsync({
-            id: eid,
-            data: {
-              extensionNumber: ext.extensionNumber,
-              sipUsername: ext.sipUsername,
-              sipAuthId: ext.sipAuthId,
-              sipPassword: ext.sipPassword,
-              clientId: clientId,
-              agentConfigId: ext.agentConfigId ?? null,
-            }
-          });
+          return updateExtension.mutateAsync({ id: eid, data: { extensionNumber: ext.extensionNumber, sipUsername: ext.sipUsername, sipAuthId: ext.sipAuthId, sipPassword: ext.sipPassword, clientId: clientId, agentConfigId: ext.agentConfigId ?? null } });
         }),
         ...toUnlink.map(eid => {
           const ext = allExtensions.find(e => e.id === eid);
           if (!ext) return null;
-          return updateExtension.mutateAsync({
-            id: eid,
-            data: {
-              extensionNumber: ext.extensionNumber,
-              sipUsername: ext.sipUsername,
-              sipAuthId: ext.sipAuthId,
-              sipPassword: ext.sipPassword,
-              clientId: null,
-              agentConfigId: ext.agentConfigId ?? null,
-            }
-          });
+          return updateExtension.mutateAsync({ id: eid, data: { extensionNumber: ext.extensionNumber, sipUsername: ext.sipUsername, sipAuthId: ext.sipAuthId, sipPassword: ext.sipPassword, clientId: null, agentConfigId: ext.agentConfigId ?? null } });
         }),
       ].filter(Boolean);
 
       await Promise.all(updates);
-
       queryClient.invalidateQueries({ queryKey: getListExtensionsQueryKey({ clientId }) });
       queryClient.invalidateQueries({ queryKey: getListExtensionsQueryKey({}) });
       setLinkDialogOpen(false);
-      toast({ title: "Extensions updated" });
+      toast({ title: t("clientDetail.extUpdated") });
     } catch {
-      toast({ variant: "destructive", title: "Error", description: "Failed to update extensions." });
+      toast({ variant: "destructive", title: t("common.error"), description: t("clientDetail.extError") });
     } finally {
       setLinking(false);
     }
   };
 
   const toggleExt = (eid: number) => {
-    setSelectedExtIds(prev =>
-      prev.includes(eid) ? prev.filter(x => x !== eid) : [...prev, eid]
-    );
+    setSelectedExtIds(prev => prev.includes(eid) ? prev.filter(x => x !== eid) : [...prev, eid]);
   };
 
   if (isLoadingClient) {
-    return <div className="p-8 animate-pulse text-muted-foreground">Loading IPBX data...</div>;
+    return <div className="p-8 animate-pulse text-muted-foreground">{t("clientDetail.loading")}</div>;
   }
 
   if (!client) {
-    return <div className="p-8 text-destructive">IPBX not found.</div>;
+    return <div className="p-8 text-destructive">{t("clientDetail.notFound")}</div>;
   }
 
   return (
@@ -239,22 +193,24 @@ export default function ClientDetail() {
         </Link>
         <div className="flex-1">
           <h1 className="text-3xl font-bold tracking-tight">{client.name}</h1>
-          <p className="text-muted-foreground mt-1 text-sm font-mono">{client.sipDomain || 'No SIP domain configured'}</p>
+          <p className="text-muted-foreground mt-1 text-sm font-mono">
+            {client.sipDomain || t("clientDetail.noSipDomain")}
+          </p>
         </div>
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
-        {/* IPBX Details Card — Edit button lives here */}
+        {/* IPBX Details Card */}
         <Card className="col-span-1 border-l-4 border-l-primary">
           <CardHeader className="pb-3 flex flex-row items-center justify-between">
-            <CardTitle className="text-sm font-medium text-muted-foreground">IPBX Details</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">{t("clientDetail.cardTitle")}</CardTitle>
             {!editing ? (
               <Button variant="outline" size="sm" className="gap-2 h-7 text-xs" onClick={() => setEditing(true)}>
-                <Edit className="h-3.5 w-3.5" /> Edit
+                <Edit className="h-3.5 w-3.5" /> {t("clientDetail.edit")}
               </Button>
             ) : (
               <Button variant="ghost" size="sm" className="gap-2 h-7 text-xs" onClick={() => setEditing(false)}>
-                <X className="h-3.5 w-3.5" /> Cancel
+                <X className="h-3.5 w-3.5" /> {t("clientDetail.cancel")}
               </Button>
             )}
           </CardHeader>
@@ -264,14 +220,14 @@ export default function ClientDetail() {
                 <form onSubmit={form.handleSubmit(onSave)} className="space-y-3">
                   <FormField control={form.control} name="name" render={({ field }) => (
                     <FormItem>
-                      <FormLabel>IPBX Name</FormLabel>
+                      <FormLabel>{t("clients.ipbxName")}</FormLabel>
                       <FormControl><Input {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )} />
                   <FormField control={form.control} name="sipDomain" render={({ field }) => (
                     <FormItem>
-                      <FormLabel>SIP Domain</FormLabel>
+                      <FormLabel>{t("clients.sipDomain")}</FormLabel>
                       <FormControl><Input placeholder="pbx.example.com" {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
@@ -279,14 +235,14 @@ export default function ClientDetail() {
                   <div className="grid grid-cols-[1fr_6rem] gap-2">
                     <FormField control={form.control} name="sipHost" render={({ field }) => (
                       <FormItem>
-                        <FormLabel>SIP Server</FormLabel>
+                        <FormLabel>{t("clients.sipServer")}</FormLabel>
                         <FormControl><Input placeholder="pbx.example.com" {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
                     <FormField control={form.control} name="sipPort" render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Port</FormLabel>
+                        <FormLabel>{t("clients.port")}</FormLabel>
                         <FormControl><Input inputMode="numeric" placeholder="5060" {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
@@ -294,49 +250,48 @@ export default function ClientDetail() {
                   </div>
                   <FormField control={form.control} name="description" render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Notes</FormLabel>
+                      <FormLabel>{t("clients.notes")}</FormLabel>
                       <FormControl><Textarea {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )} />
                   <Button type="submit" size="sm" className="w-full gap-2" disabled={updateClient.isPending}>
                     <Save className="h-4 w-4" />
-                    {updateClient.isPending ? "Saving..." : "Save Changes"}
+                    {updateClient.isPending ? t("clientDetail.saving") : t("clientDetail.saveChanges")}
                   </Button>
                 </form>
               </Form>
             ) : (
               <div className="space-y-4">
                 <div>
-                  <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">SIP Domain</div>
+                  <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">{t("clients.sipDomain")}</div>
                   <div className="text-sm font-mono">{client.sipDomain || "—"}</div>
                 </div>
-                 <div className="grid grid-cols-2 gap-3">
-                   <div>
-                     <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">SIP Server</div>
-                     <div className="text-sm font-mono">{parseSipServer(client.sipServer).sipHost || "—"}</div>
-                   </div>
-                   <div>
-                     <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Port</div>
-                     <div className="text-sm font-mono">{parseSipServer(client.sipServer).sipPort}</div>
-                   </div>
-                 </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">{t("clients.sipServer")}</div>
+                    <div className="text-sm font-mono">{parseSipServer(client.sipServer).sipHost || "—"}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">{t("clients.port")}</div>
+                    <div className="text-sm font-mono">{parseSipServer(client.sipServer).sipPort}</div>
+                  </div>
+                </div>
                 <div>
-                  <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Notes</div>
+                  <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">{t("clients.notes")}</div>
                   <div className="text-sm">{client.description || "—"}</div>
                 </div>
                 <div>
                   <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Added On</div>
                   <div className="text-sm">{formatDate(client.createdAt)}</div>
                 </div>
-                 <Button
-                   variant="outline"
-                   size="sm"
-                   className="w-full gap-2 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
-                   onClick={handleDelete}
-                 >
-                   <Trash2 className="h-4 w-4" /> Remove IPBX
-                 </Button>
+                <Button
+                  variant="outline" size="sm"
+                  className="w-full gap-2 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                  onClick={handleDelete}
+                >
+                  <Trash2 className="h-4 w-4" /> {t("clientDetail.removeIPBX")}
+                </Button>
               </div>
             )}
           </CardContent>
@@ -345,25 +300,20 @@ export default function ClientDetail() {
         {/* Extensions card */}
         <Card className="col-span-2">
           <CardHeader className="flex flex-row items-center justify-between pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Extensions</CardTitle>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 gap-2"
-              onClick={() => setLinkDialogOpen(true)}
-            >
-              <Link2 className="h-3.5 w-3.5" /> Link Extension
+            <CardTitle className="text-sm font-medium text-muted-foreground">{t("clientDetail.extensions")}</CardTitle>
+            <Button variant="outline" size="sm" className="h-8 gap-2" onClick={() => setLinkDialogOpen(true)}>
+              <Link2 className="h-3.5 w-3.5" /> {t("clientDetail.linkExtension")}
             </Button>
           </CardHeader>
           <CardContent>
             {isLoadingExtensions ? (
-              <div className="py-4 text-center text-sm text-muted-foreground">Loading extensions...</div>
+              <div className="py-4 text-center text-sm text-muted-foreground">{t("clientDetail.loadingExt")}</div>
             ) : !extensions || extensions.length === 0 ? (
               <div className="py-8 text-center border border-dashed rounded-md flex flex-col items-center gap-2">
                 <Phone className="h-6 w-6 text-muted-foreground/50" />
-                <p className="text-sm text-muted-foreground">No extensions configured for this IPBX.</p>
+                <p className="text-sm text-muted-foreground">{t("clientDetail.noExtensions")}</p>
                 <Button variant="link" size="sm" onClick={() => setLinkDialogOpen(true)}>
-                  Link an extension
+                  {t("clientDetail.linkAnExt")}
                 </Button>
               </div>
             ) : (
@@ -371,9 +321,9 @@ export default function ClientDetail() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Ext</TableHead>
-                      <TableHead>Display Name</TableHead>
-                      <TableHead>AI Agent</TableHead>
+                      <TableHead>{t("clientDetail.thExt")}</TableHead>
+                      <TableHead>{t("clientDetail.thName")}</TableHead>
+                      <TableHead>{t("clientDetail.thAgent")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -392,7 +342,7 @@ export default function ClientDetail() {
                               <span className="text-xs text-muted-foreground">{ext.agentConfig.name}</span>
                             </div>
                           ) : (
-                            <span className="text-muted-foreground italic text-xs">No agent</span>
+                            <span className="text-muted-foreground italic text-xs">{t("clientDetail.noAgent")}</span>
                           )}
                         </TableCell>
                       </TableRow>
@@ -409,17 +359,15 @@ export default function ClientDetail() {
       <Dialog open={linkDialogOpen} onOpenChange={setLinkDialogOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Link Extensions to {client.name}</DialogTitle>
-            <DialogDescription>
-              Select extensions to link to this IPBX. An extension can only be linked to one IPBX.
-            </DialogDescription>
+            <DialogTitle>{t("clientDetail.dialogTitle", { name: client.name })}</DialogTitle>
+            <DialogDescription>{t("clientDetail.dialogDesc")}</DialogDescription>
           </DialogHeader>
 
           {availableExtensions.length === 0 ? (
             <div className="py-8 text-center text-muted-foreground">
               <Phone className="h-8 w-8 mx-auto mb-2 opacity-40" />
-              <p className="text-sm">No available extensions.</p>
-              <p className="text-xs mt-1">Create extensions first from the Extensions page.</p>
+              <p className="text-sm">{t("clientDetail.noAvailable")}</p>
+              <p className="text-xs mt-1">{t("clientDetail.noAvailNote")}</p>
             </div>
           ) : (
             <div className="space-y-2 max-h-64 overflow-y-auto">
@@ -439,7 +387,7 @@ export default function ClientDetail() {
                       <span className="font-mono text-sm font-medium">{ext.extensionNumber}</span>
                       {ext.displayName && <span className="text-xs text-muted-foreground">{ext.displayName}</span>}
                       {ext.clientId === clientId && (
-                        <Badge variant="secondary" className="text-xs py-0">linked</Badge>
+                        <Badge variant="secondary" className="text-xs py-0">{t("clientDetail.linked")}</Badge>
                       )}
                     </div>
                     {ext.agentConfig && (
@@ -454,9 +402,9 @@ export default function ClientDetail() {
           )}
 
           <div className="flex justify-end gap-2 pt-2 border-t">
-            <Button variant="ghost" onClick={() => setLinkDialogOpen(false)}>Cancel</Button>
+            <Button variant="ghost" onClick={() => setLinkDialogOpen(false)}>{t("common.cancel")}</Button>
             <Button onClick={handleLinkExtensions} disabled={linking || availableExtensions.length === 0}>
-              {linking ? "Saving…" : "Save"}
+              {linking ? t("common.saving") : t("common.save")}
             </Button>
           </div>
         </DialogContent>

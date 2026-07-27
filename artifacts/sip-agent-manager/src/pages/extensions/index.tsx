@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "wouter";
+import { useTranslation } from "react-i18next";
 import { 
   useListExtensions, 
   useDeleteExtension,
@@ -15,64 +16,40 @@ import * as z from "zod";
 import { useToast } from "@/hooks/use-toast";
 
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
+  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+  Form, FormControl, FormField, FormItem, FormLabel, FormMessage,
 } from "@/components/ui/form";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { ProviderBadge } from "@/components/provider-badge";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Plus, Users, Trash2 } from "lucide-react";
-import { useAllDeployStatuses, statusLabel, statusColor } from "@/hooks/use-deploy";
+import { useAllDeployStatuses, statusColor } from "@/hooks/use-deploy";
 
 const formSchema = z.object({
   clientId: z.string().optional(),
   agentConfigId: z.string().optional(),
-  extensionNumber: z.string().min(1, "Extension number is required."),
+  extensionNumber: z.string().min(1),
   displayName: z.string().optional(),
-  sipUsername: z.string().min(1, "SIP Username is required."),
-  sipAuthId: z.string().min(1, "SIP Auth ID is required."),
-  sipPassword: z.string().min(1, "SIP Password is required."),
+  sipUsername: z.string().min(1),
+  sipAuthId: z.string().min(1),
+  sipPassword: z.string().min(1),
 });
 
 export default function ExtensionsList() {
+  const { t } = useTranslation();
   const { data: extensions, isLoading } = useListExtensions();
   const { data: clients } = useListClients();
   const { data: agentConfigs } = useListAgentConfigs();
@@ -93,13 +70,9 @@ export default function ExtensionsList() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      clientId: "none",
-      agentConfigId: "none",
-      extensionNumber: "",
-      displayName: "",
-      sipUsername: "",
-      sipAuthId: "",
-      sipPassword: "",
+      clientId: "none", agentConfigId: "none",
+      extensionNumber: "", displayName: "",
+      sipUsername: "", sipAuthId: "", sipPassword: "",
     },
   });
 
@@ -109,7 +82,6 @@ export default function ExtensionsList() {
       clientId: values.clientId === "none" ? null : Number(values.clientId),
       agentConfigId: values.agentConfigId === "none" ? null : Number(values.agentConfigId),
     };
-
     createExtension.mutate(
       { data },
       {
@@ -117,17 +89,10 @@ export default function ExtensionsList() {
           queryClient.invalidateQueries({ queryKey: getListExtensionsQueryKey() });
           setOpen(false);
           form.reset();
-          toast({
-            title: "Extension created",
-            description: "The SIP extension has been configured.",
-          });
+          toast({ title: t("extensions.created"), description: t("extensions.createdDesc") });
         },
         onError: () => {
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: "Failed to create extension.",
-          });
+          toast({ variant: "destructive", title: t("common.error"), description: t("extensions.createError") });
         },
       }
     );
@@ -140,10 +105,7 @@ export default function ExtensionsList() {
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListExtensionsQueryKey() });
-          toast({
-            title: "Extension deleted",
-            description: "The extension has been removed.",
-          });
+          toast({ title: t("extensions.deleted"), description: t("extensions.deletedDesc") });
         },
         onSettled: () => setDeletingId(null),
       }
@@ -154,155 +116,107 @@ export default function ExtensionsList() {
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Extensions</h1>
-          <p className="text-muted-foreground mt-1">SIP extensions registered to AI agents.</p>
+          <h1 className="text-3xl font-bold tracking-tight">{t("extensions.title")}</h1>
+          <p className="text-muted-foreground mt-1">{t("extensions.description")}</p>
         </div>
         
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button className="gap-2">
-              <Plus className="h-4 w-4" /> Add Extension
+              <Plus className="h-4 w-4" /> {t("extensions.addExt")}
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Configure New Extension</DialogTitle>
-              <DialogDescription>
-                Add SIP credentials for a new extension.
-              </DialogDescription>
+              <DialogTitle>{t("extensions.dialogTitle")}</DialogTitle>
+              <DialogDescription>{t("extensions.dialogDesc")}</DialogDescription>
             </DialogHeader>
             
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="clientId"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>IPBX</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select an IPBX" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="none">No IPBX</SelectItem>
-                            {clients?.map((c) => (
-                              <SelectItem key={c.id} value={c.id.toString()}>{c.name}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <FormField control={form.control} name="clientId" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("extensions.ipbx")}</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger><SelectValue placeholder="Select an IPBX" /></SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="none">{t("extensions.noIPBX")}</SelectItem>
+                          {clients?.map((c) => (
+                            <SelectItem key={c.id} value={c.id.toString()}>{c.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
 
-                  <FormField
-                    control={form.control}
-                    name="agentConfigId"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>AI Agent</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select an agent" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="none">No Agent</SelectItem>
-                            {agentConfigs?.map((a) => (
-                              <SelectItem key={a.id} value={a.id.toString()}>
-                                {a.name} ({a.provider})
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <FormField control={form.control} name="agentConfigId" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("extensions.aiAgent")}</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger><SelectValue placeholder="Select an agent" /></SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="none">{t("extensions.noAgentOption")}</SelectItem>
+                          {agentConfigs?.map((a) => (
+                            <SelectItem key={a.id} value={a.id.toString()}>{a.name} ({a.provider})</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
                   
-                  <FormField
-                    control={form.control}
-                    name="extensionNumber"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Extension Number</FormLabel>
-                        <FormControl>
-                          <Input placeholder="1001" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <FormField control={form.control} name="extensionNumber" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("extensions.extNumber")}</FormLabel>
+                      <FormControl><Input placeholder="1001" {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
 
-                  <FormField
-                    control={form.control}
-                    name="displayName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Display Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Sales AI Agent" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <FormField control={form.control} name="displayName" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("extensions.displayName")}</FormLabel>
+                      <FormControl><Input placeholder="Sales AI Agent" {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
 
-                  <FormField
-                    control={form.control}
-                    name="sipUsername"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>SIP Username</FormLabel>
-                        <FormControl>
-                          <Input placeholder="1001" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <FormField control={form.control} name="sipUsername" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("extensions.sipUsername")}</FormLabel>
+                      <FormControl><Input placeholder="1001" {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
 
-                  <FormField
-                    control={form.control}
-                    name="sipAuthId"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>SIP Auth ID</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Authentification Id" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <FormField control={form.control} name="sipAuthId" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("extensions.sipAuthId")}</FormLabel>
+                      <FormControl><Input placeholder="Authentification Id" {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
 
-                  <FormField
-                    control={form.control}
-                    name="sipPassword"
-                    render={({ field }) => (
-                      <FormItem className="col-span-2">
-                        <FormLabel>SIP Password</FormLabel>
-                        <FormControl>
-                          <PasswordInput placeholder="Secret password" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <FormField control={form.control} name="sipPassword" render={({ field }) => (
+                    <FormItem className="col-span-2">
+                      <FormLabel>{t("extensions.sipPassword")}</FormLabel>
+                      <FormControl><PasswordInput placeholder="Secret password" {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
                 </div>
 
-                <p className="text-xs text-muted-foreground">
-                  SIP Domain and SIP Server are configured on the linked IPBX.
-                </p>
+                <p className="text-xs text-muted-foreground">{t("extensions.sipDomainNote")}</p>
                 
                 <div className="flex justify-end pt-4 border-t">
                   <Button type="submit" disabled={createExtension.isPending}>
-                    {createExtension.isPending ? "Saving..." : "Save Extension"}
+                    {createExtension.isPending ? t("extensions.saving") : t("extensions.saveExt")}
                   </Button>
                 </div>
               </form>
@@ -315,18 +229,18 @@ export default function ExtensionsList() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Ext</TableHead>
-              <TableHead>IPBX</TableHead>
-              <TableHead>AI Agent</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="w-[100px] text-right">Action</TableHead>
+              <TableHead>{t("extensions.thExt")}</TableHead>
+              <TableHead>{t("extensions.thIPBX")}</TableHead>
+              <TableHead>{t("extensions.thAgent")}</TableHead>
+              <TableHead>{t("extensions.thStatus")}</TableHead>
+              <TableHead className="w-[100px] text-right">{t("extensions.thAction")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
                 <TableCell colSpan={5} className="text-center h-24 text-muted-foreground">
-                  Loading extensions...
+                  {t("extensions.loading")}
                 </TableCell>
               </TableRow>
             ) : !extensions || extensions.length === 0 ? (
@@ -334,8 +248,8 @@ export default function ExtensionsList() {
                 <TableCell colSpan={5} className="text-center h-48 text-muted-foreground">
                   <div className="flex flex-col items-center justify-center gap-2">
                     <Users className="h-8 w-8 text-muted-foreground/50" />
-                    <p>No extensions configured.</p>
-                    <Button variant="link" onClick={() => setOpen(true)}>Add your first extension</Button>
+                    <p>{t("extensions.noExtensions")}</p>
+                    <Button variant="link" onClick={() => setOpen(true)}>{t("extensions.addFirst")}</Button>
                   </div>
                 </TableCell>
               </TableRow>
@@ -354,7 +268,7 @@ export default function ExtensionsList() {
                         {ext.client.name}
                       </Link>
                     ) : (
-                      <span className="text-muted-foreground italic text-sm">Unassigned</span>
+                      <span className="text-muted-foreground italic text-sm">{t("extensions.unassigned")}</span>
                     )}
                   </TableCell>
                   <TableCell>
@@ -364,21 +278,20 @@ export default function ExtensionsList() {
                         <span className="text-sm text-muted-foreground">{ext.agentConfig.name}</span>
                       </div>
                     ) : (
-                      <span className="text-muted-foreground italic text-sm">No agent</span>
+                      <span className="text-muted-foreground italic text-sm">{t("extensions.noAgent")}</span>
                     )}
                   </TableCell>
                   <TableCell>
                     {(() => {
                       const s = statusMap.get(ext.id);
                       const st = (s?.status ?? "stopped") as "stopped" | "starting" | "registered" | "error";
-                      return <span className={`text-xs font-medium ${statusColor(st)}`}>{statusLabel(st)}</span>;
+                      return <span className={`text-xs font-medium ${statusColor(st)}`}>{t(`deploy.status.${st}`)}</span>;
                     })()}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center justify-end gap-2">
                       <Button 
-                        variant="ghost" 
-                        size="icon" 
+                        variant="ghost" size="icon" 
                         className="h-8 w-8 text-muted-foreground hover:text-destructive shrink-0"
                         onClick={() => setDeletingId(ext.id)}
                       >
@@ -396,18 +309,16 @@ export default function ExtensionsList() {
       <AlertDialog open={deletingId !== null} onOpenChange={(open) => { if (!open) setDeletingId(null); }}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete this extension?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will permanently delete the extension and its deployment configuration. This action cannot be undone.
-            </AlertDialogDescription>
+            <AlertDialogTitle>{t("extensions.deleteTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("extensions.deleteDesc")}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onClick={confirmDelete}
             >
-              Delete
+              {t("common.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "wouter";
+import { useTranslation } from "react-i18next";
 import { 
   useListClients, 
   useCreateClient, 
@@ -13,47 +14,26 @@ import * as z from "zod";
 import { useToast } from "@/hooks/use-toast";
 
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
+  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+  Form, FormControl, FormField, FormItem, FormLabel, FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { formatDate } from "@/lib/utils";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Plus, Server, Trash2 } from "lucide-react";
 
 const formSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters."),
+  name: z.string().min(2),
   description: z.string().optional(),
   sipDomain: z.string().optional(),
   sipHost: z.string().optional(),
@@ -61,6 +41,7 @@ const formSchema = z.object({
 });
 
 export default function ClientsList() {
+  const { t } = useTranslation();
   const { data: clients, isLoading } = useListClients();
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -72,13 +53,7 @@ export default function ClientsList() {
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: "",
-      description: "",
-      sipDomain: "",
-      sipHost: "",
-      sipPort: "5060",
-    },
+    defaultValues: { name: "", description: "", sipDomain: "", sipHost: "", sipPort: "5060" },
   });
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
@@ -90,17 +65,10 @@ export default function ClientsList() {
           queryClient.invalidateQueries({ queryKey: getListClientsQueryKey() });
           setOpen(false);
           form.reset();
-          toast({
-            title: "IPBX created",
-            description: "The IPBX has been added successfully.",
-          });
+          toast({ title: t("clients.created"), description: t("clients.createdDesc") });
         },
         onError: () => {
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: "Failed to create IPBX.",
-          });
+          toast({ variant: "destructive", title: t("common.error"), description: t("clients.createError") });
         },
       }
     );
@@ -113,10 +81,7 @@ export default function ClientsList() {
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListClientsQueryKey() });
-          toast({
-            title: "IPBX deleted",
-            description: "The IPBX has been removed.",
-          });
+          toast({ title: t("clients.deleted"), description: t("clients.deletedDesc") });
         },
         onSettled: () => setDeletingId(null),
       }
@@ -127,100 +92,68 @@ export default function ClientsList() {
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">IPBXs</h1>
-          <p className="text-muted-foreground mt-1">Manage your Yeastar IPBX systems and their SIP credentials.</p>
+          <h1 className="text-3xl font-bold tracking-tight">{t("clients.title")}</h1>
+          <p className="text-muted-foreground mt-1">{t("clients.description")}</p>
         </div>
         
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button className="gap-2">
-              <Plus className="h-4 w-4" /> Add IPBX
+              <Plus className="h-4 w-4" /> {t("clients.addIPBX")}
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Add New IPBX</DialogTitle>
-              <DialogDescription>
-                Register a Yeastar IPBX and configure its SIP connection details.
-              </DialogDescription>
+              <DialogTitle>{t("clients.dialogTitle")}</DialogTitle>
+              <DialogDescription>{t("clients.dialogDescription")}</DialogDescription>
             </DialogHeader>
             
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>IPBX Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Office IPBX" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <FormField control={form.control} name="name" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("clients.ipbxName")}</FormLabel>
+                    <FormControl><Input placeholder="Office IPBX" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
 
-                <FormField
-                  control={form.control}
-                  name="sipDomain"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>SIP Domain</FormLabel>
-                      <FormControl>
-                        <Input placeholder="pbx.example.com" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <FormField control={form.control} name="sipDomain" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("clients.sipDomain")}</FormLabel>
+                    <FormControl><Input placeholder="pbx.example.com" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
 
                 <div className="flex gap-2">
-                  <FormField
-                    control={form.control}
-                    name="sipHost"
-                    render={({ field }) => (
-                      <FormItem className="flex-1">
-                        <FormLabel>SIP Server</FormLabel>
-                        <FormControl>
-                          <Input placeholder="pbx.example.com" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="sipPort"
-                    render={({ field }) => (
-                      <FormItem className="w-24">
-                        <FormLabel>Port</FormLabel>
-                        <FormControl>
-                          <Input placeholder="5060" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Notes</FormLabel>
-                      <FormControl>
-                        <Textarea placeholder="Details about this IPBX..." {...field} />
-                      </FormControl>
+                  <FormField control={form.control} name="sipHost" render={({ field }) => (
+                    <FormItem className="flex-1">
+                      <FormLabel>{t("clients.sipServer")}</FormLabel>
+                      <FormControl><Input placeholder="pbx.example.com" {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
-                  )}
-                />
+                  )} />
+                  <FormField control={form.control} name="sipPort" render={({ field }) => (
+                    <FormItem className="w-24">
+                      <FormLabel>{t("clients.port")}</FormLabel>
+                      <FormControl><Input placeholder="5060" {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                </div>
+                
+                <FormField control={form.control} name="description" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("clients.notes")}</FormLabel>
+                    <FormControl><Textarea placeholder="Details about this IPBX..." {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
                 
                 <div className="flex justify-end pt-4">
                   <Button type="submit" disabled={createClient.isPending}>
-                    {createClient.isPending ? "Creating..." : "Create IPBX"}
+                    {createClient.isPending ? t("clients.creating") : t("clients.createIPBX")}
                   </Button>
                 </div>
               </form>
@@ -233,17 +166,17 @@ export default function ClientsList() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>IPBX Name</TableHead>
-              <TableHead>SIP Server</TableHead>
-              <TableHead>Port</TableHead>
-              <TableHead className="w-[100px]">Action</TableHead>
+              <TableHead>{t("clients.thName")}</TableHead>
+              <TableHead>{t("clients.thSipServer")}</TableHead>
+              <TableHead>{t("clients.thPort")}</TableHead>
+              <TableHead className="w-[100px]">{t("clients.thAction")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
                 <TableCell colSpan={4} className="text-center h-24 text-muted-foreground">
-                  Loading IPBXs...
+                  {t("clients.loading")}
                 </TableCell>
               </TableRow>
             ) : !clients || clients.length === 0 ? (
@@ -251,8 +184,8 @@ export default function ClientsList() {
                 <TableCell colSpan={4} className="text-center h-48 text-muted-foreground">
                   <div className="flex flex-col items-center justify-center gap-2">
                     <Server className="h-8 w-8 text-muted-foreground/50" />
-                    <p>No IPBXs found.</p>
-                    <Button variant="link" onClick={() => setOpen(true)}>Add your first IPBX</Button>
+                    <p>{t("clients.noIPBXs")}</p>
+                    <Button variant="link" onClick={() => setOpen(true)}>{t("clients.addFirst")}</Button>
                   </div>
                 </TableCell>
               </TableRow>
@@ -277,8 +210,7 @@ export default function ClientsList() {
                   <TableCell>
                     <div className="flex items-center justify-end gap-2">
                       <Button 
-                        variant="ghost" 
-                        size="icon" 
+                        variant="ghost" size="icon" 
                         className="h-8 w-8 text-muted-foreground hover:text-destructive"
                         onClick={() => setDeletingId(client.id)}
                       >
@@ -296,18 +228,16 @@ export default function ClientsList() {
       <AlertDialog open={deletingId !== null} onOpenChange={(open) => { if (!open) setDeletingId(null); }}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete this IPBX?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will permanently delete the IPBX and may affect extensions linked to it. This action cannot be undone.
-            </AlertDialogDescription>
+            <AlertDialogTitle>{t("clients.deleteTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("clients.deleteDesc")}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onClick={confirmDelete}
             >
-              Delete
+              {t("common.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

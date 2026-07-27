@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "wouter";
+import { useTranslation } from "react-i18next";
 import { 
   useListAgentConfigs,
   useDeleteAgentConfig,
@@ -9,28 +10,18 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { ProviderBadge } from "@/components/provider-badge";
 import { Plus, Bot, Trash2 } from "lucide-react";
 
 export default function AgentConfigsList() {
+  const { t } = useTranslation();
   const { data: configs, isLoading } = useListAgentConfigs();
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -45,10 +36,7 @@ export default function AgentConfigsList() {
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListAgentConfigsQueryKey() });
-          toast({
-            title: "Agent deleted",
-            description: "The AI agent configuration has been removed.",
-          });
+          toast({ title: t("agents.deleted"), description: t("agents.deletedDesc") });
         },
         onSettled: () => setDeletingId(null),
       }
@@ -59,13 +47,13 @@ export default function AgentConfigsList() {
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">AI Agents</h1>
-          <p className="text-muted-foreground mt-1">Reusable AI agent configurations you can assign to any extension.</p>
+          <h1 className="text-3xl font-bold tracking-tight">{t("agents.title")}</h1>
+          <p className="text-muted-foreground mt-1">{t("agents.description")}</p>
         </div>
         
         <Link href="/agent-configs/new">
           <Button className="gap-2">
-            <Plus className="h-4 w-4" /> New Agent
+            <Plus className="h-4 w-4" /> {t("agents.newAgent")}
           </Button>
         </Link>
       </div>
@@ -74,18 +62,18 @@ export default function AgentConfigsList() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Agent Name</TableHead>
-              <TableHead>Provider</TableHead>
-              <TableHead>Agent ID</TableHead>
-              <TableHead>Language</TableHead>
-              <TableHead className="w-[100px]">Action</TableHead>
+              <TableHead>{t("agents.thName")}</TableHead>
+              <TableHead>{t("agents.thProvider")}</TableHead>
+              <TableHead>{t("agents.thAgentId")}</TableHead>
+              <TableHead>{t("agents.thLanguage")}</TableHead>
+              <TableHead className="w-[100px]">{t("agents.thAction")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
                 <TableCell colSpan={5} className="text-center h-24 text-muted-foreground">
-                  Loading agents...
+                  {t("agents.loading")}
                 </TableCell>
               </TableRow>
             ) : !configs || configs.length === 0 ? (
@@ -93,9 +81,9 @@ export default function AgentConfigsList() {
                 <TableCell colSpan={5} className="text-center h-48 text-muted-foreground">
                   <div className="flex flex-col items-center justify-center gap-2">
                     <Bot className="h-8 w-8 text-muted-foreground/50" />
-                    <p>No agents configured yet.</p>
+                    <p>{t("agents.noAgents")}</p>
                     <Link href="/agent-configs/new">
-                      <Button variant="link">Create your first AI agent</Button>
+                      <Button variant="link">{t("agents.createFirst")}</Button>
                     </Link>
                   </div>
                 </TableCell>
@@ -115,15 +103,14 @@ export default function AgentConfigsList() {
                     <div className="flex flex-col gap-1">
                       {config.modelId && <span className="font-medium">{config.modelId}</span>}
                       {config.voiceId && <span className="text-muted-foreground truncate max-w-[150px]">{config.voiceId}</span>}
-                      {!config.modelId && !config.voiceId && <span className="text-muted-foreground italic">Defaults</span>}
+                      {!config.modelId && !config.voiceId && <span className="text-muted-foreground italic">{t("agents.defaults")}</span>}
                     </div>
                   </TableCell>
                   <TableCell>{config.language || "—"}</TableCell>
                   <TableCell>
                     <div className="flex items-center justify-end gap-2">
                       <Button 
-                        variant="ghost" 
-                        size="icon" 
+                        variant="ghost" size="icon" 
                         className="h-8 w-8 text-muted-foreground hover:text-destructive"
                         onClick={() => setDeletingId(config.id)}
                       >
@@ -141,18 +128,16 @@ export default function AgentConfigsList() {
       <AlertDialog open={deletingId !== null} onOpenChange={(open) => { if (!open) setDeletingId(null); }}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete this agent?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will permanently delete the AI agent configuration. Extensions using it will lose their agent assignment. This action cannot be undone.
-            </AlertDialogDescription>
+            <AlertDialogTitle>{t("agents.deleteTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("agents.deleteDesc")}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onClick={confirmDelete}
             >
-              Delete
+              {t("common.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -1,12 +1,13 @@
 import React from "react";
 import { Link } from "wouter";
+import { useTranslation } from "react-i18next";
 import { useGetStats, useListExtensions } from "@workspace/api-client-react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Users, Phone, Server, Activity, Play, RotateCcw, Square, PhoneCall, Bot } from "lucide-react";
 import { ProviderBadge } from "@/components/provider-badge";
-import { useAllDeployStatuses, useStartExtension, useStopExtension, useRestartExtension, statusLabel, statusColor, type DeployStatus } from "@/hooks/use-deploy";
+import { useAllDeployStatuses, useStartExtension, useStopExtension, useRestartExtension, statusColor, type DeployStatus } from "@/hooks/use-deploy";
 import { useToast } from "@/hooks/use-toast";
 import { CallHistoryTable, groupEventsByCall, type CallEvent } from "@/components/call-history-table";
 
@@ -29,6 +30,7 @@ function useCallEvents() {
 
 function AgentRow({ ext, status }: { ext: { id: number; extensionNumber: string; displayName?: string | null; agentConfig?: { provider: string } | null }; status: DeployStatus | undefined }) {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const start   = useStartExtension(ext.id);
   const stop    = useStopExtension(ext.id);
   const restart = useRestartExtension(ext.id);
@@ -46,7 +48,7 @@ function AgentRow({ ext, status }: { ext: { id: number; extensionNumber: string;
       </div>
       <div className="flex items-center gap-3">
         <span className={`text-sm font-medium ${statusColor(currentStatus)}`}>
-          {statusLabel(currentStatus)}
+          {t(`deploy.status.${currentStatus}`)}
         </span>
         <div className="flex gap-1">
           {!isRunning ? (
@@ -54,10 +56,10 @@ function AgentRow({ ext, status }: { ext: { id: number; extensionNumber: string;
               size="sm" variant="outline" className="gap-1 h-7 text-xs"
               disabled={!ext.agentConfig || start.isPending}
               onClick={() => start.mutate(undefined, {
-                onError: (e) => toast({ variant: "destructive", title: "Deploy failed", description: e.message })
+                onError: (e) => toast({ variant: "destructive", title: t("dashboard.deployFailed"), description: e.message })
               })}
             >
-              <Play className="h-3 w-3" /> Deploy
+              <Play className="h-3 w-3" /> {t("deploy.deploy")}
             </Button>
           ) : (
             <>
@@ -65,24 +67,24 @@ function AgentRow({ ext, status }: { ext: { id: number; extensionNumber: string;
                 size="sm" variant="outline" className="gap-1 h-7 text-xs border-red-300 text-red-600 hover:bg-red-50"
                 disabled={stop.isPending}
                 onClick={() => stop.mutate(undefined, {
-                  onError: (e) => toast({ variant: "destructive", title: "Stop failed", description: e.message })
+                  onError: (e) => toast({ variant: "destructive", title: t("dashboard.stopFailed"), description: e.message })
                 })}
               >
-                <Square className="h-3 w-3" /> Stop
+                <Square className="h-3 w-3" /> {t("deploy.stop")}
               </Button>
               <Button
                 size="sm" variant="outline" className="gap-1 h-7 text-xs"
                 disabled={restart.isPending}
                 onClick={() => restart.mutate(undefined, {
-                  onError: (e) => toast({ variant: "destructive", title: "Restart failed", description: e.message })
+                  onError: (e) => toast({ variant: "destructive", title: t("dashboard.restartFailed"), description: e.message })
                 })}
               >
-                <RotateCcw className="h-3 w-3" /> Restart
+                <RotateCcw className="h-3 w-3" /> {t("deploy.restart")}
               </Button>
             </>
           )}
           <Link href={`/extensions/${ext.id}`}>
-            <Button size="sm" variant="ghost" className="h-7 text-xs">Details</Button>
+            <Button size="sm" variant="ghost" className="h-7 text-xs">{t("deploy.details")}</Button>
           </Link>
         </div>
       </div>
@@ -91,6 +93,7 @@ function AgentRow({ ext, status }: { ext: { id: number; extensionNumber: string;
 }
 
 export default function Dashboard() {
+  const { t } = useTranslation();
   const { data: stats, isLoading } = useGetStats();
   const { data: extensions }       = useListExtensions();
   const { data: allStatuses }      = useAllDeployStatuses();
@@ -104,7 +107,6 @@ export default function Dashboard() {
 
   const registeredCount = (allStatuses ?? []).filter(s => s.status === "registered").length;
 
-  // Completed calls only (must have both invite and ended), most-recent first
   const callGroups = React.useMemo(() => {
     if (!callEvents?.events?.length) return [];
     const grouped = groupEventsByCall(callEvents.events);
@@ -116,11 +118,11 @@ export default function Dashboard() {
   if (isLoading) {
     return (
       <div className="space-y-6 animate-pulse">
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{t("dashboard.title")}</h1>
         <div className="grid gap-4 md:grid-cols-3">
           {[1, 2, 3].map(i => (
             <Card key={i}>
-              <CardHeader><CardTitle className="text-sm font-medium">Loading…</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-sm font-medium">{t("dashboard.loadingCard")}</CardTitle></CardHeader>
               <CardContent><div className="h-8 w-16 bg-muted rounded" /></CardContent>
             </Card>
           ))}
@@ -131,34 +133,34 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+      <h1 className="text-3xl font-bold tracking-tight">{t("dashboard.title")}</h1>
 
       {/* Stat Cards */}
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total IPBXs</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("dashboard.totalIPBXs")}</CardTitle>
             <Server className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent><div className="text-3xl font-bold">{stats?.totalClients ?? 0}</div></CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Extensions</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("dashboard.extensions")}</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent><div className="text-3xl font-bold">{stats?.totalExtensions ?? 0}</div></CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Registered</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("dashboard.registered")}</CardTitle>
             <Activity className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent><div className="text-3xl font-bold text-green-600">{registeredCount}</div></CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Agent Configs</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("dashboard.agentConfigs")}</CardTitle>
             <Bot className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent><div className="text-3xl font-bold">{stats?.extensionsByProvider?.length ?? 0}</div></CardContent>
@@ -171,14 +173,14 @@ export default function Dashboard() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Activity className="h-5 w-5" />
-              Live Agent Status
+              {t("dashboard.liveAgentStatus")}
             </CardTitle>
           </CardHeader>
           <CardContent>
             {!extensions || extensions.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 <Users className="h-8 w-8 mx-auto mb-2 opacity-40" />
-                <p>No extensions yet.</p>
+                <p>{t("dashboard.noExtensions")}</p>
               </div>
             ) : (
               <>
@@ -189,7 +191,7 @@ export default function Dashboard() {
                 </div>
                 <div className="mt-3 flex justify-center">
                   <Link href="/extensions">
-                    <Button variant="ghost" size="sm" className="text-xs h-7">View all</Button>
+                    <Button variant="ghost" size="sm" className="text-xs h-7">{t("dashboard.viewAll")}</Button>
                   </Link>
                 </div>
               </>
@@ -202,7 +204,7 @@ export default function Dashboard() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <PhoneCall className="h-5 w-5" />
-              Calls History
+              {t("dashboard.callsHistory")}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0 pb-2">
@@ -211,7 +213,7 @@ export default function Dashboard() {
               extensions={extensions}
               limit={5}
               viewAllHref="/calls"
-              emptyMessage="No call events yet. Events appear here when extensions are deployed and receive calls."
+              emptyMessage={t("dashboard.emptyCallsMsg")}
             />
           </CardContent>
         </Card>

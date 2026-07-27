@@ -1,25 +1,27 @@
 import React from "react";
 import { Link, useLocation } from "wouter";
+import { useTranslation } from "react-i18next";
 import { Server, Users, Phone, Settings, Menu, Activity, FileTerminal, Bot, PhoneCall, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/auth-context";
 import { SettingsModal } from "@/components/settings-modal";
 
-const navItems = [
-  { name: "Dashboard", href: "/", icon: Activity },
-  { name: "IPBXs", href: "/ipbxs", icon: Server },
-  { name: "AI Agents", href: "/agent-configs", icon: Bot },
-  { name: "Extensions", href: "/extensions", icon: Users },
-  { name: "Call History", href: "/calls", icon: PhoneCall },
-  { name: "Logs", href: "/logs", icon: FileTerminal },
-];
-
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [settingsOpen, setSettingsOpen] = React.useState(false);
   const { user, logout } = useAuth();
+  const { t } = useTranslation();
+
+  const navItems = [
+    { name: t("nav.dashboard"),   href: "/",             icon: Activity },
+    { name: t("nav.ipbxs"),       href: "/ipbxs",        icon: Server },
+    { name: t("nav.aiAgents"),    href: "/agent-configs", icon: Bot },
+    { name: t("nav.extensions"),  href: "/extensions",   icon: Users },
+    { name: t("nav.callHistory"), href: "/calls",        icon: PhoneCall },
+    { name: t("nav.logs"),        href: "/logs",         icon: FileTerminal },
+  ];
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
@@ -59,7 +61,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           })}
         </nav>
 
-        {/* Bottom: AIO PROCESS + settings button */}
+        {/* Bottom: user info + settings + logout */}
         <div className="absolute bottom-4 left-0 right-0 px-3 space-y-1">
           <div className="flex items-center gap-2 rounded-md bg-sidebar-accent/50 px-3 py-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sidebar-primary/20 text-sidebar-primary shrink-0">
@@ -73,7 +75,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             <button
               onClick={() => setSettingsOpen(true)}
               className="shrink-0 p-1 rounded hover:bg-sidebar-accent/70 text-sidebar-foreground/60 hover:text-sidebar-foreground transition-colors"
-              title="Settings"
+              title={t("nav.settings")}
             >
               <Settings className="h-4 w-4" />
             </button>
@@ -81,7 +83,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             <button
               onClick={() => logout()}
               className="shrink-0 p-1 rounded hover:bg-sidebar-accent/70 text-sidebar-foreground/60 hover:text-sidebar-foreground transition-colors"
-              title="Sign out"
+              title={t("nav.signOut")}
             >
               <LogOut className="h-4 w-4" />
             </button>
