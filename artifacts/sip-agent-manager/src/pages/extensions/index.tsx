@@ -268,7 +268,7 @@ export default function ExtensionsList() {
               <SelectContent>
                 <SelectItem value="all">All Statuses</SelectItem>
                 <SelectItem value="running">Running</SelectItem>
-                <SelectItem value="stopped">Stopped</SelectItem>
+                <SelectItem value="stopped">Down</SelectItem>
                 <SelectItem value="error">Error</SelectItem>
               </SelectContent>
             </Select>

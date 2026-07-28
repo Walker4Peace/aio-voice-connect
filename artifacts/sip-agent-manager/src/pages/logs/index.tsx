@@ -181,7 +181,7 @@ export default function LogsPage() {
                       )}
                       {st && (
                         <span className={`text-xs ${isRunning ? "text-green-600" : "text-red-500"}`}>
-                          {isRunning ? "Registered" : "Stopped"}
+                          {isRunning ? "Registered" : "Down"}
                         </span>
                       )}
                     </span>

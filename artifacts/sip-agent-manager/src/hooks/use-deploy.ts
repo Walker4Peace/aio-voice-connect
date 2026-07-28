@@ -117,7 +117,7 @@ export function statusLabel(status: DeployStatus["status"]) {
     case "starting":     return "Starting…";
     case "reconnecting": return "Reconnecting…";
     case "error":        return "Error";
-    default:             return "Stopped";
+    default:             return "Down";
   }
 }
 

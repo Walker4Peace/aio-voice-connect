@@ -26,7 +26,7 @@ const en = {
   "common.cannotBeUndone": "This action cannot be undone.",
 
   // ── Deploy status labels ──────────────────────────────────────────────────
-  "deploy.status.stopped":     "Stopped",
+  "deploy.status.stopped":     "Down",
   "deploy.status.starting":    "Starting…",
   "deploy.status.registered":  "Registered",
   "deploy.status.reconnecting":"Reconnecting…",
@@ -483,7 +483,7 @@ const fr: typeof en = {
   "common.cannotBeUndone": "Cette action est irréversible.",
 
   // ── Deploy status labels ──────────────────────────────────────────────────
-  "deploy.status.stopped":     "Arrêté",
+  "deploy.status.stopped":     "Down",
   "deploy.status.starting":    "Démarrage…",
   "deploy.status.registered":  "Enregistré",
   "deploy.status.reconnecting":"Reconnexion…",

@@ -95,7 +95,7 @@ function AgentRow({ ext, status }: {
           <div className="flex items-center gap-1.5">
             <span className={cn("h-2 w-2 rounded-full shrink-0", isRunning ? "bg-green-500" : "bg-gray-300")} />
             <span className={cn("text-sm font-medium", isRunning ? "text-green-700" : "text-muted-foreground")}>
-              {isRunning ? "Running" : "Stopped"}
+              {isRunning ? "Running" : "Down"}
             </span>
           </div>
         ) : (
@@ -227,7 +227,7 @@ export default function Dashboard() {
               </span>
               <span className="flex items-center gap-1.5">
                 <span className="h-2 w-2 rounded-full bg-gray-400" />
-                <span className="text-muted-foreground">{stoppedCount} Stopped</span>
+                <span className="text-muted-foreground">{stoppedCount} Down</span>
               </span>
             </div>
             <Link href="/extensions">
