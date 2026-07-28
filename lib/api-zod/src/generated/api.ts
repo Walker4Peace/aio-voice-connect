@@ -42,6 +42,7 @@ export const ListClientsResponseItem = zod.object({
   "yeastarApiUrl": zod.string().nullish().describe('Yeastar PBX HTTP API base URL for outbound call triggering'),
   "yeastarClientId": zod.string().nullish().describe('Yeastar API OAuth Client ID'),
   "yeastarClientSecret": zod.string().nullish().describe('Yeastar API OAuth Client Secret'),
+  "yeastarVerified": zod.boolean().nullish().describe('Whether Yeastar OAuth credentials were successfully verified'),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })
@@ -70,6 +71,7 @@ export const CreateClientResponse = zod.object({
   "yeastarApiUrl": zod.string().nullish().describe('Yeastar PBX HTTP API base URL for outbound call triggering'),
   "yeastarClientId": zod.string().nullish().describe('Yeastar API OAuth Client ID'),
   "yeastarClientSecret": zod.string().nullish().describe('Yeastar API OAuth Client Secret'),
+  "yeastarVerified": zod.boolean().nullish().describe('Whether Yeastar OAuth credentials were successfully verified'),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })
@@ -91,6 +93,7 @@ export const GetClientResponse = zod.object({
   "yeastarApiUrl": zod.string().nullish().describe('Yeastar PBX HTTP API base URL for outbound call triggering'),
   "yeastarClientId": zod.string().nullish().describe('Yeastar API OAuth Client ID'),
   "yeastarClientSecret": zod.string().nullish().describe('Yeastar API OAuth Client Secret'),
+  "yeastarVerified": zod.boolean().nullish().describe('Whether Yeastar OAuth credentials were successfully verified'),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })
@@ -122,6 +125,7 @@ export const UpdateClientResponse = zod.object({
   "yeastarApiUrl": zod.string().nullish().describe('Yeastar PBX HTTP API base URL for outbound call triggering'),
   "yeastarClientId": zod.string().nullish().describe('Yeastar API OAuth Client ID'),
   "yeastarClientSecret": zod.string().nullish().describe('Yeastar API OAuth Client Secret'),
+  "yeastarVerified": zod.boolean().nullish().describe('Whether Yeastar OAuth credentials were successfully verified'),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })

@@ -106,6 +106,7 @@ export default function ClientDetail() {
     yeastarApiUrl?: string | null;
     yeastarClientId?: string | null;
     yeastarClientSecret?: string | null;
+    yeastarVerified?: boolean | null;
   };
 
   React.useEffect(() => {
@@ -248,6 +249,7 @@ export default function ClientDetail() {
 
   const c = client as ClientWithYeastar;
   const hasYeastarConfig = !!(c.yeastarApiUrl && c.yeastarClientId && c.yeastarClientSecret);
+  // yeastarVerified: true = test passed (green), false = test failed (red), null = not tested yet
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -421,9 +423,21 @@ export default function ClientDetail() {
                   {hasYeastarConfig ? (
                     <div className="space-y-1">
                       <div className="text-sm font-mono truncate">{c.yeastarApiUrl}</div>
-                      <div className="flex items-center gap-1.5 text-xs text-green-600 dark:text-green-400">
-                        <CheckCircle className="h-3 w-3" /> {t("clients.yeastarConfigured")}
-                      </div>
+                      {c.yeastarVerified === true && (
+                        <div className="flex items-center gap-1.5 text-xs text-green-600 dark:text-green-400">
+                          <CheckCircle className="h-3 w-3" /> {t("clients.yeastarConfigured")}
+                        </div>
+                      )}
+                      {c.yeastarVerified === false && (
+                        <div className="flex items-center gap-1.5 text-xs text-destructive">
+                          <XCircle className="h-3 w-3" /> {t("clients.yeastarNotVerified")}
+                        </div>
+                      )}
+                      {c.yeastarVerified == null && (
+                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                          <CheckCircle className="h-3 w-3 opacity-40" /> {t("clients.yeastarConfigured")}
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <div className="text-sm text-muted-foreground italic">{t("clients.yeastarNotConfigured")}</div>

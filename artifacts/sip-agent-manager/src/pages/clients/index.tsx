@@ -30,7 +30,9 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Plus, Server, Trash2 } from "lucide-react";
+import { Plus, Server, Trash2, FlaskConical, Loader2, CheckCircle, XCircle } from "lucide-react";
+
+const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, "") + "/api";
 
 const formSchema = z.object({
   name: z.string().min(2),
@@ -43,6 +45,8 @@ const formSchema = z.object({
   yeastarClientSecret: z.string().optional(),
 });
 
+type TestStatus = "idle" | "testing" | "success" | "error";
+
 export default function ClientsList() {
   const { t } = useTranslation();
   const { data: clients, isLoading } = useListClients();
@@ -50,6 +54,8 @@ export default function ClientsList() {
   const { toast } = useToast();
   const [open, setOpen] = React.useState(false);
   const [deletingId, setDeletingId] = React.useState<number | null>(null);
+  const [testStatus, setTestStatus] = React.useState<TestStatus>("idle");
+  const [testError, setTestError] = React.useState<string>("");
 
   const createClient = useCreateClient();
   const deleteClient = useDeleteClient();
@@ -58,6 +64,38 @@ export default function ClientsList() {
     resolver: zodResolver(formSchema),
     defaultValues: { name: "", description: "", sipDomain: "", sipHost: "", sipPort: "5060", yeastarApiUrl: "", yeastarClientId: "", yeastarClientSecret: "" },
   });
+
+  const handleTestConnection = async () => {
+    const values = form.getValues();
+    const pbxUrl = values.yeastarApiUrl?.trim();
+    const clientId = values.yeastarClientId?.trim();
+    const clientSecret = values.yeastarClientSecret?.trim();
+
+    if (!pbxUrl || !clientId || !clientSecret) {
+      toast({ variant: "destructive", title: t("clients.yeastarTestMissing") });
+      return;
+    }
+    setTestStatus("testing");
+    setTestError("");
+    try {
+      const res = await fetch(`${API_BASE}/clients/yeastar/test`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pbxUrl, clientId, clientSecret }),
+      });
+      const data = await res.json() as { success: boolean; error?: string };
+      if (data.success) {
+        setTestStatus("success");
+        toast({ title: t("clients.yeastarTestSuccess") });
+      } else {
+        setTestStatus("error");
+        setTestError(data.error ?? t("clients.yeastarTestFailed"));
+      }
+    } catch (err) {
+      setTestStatus("error");
+      setTestError((err as Error).message);
+    }
+  };
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     const sipServer = values.sipHost ? `${values.sipHost}:${values.sipPort || "5060"}` : "";
@@ -68,6 +106,8 @@ export default function ClientsList() {
           queryClient.invalidateQueries({ queryKey: getListClientsQueryKey() });
           setOpen(false);
           form.reset();
+          setTestStatus("idle");
+          setTestError("");
           toast({ title: t("clients.created"), description: t("clients.createdDesc") });
         },
         onError: () => {
@@ -99,7 +139,7 @@ export default function ClientsList() {
           <p className="text-muted-foreground mt-1">{t("clients.description")}</p>
         </div>
         
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) { setTestStatus("idle"); setTestError(""); } }}>
           <DialogTrigger asChild>
             <Button className="gap-2">
               <Plus className="h-4 w-4" /> {t("clients.addIPBX")}
@@ -149,7 +189,7 @@ export default function ClientsList() {
                 <FormField control={form.control} name="yeastarApiUrl" render={({ field }) => (
                   <FormItem>
                     <FormLabel>{t("clients.yeastarApiUrl")}</FormLabel>
-                    <FormControl><Input placeholder="http://192.168.1.1:8080" {...field} /></FormControl>
+                    <FormControl><Input placeholder="http://192.168.1.1:8080" {...field} onChange={e => { field.onChange(e); setTestStatus("idle"); }} /></FormControl>
                     <p className="text-xs text-muted-foreground">{t("clients.yeastarApiHint")}</p>
                     <FormMessage />
                   </FormItem>
@@ -158,7 +198,7 @@ export default function ClientsList() {
                 <FormField control={form.control} name="yeastarClientId" render={({ field }) => (
                   <FormItem>
                     <FormLabel>{t("clients.yeastarClientId")}</FormLabel>
-                    <FormControl><Input placeholder="STasWojiy…" {...field} /></FormControl>
+                    <FormControl><Input placeholder="STasWojiy…" {...field} onChange={e => { field.onChange(e); setTestStatus("idle"); }} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -166,10 +206,41 @@ export default function ClientsList() {
                 <FormField control={form.control} name="yeastarClientSecret" render={({ field }) => (
                   <FormItem>
                     <FormLabel>{t("clients.yeastarClientSecret")}</FormLabel>
-                    <FormControl><Input type="password" placeholder="••••••••" {...field} /></FormControl>
+                    <FormControl><Input type="password" placeholder="••••••••" {...field} onChange={e => { field.onChange(e); setTestStatus("idle"); }} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
+
+                {/* Test connection button */}
+                <div className="space-y-1.5">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="w-full gap-2"
+                    onClick={handleTestConnection}
+                    disabled={testStatus === "testing"}
+                  >
+                    {testStatus === "testing" ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <FlaskConical className="h-3.5 w-3.5" />
+                    )}
+                    {t("clients.yeastarTest")}
+                  </Button>
+                  {testStatus === "success" && (
+                    <div className="flex items-center gap-1.5 text-xs text-green-600 dark:text-green-400">
+                      <CheckCircle className="h-3.5 w-3.5 shrink-0" />
+                      {t("clients.yeastarTestSuccess")}
+                    </div>
+                  )}
+                  {testStatus === "error" && (
+                    <div className="flex items-start gap-1.5 text-xs text-destructive">
+                      <XCircle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+                      <span className="break-all">{testError || t("clients.yeastarTestFailed")}</span>
+                    </div>
+                  )}
+                </div>
 
                 <FormField control={form.control} name="description" render={({ field }) => (
                   <FormItem>
