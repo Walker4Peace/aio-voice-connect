@@ -117,6 +117,9 @@ export function getWatchdogState(extensionId: number): { enabled: boolean; pingi
   };
 }
 
+// Tracks pending orphaned-bridge cleanup timers (extensionId → timer)
+const orphanCleanupTimers = new Map<number, ReturnType<typeof setTimeout>>();
+
 // Persistent call event store — survives extension stop/restart (cleared only on server restart)
 const MAX_PERSISTED_EVENTS = 200;
 interface PersistedCallEvent {
@@ -187,6 +190,13 @@ function parseAndStoreCallEvents(extensionId: number, line: string, timestamp: s
   const inviteMatch = body.match(/INVITE received for call:\s*(\S+)/i);
   if (inviteMatch) {
     const callId = normalizeCallId(inviteMatch[1]);
+    // Deduplicate: Yeastar sends two SIP INVITEs for outbound calls (initial +
+    // re-INVITE after remote answers).  The binary processes both and creates two
+    // bridges, but we only want one invite leg in the call history.
+    const alreadyInvited = persistedCallEvents.some(
+      e => e.extensionId === extensionId && e.callId === callId && e.event === "invite"
+    );
+    if (alreadyInvited) return;
     pushEvent({ extensionId, callId, event: "invite", timestamp });
 
     // Link this SIP call UUID to any active outbound call for this extension
@@ -244,6 +254,44 @@ function parseAndStoreCallEvents(extensionId: number, line: string, timestamp: s
       pushEvent({ extensionId, callId, event: "ended", timestamp });
       // Complete any active outbound call for this extension
       finalizeOutboundCall(extensionId, "completed");
+    }
+    return;
+  }
+
+  // ── Orphaned-bridge detection ────────────────────────────────────────────
+  // When the binary unregisters the bridge for a call that has already ended,
+  // check 5 seconds later whether the extension process is still running with
+  // no active calls.  If so, the duplicate-INVITE path left an orphaned
+  // ElevenLabs WebSocket open; restart the extension to close it cleanly.
+  const unregMatch = body.match(/Unregistered bridge for call:\s*(\S+)/i);
+  if (unregMatch) {
+    const callId = normalizeCallId(unregMatch[1]);
+    const callEnded = persistedCallEvents.some(
+      e => e.extensionId === extensionId && e.callId === callId && e.event === "ended"
+    );
+    if (callEnded && !orphanCleanupTimers.has(extensionId)) {
+      const t = setTimeout(async () => {
+        orphanCleanupTimers.delete(extensionId);
+        if (!processes.has(extensionId)) return; // already stopped by user
+        if (manuallyStopped.has(extensionId)) return; // user manually stopped it
+        // Only restart if there are no new active calls for this extension
+        const inviteIds = new Set<string>();
+        const endedIds  = new Set<string>();
+        for (const e of persistedCallEvents) {
+          if (e.extensionId !== extensionId) continue;
+          if (e.event === "invite") inviteIds.add(e.callId);
+          if (e.event === "ended")  endedIds.add(e.callId);
+        }
+        const hasActive = [...inviteIds].some(id => !endedIds.has(id));
+        if (hasActive) return; // a new call started while we were waiting
+        logger.info({ extensionId, callId }, "Orphaned ElevenLabs bridge detected — restarting extension to close it");
+        try {
+          await restartExtensionInternal(extensionId);
+        } catch (err) {
+          logger.error({ err, extensionId }, "Failed to restart extension for orphan bridge cleanup");
+        }
+      }, 5_000);
+      orphanCleanupTimers.set(extensionId, t);
     }
     return;
   }
@@ -777,8 +825,27 @@ export async function startExtension(extensionId: number): Promise<void> {
   });
 }
 
+/**
+ * Internal restart used by the orphaned-bridge cleanup path.
+ * Unlike restartExtension it does NOT add to manuallyStopped, so the
+ * watchdog and normal lifecycle remain unaffected.
+ */
+async function restartExtensionInternal(extensionId: number): Promise<void> {
+  const info = processes.get(extensionId);
+  if (!info) return;
+  closeOutstandingCalls(extensionId);
+  info.proc.kill("SIGTERM");
+  processes.delete(extensionId);
+  await upsertDeployment(extensionId, { status: "stopped", pid: null, sipRegistered: false, lastStoppedAt: new Date() }).catch(() => {});
+  await new Promise(r => setTimeout(r, 800));
+  await startExtension(extensionId);
+}
+
 export async function stopExtension(extensionId: number): Promise<void> {
   addSystemLog(`Stopping extension ${extensionId}`);
+  // Cancel any pending orphan cleanup so it doesn't race with manual stop/restart
+  const orphanTimer = orphanCleanupTimers.get(extensionId);
+  if (orphanTimer) { clearTimeout(orphanTimer); orphanCleanupTimers.delete(extensionId); }
   // Mark as intentionally stopped so watchdog doesn't restart it
   manuallyStopped.add(extensionId);
   cancelWatchdog(extensionId);
