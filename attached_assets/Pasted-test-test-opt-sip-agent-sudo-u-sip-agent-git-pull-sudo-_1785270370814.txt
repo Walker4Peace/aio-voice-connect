@@ -1,0 +1,47 @@
+test@test:/opt/sip-agent$ sudo -u sip-agent git pull
+[sudo] password for test:
+remote: Enumerating objects: 49, done.
+remote: Counting objects: 100% (49/49), done.
+remote: Compressing objects: 100% (17/17), done.
+remote: Total 31 (delta 13), reused 31 (delta 13), pack-reused 0 (from 0)
+Unpacking objects: 100% (31/31), 5.11 MiB | 1.58 MiB/s, done.
+From https://github.com/Walker4Peace/ai-agent
+   eec11f5..12acada  main       -> origin/main
+Updating eec11f5..12acada
+Fast-forward
+ .replit                                                       |   2 +-
+ artifacts/sip-agent-manager/src/pages/agent-configs/index.tsx | 214 ++++++++++++++++++++++++++++------------------
+ artifacts/sip-agent-manager/src/pages/clients/detail.tsx      | 496 +++++++++++++++++++++++++++++++++++++++++------------------------------------------------------------------
+ artifacts/sip-agent-manager/src/pages/clients/index.tsx       | 395 +++++++++++++++++++++++++++++++++++++++++++++----------------------------------------
+ artifacts/sip-agent-manager/src/pages/dashboard.tsx           | 324 ++++++++++++++++++++++++++++++++++++++++++++--------------------------
+ artifacts/sip-agent-manager/src/pages/extensions/detail.tsx   | 422 +++++++++++++++++++++++++++++++++++++++++++++++++++----------------------------------------
+ artifacts/sip-agent-manager/src/pages/extensions/index.tsx    | 398 ++++++++++++++++++++++++++++++++++++++++++++++++++++++--------------------------------
+ artifacts/sip-agent-manager/src/pages/logs/index.tsx          | 318 ++++++++++++++++++++++++++++++++++++++++++++++++--------------------
+ attached_assets/AI_Agents_0_1785267653594.png                 | Bin 0 -> 367569 bytes
+ attached_assets/AI_Agents_1_1785267656448.png                 | Bin 0 -> 300019 bytes
+ attached_assets/Extension_details_1785267666186.png           | Bin 0 -> 1080738 bytes
+ attached_assets/Extensions_0_1785267661088.png                | Bin 0 -> 312378 bytes
+ attached_assets/Extensions_1_1785267663554.png                | Bin 0 -> 326222 bytes
+ attached_assets/IPBX_details_1785267650553.png                | Bin 0 -> 646918 bytes
+ attached_assets/IPBXs_0_1785267643788.png                     | Bin 0 -> 387133 bytes
+ attached_assets/IPBXs_1_1785267646582.png                     | Bin 0 -> 398401 bytes
+ attached_assets/Logs_1785267668606.png                        | Bin 0 -> 611380 bytes
+ attached_assets/dashboard_1785267637730.png                   | Bin 0 -> 940410 bytes
+ 18 files changed, 1455 insertions(+), 1114 deletions(-)
+ create mode 100644 attached_assets/AI_Agents_0_1785267653594.png
+ create mode 100644 attached_assets/AI_Agents_1_1785267656448.png
+ create mode 100644 attached_assets/Extension_details_1785267666186.png
+ create mode 100644 attached_assets/Extensions_0_1785267661088.png
+ create mode 100644 attached_assets/Extensions_1_1785267663554.png
+ create mode 100644 attached_assets/IPBX_details_1785267650553.png
+ create mode 100644 attached_assets/IPBXs_0_1785267643788.png
+ create mode 100644 attached_assets/IPBXs_1_1785267646582.png
+ create mode 100644 attached_assets/Logs_1785267668606.png
+ create mode 100644 attached_assets/dashboard_1785267637730.png
+test@test:/opt/sip-agent$ sudo git pull && pnpm install && pnpm run build
+Already up to date.
+Scope: all 9 workspace projects
+ EACCES  EACCES: permission denied, open '/opt/sip-agent/_tmp_27262_5fc08499a3376e4dff82c6607908b1aa'
+
+
+test@test:/opt/sip-agent$
