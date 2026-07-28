@@ -32,7 +32,7 @@ function parseLogLine(line: string, sourceLabel?: string): ParsedLine {
     if (obj.level !== undefined || obj.msg !== undefined) {
       const levelMap: Record<number, string> = { 10: "TRACE", 20: "DEBUG", 30: "INFO", 40: "WARN", 50: "ERROR", 60: "FATAL" };
       const lvl = obj.level ? levelMap[obj.level] ?? "INFO" : "INFO";
-      const ts = obj.time ? new Date(obj.time).toLocaleTimeString() : null;
+      const ts = obj.time ? new Date(obj.time).toLocaleString() : null;
       return { ts, level: lvl, source: sourceLabel ?? "System", msg: obj.msg ?? obj.message ?? line, raw: line };
     }
   } catch { /* not JSON */ }
@@ -40,7 +40,7 @@ function parseLogLine(line: string, sourceLabel?: string): ParsedLine {
   // Date+time prefix: YYYY/MM/DD HH:MM:SS LEVEL message
   const dtMatch = line.match(/^(\d{4}\/\d{2}\/\d{2}\s+\d{2}:\d{2}:\d{2}(?:\.\d+)?)\s+(\w+)\s+(.+)$/);
   if (dtMatch) {
-    return { ts: dtMatch[1].split(" ")[1] ?? dtMatch[1], level: dtMatch[2].toUpperCase(), source: sourceLabel ?? null, msg: dtMatch[3], raw: line };
+    return { ts: dtMatch[1].replace("/", "-").replace("/", "-"), level: dtMatch[2].toUpperCase(), source: sourceLabel ?? null, msg: dtMatch[3], raw: line };
   }
 
   // Short time + level: HH:MM:SS LEVEL message

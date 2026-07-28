@@ -33,6 +33,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Plus, Server, Trash2, FlaskConical, Loader2, CheckCircle, XCircle, MoreHorizontal, RefreshCw, Eye } from "lucide-react";
 
+function timeAgo(dateStr: string | null | undefined): string {
+  if (!dateStr) return "—";
+  const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+  if (diff < 5) return "just now";
+  if (diff < 60) return `${diff}s ago`;
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  return `${Math.floor(diff / 86400)}d ago`;
+}
+
 const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, "") + "/api";
 
 const formSchema = z.object({
@@ -256,14 +266,14 @@ export default function ClientsList() {
                     <th className="text-left font-medium py-3 px-4">SIP Port</th>
                     <th className="text-left font-medium py-3 px-4">API Status</th>
                     <th className="text-left font-medium py-3 px-4">Extensions</th>
-                    <th className="text-left font-medium py-3 px-4">Added On</th>
+                    <th className="text-left font-medium py-3 px-4">Last Synced</th>
                     <th className="text-right font-medium py-3 px-4">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {(clients ?? []).map((client) => {
                     const { sipHost, sipPort } = parseSipServer(client.sipServer);
-                    const c = client as typeof client & { yeastarApiUrl?: string | null; yeastarVerified?: boolean | null; createdAt?: string };
+                    const c = client as typeof client & { yeastarApiUrl?: string | null; yeastarVerified?: boolean | null; createdAt?: string; updatedAt?: string };
                     const extCount = extCountMap.get(client.id) ?? 0;
                     const apiConnected = c.yeastarApiUrl && c.yeastarVerified === true;
                     const apiConfigured = c.yeastarApiUrl && c.yeastarVerified !== false;
@@ -309,10 +319,33 @@ export default function ClientsList() {
                           <span className="text-xs text-muted-foreground ml-1">{extCount === 1 ? "Extension" : "Extensions"}</span>
                         </td>
                         <td className="py-3.5 px-4 text-xs text-muted-foreground">
-                          {c.createdAt ? new Date(c.createdAt).toLocaleDateString() : "—"}
+                          {c.updatedAt ? (
+                              <div>
+                                <p className="text-xs text-foreground">{new Date(c.updatedAt).toLocaleString()}</p>
+                                <p className="text-[11px] text-muted-foreground">{timeAgo(c.updatedAt)}</p>
+                              </div>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">—</span>
+                            )}
                         </td>
                         <td className="py-3.5 px-4">
-                          <div className="flex items-center justify-end gap-1">
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              className="flex h-7 w-7 items-center justify-center rounded-full border border-green-200 bg-green-50 text-green-600 hover:bg-green-100 transition-colors shrink-0"
+                              title="Test API Connection"
+                              onClick={async () => {
+                                try {
+                                  await fetch(`${API_BASE}/clients/${client.id}/yeastar/test`, {
+                                    method: "POST",
+                                    headers: { "Content-Type": "application/json" },
+                                    body: JSON.stringify({}),
+                                  });
+                                  queryClient.invalidateQueries({ queryKey: getListClientsQueryKey() });
+                                } catch { /* ignore */ }
+                            }}
+                            >
+                              <RefreshCw className="h-3.5 w-3.5" />
+                            </button>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" size="icon" className="h-8 w-8">

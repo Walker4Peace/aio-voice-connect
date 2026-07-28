@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import {
   useListAgentConfigs,
   useDeleteAgentConfig,
+  useCreateAgentConfig,
   getListAgentConfigsQueryKey
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -42,8 +43,22 @@ export default function AgentConfigsList() {
   const [deletingId, setDeletingId] = React.useState<number | null>(null);
 
   const deleteConfig = useDeleteAgentConfig();
+  const createConfig = useCreateAgentConfig();
 
-  const confirmDelete = () => {
+  const handleDuplicate = (config: NonNullable<typeof configs>[number]) => {
+      createConfig.mutate(
+        { data: { name: `${config.name} (copy)`, provider: config.provider, apiKey: config.apiKey, modelId: config.modelId ?? undefined, voiceId: config.voiceId ?? undefined, language: config.language ?? undefined, systemPrompt: config.systemPrompt ?? undefined } },
+        {
+          onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: getListAgentConfigsQueryKey() });
+            toast({ title: "Agent duplicated", description: `"${config.name} (copy)" created.` });
+          },
+          onError: () => toast({ variant: "destructive", title: t("common.error"), description: "Failed to duplicate agent." }),
+        }
+      );
+    };
+
+    const confirmDelete = () => {
     if (deletingId === null) return;
     deleteConfig.mutate(
       { id: deletingId },
@@ -157,6 +172,13 @@ export default function AgentConfigsList() {
                                   <Link href={`/agent-configs/${config.id}/edit`} className="flex items-center gap-2 cursor-pointer">
                                     <Pencil className="h-4 w-4" /> Edit Agent
                                   </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  className="flex items-center gap-2 cursor-pointer"
+                                  onClick={() => handleDuplicate(config)}
+                                  disabled={createConfig.isPending}
+                                >
+                                  <Copy className="h-4 w-4" /> Duplicate Agent
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem
