@@ -322,9 +322,7 @@ export default function ExtensionsList() {
                       return (
                         <tr key={ext.id} className="border-b last:border-0 hover:bg-muted/20 transition-colors">
                           <td className="py-3.5 px-4">
-                            <Link href={`/extensions/${ext.id}`} className="font-mono font-semibold text-primary hover:underline text-sm">
-                              {ext.extensionNumber}
-                            </Link>
+                            <span className="font-mono font-semibold text-sm">{ext.extensionNumber}</span>
                           </td>
                           <td className="py-3.5 px-4 text-sm text-foreground font-medium">
                             {ext.displayName || "—"}

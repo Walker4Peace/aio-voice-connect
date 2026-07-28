@@ -31,7 +31,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Plus, Server, Trash2, FlaskConical, Loader2, CheckCircle, XCircle, MoreHorizontal, RefreshCw, Eye } from "lucide-react";
+import { Plus, Server, Trash2, FlaskConical, Loader2, CheckCircle, XCircle, MoreHorizontal, RefreshCw, Eye, Users } from "lucide-react";
 
 function timeAgo(dateStr: string | null | undefined): string {
   if (!dateStr) return "—";
@@ -285,9 +285,7 @@ export default function ClientsList() {
                             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 shrink-0">
                               <Server className="h-4 w-4 text-blue-500" />
                             </div>
-                            <Link href={`/ipbxs/${client.id}`} className="font-semibold text-sm hover:underline text-foreground">
-                              {client.name}
-                            </Link>
+                            <span className="font-semibold text-sm text-foreground">{client.name}</span>
                           </div>
                         </td>
                         <td className="py-3.5 px-4 font-mono text-xs text-muted-foreground">
@@ -315,8 +313,11 @@ export default function ClientsList() {
                           )}
                         </td>
                         <td className="py-3.5 px-4">
-                          <span className="text-sm text-foreground">{extCount}</span>
-                          <span className="text-xs text-muted-foreground ml-1">{extCount === 1 ? "Extension" : "Extensions"}</span>
+                          <div className="flex items-center gap-1.5">
+                            <Users className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                            <span className="text-sm text-foreground">{extCount}</span>
+                            <span className="text-xs text-muted-foreground">{extCount === 1 ? "Extension" : "Extensions"}</span>
+                          </div>
                         </td>
                         <td className="py-3.5 px-4 text-xs text-muted-foreground">
                           {c.updatedAt ? (
