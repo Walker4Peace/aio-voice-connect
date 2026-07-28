@@ -16,7 +16,7 @@ import { CallHistoryTable, groupEventsByCall, type CallEvent } from "@/component
 interface CallEventsResponse {
   events: CallEvent[];
   activeCallCount: number;
-  outboundCallIds?: string[];
+  outboundCalls?: { callId: string; phoneNumber: string }[];
 }
 
 const PAGE_SIZE = 20;
@@ -130,7 +130,7 @@ export default function CallsPage() {
           <CallHistoryTable
             callGroups={pageGroups}
             extensions={extensions}
-            outboundCallIds={callEvents?.outboundCallIds}
+            outboundCalls={callEvents?.outboundCalls}
             emptyMessage={t("calls.emptyMessage")}
             onDeleteCall={(callId) => deleteCall.mutate(callId)}
           />

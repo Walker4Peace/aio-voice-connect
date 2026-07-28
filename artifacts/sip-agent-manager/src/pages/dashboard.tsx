@@ -14,7 +14,7 @@ import { CallHistoryTable, groupEventsByCall, type CallEvent } from "@/component
 interface CallEventsResponse {
   events: CallEvent[];
   activeCallCount: number;
-  outboundCallIds?: string[];
+  outboundCalls?: { callId: string; phoneNumber: string }[];
 }
 
 function useCallEvents() {
@@ -212,7 +212,7 @@ export default function Dashboard() {
             <CallHistoryTable
               callGroups={callGroups}
               extensions={extensions}
-              outboundCallIds={callEvents?.outboundCallIds}
+              outboundCalls={callEvents?.outboundCalls}
               limit={5}
               viewAllHref="/calls"
               emptyMessage={t("dashboard.emptyCallsMsg")}

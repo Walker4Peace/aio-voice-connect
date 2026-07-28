@@ -118,12 +118,14 @@ interface CallRowProps {
   legs: CallEvent[];
   extNumber?: string;
   isOutbound?: boolean;
+  /** Real destination phone number for outbound calls (from outbound_calls table) */
+  outboundPhoneNumber?: string | null;
   isOpen: boolean;
   onToggle: () => void;
   onDelete?: (callId: string) => void;
 }
 
-function CallTableRow({ callId, legs, extNumber, isOutbound = false, isOpen, onToggle, onDelete }: CallRowProps) {
+function CallTableRow({ callId, legs, extNumber, isOutbound = false, outboundPhoneNumber, isOpen, onToggle, onDelete }: CallRowProps) {
   const { formatDateTime, formatTime } = useTimezone();
   const hasEnded = legs.some(l => l.event === "ended");
   const hasAI    = legs.some(l => l.event === "connected_ai");
@@ -132,14 +134,19 @@ function CallTableRow({ callId, legs, extNumber, isOutbound = false, isOpen, onT
   const firstLeg = legs[0];
   const duration = callDuration(legs);
 
-  const inviteLeg   = legs.find(l => l.event === "invite");
-  const phoneNumber = inviteLeg?.detail ?? null;
-  const extLabel    = extNumber ? `Ext ${extNumber}` : "—";
+  const inviteLeg        = legs.find(l => l.event === "invite");
+  const inboundNumber    = inviteLeg?.detail ?? null;
+  const extLabel         = extNumber ? `Ext ${extNumber}` : "—";
 
-  // Outbound: Ext called the phone number — show Ext as caller, phone number as called
-  // Inbound:  phone number called the Ext — show phone number as caller, Ext as called
-  const caller = isOutbound ? extLabel              : (phoneNumber ?? "—");
-  const called = isOutbound ? (phoneNumber ?? "—") : extLabel;
+  // For outbound: prefer the real destination from outbound_calls (the number Yeastar dialled),
+  // falling back to the invite detail if for some reason it's set and isn't "unknown".
+  const outboundDest = outboundPhoneNumber
+    ?? (inboundNumber && inboundNumber !== "unknown" ? inboundNumber : null);
+
+  // Outbound: Ext called the phone number — show Ext as Caller, destination as Called
+  // Inbound:  external number called the Ext — show number as Caller, Ext as Called
+  const caller = isOutbound ? extLabel                  : (inboundNumber ?? "—");
+  const called = isOutbound ? (outboundDest ?? "—")    : extLabel;
 
   const stateLabel = hasError ? "Error" : hasEnded ? "Ended" : hasAI ? "AI Active" : "Ringing";
   const stateColor = hasError
@@ -254,11 +261,18 @@ function CallTableRow({ callId, legs, extNumber, isOutbound = false, isOpen, onT
 
 // ── table wrapper ───────────────────────────────────────────────────────────
 
+export interface OutboundCallInfo {
+  callId: string;
+  phoneNumber: string;
+}
+
 interface CallHistoryTableProps {
   /** [callId, legs[]] entries, already sorted most-recent first */
   callGroups: [string, CallEvent[]][];
   extensions?: Extension[];
-  /** Set of callIds that were triggered as outbound calls */
+  /** Outbound call records — provides direction detection and the real destination number */
+  outboundCalls?: OutboundCallInfo[];
+  /** @deprecated use outboundCalls instead */
   outboundCallIds?: string[];
   /** Show at most this many rows (undefined = all) */
   limit?: number;
@@ -272,6 +286,7 @@ interface CallHistoryTableProps {
 export function CallHistoryTable({
   callGroups,
   extensions,
+  outboundCalls,
   outboundCallIds,
   limit,
   viewAllHref,
@@ -281,7 +296,17 @@ export function CallHistoryTable({
   const [openId, setOpenId] = React.useState<string | null>(null);
 
   const visible = limit ? callGroups.slice(0, limit) : callGroups;
-  const outboundSet = new Set(outboundCallIds ?? []);
+
+  // Build a map callId → phoneNumber from outboundCalls; fall back to legacy outboundCallIds
+  const outboundMap = React.useMemo(() => {
+    const m = new Map<string, string | null>();
+    if (outboundCalls) {
+      for (const oc of outboundCalls) m.set(oc.callId, oc.phoneNumber);
+    } else if (outboundCallIds) {
+      for (const id of outboundCallIds) m.set(id, null);
+    }
+    return m;
+  }, [outboundCalls, outboundCallIds]);
 
   const toggle = (id: string) =>
     setOpenId(prev => (prev === id ? null : id));
@@ -311,13 +336,15 @@ export function CallHistoryTable({
         <TableBody>
           {visible.map(([callId, legs]) => {
             const ext = extensions?.find(e => e.id === legs[0]?.extensionId);
+            const isOutbound = outboundMap.has(callId);
             return (
               <CallTableRow
                 key={callId}
                 callId={callId}
                 legs={legs}
                 extNumber={ext?.extensionNumber}
-                isOutbound={outboundSet.has(callId)}
+                isOutbound={isOutbound}
+                outboundPhoneNumber={isOutbound ? outboundMap.get(callId) : null}
                 isOpen={openId === callId}
                 onToggle={() => toggle(callId)}
                 onDelete={onDeleteCall}

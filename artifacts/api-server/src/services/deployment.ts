@@ -186,7 +186,49 @@ function parseAndStoreCallEvents(extensionId: number, line: string, timestamp: s
   // ── Incoming INVITE ──────────────────────────────────────────────────────
   const inviteMatch = body.match(/INVITE received for call:\s*(\S+)/i);
   if (inviteMatch) {
-    pushEvent({ extensionId, callId: normalizeCallId(inviteMatch[1]), event: "invite", timestamp });
+    const callId = normalizeCallId(inviteMatch[1]);
+    pushEvent({ extensionId, callId, event: "invite", timestamp });
+
+    // Link this SIP call UUID to any active outbound call for this extension
+    // (outbound flow: ElevenLabs bridge starts before the INVITE arrives, so
+    //  we need to retroactively stamp the real callId onto those earlier events)
+    void (async () => {
+      try {
+        const updated = await db
+          .update(outboundCallsTable)
+          .set({ callId, status: "active", updatedAt: new Date() })
+          .where(
+            and(
+              eq(outboundCallsTable.extensionId, extensionId),
+              inArray(outboundCallsTable.status, ["pending", "dialing"]),
+            ),
+          )
+          .returning({ callId: outboundCallsTable.callId });
+
+        if (updated.length > 0) {
+          // Backfill any in-memory events that fired before the INVITE (callId="unknown")
+          for (const ev of persistedCallEvents) {
+            if (ev.extensionId === extensionId && ev.callId === "unknown") {
+              ev.callId = callId;
+            }
+          }
+          // Persist the backfill to DB as well
+          await db
+            .update(callEventsTable)
+            .set({ callId })
+            .where(
+              and(
+                eq(callEventsTable.extensionId, extensionId),
+                eq(callEventsTable.callId, "unknown"),
+              ),
+            );
+          logger.info({ extensionId, callId }, "Linked outbound SIP callId; backfilled pre-INVITE events");
+        }
+      } catch (err) {
+        logger.error({ err, extensionId }, "Failed to link SIP callId to outbound call");
+      }
+    })();
+
     return;
   }
 

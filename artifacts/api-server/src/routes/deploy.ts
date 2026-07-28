@@ -48,14 +48,16 @@ router.get("/deploy/call-events", async (_req, res) => {
   }
 
   // Determine which callIds are outbound (triggered via our dial-out API)
+  // Return { callId, phoneNumber } so the frontend can display the real destination number.
   const uniqueCallIds = [...new Set(events.map(e => e.callId))];
-  let outboundCallIds: string[] = [];
+  let outboundCalls: { callId: string; phoneNumber: string }[] = [];
   if (uniqueCallIds.length > 0) {
     const rows = await db
-      .select({ callId: outboundCallsTable.callId })
+      .select({ callId: outboundCallsTable.callId, phoneNumber: outboundCallsTable.phoneNumber })
       .from(outboundCallsTable)
       .where(inArray(outboundCallsTable.callId, uniqueCallIds));
-    outboundCallIds = rows.map(r => r.callId).filter(Boolean) as string[];
+    outboundCalls = rows
+      .filter((r): r is { callId: string; phoneNumber: string } => r.callId != null);
   }
 
   // Return events sorted newest-first for display
@@ -63,7 +65,7 @@ router.get("/deploy/call-events", async (_req, res) => {
     (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
   );
 
-  res.json({ events: sorted.slice(0, 100), activeCallCount: activeCalls.size, outboundCallIds });
+  res.json({ events: sorted.slice(0, 100), activeCallCount: activeCalls.size, outboundCalls });
 });
 
 // DELETE /api/deploy/call-events — clear all call history
