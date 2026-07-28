@@ -162,7 +162,7 @@ export default function ClientsList() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">{t("clients.title")}</h1>
-          <p className="text-muted-foreground mt-1 text-sm">Manage your IPBX systems, SIP connectivity and AI voice integration.</p>
+          <p className="text-muted-foreground mt-1 text-sm">Manage your IPBX systems and SIP connection settings.</p>
         </div>
         <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) { setTestStatus("idle"); setTestError(""); } }}>
           <DialogTrigger asChild>
