@@ -14,7 +14,7 @@ import { db, outboundCallsTable, extensionsTable, deploymentsTable } from "@work
 import { logger } from "../lib/logger.js";
 import { setPendingContext, consumePendingContext } from "../services/outboundContext.js";
 import { executeTool } from "../services/toolExecutor.js";
-import { getYeastarToken, yeastarPost } from "../services/yeastarAuth.js";
+import { getYeastarToken, yeastarPost, evictYeastarToken } from "../services/yeastarAuth.js";
 
 const router = Router();
 
@@ -271,38 +271,46 @@ async function tryYeastarMakeCall(params: YeastarCallParams): Promise<{ error?: 
     return {};
   }
 
-  try {
-    // Get (or refresh) the OAuth access token
-    const accessToken = await getYeastarToken({
-      id: client.id,
-      yeastarApiUrl: client.yeastarApiUrl,
-      yeastarClientId: client.yeastarClientId,
-      yeastarClientSecret: client.yeastarClientSecret,
-    });
+  const yeastarClient = {
+    id: client.id,
+    yeastarApiUrl: client.yeastarApiUrl,
+    yeastarClientId: client.yeastarClientId,
+    yeastarClientSecret: client.yeastarClientSecret,
+  };
 
-    const ext = params.ext as { extensionNumber: string };
-    const dialBody = {
-      caller: ext.extensionNumber,
-      callee: params.phoneNumber,
-      ...(params.callerId ? { caller_id_number: params.callerId } : {}),
-    };
-    const url = `${client.yeastarApiUrl.replace(/\/$/, "")}/openapi/v1.0/call/dial`;
+  const ext = params.ext as { extensionNumber: string };
+  const dialBody = {
+    caller: ext.extensionNumber,
+    callee: params.phoneNumber,
+    ...(params.callerId ? { caller_id_number: params.callerId } : {}),
+  };
 
-    logger.info({ extensionId: params.ext.id, url, caller: ext.extensionNumber, callee: params.phoneNumber }, "Yeastar: calling dial");
+  // Yeastar P-Series passes the access token as a query parameter, not a Bearer header.
+  // On TOKEN EXPIRED (10004) we evict the cache and retry once with a fresh token.
+  const attemptDial = async (retrying = false): Promise<{ error?: string }> => {
+    const accessToken = await getYeastarToken(yeastarClient);
+    const url = `${client.yeastarApiUrl.replace(/\/$/, "")}/openapi/v1.0/call/dial?access_token=${encodeURIComponent(accessToken)}`;
 
-    const response = await yeastarPost(url, dialBody, {
-      Authorization: `Bearer ${accessToken}`,
-    });
+    logger.info({ extensionId: params.ext.id, url: url.split("?")[0], caller: ext.extensionNumber, callee: params.phoneNumber }, "Yeastar: calling dial");
 
-    interface DialOutResponse { errcode?: number; errmsg?: string }
-    const data = response.json<DialOutResponse>();
+    const response = await yeastarPost(url, dialBody);
+
+    interface DialResponse { errcode?: number; errmsg?: string }
+    const data = response.json<DialResponse>();
 
     logger.info(
       { extensionId: params.ext.id, status: response.status, errcode: data.errcode, errmsg: data.errmsg, body: response.text },
-      "Yeastar: dial_out response",
+      "Yeastar: dial response",
     );
 
-    if (!response.ok || (data.errcode !== undefined && data.errcode !== 0)) {
+    // Token expired — evict and retry once with a fresh token
+    if (data.errcode === 10004 && !retrying) {
+      logger.warn({ extensionId: params.ext.id }, "Yeastar token expired during dial — evicting cache and retrying");
+      evictYeastarToken(client.id);
+      return attemptDial(true);
+    }
+
+    if (data.errcode !== undefined && data.errcode !== 0) {
       const detail = data.errmsg ?? response.text;
       logger.error({ status: response.status, errcode: data.errcode, body: response.text }, "Yeastar Make Call API error");
       return { error: `Yeastar API error (HTTP ${response.status}): errcode=${data.errcode ?? "?"} — ${detail}` };
@@ -310,6 +318,10 @@ async function tryYeastarMakeCall(params: YeastarCallParams): Promise<{ error?: 
 
     logger.info({ extensionId: params.ext.id, phoneNumber: params.phoneNumber }, "Yeastar Make Call API called successfully");
     return {};
+  };
+
+  try {
+    return await attemptDial();
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     logger.error({ err, extensionId: params.ext.id }, "Yeastar Make Call API request failed");
