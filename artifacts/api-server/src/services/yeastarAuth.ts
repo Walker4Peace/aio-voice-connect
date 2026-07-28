@@ -104,16 +104,22 @@ async function fetchNewToken(
 ): Promise<TokenEntry> {
   // Yeastar P-Series OpenAPI v1.0: username = Client ID, password = Client Secret (raw)
   const url = `${pbxUrl.replace(/\/$/, "")}/openapi/v1.0/get_token`;
-  logger.info({ url, clientId }, "Yeastar: requesting new access token");
+  const body = { username: clientId, password: clientSecret };
+  logger.info(
+    {
+      url,
+      requestFields: Object.keys(body),        // log field names only, never the secret
+      clientIdLength: clientId.length,
+      clientSecretLength: clientSecret.length,
+    },
+    "Yeastar: requesting new access token",
+  );
 
-  const res = await yeastarPost(url, {
-    username: clientId,
-    password: clientSecret,
-  });
+  const res = await yeastarPost(url, body);
 
   const data = res.json<YeastarTokenResponse>();
   logger.info(
-    { status: res.status, errcode: data.errcode, errmsg: data.errmsg },
+    { status: res.status, errcode: data.errcode, errmsg: data.errmsg, rawBody: res.text },
     "Yeastar: get_token response",
   );
 
