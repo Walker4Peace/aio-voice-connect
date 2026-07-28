@@ -156,11 +156,6 @@ export default function AgentConfigsList() {
                         </td>
                         <td className="py-3.5 px-4">
                           <div className="flex items-center justify-end gap-2">
-                            <Link href={`/agent-configs/${config.id}/edit`}>
-                              <Button variant="outline" size="sm" className="h-7 px-3 text-xs">
-                                View
-                              </Button>
-                            </Link>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button variant="outline" size="icon" className="h-7 w-7">

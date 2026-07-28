@@ -330,22 +330,6 @@ export default function ClientsList() {
                         </td>
                         <td className="py-3.5 px-4">
                           <div className="flex items-center justify-end gap-2">
-                            <button
-                              className="flex h-7 w-7 items-center justify-center rounded-full border border-green-200 bg-green-50 text-green-600 hover:bg-green-100 transition-colors shrink-0"
-                              title="Test API Connection"
-                              onClick={async () => {
-                                try {
-                                  await fetch(`${API_BASE}/clients/${client.id}/yeastar/test`, {
-                                    method: "POST",
-                                    headers: { "Content-Type": "application/json" },
-                                    body: JSON.stringify({}),
-                                  });
-                                  queryClient.invalidateQueries({ queryKey: getListClientsQueryKey() });
-                                } catch { /* ignore */ }
-                            }}
-                            >
-                              <RefreshCw className="h-3.5 w-3.5" />
-                            </button>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" size="icon" className="h-8 w-8">

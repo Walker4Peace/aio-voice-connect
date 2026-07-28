@@ -90,18 +90,6 @@ function AgentRow({ ext, status }: {
         )}
       </td>
       <td className="py-3 px-4">
-        {isReg ? (
-          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-green-700 bg-green-50 border border-green-200 rounded-md px-2 py-0.5">
-            <span className="h-1.5 w-1.5 rounded-full bg-green-500 inline-block" />
-            {t("deploy.status.registered")}
-          </span>
-        ) : status ? (
-          <span className="text-xs text-muted-foreground">—</span>
-        ) : (
-          <span className="text-xs text-muted-foreground">—</span>
-        )}
-      </td>
-      <td className="py-3 px-4">
         {status ? (
           <div className="flex items-center gap-1.5">
             <span className={cn("h-2 w-2 rounded-full shrink-0", isRunning ? "bg-green-500" : "bg-gray-300")} />
@@ -262,7 +250,6 @@ export default function Dashboard() {
                   <th className="text-left font-medium py-2.5 px-4">Extension</th>
                   <th className="text-left font-medium py-2.5 px-4">Name</th>
                   <th className="text-left font-medium py-2.5 px-4">AI Agent</th>
-                  <th className="text-left font-medium py-2.5 px-4">Configuration</th>
                   <th className="text-left font-medium py-2.5 px-4">Runtime Status</th>
                   <th className="text-left font-medium py-2.5 px-4">Last Activity</th>
                   <th className="text-left font-medium py-2.5 px-4">Actions</th>

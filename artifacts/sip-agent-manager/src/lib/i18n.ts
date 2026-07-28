@@ -143,7 +143,7 @@ const en = {
 
   // ── IPBXs list ────────────────────────────────────────────────────────────
   "clients.title":            "IPBXs",
-  "clients.description":      "Manage your IPBX systems and their SIP credentials.",
+  "clients.description":      "Manage your IPBX systems and SIP connection settings.",
   "clients.addIPBX":          "Add IPBX",
   "clients.dialogTitle":      "Add New IPBX",
   "clients.dialogDescription":"Register an IPBX and configure its SIP connection details.",
@@ -219,7 +219,7 @@ const en = {
 
   // ── Extensions list ───────────────────────────────────────────────────────
   "extensions.title":         "Extensions",
-  "extensions.description":   "SIP extensions registered to AI agents.",
+  "extensions.description":   "Connect SIP extensions to your IPBX systems and AI agents.",
   "extensions.addExt":        "Add Extension",
   "extensions.dialogTitle":   "Configure New Extension",
   "extensions.dialogDesc":    "Add SIP credentials for a new extension.",
@@ -360,7 +360,7 @@ const en = {
 
   // ── Call history ──────────────────────────────────────────────────────────
   "calls.title":              "Call History",
-  "calls.description":        "Completed calls across your deployed extensions.",
+  "calls.description":        "Review call activity across your deployed AI extensions.",
   "calls.refresh":            "Refresh",
   "calls.clearAll":           "Clear All",
   "calls.clearTitle":         "Clear all call history?",
@@ -410,7 +410,7 @@ const en = {
 
   // ── Outbound ──────────────────────────────────────────────────────────────
   "outbound.title":                "Outbound Calls",
-  "outbound.description":          "Trigger and monitor outbound AI calls. External applications can use the API to start calls programmatically.",
+  "outbound.description":          "Trigger, monitor and manage outbound AI calls. Use the API to start calls from external applications.",
   "outbound.refresh":              "Refresh",
   "outbound.triggerCall":          "Trigger Call",
   "outbound.apiTitle":             "External API Integration",
@@ -600,7 +600,7 @@ const fr: typeof en = {
 
   // ── IPBXs list ────────────────────────────────────────────────────────────
   "clients.title":            "IPBXs",
-  "clients.description":      "Gérez vos systèmes IPBX et leurs identifiants SIP.",
+  "clients.description":      "Gérez vos systèmes IPBX et les paramètres de connexion SIP.",
   "clients.addIPBX":          "Ajouter un IPBX",
   "clients.dialogTitle":      "Ajouter un nouvel IPBX",
   "clients.dialogDescription":"Enregistrez un IPBX et configurez ses paramètres de connexion SIP.",
@@ -676,7 +676,7 @@ const fr: typeof en = {
 
   // ── Extensions list ───────────────────────────────────────────────────────
   "extensions.title":         "Extensions",
-  "extensions.description":   "Extensions SIP enregistrées auprès des agents IA.",
+  "extensions.description":   "Connectez les extensions SIP à vos systèmes IPBX et agents IA.",
   "extensions.addExt":        "Ajouter une extension",
   "extensions.dialogTitle":   "Configurer une nouvelle extension",
   "extensions.dialogDesc":    "Ajoutez les identifiants SIP pour une nouvelle extension.",
@@ -817,7 +817,7 @@ const fr: typeof en = {
 
   // ── Call history ──────────────────────────────────────────────────────────
   "calls.title":              "Historique des appels",
-  "calls.description":        "Appels terminés sur vos extensions déployées.",
+  "calls.description":        "Consultez l'activité des appels sur vos extensions IA déployées.",
   "calls.refresh":            "Actualiser",
   "calls.clearAll":           "Tout effacer",
   "calls.clearTitle":         "Effacer tout l'historique des appels ?",
@@ -867,7 +867,7 @@ const fr: typeof en = {
 
   // ── Outbound ──────────────────────────────────────────────────────────────
   "outbound.title":                "Appels sortants",
-  "outbound.description":          "Déclenchez et surveillez les appels IA sortants. Les applications externes peuvent utiliser l'API pour démarrer des appels par programmation.",
+  "outbound.description":          "Déclenchez, surveillez et gérez les appels IA sortants. Utilisez l'API pour démarrer des appels depuis des applications externes.",
   "outbound.refresh":              "Actualiser",
   "outbound.triggerCall":          "Déclencher un appel",
   "outbound.apiTitle":             "Intégration API externe",

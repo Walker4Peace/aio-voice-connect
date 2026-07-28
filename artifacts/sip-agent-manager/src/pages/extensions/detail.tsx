@@ -292,81 +292,8 @@ export default function ExtensionDetail() {
         </div>
       </div>
 
-      {/* Two-column: SIP Credentials + AI Agent */}
+      {/* Two-column: AI Agent + SIP Credentials */}
       <div className="grid gap-5 lg:grid-cols-2">
-        {/* SIP Credentials */}
-        <div className="bg-card border rounded-xl shadow-sm border-l-4 border-l-blue-500 overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-4 border-b">
-            <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50">
-                <Phone className="h-4 w-4 text-blue-500" />
-              </div>
-              <h2 className="font-semibold text-sm">{t("extDetail.sipCredentials")}</h2>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <Button variant="outline" size="sm" className="gap-1.5 h-7 text-xs" onClick={() => setEditSipOpen(true)}>
-                <Edit className="h-3 w-3" /> {t("extDetail.edit")}
-              </Button>
-              <Button variant="outline" size="sm"
-                className="gap-1.5 h-7 text-xs border-red-200 text-red-600 hover:bg-red-50"
-                onClick={() => setDeleteDialogOpen(true)} disabled={deleteExtension.isPending}>
-                <Trash2 className="h-3 w-3" /> {t("extDetail.remove")}
-              </Button>
-            </div>
-          </div>
-          <div className="px-5 py-2">
-            <dl>
-              <FieldRow label={t("extDetail.extNumber")}>{extension.extensionNumber}</FieldRow>
-              <FieldRow label={t("extDetail.sipUsername")}>{extension.sipUsername}</FieldRow>
-              <FieldRow label={t("extDetail.sipAuthId")}>{extension.sipAuthId}</FieldRow>
-              <FieldRow label={t("extDetail.sipPassword")}>
-                <span className="flex items-center gap-1.5">
-                  {maskString(extension.sipPassword)}
-                </span>
-              </FieldRow>
-              <FieldRow label={t("extDetail.sipDomain")}>{extension.client?.sipDomain || t("extDetail.sipDomainHint")}</FieldRow>
-              <FieldRow label={t("extDetail.sipServer")}>{extension.client?.sipServer || t("extDetail.sipServerHint")}</FieldRow>
-            </dl>
-
-            {/* IPBX info box */}
-            {extension.client && (
-              <div className="mt-3 rounded-lg bg-blue-50 border border-blue-100 p-3 flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <Info className="h-4 w-4 text-blue-500 shrink-0" />
-                  <div>
-                    <p className="text-xs font-semibold text-blue-700">IPBX</p>
-                    <p className="text-xs text-blue-600 font-mono">{extension.client.name} ({extension.client.sipServer})</p>
-                  </div>
-                </div>
-                <Link href={`/ipbxs/${extension.clientId}`}>
-                  <Button variant="ghost" size="sm" className="h-6 text-xs text-blue-600 hover:text-blue-700 px-2 gap-1">
-                    View IPBX <ExternalLink className="h-3 w-3" />
-                  </Button>
-                </Link>
-              </div>
-            )}
-
-            {/* SIP Registration status box */}
-            <div className={cn(
-              "mt-2 rounded-lg border p-3 flex items-center justify-between gap-3",
-              deployStatus?.sipRegistered ? "bg-green-50 border-green-100" : "bg-muted border-muted"
-            )}>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className={cn("h-4 w-4 shrink-0", deployStatus?.sipRegistered ? "text-green-500" : "text-muted-foreground")} />
-                <div>
-                  <p className={cn("text-xs font-semibold", deployStatus?.sipRegistered ? "text-green-700" : "text-muted-foreground")}>SIP Registration</p>
-                  <p className={cn("text-xs", deployStatus?.sipRegistered ? "text-green-600" : "text-muted-foreground")}>
-                    {deployStatus?.sipRegistered ? "Extension is registered on IPBX." : "Not currently registered."}
-                  </p>
-                </div>
-              </div>
-              {deployStatus?.sipRegistered && (
-                <span className="text-xs font-medium text-green-700 bg-green-100 border border-green-200 rounded px-2 py-0.5">Registered</span>
-              )}
-            </div>
-          </div>
-        </div>
-
         {/* AI Agent */}
         <div className="bg-card border rounded-xl shadow-sm border-l-4 border-l-purple-500 overflow-hidden">
           <div className="flex items-center justify-between px-5 py-4 border-b">
@@ -461,6 +388,80 @@ export default function ExtensionDetail() {
             </Form>
           </div>
         </div>
+
+        {/* SIP Credentials */}
+        <div className="bg-card border rounded-xl shadow-sm border-l-4 border-l-blue-500 overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-4 border-b">
+            <div className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50">
+                <Phone className="h-4 w-4 text-blue-500" />
+              </div>
+              <h2 className="font-semibold text-sm">{t("extDetail.sipCredentials")}</h2>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Button variant="outline" size="sm" className="gap-1.5 h-7 text-xs" onClick={() => setEditSipOpen(true)}>
+                <Edit className="h-3 w-3" /> {t("extDetail.edit")}
+              </Button>
+              <Button variant="outline" size="sm"
+                className="gap-1.5 h-7 text-xs border-red-200 text-red-600 hover:bg-red-50"
+                onClick={() => setDeleteDialogOpen(true)} disabled={deleteExtension.isPending}>
+                <Trash2 className="h-3 w-3" /> {t("extDetail.remove")}
+              </Button>
+            </div>
+          </div>
+          <div className="px-5 py-2">
+            <dl>
+              <FieldRow label={t("extDetail.extNumber")}>{extension.extensionNumber}</FieldRow>
+              <FieldRow label={t("extDetail.sipUsername")}>{extension.sipUsername}</FieldRow>
+              <FieldRow label={t("extDetail.sipAuthId")}>{extension.sipAuthId}</FieldRow>
+              <FieldRow label={t("extDetail.sipPassword")}>
+                <span className="flex items-center gap-1.5">
+                  {maskString(extension.sipPassword)}
+                </span>
+              </FieldRow>
+              <FieldRow label={t("extDetail.sipDomain")}>{extension.client?.sipDomain || t("extDetail.sipDomainHint")}</FieldRow>
+              <FieldRow label={t("extDetail.sipServer")}>{extension.client?.sipServer || t("extDetail.sipServerHint")}</FieldRow>
+            </dl>
+
+            {/* IPBX info box */}
+            {extension.client && (
+              <div className="mt-3 rounded-lg bg-blue-50 border border-blue-100 p-3 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <Info className="h-4 w-4 text-blue-500 shrink-0" />
+                  <div>
+                    <p className="text-xs font-semibold text-blue-700">IPBX</p>
+                    <p className="text-xs text-blue-600 font-mono">{extension.client.name} ({extension.client.sipServer})</p>
+                  </div>
+                </div>
+                <Link href={`/ipbxs/${extension.clientId}`}>
+                  <Button variant="ghost" size="sm" className="h-6 text-xs text-blue-600 hover:text-blue-700 px-2 gap-1">
+                    View IPBX <ExternalLink className="h-3 w-3" />
+                  </Button>
+                </Link>
+              </div>
+            )}
+
+            {/* SIP Registration status box */}
+            <div className={cn(
+              "mt-2 rounded-lg border p-3 flex items-center justify-between gap-3",
+              deployStatus?.sipRegistered ? "bg-green-50 border-green-100" : "bg-muted border-muted"
+            )}>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className={cn("h-4 w-4 shrink-0", deployStatus?.sipRegistered ? "text-green-500" : "text-muted-foreground")} />
+                <div>
+                  <p className={cn("text-xs font-semibold", deployStatus?.sipRegistered ? "text-green-700" : "text-muted-foreground")}>SIP Registration</p>
+                  <p className={cn("text-xs", deployStatus?.sipRegistered ? "text-green-600" : "text-muted-foreground")}>
+                    {deployStatus?.sipRegistered ? "Extension is registered on IPBX." : "Not currently registered."}
+                  </p>
+                </div>
+              </div>
+              {deployStatus?.sipRegistered && (
+                <span className="text-xs font-medium text-green-700 bg-green-100 border border-green-200 rounded px-2 py-0.5">Registered</span>
+              )}
+            </div>
+          </div>
+        </div>
+
       </div>
 
       {/* Delete Extension Dialog */}

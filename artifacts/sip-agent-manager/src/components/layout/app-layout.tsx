@@ -36,7 +36,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         <div className="flex h-16 shrink-0 items-center justify-center px-4">
-          <img src="/logo.png" alt="AIO Voice Connect" className="h-12 w-auto object-contain" />
+          <img src="/logo.png" alt="AIO Voice Connect" className="h-16 w-auto object-contain" />
         </div>
 
         <nav className="mt-6 flex flex-col gap-1 px-3">
