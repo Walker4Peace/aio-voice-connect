@@ -193,7 +193,8 @@ router.post("/clients/:id/yeastar/test", async (req, res) => {
     .where(eq(clientsTable.id, clientDbId));
 
   if (result.success) {
-    evictYeastarToken(clientDbId); // will be re-fetched on next real call
+    // Do NOT evict the token here — keeping it means the next real call reuses
+    // the same session instead of creating a new one, avoiding MAX LIMITATION EXCEEDED.
     res.json({ success: true });
   } else {
     logger.warn({ clientDbId, pbxUrl, error: result.error }, "Yeastar connection test failed");

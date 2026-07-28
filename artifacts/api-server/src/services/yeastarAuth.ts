@@ -121,6 +121,12 @@ async function fetchNewToken(
         `Note: cloud FQDNs (*.ras.yeastar.com) do not use port 8088 — use the URL without a port number.`,
       );
     }
+    if (data.errcode === 60002) {
+      throw new Error(
+        `MAX LIMITATION EXCEEDED (errcode 60002): The Yeastar PBX has reached its maximum number of concurrent API sessions. ` +
+        `Existing tokens expire after ~30 minutes. To clear them immediately, go to Yeastar PBX → Integrations → API → Application and revoke active tokens, then try again.`,
+      );
+    }
     if (data.errcode === 1) {
       throw new Error(
         `Invalid credentials (errcode 1): Check the Client ID and Client Secret in the Yeastar PBX API settings.`,
