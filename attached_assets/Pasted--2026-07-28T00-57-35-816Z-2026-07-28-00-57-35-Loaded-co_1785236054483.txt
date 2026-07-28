@@ -1,0 +1,103 @@
+[2026-07-28T00:57:35.816Z] 2026/07/28 00:57:35 Loaded config with 0 functions
+
+[2026-07-28T00:57:35.817Z] 2026/07/28 00:57:35 Starting HTTP API server on :19000
+
+[2026-07-28T00:57:35.817Z] 2026/07/28 00:57:35 Starting SIP client with configuration:
+
+[2026-07-28T00:57:35.817Z] 2026/07/28 00:57:35 Username: 1005, Domain: 192.168.11.90, Server: 192.168.11.90:5060, Transport: udp
+
+[2026-07-28T00:57:35.817Z] 2026/07/28 00:57:35 Auth ID: TjoCu4uhmD (using separate authorization ID)
+
+[2026-07-28T00:57:35.817Z] 2026/07/28 00:57:35 No OPENAI_API_KEY set - calls will use fallback audio handling
+
+[2026-07-28T00:57:35.817Z] 2026/07/28 00:57:35 DEBUG: Determined outbound IP as 192.168.11.128
+
+[2026-07-28T00:57:35.817Z] 2026/07/28 00:57:35 Local IP determined as: 192.168.11.128
+
+[2026-07-28T00:57:35.936Z] 2026/07/28 00:57:35 DEBUG: Retrieved external IP as 196.115.109.15
+
+[2026-07-28T00:57:35.936Z] 2026/07/28 00:57:35 External IP determined as: 196.115.109.15
+
+[2026-07-28T00:57:35.936Z] 2026/07/28 00:57:35 Sending REGISTER request via sipgo client.
+
+[2026-07-28T00:57:35.939Z] 2026/07/28 00:57:35 Auth: digestUsername=TjoCu4uhmD, realm=YSAsterisk, uri=sip:192.168.11.90, password=EmkWA6lT7y
+
+[2026-07-28T00:57:35.939Z] 2026/07/28 00:57:35 Resending REGISTER with Authorization header (CSeq=2).
+
+[2026-07-28T00:57:35.939Z] 2026/07/28 00:57:35 Authorization: Digest username="TjoCu4uhmD", realm="YSAsterisk", nonce="1785200255/766ebfb019288a7ec4e81b38e2e7b60a", uri="sip:192.168.11.90", response="81599b09ebb032fc606da46abd7df145", algorithm=MD5
+
+[2026-07-28T00:57:35.984Z] 2026/07/28 00:57:35 Received REGISTER response: SIP/2.0 200 OK
+
+[2026-07-28T00:57:35.984Z] Via: SIP/2.0/UDP 192.168.11.128:35829;rport=35829;received=192.168.11.128;branch=z9hG4bK.Zr43lHNxTYINlWHc
+
+[2026-07-28T00:57:35.984Z] Call-ID: cavcJejcN7gh1xWy
+
+[2026-07-28T00:57:35.984Z] From: <sip:1005@192.168.11.90>;tag=SUjvMRW2
+
+[2026-07-28T00:57:35.984Z] To: <sip:1005@192.168.11.90>;tag=z9hG4bK.Zr43lHNxTYINlWHc
+
+[2026-07-28T00:57:35.984Z] CSeq: 2 REGISTER
+
+[2026-07-28T00:57:35.984Z] Date: Tue, 28 Jul 2026 00:57:35 GMT
+
+[2026-07-28T00:57:35.984Z] Contact: <sip:1005@192.168.11.128:55887>;expires=35
+
+[2026-07-28T00:57:35.985Z] Contact: <sip:1005@192.168.11.128:35829>;expires=624
+
+[2026-07-28T00:57:35.985Z] Contact: <sip:1005@192.168.11.128:52435>;expires=559
+
+[2026-07-28T00:57:35.985Z] Contact: <sip:1005@192.168.11.128:55901>;expires=230
+
+[2026-07-28T00:57:35.985Z] Expires: 615
+
+[2026-07-28T00:57:35.985Z] Server: Yeastar PSE
+
+[2026-07-28T00:57:35.985Z] Content-Length: 0
+
+[2026-07-28T00:57:35.985Z] 2026/07/28 00:57:35 Registration successful!
+
+[2026-07-28T00:57:35.985Z] 2026/07/28 00:57:35 Initial REGISTER request sent.
+
+[2026-07-28T00:57:35.985Z] 2026/07/28 00:57:35 SIP server is now listening for incoming messages.
+
+[2026-07-28T00:57:35.997Z] 2026/07/28 00:57:35 WARN SIP request handler not found caller=Server method=NOTIFY
+
+[2026-07-28T00:58:12.922Z] 2026/07/28 00:58:12 INVITE received for call: 52b1715f-7120-4d93-abab-70b5dfa77f9b, auto-answering using sipgo.
+
+[2026-07-28T00:58:12.923Z] 2026/07/28 00:58:12 RTP listener created on 0.0.0.0:47886
+
+[2026-07-28T00:58:12.923Z] 2026/07/28 00:58:12 200 OK with SDP sent to caller.
+
+[2026-07-28T00:58:12.923Z] 2026/07/28 00:58:12 Stored remote Contact for dialog: sip:+212661209845@192.168.11.90:5060
+
+[2026-07-28T00:58:12.923Z] 2026/07/28 00:58:12 Registered dialog for call: 52b1715f-7120-4d93-abab-70b5dfa77f9b
+
+[2026-07-28T00:58:12.923Z] 2026/07/28 00:58:12 Parsed remote audio port: 13974
+
+[2026-07-28T00:58:12.923Z] 2026/07/28 00:58:12 Remote RTP destination: 192.168.11.90:13974
+
+[2026-07-28T00:58:12.923Z] 2026/07/28 00:58:12 Routing call to ElevenLabs Conversational AI
+
+[2026-07-28T00:58:12.923Z] 2026/07/28 00:58:12 Using AI provider: elevenlabs
+
+[2026-07-28T00:58:12.924Z] 2026/07/28 00:58:12 Sending NAT hole-punch packets to 192.168.11.90:13974
+
+[2026-07-28T00:58:13.022Z] 2026/07/28 00:58:13 WARN SIP request handler not found caller=Server method=ACK
+
+[2026-07-28T00:58:13.037Z] 2026/07/28 00:58:13 Connecting to ElevenLabs Conversational AI (agent: agent_9601kyfqyacnesc95he3z0f363wt)...
+
+[2026-07-28T00:58:13.567Z] 2026/07/28 00:58:13 Connected to ElevenLabs Conversational AI
+
+[2026-07-28T00:58:13.568Z] 2026/07/28 00:58:13 DEBUG: appConfig=true
+
+[2026-07-28T00:58:13.568Z] 2026/07/28 00:58:13 DEBUG: ElevenLabs.FirstMessage='', SystemPrompt='', Functions=0
+
+[2026-07-28T00:58:13.568Z] 2026/07/28 00:58:13 Sending conversation initiation to ElevenLabs: {"type":"conversation_initiation_client_data"}
+
+[2026-07-28T00:58:13.569Z] 2026/07/28 00:58:13 Registered bridge for call: 52b1715f-7120-4d93-abab-70b5dfa77f9b
+
+[2026-07-28T00:58:13.570Z] 2026/07/28 00:58:13 Starting RTP to ElevenLabs bridge (native μ-law 8kHz)...
+
+[2026-07-28T00:58:13.570Z] 2026/07/28 00:58:13 Starting ElevenLabs to RTP bridge (native μ-law 8kHz)...
+
+[2026-07-28T00:58:1...

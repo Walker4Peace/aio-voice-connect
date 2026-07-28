@@ -70,11 +70,16 @@ function CopyButton({ value }: { value: string }) {
 // ── helpers ────────────────────────────────────────────────────────────────
 
 const EVENT_ICONS: Record<CallEvent["event"], React.ReactNode> = {
-  invite:       <PhoneIncoming className="h-3.5 w-3.5 text-blue-500" />,
-  answered:     <PhoneCall    className="h-3.5 w-3.5 text-green-500" />,
-  ended:        <PhoneOff     className="h-3.5 w-3.5 text-muted-foreground" />,
-  connected_ai: <Activity     className="h-3.5 w-3.5 text-purple-500" />,
-  error:        <PhoneOff     className="h-3.5 w-3.5 text-red-500" />,
+  invite:       <PhoneIncoming  className="h-3.5 w-3.5 text-blue-500" />,
+  answered:     <PhoneCall     className="h-3.5 w-3.5 text-green-500" />,
+  ended:        <PhoneOff      className="h-3.5 w-3.5 text-muted-foreground" />,
+  connected_ai: <Activity      className="h-3.5 w-3.5 text-purple-500" />,
+  error:        <PhoneOff      className="h-3.5 w-3.5 text-red-500" />,
+};
+
+const EVENT_ICONS_OUTBOUND: Record<CallEvent["event"], React.ReactNode> = {
+  ...EVENT_ICONS,
+  invite: <PhoneOutgoing className="h-3.5 w-3.5 text-blue-500" />,
 };
 
 function eventLabel(ev: CallEvent, isOutbound: boolean, extLabel: string): string {
@@ -231,7 +236,7 @@ function CallTableRow({ callId, legs, extNumber, isOutbound = false, isOpen, onT
               <div className="bg-muted/20 divide-y border-b">
                 {legsDesc.map((leg, i) => (
                   <div key={i} className="flex items-center gap-3 px-10 py-2.5">
-                    <div className="shrink-0">{EVENT_ICONS[leg.event]}</div>
+                    <div className="shrink-0">{(isOutbound ? EVENT_ICONS_OUTBOUND : EVENT_ICONS)[leg.event]}</div>
                     <div className="flex-1 min-w-0 text-sm">{eventLabel(leg, isOutbound, extLabel)}</div>
                     <time className="text-xs text-muted-foreground shrink-0 tabular-nums">
                       {formatTime(leg.timestamp)}
@@ -342,8 +347,18 @@ export function groupEventsByCall(events: CallEvent[]): Map<string, CallEvent[]>
     map.get(ev.callId)!.push(ev);
   }
   // Sort each group oldest-first so duration/date calculations are correct
-  for (const legs of map.values()) {
+  for (const [callId, legs] of map.entries()) {
     legs.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+
+    // Deduplicate: remove events where (type, detail) is identical to an earlier one.
+    // This handles the backend occasionally emitting duplicate invite/connected_ai events.
+    const seen = new Set<string>();
+    map.set(callId, legs.filter(leg => {
+      const key = `${leg.event}::${leg.detail ?? ""}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    }));
   }
   return map;
 }
