@@ -190,7 +190,7 @@ export default function ClientsList() {
                 <FormField control={form.control} name="yeastarApiUrl" render={({ field }) => (
                   <FormItem>
                     <FormLabel>{t("clients.yeastarApiUrl")}</FormLabel>
-                    <FormControl><Input placeholder="http://192.168.1.1:8080" {...field} onChange={e => { field.onChange(e); setTestStatus("idle"); }} /></FormControl>
+                    <FormControl><Input placeholder="https://192.168.11.90:8088" {...field} onChange={e => { field.onChange(e); setTestStatus("idle"); }} /></FormControl>
                     <p className="text-xs text-muted-foreground">{t("clients.yeastarApiHint")}</p>
                     <FormMessage />
                   </FormItem>

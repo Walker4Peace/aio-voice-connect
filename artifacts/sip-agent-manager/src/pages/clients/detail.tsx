@@ -341,7 +341,7 @@ export default function ClientDetail() {
                       <FormItem>
                         <FormLabel>{t("clients.yeastarApiUrl")}</FormLabel>
                         <FormControl>
-                          <Input placeholder="https://192.168.11.90:8088" {...field} onChange={e => { field.onChange(e); setTestStatus("idle"); }} />
+                          <Input placeholder="https://192.168.11.90:8088 or https://fqdn.ras.yeastar.com" {...field} onChange={e => { field.onChange(e); setTestStatus("idle"); }} />
                         </FormControl>
                         <p className="text-xs text-muted-foreground">{t("clients.yeastarApiHint")}</p>
                         <FormMessage />
