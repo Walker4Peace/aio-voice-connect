@@ -35,8 +35,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         "fixed inset-y-0 left-0 z-50 w-64 transform border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-transform duration-200 ease-in-out lg:static lg:translate-x-0",
         mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
       )}>
-        <div className="flex h-16 shrink-0 items-center px-6">
-          <img src="/logo.png" alt="AIO Voice Connect" className="h-8 w-auto object-contain" />
+        <div className="flex h-16 shrink-0 items-center justify-center px-4">
+          <img src="/logo.png" alt="AIO Voice Connect" className="h-12 w-auto object-contain" />
         </div>
 
         <nav className="mt-6 flex flex-col gap-1 px-3">
