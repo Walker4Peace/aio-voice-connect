@@ -323,7 +323,7 @@ export default function ExtensionsList() {
                         <tr key={ext.id} className="border-b last:border-0 hover:bg-muted/20 transition-colors">
                           <td className="py-3.5 px-4">
                             <div className="flex items-center gap-1.5">
-                              <Phone className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                              <Users className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                               <span className="font-mono font-semibold text-sm">{ext.extensionNumber}</span>
                             </div>
                           </td>
