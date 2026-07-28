@@ -45,7 +45,7 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "PORT=23208 BASE_PATH=/ pnpm --filter @workspace/sip-agent-manager run dev"
+args = "PORT=23208 BASE_PATH=/ pnpm --filter @workspace/aio-voice-connect-manager run dev"
 waitForPort = 23208
 
 [agent]
