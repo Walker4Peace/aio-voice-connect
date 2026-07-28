@@ -51,7 +51,7 @@ const en = {
   "login.connectionError": "Connection error — please try again",
 
   // ── Setup wizard ─────────────────────────────────────────────────────────
-  "setup.welcome":         "Welcome to SIP Agent Manager",
+  "setup.welcome":         "Welcome to AIO Voice Connect",
   "setup.subtitle":        "Complete the setup to get started",
   "setup.stepAccount":     "Account",
   "setup.stepDomain":      "Domain",
@@ -93,7 +93,7 @@ const en = {
   "setup.skip":               "Skip →",
 
   "setup.finishTitle":        "Setup Complete!",
-  "setup.finishDescription":  "Your SIP Agent Manager is ready to use",
+  "setup.finishDescription":  "Your AIO Voice Connect is ready to use",
   "setup.accountCreated":     "✓ Admin account created",
   "setup.domainLater":        "You can configure your domain anytime from <strong>Settings → Domain</strong>.",
   "setup.sessionActive":      "Your session is active. You will be taken to the dashboard.",
@@ -257,7 +257,7 @@ const en = {
   "extDetail.loading":        "Loading extension data...",
   "extDetail.notFound":       "Extension not found.",
   "extDetail.noDisplayName":  "No display name",
-  "extDetail.sipAgentTitle":  "SIP Agent",
+  "extDetail.sipAgentTitle":  "AI Voice Agent",
   "extDetail.deployDesc":     "Deploy and manage this extension's AI voice agent.",
   "extDetail.assignFirst":    "Assign an AI Agent below before deploying.",
   "extDetail.waitingSip":     "Waiting for SIP registration…",
@@ -508,7 +508,7 @@ const fr: typeof en = {
   "login.connectionError": "Erreur de connexion — veuillez réessayer",
 
   // ── Setup wizard ─────────────────────────────────────────────────────────
-  "setup.welcome":         "Bienvenue dans SIP Agent Manager",
+  "setup.welcome":         "Bienvenue dans AIO Voice Connect",
   "setup.subtitle":        "Complétez la configuration pour commencer",
   "setup.stepAccount":     "Compte",
   "setup.stepDomain":      "Domaine",
@@ -550,7 +550,7 @@ const fr: typeof en = {
   "setup.skip":               "Ignorer →",
 
   "setup.finishTitle":        "Configuration terminée !",
-  "setup.finishDescription":  "Votre SIP Agent Manager est prêt à l'emploi",
+  "setup.finishDescription":  "Votre AIO Voice Connect est prêt à l'emploi",
   "setup.accountCreated":     "✓ Compte administrateur créé",
   "setup.domainLater":        "Vous pouvez configurer votre domaine à tout moment depuis <strong>Paramètres → Domaine</strong>.",
   "setup.sessionActive":      "Votre session est active. Vous allez être redirigé vers le tableau de bord.",

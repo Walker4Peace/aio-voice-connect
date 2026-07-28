@@ -1,5 +1,5 @@
 {
-  "name": "@workspace/sip-agent-manager",
+  "name": "@workspace/aio-voice-connect-manager",
   "version": "0.0.0",
   "private": true,
   "type": "module",

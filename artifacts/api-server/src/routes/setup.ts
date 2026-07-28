@@ -8,8 +8,8 @@ import { db, adminConfigTable } from "@workspace/db";
 const execAsync = promisify(exec);
 const router = Router();
 
-const NGINX_CONF_PATH = "/etc/nginx/sites-available/sip-agent-manager.conf";
-const NGINX_ENABLED_PATH = "/etc/nginx/sites-enabled/sip-agent-manager.conf";
+const NGINX_CONF_PATH = "/etc/nginx/sites-available/aio-voice-connect.conf";
+const NGINX_ENABLED_PATH = "/etc/nginx/sites-enabled/aio-voice-connect.conf";
 
 /** Shared proxy location blocks used by every server block */
 function nginxLocations(): string {

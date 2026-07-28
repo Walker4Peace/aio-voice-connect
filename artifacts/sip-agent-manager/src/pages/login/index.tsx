@@ -42,13 +42,10 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-muted/30 p-4">
       <div className="w-full max-w-sm space-y-6">
-        {/* Logo + title */}
+        {/* Logo */}
         <div className="flex flex-col items-center gap-3">
-          <img src="/logo.png" alt="SIP Agent" className="h-20 w-auto object-contain" />
-          <div className="text-center">
-            <h1 className="text-2xl font-bold tracking-tight">SIP Agent Manager</h1>
-            <p className="text-sm text-muted-foreground mt-1">{t("login.subtitle")}</p>
-          </div>
+          <img src="/logo.png" alt="AIO Voice Connect" className="h-20 w-auto object-contain" />
+          <p className="text-sm text-muted-foreground">{t("login.subtitle")}</p>
         </div>
 
         <Card>

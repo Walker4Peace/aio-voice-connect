@@ -155,16 +155,16 @@ async function buildServiceFile(ext: ExtensionWithRelations): Promise<string | n
   // can run simultaneously without overwriting each other's config.json.
   // WorkingDirectory stays at the always-present parent; the per-extension
   // config directory is created by ExecStartPre before the process starts.
-  const configDir = `/opt/sip-agent/ext-${extensionNumber}`;
+  const configDir = `/opt/aio-voice-connect/ext-${extensionNumber}`;
   const configPath = `${configDir}/config.json`;
   const serviceName = serviceNameFor(ext);
 
   return `[Unit]
-Description=SIP Agent Voice Agent - Extension ${extensionNumber}
+Description=AIO Voice Connect Agent - Extension ${extensionNumber}
 After=network.target
 
 [Service]
-WorkingDirectory=/opt/sip-agent
+WorkingDirectory=/opt/aio-voice-connect
 ExecStartPre=/bin/mkdir -p ${configDir}
 Environment=CONFIG_FILE=${configPath}
 Environment=SIP_USERNAME=${sipUsername}

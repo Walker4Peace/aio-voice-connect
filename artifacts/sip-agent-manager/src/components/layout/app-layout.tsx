@@ -35,9 +35,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         "fixed inset-y-0 left-0 z-50 w-64 transform border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-transform duration-200 ease-in-out lg:static lg:translate-x-0",
         mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
       )}>
-        <div className="flex h-16 shrink-0 items-center gap-2 px-6">
-          <img src="/logo.png" alt="SIP Agent" className="h-8 w-auto object-contain" />
-          <span className="text-lg font-bold tracking-tight">SIP Agent</span>
+        <div className="flex h-16 shrink-0 items-center px-6">
+          <img src="/logo.png" alt="AIO Voice Connect" className="h-8 w-auto object-contain" />
         </div>
 
         <nav className="mt-6 flex flex-col gap-1 px-3">
@@ -92,9 +91,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Main content */}
       <div className="flex flex-1 flex-col overflow-hidden">
         <header className="flex h-16 shrink-0 items-center justify-between border-b bg-card px-4 lg:hidden">
-          <div className="flex items-center gap-2">
-            <img src="/logo.png" alt="SIP Agent" className="h-8 w-auto object-contain" />
-            <span className="text-lg font-bold">SIP Agent</span>
+          <div className="flex items-center">
+            <img src="/logo.png" alt="AIO Voice Connect" className="h-8 w-auto object-contain" />
           </div>
           <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(true)}>
             <Menu className="h-6 w-6" />
