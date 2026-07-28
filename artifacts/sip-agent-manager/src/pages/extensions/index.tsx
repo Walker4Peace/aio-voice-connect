@@ -322,7 +322,10 @@ export default function ExtensionsList() {
                       return (
                         <tr key={ext.id} className="border-b last:border-0 hover:bg-muted/20 transition-colors">
                           <td className="py-3.5 px-4">
-                            <span className="font-mono font-semibold text-sm">{ext.extensionNumber}</span>
+                            <div className="flex items-center gap-1.5">
+                              <Phone className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                              <span className="font-mono font-semibold text-sm">{ext.extensionNumber}</span>
+                            </div>
                           </td>
                           <td className="py-3.5 px-4 text-sm text-foreground font-medium">
                             {ext.displayName || "—"}
@@ -330,7 +333,7 @@ export default function ExtensionsList() {
                           <td className="py-3.5 px-4">
                             {ext.client ? (
                               <div className="flex items-center gap-2">
-                                <Server className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                                <Server className="h-3.5 w-3.5 text-blue-500 shrink-0" />
                                 <div>
                                   <Link href={`/ipbxs/${ext.clientId}`} className="text-sm font-medium hover:underline text-foreground">{ext.client.name}</Link>
                                   {ext.client.sipServer && (

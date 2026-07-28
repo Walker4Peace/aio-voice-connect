@@ -207,9 +207,9 @@ export default function Dashboard() {
       {/* Stat cards */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         <StatCard icon={Server}   label="IPBX Systems"          value={stats?.totalClients ?? 0}  iconBg="bg-blue-50"   iconColor="text-blue-600" />
-        <StatCard icon={Users}    label="Extensions"             value={stats?.totalExtensions ?? 0} iconBg="bg-purple-50" iconColor="text-purple-600" />
+        <StatCard icon={Users}    label="Extensions"             value={stats?.totalExtensions ?? 0} iconBg="bg-gray-100"   iconColor="text-gray-500" />
         <StatCard icon={Activity} label="Registered Extensions"  value={runningCount}              iconBg="bg-green-50"  iconColor="text-green-600" />
-        <StatCard icon={Bot}      label="AI Agents"              value={agentConfigs?.length ?? 0} iconBg="bg-orange-50" iconColor="text-orange-500" />
+        <StatCard icon={Bot}      label="AI Agents"              value={agentConfigs?.length ?? 0} iconBg="bg-purple-50" iconColor="text-purple-600" />
       </div>
 
       {/* Live Agent Status */}
