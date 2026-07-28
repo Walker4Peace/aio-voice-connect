@@ -21,6 +21,10 @@ import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Form, FormControl, FormField, FormItem, FormLabel, FormMessage,
 } from "@/components/ui/form";
 import { ArrowLeft, Phone, Edit, Save, X, Link2, Trash2, FlaskConical, CheckCircle, XCircle, Loader2 } from "lucide-react";
@@ -64,6 +68,7 @@ export default function ClientDetail() {
   const [linking, setLinking] = React.useState(false);
   const [testStatus, setTestStatus] = React.useState<TestStatus>("idle");
   const [testError, setTestError] = React.useState<string>("");
+  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
 
   const { data: client, isLoading: isLoadingClient } = useGetClient(clientId, { 
     query: { enabled: !!clientId, queryKey: ['client', clientId] } 
@@ -189,7 +194,10 @@ export default function ClientDetail() {
   };
 
   const handleDelete = () => {
-    if (!client || !window.confirm(t("clientDetail.deleteConfirm", { name: client.name }))) return;
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
     deleteClient.mutate(
       { id: clientId },
       {
@@ -445,7 +453,7 @@ export default function ClientDetail() {
                 </div>
 
                 <div>
-                  <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Added On</div>
+                  <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">{t("clientDetail.addedOn")}</div>
                   <div className="text-sm">{formatDate(client.createdAt)}</div>
                 </div>
                 <Button
@@ -517,6 +525,25 @@ export default function ClientDetail() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Delete IPBX Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("clientDetail.deleteTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("clientDetail.deleteDescModal")}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={confirmDelete}
+            >
+              {t("common.delete")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Link Extensions Dialog */}
       <Dialog open={linkDialogOpen} onOpenChange={setLinkDialogOpen}>

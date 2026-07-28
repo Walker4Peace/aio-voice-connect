@@ -145,12 +145,13 @@ export default function ClientsList() {
               <Plus className="h-4 w-4" /> {t("clients.addIPBX")}
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-h-[90vh] flex flex-col overflow-hidden">
             <DialogHeader>
               <DialogTitle>{t("clients.dialogTitle")}</DialogTitle>
               <DialogDescription>{t("clients.dialogDescription")}</DialogDescription>
             </DialogHeader>
             
+            <div className="overflow-y-auto flex-1 pr-1">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <FormField control={form.control} name="name" render={({ field }) => (
@@ -257,6 +258,7 @@ export default function ClientsList() {
                 </div>
               </form>
             </Form>
+            </div>
           </DialogContent>
         </Dialog>
       </div>

@@ -17,6 +17,10 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Form, FormControl, FormField, FormItem, FormLabel, FormMessage,
 } from "@/components/ui/form";
 import {
@@ -51,6 +55,7 @@ export default function ExtensionDetail() {
   const queryClient = useQueryClient();
 
   const [editSipOpen, setEditSipOpen] = React.useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
 
   const { data: extension, isLoading } = useGetExtension(extensionId, {
     query: { enabled: !!extensionId, queryKey: getGetExtensionQueryKey(extensionId) }
@@ -279,16 +284,7 @@ export default function ExtensionDetail() {
               <Button
                 variant="outline" size="sm"
                 className="gap-2 h-8 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
-                onClick={() => {
-                  if (!window.confirm(t("extDetail.removeConfirm", { number: extension.extensionNumber }))) return;
-                  deleteExtension.mutate({ id: extensionId }, {
-                    onSuccess: () => {
-                      toast({ title: t("extDetail.removed") });
-                      navigate("/extensions");
-                    },
-                    onError: () => toast({ variant: "destructive", title: t("extDetail.removeFailed") }),
-                  });
-                }}
+                onClick={() => setDeleteDialogOpen(true)}
                 disabled={deleteExtension.isPending}
               >
                 <Trash2 className="h-3.5 w-3.5" /> {t("extDetail.remove")}
@@ -389,6 +385,33 @@ export default function ExtensionDetail() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Delete Extension Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("extensions.deleteTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("extensions.deleteDesc")}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                deleteExtension.mutate({ id: extensionId }, {
+                  onSuccess: () => {
+                    toast({ title: t("extDetail.removed") });
+                    navigate("/extensions");
+                  },
+                  onError: () => toast({ variant: "destructive", title: t("extDetail.removeFailed") }),
+                });
+              }}
+            >
+              {t("common.delete")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Edit SIP Credentials Dialog */}
       <Dialog open={editSipOpen} onOpenChange={setEditSipOpen}>

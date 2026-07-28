@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "wouter";
+import { useTranslation } from "react-i18next";
 import { useTimezone } from "@/contexts/timezone-context";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -82,20 +83,20 @@ const EVENT_ICONS_OUTBOUND: Record<CallEvent["event"], React.ReactNode> = {
   invite: <PhoneOutgoing className="h-3.5 w-3.5 text-blue-500" />,
 };
 
-function eventLabel(ev: CallEvent, isOutbound: boolean, extLabel: string): string {
+function eventLabel(ev: CallEvent, isOutbound: boolean, extLabel: string, t: (key: string, opts?: Record<string, string>) => string): string {
   switch (ev.event) {
     case "invite":
       return isOutbound
-        ? `Outgoing call from ${extLabel}`
-        : ev.detail ? `Incoming call from ${ev.detail}` : "Incoming call";
+        ? t("calls.eventOutgoing", { ext: extLabel })
+        : ev.detail ? t("calls.eventIncomingFrom", { detail: ev.detail }) : t("calls.eventIncoming");
     case "answered":
-      return "Answered";
+      return t("calls.eventAnswered");
     case "connected_ai":
-      return ev.detail ? `AI responded — ${ev.detail}` : "AI responded";
+      return ev.detail ? t("calls.eventAiResponded", { detail: ev.detail }) : t("calls.eventAiRespondedSimple");
     case "ended":
-      return ev.detail ? `Call ended (${ev.detail})` : "Call ended";
+      return ev.detail ? t("calls.eventCallEnded", { detail: ev.detail }) : t("calls.eventCallEndedSimple");
     case "error":
-      return ev.detail ? `Error: ${ev.detail}` : "Error";
+      return ev.detail ? t("calls.eventError", { detail: ev.detail }) : t("calls.eventErrorSimple");
   }
 }
 
@@ -127,6 +128,7 @@ interface CallRowProps {
 
 function CallTableRow({ callId, legs, extNumber, isOutbound = false, outboundPhoneNumber, isOpen, onToggle, onDelete }: CallRowProps) {
   const { formatDateTime, formatTime } = useTimezone();
+  const { t } = useTranslation();
   const hasEnded = legs.some(l => l.event === "ended");
   const hasAI    = legs.some(l => l.event === "connected_ai");
   const hasError = legs.some(l => l.event === "error");
@@ -148,7 +150,7 @@ function CallTableRow({ callId, legs, extNumber, isOutbound = false, outboundPho
   const caller = isOutbound ? extLabel                  : (inboundNumber ?? "—");
   const called = isOutbound ? (outboundDest ?? "—")    : extLabel;
 
-  const stateLabel = hasError ? "Error" : hasEnded ? "Ended" : hasAI ? "AI Active" : "Ringing";
+  const stateLabel = hasError ? t("calls.stateError") : hasEnded ? t("calls.stateEnded") : hasAI ? t("calls.stateAiActive") : t("calls.stateRinging");
   const stateColor = hasError
     ? "text-red-500"
     : hasEnded
@@ -180,12 +182,12 @@ function CallTableRow({ callId, legs, extNumber, isOutbound = false, outboundPho
               {isOutbound ? (
                 <span className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded px-1.5 py-0.5">
                   <ArrowUpRight className="h-3 w-3" />
-                  Outbound
+                  {t("calls.dirOutbound")}
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-1 text-xs font-medium text-green-600 bg-green-50 border border-green-200 rounded px-1.5 py-0.5">
                   <ArrowDownLeft className="h-3 w-3" />
-                  Inbound
+                  {t("calls.dirInbound")}
                 </span>
               )}
             </TableCell>
@@ -214,18 +216,18 @@ function CallTableRow({ callId, legs, extNumber, isOutbound = false, outboundPho
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
-                        <AlertDialogTitle>Delete this call record?</AlertDialogTitle>
+                        <AlertDialogTitle>{t("calls.deleteCallTitle")}</AlertDialogTitle>
                         <AlertDialogDescription>
-                          This will permanently delete the call <span className="font-mono">{callId.slice(0, 8)}…</span>. This action cannot be undone.
+                          {t("calls.deleteCallDesc", { callId: callId.slice(0, 8) + "…" })}
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
                         <AlertDialogAction
                           className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                           onClick={() => onDelete(callId)}
                         >
-                          Delete
+                          {t("common.delete")}
                         </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
@@ -244,7 +246,7 @@ function CallTableRow({ callId, legs, extNumber, isOutbound = false, outboundPho
                 {legsDesc.map((leg, i) => (
                   <div key={i} className="flex items-center gap-3 px-10 py-2.5">
                     <div className="shrink-0">{(isOutbound ? EVENT_ICONS_OUTBOUND : EVENT_ICONS)[leg.event]}</div>
-                    <div className="flex-1 min-w-0 text-sm">{eventLabel(leg, isOutbound, extLabel)}</div>
+                    <div className="flex-1 min-w-0 text-sm">{eventLabel(leg, isOutbound, extLabel, t)}</div>
                     <time className="text-xs text-muted-foreground shrink-0 tabular-nums">
                       {formatTime(leg.timestamp)}
                     </time>
@@ -290,10 +292,12 @@ export function CallHistoryTable({
   outboundCallIds,
   limit,
   viewAllHref,
-  emptyMessage = "No completed calls recorded yet.",
+  emptyMessage,
   onDeleteCall,
 }: CallHistoryTableProps) {
   const [openId, setOpenId] = React.useState<string | null>(null);
+  const { t } = useTranslation();
+  const resolvedEmptyMessage = emptyMessage ?? t("calls.emptyMessage");
 
   const visible = limit ? callGroups.slice(0, limit) : callGroups;
 
@@ -315,7 +319,7 @@ export function CallHistoryTable({
     return (
       <div className="text-center py-10 text-muted-foreground">
         <PhoneCall className="h-8 w-8 mx-auto mb-2 opacity-30" />
-        <p className="text-sm">{emptyMessage}</p>
+        <p className="text-sm">{resolvedEmptyMessage}</p>
       </div>
     );
   }
@@ -325,12 +329,12 @@ export function CallHistoryTable({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[220px]">Call ID</TableHead>
-            <TableHead>Direction</TableHead>
-            <TableHead>Caller</TableHead>
-            <TableHead>Called</TableHead>
-            <TableHead>Date</TableHead>
-            <TableHead>Duration</TableHead>
+            <TableHead className="w-[220px]">{t("calls.thCallId")}</TableHead>
+            <TableHead>{t("calls.thDirection")}</TableHead>
+            <TableHead>{t("calls.thCaller")}</TableHead>
+            <TableHead>{t("calls.thCalled")}</TableHead>
+            <TableHead>{t("calls.thDate")}</TableHead>
+            <TableHead>{t("calls.thDuration")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -357,7 +361,7 @@ export function CallHistoryTable({
       {viewAllHref && (
         <div className="mt-3 flex justify-center">
           <Link href={viewAllHref}>
-            <Button variant="ghost" size="sm" className="text-xs h-7">View all</Button>
+            <Button variant="ghost" size="sm" className="text-xs h-7">{t("calls.viewAll")}</Button>
           </Link>
         </div>
       )}

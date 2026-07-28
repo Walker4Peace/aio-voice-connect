@@ -98,16 +98,24 @@ async function deleteOutboundCall(id: number): Promise<void> {
 // ── Status badge ──────────────────────────────────────────────────────────────
 
 function StatusBadge({ status }: { status: OutboundCall["status"] }) {
-  const map: Record<string, string> = {
+  const { t } = useTranslation();
+  const colorMap: Record<string, string> = {
     pending:   "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300",
     dialing:   "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
     active:    "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
     completed: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
     failed:    "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
   };
+  const labelMap: Record<string, string> = {
+    pending:   t("outbound.statusPending"),
+    dialing:   t("outbound.statusDialing"),
+    active:    t("outbound.statusActive"),
+    completed: t("outbound.statusCompleted"),
+    failed:    t("outbound.statusFailed"),
+  };
   return (
-    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${map[status] ?? ""}`}>
-      {status.charAt(0).toUpperCase() + status.slice(1)}
+    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${colorMap[status] ?? ""}`}>
+      {labelMap[status] ?? status}
     </span>
   );
 }
