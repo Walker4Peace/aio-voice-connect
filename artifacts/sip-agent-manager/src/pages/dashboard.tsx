@@ -74,9 +74,10 @@ function AgentRow({ ext, status }: {
   return (
     <tr className="border-b last:border-0 hover:bg-muted/20 transition-colors">
       <td className="py-3 px-4">
-        <Link href={`/extensions/${ext.id}`} className="font-mono font-semibold text-primary hover:underline text-sm">
-          {ext.extensionNumber}
-        </Link>
+        <div className="flex items-center gap-2">
+          <Users className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+          <span className="font-mono font-semibold text-sm">{ext.extensionNumber}</span>
+        </div>
       </td>
       <td className="py-3 px-4 text-sm font-medium text-foreground">{ext.displayName || "—"}</td>
       <td className="py-3 px-4">

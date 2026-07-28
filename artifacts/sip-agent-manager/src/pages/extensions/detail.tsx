@@ -28,7 +28,7 @@ import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import {
   ArrowLeft, Phone, Server, Play, Square, RotateCcw, Loader2, AlertCircle,
-  Bot, Edit, Trash2, ShieldCheck, Eye, EyeOff, RefreshCw, ExternalLink, Info, CheckCircle2
+  Bot, Edit, Trash2, ShieldCheck, Eye, EyeOff, RefreshCw, ExternalLink, Info, CheckCircle2, Users
 } from "lucide-react";
 import { ProviderBadge } from "@/components/provider-badge";
 import { useToast } from "@/hooks/use-toast";
@@ -194,7 +194,7 @@ export default function ExtensionDetail() {
         <div className="flex items-start justify-between px-5 py-4 border-b">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted">
-              <Phone className="h-5 w-5 text-muted-foreground" />
+              <Users className="h-5 w-5 text-muted-foreground" />
             </div>
             <div>
               <h2 className="font-semibold text-base">SIP Agent</h2>
@@ -292,10 +292,10 @@ export default function ExtensionDetail() {
         </div>
       </div>
 
-      {/* Two-column: AI Agent + SIP Credentials */}
+      {/* Two-column: SIP Credentials + AI Agent */}
       <div className="grid gap-5 lg:grid-cols-2">
         {/* AI Agent */}
-        <div className="bg-card border rounded-xl shadow-sm border-l-4 border-l-purple-500 overflow-hidden">
+        <div className="order-2 bg-card border rounded-xl shadow-sm border-l-4 border-l-purple-500 overflow-hidden">
           <div className="flex items-center justify-between px-5 py-4 border-b">
             <div className="flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-50">
@@ -390,7 +390,7 @@ export default function ExtensionDetail() {
         </div>
 
         {/* SIP Credentials */}
-        <div className="bg-card border rounded-xl shadow-sm border-l-4 border-l-blue-500 overflow-hidden">
+        <div className="order-1 bg-card border rounded-xl shadow-sm border-l-4 border-l-blue-500 overflow-hidden">
           <div className="flex items-center justify-between px-5 py-4 border-b">
             <div className="flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50">
