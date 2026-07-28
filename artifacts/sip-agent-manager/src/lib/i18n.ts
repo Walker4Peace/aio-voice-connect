@@ -392,6 +392,7 @@ const en = {
   "calls.deleteCallTitle":    "Delete this call record?",
   "calls.deleteCallDesc":     "This will permanently delete call {{callId}}. This action cannot be undone.",
   "calls.viewAll":            "View all",
+  "calls.connectedTo":        "Connected to",
 
   // ── Logs ──────────────────────────────────────────────────────────────────
   "logs.title":               "Logs",
@@ -848,6 +849,7 @@ const fr: typeof en = {
   "calls.deleteCallTitle":    "Supprimer cet enregistrement ?",
   "calls.deleteCallDesc":     "Cela supprimera définitivement l'appel {{callId}}. Cette action est irréversible.",
   "calls.viewAll":            "Voir tout",
+  "calls.connectedTo":        "Connecté à",
 
   // ── Logs ──────────────────────────────────────────────────────────────────
   "logs.title":               "Journaux",

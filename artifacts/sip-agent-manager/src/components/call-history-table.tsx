@@ -91,8 +91,12 @@ function eventLabel(ev: CallEvent, isOutbound: boolean, extLabel: string, t: (ke
         : ev.detail ? t("calls.eventIncomingFrom", { detail: ev.detail }) : t("calls.eventIncoming");
     case "answered":
       return t("calls.eventAnswered");
-    case "connected_ai":
-      return ev.detail ? t("calls.eventAiResponded", { detail: ev.detail }) : t("calls.eventAiRespondedSimple");
+    case "connected_ai": {
+      const translatedDetail = ev.detail
+        ? ev.detail.replace(/^Connected to /i, t("calls.connectedTo") + " ")
+        : undefined;
+      return translatedDetail ? t("calls.eventAiResponded", { detail: translatedDetail }) : t("calls.eventAiRespondedSimple");
+    }
     case "ended":
       return ev.detail ? t("calls.eventCallEnded", { detail: ev.detail }) : t("calls.eventCallEndedSimple");
     case "error":
