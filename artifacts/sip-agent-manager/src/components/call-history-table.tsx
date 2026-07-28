@@ -27,7 +27,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { PhoneCall, PhoneIncoming, PhoneOff, Activity, ChevronDown, ChevronRight, Trash2, Copy, Check } from "lucide-react";
+import { PhoneCall, PhoneIncoming, PhoneOutgoing, PhoneOff, Activity, ChevronDown, ChevronRight, Trash2, Copy, Check, ArrowDownLeft, ArrowUpRight } from "lucide-react";
 
 export interface CallEvent {
   extensionId: number;
@@ -77,10 +77,12 @@ const EVENT_ICONS: Record<CallEvent["event"], React.ReactNode> = {
   error:        <PhoneOff     className="h-3.5 w-3.5 text-red-500" />,
 };
 
-function eventLabel(ev: CallEvent): string {
+function eventLabel(ev: CallEvent, isOutbound: boolean, extLabel: string): string {
   switch (ev.event) {
     case "invite":
-      return ev.detail ? `Incoming call from ${ev.detail}` : "Incoming call";
+      return isOutbound
+        ? `Outgoing call from ${extLabel}`
+        : ev.detail ? `Incoming call from ${ev.detail}` : "Incoming call";
     case "answered":
       return "Answered";
     case "connected_ai":
@@ -110,12 +112,13 @@ interface CallRowProps {
   callId: string;
   legs: CallEvent[];
   extNumber?: string;
+  isOutbound?: boolean;
   isOpen: boolean;
   onToggle: () => void;
   onDelete?: (callId: string) => void;
 }
 
-function CallTableRow({ callId, legs, extNumber, isOpen, onToggle, onDelete }: CallRowProps) {
+function CallTableRow({ callId, legs, extNumber, isOutbound = false, isOpen, onToggle, onDelete }: CallRowProps) {
   const { formatDateTime, formatTime } = useTimezone();
   const hasEnded = legs.some(l => l.event === "ended");
   const hasAI    = legs.some(l => l.event === "connected_ai");
@@ -124,17 +127,14 @@ function CallTableRow({ callId, legs, extNumber, isOpen, onToggle, onDelete }: C
   const firstLeg = legs[0];
   const duration = callDuration(legs);
 
-  // Inbound: caller = phone number (invite.detail), called = extension
-  // Outbound: caller = extension, called = phone number
-  // We detect direction: if there is an invite event and a detail, it's inbound
-  const inviteLeg  = legs.find(l => l.event === "invite");
+  const inviteLeg   = legs.find(l => l.event === "invite");
   const phoneNumber = inviteLeg?.detail ?? null;
   const extLabel    = extNumber ? `Ext ${extNumber}` : "—";
 
-  // Inbound when we have an invite; outbound otherwise
-  const isInbound = !!inviteLeg;
-  const caller = isInbound ? (phoneNumber ?? "—") : extLabel;
-  const called = isInbound ? extLabel              : (phoneNumber ?? "—");
+  // Outbound: Ext called the phone number — show Ext as caller, phone number as called
+  // Inbound:  phone number called the Ext — show phone number as caller, Ext as called
+  const caller = isOutbound ? extLabel              : (phoneNumber ?? "—");
+  const called = isOutbound ? (phoneNumber ?? "—") : extLabel;
 
   const stateLabel = hasError ? "Error" : hasEnded ? "Ended" : hasAI ? "AI Active" : "Ringing";
   const stateColor = hasError
@@ -162,6 +162,20 @@ function CallTableRow({ callId, legs, extNumber, isOpen, onToggle, onDelete }: C
                 <span>{callId.slice(0, 8)}…</span>
                 <CopyButton value={callId} />
               </div>
+            </TableCell>
+            {/* Direction */}
+            <TableCell>
+              {isOutbound ? (
+                <span className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded px-1.5 py-0.5">
+                  <ArrowUpRight className="h-3 w-3" />
+                  Outbound
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 text-xs font-medium text-green-600 bg-green-50 border border-green-200 rounded px-1.5 py-0.5">
+                  <ArrowDownLeft className="h-3 w-3" />
+                  Inbound
+                </span>
+              )}
             </TableCell>
             {/* Caller */}
             <TableCell className="font-mono text-sm">{caller}</TableCell>
@@ -213,12 +227,12 @@ function CallTableRow({ callId, legs, extNumber, isOpen, onToggle, onDelete }: C
         {/* Accordion legs — newest first */}
         <CollapsibleContent asChild>
           <TableRow className="hover:bg-transparent">
-            <TableCell colSpan={5} className="p-0 border-t-0">
+            <TableCell colSpan={6} className="p-0 border-t-0">
               <div className="bg-muted/20 divide-y border-b">
                 {legsDesc.map((leg, i) => (
                   <div key={i} className="flex items-center gap-3 px-10 py-2.5">
                     <div className="shrink-0">{EVENT_ICONS[leg.event]}</div>
-                    <div className="flex-1 min-w-0 text-sm">{eventLabel(leg)}</div>
+                    <div className="flex-1 min-w-0 text-sm">{eventLabel(leg, isOutbound, extLabel)}</div>
                     <time className="text-xs text-muted-foreground shrink-0 tabular-nums">
                       {formatTime(leg.timestamp)}
                     </time>
@@ -239,6 +253,8 @@ interface CallHistoryTableProps {
   /** [callId, legs[]] entries, already sorted most-recent first */
   callGroups: [string, CallEvent[]][];
   extensions?: Extension[];
+  /** Set of callIds that were triggered as outbound calls */
+  outboundCallIds?: string[];
   /** Show at most this many rows (undefined = all) */
   limit?: number;
   /** If set, a centered "View all" link is rendered below the table */
@@ -251,6 +267,7 @@ interface CallHistoryTableProps {
 export function CallHistoryTable({
   callGroups,
   extensions,
+  outboundCallIds,
   limit,
   viewAllHref,
   emptyMessage = "No completed calls recorded yet.",
@@ -259,6 +276,7 @@ export function CallHistoryTable({
   const [openId, setOpenId] = React.useState<string | null>(null);
 
   const visible = limit ? callGroups.slice(0, limit) : callGroups;
+  const outboundSet = new Set(outboundCallIds ?? []);
 
   const toggle = (id: string) =>
     setOpenId(prev => (prev === id ? null : id));
@@ -278,6 +296,7 @@ export function CallHistoryTable({
         <TableHeader>
           <TableRow>
             <TableHead className="w-[220px]">Call ID</TableHead>
+            <TableHead>Direction</TableHead>
             <TableHead>Caller</TableHead>
             <TableHead>Called</TableHead>
             <TableHead>Date</TableHead>
@@ -293,6 +312,7 @@ export function CallHistoryTable({
                 callId={callId}
                 legs={legs}
                 extNumber={ext?.extensionNumber}
+                isOutbound={outboundSet.has(callId)}
                 isOpen={openId === callId}
                 onToggle={() => toggle(callId)}
                 onDelete={onDeleteCall}

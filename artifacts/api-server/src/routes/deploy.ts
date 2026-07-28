@@ -1,4 +1,6 @@
 import { Router } from "express";
+import { db, outboundCallsTable } from "@workspace/db";
+import { inArray } from "drizzle-orm";
 import {
   startExtension,
   stopExtension,
@@ -40,14 +42,20 @@ router.get("/deploy/call-events", async (_req, res) => {
   const activeCalls = new Set<string>();
   for (const e of chronological) {
     if (e.event === "invite") {
-      // Only track as active if the extension process is still alive
-      if (runningIds.has(e.extensionId)) {
-        activeCalls.add(`${e.extensionId}:${e.callId}`);
-      }
+      if (runningIds.has(e.extensionId)) activeCalls.add(`${e.extensionId}:${e.callId}`);
     }
-    if (e.event === "ended") {
-      activeCalls.delete(`${e.extensionId}:${e.callId}`);
-    }
+    if (e.event === "ended") activeCalls.delete(`${e.extensionId}:${e.callId}`);
+  }
+
+  // Determine which callIds are outbound (triggered via our dial-out API)
+  const uniqueCallIds = [...new Set(events.map(e => e.callId))];
+  let outboundCallIds: string[] = [];
+  if (uniqueCallIds.length > 0) {
+    const rows = await db
+      .select({ callId: outboundCallsTable.callId })
+      .from(outboundCallsTable)
+      .where(inArray(outboundCallsTable.callId, uniqueCallIds));
+    outboundCallIds = rows.map(r => r.callId).filter(Boolean) as string[];
   }
 
   // Return events sorted newest-first for display
@@ -55,7 +63,7 @@ router.get("/deploy/call-events", async (_req, res) => {
     (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
   );
 
-  res.json({ events: sorted.slice(0, 100), activeCallCount: activeCalls.size });
+  res.json({ events: sorted.slice(0, 100), activeCallCount: activeCalls.size, outboundCallIds });
 });
 
 // DELETE /api/deploy/call-events — clear all call history
