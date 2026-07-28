@@ -10,7 +10,7 @@
 import { Router } from "express";
 import { eq, desc } from "drizzle-orm";
 import { z } from "zod/v4";
-import { db, outboundCallsTable, extensionsTable, deploymentsTable } from "@workspace/db";
+import { db, outboundCallsTable, extensionsTable, deploymentsTable, type Client, type AgentConfig } from "@workspace/db";
 import { logger } from "../lib/logger.js";
 import { setPendingContext, consumePendingContext } from "../services/outboundContext.js";
 import { executeTool } from "../services/toolExecutor.js";
@@ -34,10 +34,10 @@ const triggerSchema = z.object({
   extensionId: z.number().int().positive(),
   phoneNumber: z.string().min(1),
   callerId: z.string().nullable().optional(),
-  variables: z.record(z.unknown()).nullable().optional(),
+  variables: z.record(z.string(), z.unknown()).nullable().optional(),
   firstMessage: z.string().nullable().optional(),
   systemPromptOverride: z.string().nullable().optional(),
-  metadata: z.record(z.unknown()).nullable().optional(),
+  metadata: z.record(z.string(), z.unknown()).nullable().optional(),
   webhookUrl: z.string().url().nullable().optional(),
 });
 
@@ -226,7 +226,7 @@ const toolExecuteSchema = z.object({
   extensionId: z.number().int().positive(),
   callId: z.string().optional(),
   toolName: z.string().min(1),
-  arguments: z.record(z.unknown()).default({}),
+  arguments: z.record(z.string(), z.unknown()).default({}),
 });
 
 router.post("/tools/execute", async (req, res) => {
@@ -249,9 +249,13 @@ router.post("/tools/execute", async (req, res) => {
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 interface YeastarCallParams {
-  ext: Awaited<ReturnType<typeof db.query.extensionsTable.findFirst>> & {
-    agentConfig: NonNullable<unknown>;
-    client: NonNullable<unknown> | null;
+  ext: {
+    id: number;
+    extensionNumber: string;
+    clientId: number | null;
+    agentConfigId: number | null;
+    client: Client | null;
+    agentConfig: AgentConfig | null;
   };
   phoneNumber: string;
   callerId?: string;
@@ -289,7 +293,7 @@ async function tryYeastarMakeCall(params: YeastarCallParams): Promise<{ error?: 
   // On TOKEN EXPIRED (10004) we evict the cache and retry once with a fresh token.
   const attemptDial = async (retrying = false): Promise<{ error?: string }> => {
     const accessToken = await getYeastarToken(yeastarClient);
-    const url = `${client.yeastarApiUrl.replace(/\/$/, "")}/openapi/v1.0/call/dial?access_token=${encodeURIComponent(accessToken)}`;
+    const url = `${yeastarClient.yeastarApiUrl.replace(/\/$/, "")}/openapi/v1.0/call/dial?access_token=${encodeURIComponent(accessToken)}`;
 
     logger.info({ extensionId: params.ext.id, url: url.split("?")[0], caller: ext.extensionNumber, callee: params.phoneNumber }, "Yeastar: calling dial");
 
