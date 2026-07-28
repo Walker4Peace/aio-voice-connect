@@ -110,8 +110,30 @@ async function fetchNewToken(
 
   // Yeastar returns HTTP 200 even on failure — success = errcode 0
   if (data.errcode !== 0 || !data.access_token) {
+    const errcode = data.errcode ?? "?";
+    const errmsg = data.errmsg ?? res.text;
+
+    // Provide actionable messages for known Yeastar error codes
+    if (data.errcode === 70087) {
+      throw new Error(
+        `IP FORBIDDEN (errcode 70087): The server's IP address is not whitelisted in Yeastar. ` +
+        `Go to Yeastar PBX → Integrations → API → Application and add this server's IP to the allowed list. ` +
+        `Note: cloud FQDNs (*.ras.yeastar.com) do not use port 8088 — use the URL without a port number.`,
+      );
+    }
+    if (data.errcode === 1) {
+      throw new Error(
+        `Invalid credentials (errcode 1): Check the Client ID and Client Secret in the Yeastar PBX API settings.`,
+      );
+    }
+    if (data.errcode === 10001) {
+      throw new Error(
+        `Access token expired (errcode 10001). The token will be refreshed automatically on the next call.`,
+      );
+    }
+
     throw new Error(
-      `Yeastar authentication failed (HTTP ${res.status}): errcode=${data.errcode ?? "?"} errmsg="${data.errmsg ?? res.text}"`,
+      `Yeastar authentication failed (HTTP ${res.status}): errcode=${errcode} errmsg="${errmsg}"`,
     );
   }
 
