@@ -1,14 +1,10 @@
 /**
  * Yeastar P-Series PBX OAuth token manager.
  *
- * Yeastar uses short-lived OAuth 2.0 access tokens (default: 30 min) with
- * a refresh token.  Tokens are cached in memory keyed by client DB id and
- * refreshed automatically before expiry.  On server restart the cache is
- * empty and we re-authenticate lazily on the first request.
- *
- * TLS note: Yeastar PBXes on local networks commonly use self-signed
- * certificates.  All requests to the PBX use Node's `https` module with
- * `rejectUnauthorized: false` so they work without importing the PBX's CA.
+ * Yeastar uses short-lived access tokens (default: 30 min) with a refresh token.
+ * Authentication: POST /openapi/v1.0/get_token with { username: clientId, password: clientSecret }
+ * Yeastar always returns HTTP 200 — success is determined by errcode === 0 in the body.
+ * A User-Agent header is required by the Yeastar API.
  */
 
 import http from "node:http";
@@ -16,12 +12,6 @@ import https from "node:https";
 import { URL } from "node:url";
 import { logger } from "../lib/logger.js";
 
-// ── Low-level helper ──────────────────────────────────────────────────────────
-
-/**
- * POST JSON to a Yeastar PBX endpoint.
- * Works for both HTTP and HTTPS; always skips TLS certificate verification.
- */
 export async function yeastarPost(
   url: string,
   body: unknown,
@@ -43,19 +33,20 @@ export async function yeastarPost(
         headers: {
           "Content-Type": "application/json",
           "Content-Length": bodyBuf.byteLength,
+          "User-Agent": "SipAgent/1.0",
           ...headers,
         },
-        rejectUnauthorized: false, // Yeastar local PBXes use self-signed certs
+        rejectUnauthorized: false,
       },
       (res) => {
         const chunks: Buffer[] = [];
         res.on("data", (c: Buffer) => chunks.push(c));
         res.on("end", () => {
           const text = Buffer.concat(chunks).toString("utf8");
-          const ok = (res.statusCode ?? 0) >= 200 && (res.statusCode ?? 0) < 300;
+          // Yeastar always returns HTTP 200 — treat as ok regardless of status
           resolve({
-            ok,
-            status: res.statusCode ?? 0,
+            ok: true,
+            status: res.statusCode ?? 200,
             text,
             json<T>() { return JSON.parse(text) as T; },
           });
@@ -69,46 +60,40 @@ export async function yeastarPost(
   });
 }
 
-// ── Token cache ───────────────────────────────────────────────────────────────
-
 interface TokenEntry {
   accessToken: string;
   refreshToken: string;
   expiresAt: Date;
 }
 
-// Keyed by client DB id; cleared on server restart (re-auths lazily).
 const tokenCache = new Map<number, TokenEntry>();
 
 interface YeastarTokenResponse {
   access_token?: string;
   refresh_token?: string;
-  expires_in?: number;
-  token_type?: string;
+  access_token_expire_time?: number;
+  refresh_token_expire_time?: number;
   errcode?: number;
   errmsg?: string;
 }
 
 function buildEntry(data: YeastarTokenResponse): TokenEntry {
-  // Expire 60 s early to avoid clock-skew races
-  const expiresAt = new Date(Date.now() + ((data.expires_in ?? 1800) - 60) * 1000);
+  const expiresAt = new Date(Date.now() + ((data.access_token_expire_time ?? 1800) - 60) * 1000);
   return { accessToken: data.access_token!, refreshToken: data.refresh_token!, expiresAt };
 }
-
-// ── Token fetch / refresh ─────────────────────────────────────────────────────
 
 async function fetchNewToken(
   pbxUrl: string,
   clientId: string,
   clientSecret: string,
 ): Promise<TokenEntry> {
-  // Yeastar P-Series OpenAPI v1.0: username = Client ID, password = Client Secret (raw)
   const url = `${pbxUrl.replace(/\/$/, "")}/openapi/v1.0/get_token`;
   const body = { username: clientId, password: clientSecret };
+
   logger.info(
     {
       url,
-      requestFields: Object.keys(body),        // log field names only, never the secret
+      requestFields: Object.keys(body),
       clientIdLength: clientId.length,
       clientSecretLength: clientSecret.length,
     },
@@ -123,7 +108,8 @@ async function fetchNewToken(
     "Yeastar: get_token response",
   );
 
-  if (!res.ok || data.errcode !== 0 || !data.access_token) {
+  // Yeastar returns HTTP 200 even on failure — success = errcode 0
+  if (data.errcode !== 0 || !data.access_token) {
     throw new Error(
       `Yeastar authentication failed (HTTP ${res.status}): errcode=${data.errcode ?? "?"} errmsg="${data.errmsg ?? res.text}"`,
     );
@@ -144,7 +130,7 @@ async function doRefreshToken(pbxUrl: string, entry: TokenEntry): Promise<TokenE
     "Yeastar: refresh_token response",
   );
 
-  if (!res.ok || data.errcode !== 0 || !data.access_token) {
+  if (data.errcode !== 0 || !data.access_token) {
     throw new Error(
       `Yeastar token refresh failed (HTTP ${res.status}): ${data.errmsg ?? res.text}`,
     );
@@ -156,8 +142,6 @@ async function doRefreshToken(pbxUrl: string, entry: TokenEntry): Promise<TokenE
   });
 }
 
-// ── Public API ────────────────────────────────────────────────────────────────
-
 export interface YeastarClient {
   id: number;
   yeastarApiUrl?: string | null;
@@ -165,17 +149,12 @@ export interface YeastarClient {
   yeastarClientSecret?: string | null;
 }
 
-/**
- * Return a valid access token for the given IPBX client.
- * Uses the cache if the token is still alive, refreshes if expired,
- * and falls back to full re-authentication if the refresh fails.
- */
 export async function getYeastarToken(client: YeastarClient): Promise<string> {
   const { id, yeastarApiUrl, yeastarClientId, yeastarClientSecret } = client;
 
   if (!yeastarApiUrl || !yeastarClientId || !yeastarClientSecret) {
     throw new Error(
-      "Yeastar API not fully configured on this IPBX (requires PBX URL, Client ID, and Client Secret)",
+      "Yeastar API not fully configured (requires PBX URL, Client ID, and Client Secret)",
     );
   }
 
@@ -184,7 +163,6 @@ export async function getYeastarToken(client: YeastarClient): Promise<string> {
     return cached.accessToken;
   }
 
-  // Try refresh first
   if (cached?.refreshToken) {
     try {
       const refreshed = await doRefreshToken(yeastarApiUrl, cached);
@@ -200,10 +178,6 @@ export async function getYeastarToken(client: YeastarClient): Promise<string> {
   return entry.accessToken;
 }
 
-/**
- * Test a Yeastar connection with explicit credentials (for the "Test Connection" button).
- * Does NOT update the token cache.
- */
 export async function testYeastarConnection(
   pbxUrl: string,
   clientId: string,
@@ -218,10 +192,6 @@ export async function testYeastarConnection(
   }
 }
 
-/**
- * Evict the cached token for a client.
- * Call this when credentials change so the next request forces a fresh auth.
- */
 export function evictYeastarToken(clientDbId: number): void {
   tokenCache.delete(clientDbId);
 }
