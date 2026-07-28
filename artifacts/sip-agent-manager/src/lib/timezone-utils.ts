@@ -166,19 +166,20 @@ export function formatInTimezone(
   date: string | Date,
   tz: string,
   options: Intl.DateTimeFormatOptions = {
-    month: "short",
-    day: "numeric",
+    day: "2-digit",
+    month: "2-digit",
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
+    hour12: false,
   },
 ): string {
   try {
-    return new Intl.DateTimeFormat("en-US", {
+    return new Intl.DateTimeFormat("en-GB", {
       ...options,
       timeZone: tz,
     }).format(new Date(date));
   } catch {
-    return new Intl.DateTimeFormat("en-US", options).format(new Date(date));
+    return new Intl.DateTimeFormat("en-GB", options).format(new Date(date));
   }
 }

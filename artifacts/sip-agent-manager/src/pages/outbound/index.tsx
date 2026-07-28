@@ -21,8 +21,8 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Phone, PhoneOutgoing, RefreshCw, Info, Trash2 } from "lucide-react";
-import { formatDate } from "@/lib/utils";
+import { PhoneOutgoing, RefreshCw, Info, Trash2 } from "lucide-react";
+import { useTimezone } from "@/contexts/timezone-context";
 
 const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, "") + "/api";
 
@@ -122,6 +122,7 @@ interface TriggerDialogProps {
 }
 
 function TriggerDialog({ open, onOpenChange, extensions, onSuccess }: TriggerDialogProps) {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [extensionId, setExtensionId] = React.useState("");
@@ -150,7 +151,7 @@ function TriggerDialog({ open, onOpenChange, extensions, onSuccess }: TriggerDia
         parsedVars = JSON.parse(variables) as Record<string, unknown>;
         setVariablesError("");
       } catch {
-        setVariablesError("Variables must be valid JSON");
+        setVariablesError(t("outbound.variablesError"));
         return;
       }
     }
@@ -170,11 +171,14 @@ function TriggerDialog({ open, onOpenChange, extensions, onSuccess }: TriggerDia
       if (result.status === "failed") {
         toast({
           variant: "destructive",
-          title: "Call failed to dial",
-          description: result.error ?? "Yeastar API did not accept the dial request.",
+          title: t("outbound.callFailed"),
+          description: result.error ?? t("outbound.callFailed"),
         });
       } else {
-        toast({ title: "Call triggered", description: `Outbound call to ${phoneNumber} initiated (${result.status}).` });
+        toast({
+          title: t("outbound.callTriggered"),
+          description: t("outbound.callTriggeredDesc", { phone: phoneNumber, status: result.status }),
+        });
       }
 
       void queryClient.invalidateQueries({ queryKey: ["outbound-calls"] });
@@ -182,7 +186,7 @@ function TriggerDialog({ open, onOpenChange, extensions, onSuccess }: TriggerDia
       onOpenChange(false);
       reset();
     } catch (err) {
-      toast({ variant: "destructive", title: "Error", description: (err as Error).message });
+      toast({ variant: "destructive", title: t("common.error"), description: (err as Error).message });
     } finally {
       setSubmitting(false);
     }
@@ -194,20 +198,20 @@ function TriggerDialog({ open, onOpenChange, extensions, onSuccess }: TriggerDia
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <PhoneOutgoing className="h-5 w-5" />
-            Trigger Outbound Call
+            {t("outbound.dialogTitle")}
           </DialogTitle>
           <DialogDescription>
-            The selected extension must be running. Yeastar will ring it and the AI agent will dial out.
+            {t("outbound.dialogDesc")}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 mt-2">
           {/* Extension */}
           <div className="space-y-1">
-            <Label htmlFor="ext">Extension <span className="text-destructive">*</span></Label>
+            <Label htmlFor="ext">{t("outbound.extension")} <span className="text-destructive">*</span></Label>
             <Select value={extensionId} onValueChange={setExtensionId}>
               <SelectTrigger id="ext">
-                <SelectValue placeholder="Select extension" />
+                <SelectValue placeholder={t("outbound.selectExtension")} />
               </SelectTrigger>
               <SelectContent>
                 {extensions.map(e => (
@@ -222,7 +226,7 @@ function TriggerDialog({ open, onOpenChange, extensions, onSuccess }: TriggerDia
 
           {/* Phone number */}
           <div className="space-y-1">
-            <Label htmlFor="phone">Phone Number <span className="text-destructive">*</span></Label>
+            <Label htmlFor="phone">{t("outbound.phoneNumber")} <span className="text-destructive">*</span></Label>
             <Input
               id="phone"
               placeholder="+1234567890"
@@ -234,7 +238,7 @@ function TriggerDialog({ open, onOpenChange, extensions, onSuccess }: TriggerDia
 
           {/* Caller ID */}
           <div className="space-y-1">
-            <Label htmlFor="cid">Caller ID <span className="text-muted-foreground text-xs">(optional)</span></Label>
+            <Label htmlFor="cid">{t("outbound.callerId")} <span className="text-muted-foreground text-xs">({t("outbound.optional")})</span></Label>
             <Input
               id="cid"
               placeholder="+10000000000"
@@ -245,22 +249,22 @@ function TriggerDialog({ open, onOpenChange, extensions, onSuccess }: TriggerDia
 
           {/* First message */}
           <div className="space-y-1">
-            <Label htmlFor="fm">First Message Override <span className="text-muted-foreground text-xs">(optional)</span></Label>
+            <Label htmlFor="fm">{t("outbound.firstMessage")} <span className="text-muted-foreground text-xs">({t("outbound.optional")})</span></Label>
             <Input
               id="fm"
-              placeholder="Hello! I'm calling about…"
+              placeholder={t("outbound.firstMessagePlaceholder")}
               value={firstMessage}
               onChange={e => setFirstMessage(e.target.value)}
             />
-            <p className="text-xs text-muted-foreground">Overrides the agent's default greeting for this call only.</p>
+            <p className="text-xs text-muted-foreground">{t("outbound.firstMessageHint")}</p>
           </div>
 
           {/* System prompt override */}
           <div className="space-y-1">
-            <Label htmlFor="sp">System Prompt Override <span className="text-muted-foreground text-xs">(optional)</span></Label>
+            <Label htmlFor="sp">{t("outbound.systemPrompt")} <span className="text-muted-foreground text-xs">({t("outbound.optional")})</span></Label>
             <Textarea
               id="sp"
-              placeholder="You are calling to follow up on…"
+              placeholder={t("outbound.systemPromptPlaceholder")}
               className="min-h-[80px] text-sm"
               value={systemPromptOverride}
               onChange={e => setSystemPromptOverride(e.target.value)}
@@ -269,7 +273,7 @@ function TriggerDialog({ open, onOpenChange, extensions, onSuccess }: TriggerDia
 
           {/* Variables */}
           <div className="space-y-1">
-            <Label htmlFor="vars">Variables <span className="text-muted-foreground text-xs">(optional JSON)</span></Label>
+            <Label htmlFor="vars">{t("outbound.variables")} <span className="text-muted-foreground text-xs">({t("outbound.optionalJson")})</span></Label>
             <Textarea
               id="vars"
               placeholder='{"customer_name": "John", "account_id": "123"}'
@@ -282,7 +286,7 @@ function TriggerDialog({ open, onOpenChange, extensions, onSuccess }: TriggerDia
 
           {/* Webhook URL */}
           <div className="space-y-1">
-            <Label htmlFor="wh">Webhook URL <span className="text-muted-foreground text-xs">(optional)</span></Label>
+            <Label htmlFor="wh">{t("outbound.webhookUrl")} <span className="text-muted-foreground text-xs">({t("outbound.optional")})</span></Label>
             <Input
               id="wh"
               type="url"
@@ -290,13 +294,13 @@ function TriggerDialog({ open, onOpenChange, extensions, onSuccess }: TriggerDia
               value={webhookUrl}
               onChange={e => setWebhookUrl(e.target.value)}
             />
-            <p className="text-xs text-muted-foreground">We'll POST the call result to this URL when the call ends.</p>
+            <p className="text-xs text-muted-foreground">{t("outbound.webhookHint")}</p>
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>{t("common.cancel")}</Button>
             <Button type="submit" disabled={submitting || !extensionId || !phoneNumber}>
-              {submitting ? "Triggering…" : "Trigger Call"}
+              {submitting ? t("outbound.triggering") : t("outbound.triggerCall")}
             </Button>
           </DialogFooter>
         </form>
@@ -315,23 +319,24 @@ interface DeleteConfirmProps {
 }
 
 function DeleteConfirm({ callId, onCancel, onConfirm, isDeleting }: DeleteConfirmProps) {
+  const { t } = useTranslation();
   return (
     <AlertDialog open={callId !== null}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete this record?</AlertDialogTitle>
+          <AlertDialogTitle>{t("outbound.deleteTitle")}</AlertDialogTitle>
           <AlertDialogDescription>
-            This will permanently remove the outbound call record. This action cannot be undone.
+            {t("outbound.deleteDesc")}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={onCancel} disabled={isDeleting}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel onClick={onCancel} disabled={isDeleting}>{t("common.cancel")}</AlertDialogCancel>
           <AlertDialogAction
             onClick={() => callId !== null && onConfirm(callId)}
             disabled={isDeleting}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
-            {isDeleting ? "Deleting…" : "Delete"}
+            {isDeleting ? t("outbound.deleting") : t("common.delete")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
@@ -342,7 +347,9 @@ function DeleteConfirm({ callId, onCancel, onConfirm, isDeleting }: DeleteConfir
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function OutboundPage() {
+  const { t } = useTranslation();
   const { toast } = useToast();
+  const { formatDateTime } = useTimezone();
   const queryClient = useQueryClient();
   const [triggerOpen, setTriggerOpen] = React.useState(false);
   const [deleteTargetId, setDeleteTargetId] = React.useState<number | null>(null);
@@ -361,12 +368,12 @@ export default function OutboundPage() {
   const deleteMutation = useMutation({
     mutationFn: deleteOutboundCall,
     onSuccess: () => {
-      toast({ title: "Record deleted" });
+      toast({ title: t("outbound.recordDeleted") });
       setDeleteTargetId(null);
       void queryClient.invalidateQueries({ queryKey: ["outbound-calls"] });
     },
     onError: (err: Error) => {
-      toast({ variant: "destructive", title: "Delete failed", description: err.message });
+      toast({ variant: "destructive", title: t("outbound.deleteFailed"), description: err.message });
       setDeleteTargetId(null);
     },
   });
@@ -380,19 +387,19 @@ export default function OutboundPage() {
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Outbound Calls</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{t("outbound.title")}</h1>
           <p className="text-muted-foreground mt-1 text-sm">
-            Trigger and monitor outbound AI calls. External applications can use the API to start calls programmatically.
+            {t("outbound.description")}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => void refetch()}>
             <RefreshCw className="h-4 w-4 mr-1" />
-            Refresh
+            {t("outbound.refresh")}
           </Button>
           <Button size="sm" onClick={() => setTriggerOpen(true)}>
             <PhoneOutgoing className="h-4 w-4 mr-1" />
-            Trigger Call
+            {t("outbound.triggerCall")}
           </Button>
         </div>
       </div>
@@ -403,9 +410,11 @@ export default function OutboundPage() {
           <div className="flex gap-3">
             <Info className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" />
             <div className="space-y-1.5 text-sm">
-              <p className="font-medium text-blue-900 dark:text-blue-100">External API Integration</p>
+              <p className="font-medium text-blue-900 dark:text-blue-100">{t("outbound.apiTitle")}</p>
               <p className="text-blue-700 dark:text-blue-300">
-                Trigger calls from any application with a single HTTP request. The extension must be running and linked to an IPBX with Yeastar API configured. Set <code className="bg-blue-100 dark:bg-blue-900 rounded px-1 py-0.5 text-xs">OUTBOUND_API_KEY</code> in your environment to secure the endpoint.
+                {t("outbound.apiDescPre")}{" "}
+                <code className="bg-blue-100 dark:bg-blue-900 rounded px-1 py-0.5 text-xs">OUTBOUND_API_KEY</code>{" "}
+                {t("outbound.apiDescPost")}
               </p>
               <div className="mt-2 bg-blue-100 dark:bg-blue-900/50 rounded p-2 font-mono text-xs text-blue-800 dark:text-blue-200 break-all">
                 POST /api/outbound/call<br />
@@ -420,24 +429,24 @@ export default function OutboundPage() {
       {/* Calls table */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Call History</CardTitle>
+          <CardTitle className="text-base">{t("outbound.callHistory")}</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           {isLoading ? (
-            <div className="p-8 text-center text-muted-foreground text-sm">Loading…</div>
+            <div className="p-8 text-center text-muted-foreground text-sm">{t("outbound.loading")}</div>
           ) : calls.length === 0 ? (
             <div className="p-8 text-center text-muted-foreground text-sm">
-              No outbound calls yet. Trigger one above or via the API.
+              {t("outbound.noCalls")}
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Phone Number</TableHead>
-                  <TableHead>Extension</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>First Message</TableHead>
-                  <TableHead className="text-right">Initiated</TableHead>
+                  <TableHead>{t("outbound.thPhone")}</TableHead>
+                  <TableHead>{t("outbound.thExtension")}</TableHead>
+                  <TableHead>{t("outbound.thStatus")}</TableHead>
+                  <TableHead>{t("outbound.thFirstMessage")}</TableHead>
+                  <TableHead className="text-right">{t("outbound.thInitiated")}</TableHead>
                   <TableHead className="w-10"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -466,7 +475,7 @@ export default function OutboundPage() {
                         </span>
                       </TableCell>
                       <TableCell className="text-right text-sm text-muted-foreground">
-                        {formatDate(call.createdAt)}
+                        {formatDateTime(call.createdAt)}
                       </TableCell>
                       <TableCell>
                         <Button
@@ -474,7 +483,7 @@ export default function OutboundPage() {
                           size="icon"
                           className="h-7 w-7 text-muted-foreground hover:text-destructive"
                           onClick={() => setDeleteTargetId(call.id)}
-                          title="Delete record"
+                          title={t("outbound.deleteRecord")}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>

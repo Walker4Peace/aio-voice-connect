@@ -21,11 +21,12 @@ export function TimezoneProvider({ children }: { children: React.ReactNode }) {
   const formatDateTime = useCallback(
     (date: string | Date) =>
       formatInTimezone(date, timezone, {
-        month: "short",
-        day: "numeric",
+        day: "2-digit",
+        month: "2-digit",
         year: "numeric",
         hour: "2-digit",
         minute: "2-digit",
+        hour12: false,
       }),
     [timezone],
   );
@@ -33,8 +34,8 @@ export function TimezoneProvider({ children }: { children: React.ReactNode }) {
   const formatDate = useCallback(
     (date: string | Date) =>
       formatInTimezone(date, timezone, {
-        month: "short",
-        day: "numeric",
+        day: "2-digit",
+        month: "2-digit",
         year: "numeric",
       }),
     [timezone],
@@ -46,6 +47,7 @@ export function TimezoneProvider({ children }: { children: React.ReactNode }) {
         hour: "2-digit",
         minute: "2-digit",
         second: "2-digit",
+        hour12: false,
       }),
     [timezone],
   );
