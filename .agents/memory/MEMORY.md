@@ -1,1 +1,2 @@
 - [Artifact build environment](build-environment.md) — Vite builds need the managed artifact PORT and BASE_PATH values during standalone verification.
+- [Yeastar P-Series OpenAPI quirks](yeastar-api-quirks.md) — auth body format, required User-Agent header, query-param token passing, correct dial endpoint.
