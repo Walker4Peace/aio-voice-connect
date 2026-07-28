@@ -198,10 +198,6 @@ export default function Dashboard() {
           <h1 className="text-3xl font-bold tracking-tight">{t("dashboard.title")}</h1>
           <p className="text-muted-foreground mt-1 text-sm">Monitor your IPBX systems, AI agents and voice activity.</p>
         </div>
-        <span className="inline-flex items-center gap-1.5 text-sm font-medium text-green-700 border border-green-200 bg-green-50 rounded-full px-3 py-1 shrink-0 mt-1">
-          <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-          System Healthy
-        </span>
       </div>
 
       {/* Stat cards */}
