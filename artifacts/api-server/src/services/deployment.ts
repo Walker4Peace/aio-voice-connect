@@ -397,6 +397,7 @@ async function buildConfig(
   ext: Awaited<ReturnType<typeof getExtWithRelations>>,
   extensionId: number,
   ports: { sipLocalPort: number; httpPort: number },
+  overrides?: { firstMessage?: string | null; systemPromptOverride?: string | null },
 ) {
   if (!ext?.agentConfig) return null;
   const cfg = ext.agentConfig;
@@ -446,46 +447,59 @@ async function buildConfig(
   };
   // API keys are NOT embedded in config.json — passed via environment variables only.
   switch (cfg.provider as AiProviderKey) {
-    case "openai":
+    case "openai": {
+      const firstMsg = overrides?.firstMessage ?? cfg.greeting;
+      const sysPrompt = overrides?.systemPromptOverride ?? cfg.systemPrompt;
       base["openai"] = {
         model: cfg.modelId ?? "gpt-4o-realtime-preview",
         voice: cfg.voiceId ?? "alloy",
-        ...(cfg.systemPrompt ? { instructions: cfg.systemPrompt } : {}),
-        ...(cfg.greeting ? { greeting: cfg.greeting } : {}),
+        ...(sysPrompt ? { instructions: sysPrompt } : {}),
+        ...(firstMsg ? { greeting: firstMsg } : {}),
       };
       break;
-    case "elevenlabs":
+    }
+    case "elevenlabs": {
+      const firstMsg = overrides?.firstMessage ?? cfg.greeting;
+      const sysPrompt = overrides?.systemPromptOverride ?? cfg.systemPrompt;
       base["elevenlabs"] = {
         agent_id: cfg.modelId ?? "",
-        ...(cfg.greeting ? { first_message: cfg.greeting } : {}),
-        ...(cfg.systemPrompt ? { system_prompt: cfg.systemPrompt } : {}),
+        ...(firstMsg ? { first_message: firstMsg } : {}),
+        ...(sysPrompt ? { system_prompt: sysPrompt } : {}),
       };
       break;
-    case "gemini":
+    }
+    case "gemini": {
+      const firstMsg = overrides?.firstMessage ?? cfg.greeting;
+      const sysPrompt = overrides?.systemPromptOverride ?? cfg.systemPrompt;
       base["gemini"] = {
         model: cfg.modelId ?? "gemini-2.0-flash-live-001",
         voice: cfg.voiceId ?? "Puck",
         ...(cfg.language ? { language: cfg.language } : {}),
-        ...(cfg.systemPrompt ? { system_prompt: cfg.systemPrompt } : {}),
-        ...(cfg.greeting ? { greeting: cfg.greeting } : {}),
+        ...(sysPrompt ? { system_prompt: sysPrompt } : {}),
+        ...(firstMsg ? { greeting: firstMsg } : {}),
       };
       break;
-    case "deepgram":
+    }
+    case "deepgram": {
+      const sysPrompt = overrides?.systemPromptOverride ?? cfg.systemPrompt;
       base["deepgram"] = {
         model: cfg.modelId ?? "aura-2-thalia-en",
         ...(cfg.voiceId ? { listen_model: cfg.voiceId } : {}),
-        ...(cfg.systemPrompt ? { system_prompt: cfg.systemPrompt } : {}),
+        ...(sysPrompt ? { system_prompt: sysPrompt } : {}),
         ...(cfg.language ? { language: cfg.language } : {}),
       };
       break;
-    case "cartesia":
+    }
+    case "cartesia": {
+      const sysPrompt = overrides?.systemPromptOverride ?? cfg.systemPrompt;
       base["cartesia"] = {
         voice_id: cfg.voiceId ?? "",
         model: cfg.modelId ?? "sonic-2",
         ...(cfg.language ? { language: cfg.language } : {}),
-        ...(cfg.systemPrompt ? { system_prompt: cfg.systemPrompt } : {}),
+        ...(sysPrompt ? { system_prompt: sysPrompt } : {}),
       };
       break;
+    }
   }
   if (cfg.extraConfig) {
     try { Object.assign(base, JSON.parse(cfg.extraConfig)); } catch { /* ignore */ }
@@ -541,6 +555,14 @@ function finalizeOutboundCall(
         )
         .returning();
 
+      // Restore the base config so the extension is ready for inbound calls again.
+      // Do this after DB update so we only restore when there really was an active call.
+      if (call) {
+        clearOutboundConfigOverride(extensionId).catch(err =>
+          logger.error({ err, extensionId }, "Failed to restore base config after outbound call"),
+        );
+      }
+
       if (call?.webhookUrl) {
         const payload = {
           callId: call.id,
@@ -576,6 +598,76 @@ function finalizeOutboundCall(
       logger.error({ err, extensionId }, "finalizeOutboundCall error");
     }
   })();
+}
+
+/**
+ * Rewrite config.json for a running extension with outbound-call overrides
+ * (firstMessage, systemPromptOverride) baked in.  Called just before triggering
+ * a Yeastar dial so the binary picks up the correct persona on the first INVITE.
+ *
+ * The binary re-reads config.json on every INVITE (confirmed by DEBUG: appConfig=true
+ * appearing once per ElevenLabs connection in the logs), so writing the file before
+ * the dial is sufficient — no process restart needed.
+ */
+export async function applyOutboundConfigOverride(
+  extensionId: number,
+  overrides: { firstMessage?: string | null; systemPromptOverride?: string | null },
+): Promise<void> {
+  const deployment = await db.query.deploymentsTable.findFirst({
+    where: eq(deploymentsTable.extensionId, extensionId),
+  });
+  if (!deployment?.sipLocalPort || !deployment?.httpPort) {
+    logger.warn({ extensionId }, "applyOutboundConfigOverride: no port info in DB, skipping");
+    return;
+  }
+  const ext = await getExtWithRelations(extensionId);
+  if (!ext) return;
+
+  const configDir = path.join(CONFIG_DIR, String(extensionId));
+  const configPath = path.join(configDir, "config.json");
+  const config = await buildConfig(
+    ext,
+    extensionId,
+    { sipLocalPort: deployment.sipLocalPort, httpPort: deployment.httpPort },
+    overrides,
+  );
+  if (!config) return;
+
+  await fs.writeFile(configPath, JSON.stringify(config, null, 2));
+  logger.info(
+    {
+      extensionId,
+      hasFirstMessage: !!(overrides.firstMessage),
+      hasSystemPrompt: !!(overrides.systemPromptOverride),
+      firstMessagePreview: overrides.firstMessage ? overrides.firstMessage.slice(0, 60) : null,
+    },
+    "Outbound config override written to disk — binary will use these values on next INVITE",
+  );
+}
+
+/**
+ * Restore config.json to the base (inbound) values after an outbound call ends.
+ * Called from finalizeOutboundCall so the extension is ready for inbound calls again.
+ */
+export async function clearOutboundConfigOverride(extensionId: number): Promise<void> {
+  const deployment = await db.query.deploymentsTable.findFirst({
+    where: eq(deploymentsTable.extensionId, extensionId),
+  });
+  if (!deployment?.sipLocalPort || !deployment?.httpPort) return;
+
+  const ext = await getExtWithRelations(extensionId);
+  if (!ext) return;
+
+  const configDir = path.join(CONFIG_DIR, String(extensionId));
+  const configPath = path.join(configDir, "config.json");
+  const config = await buildConfig(ext, extensionId, {
+    sipLocalPort: deployment.sipLocalPort,
+    httpPort: deployment.httpPort,
+  });
+  if (!config) return;
+
+  await fs.writeFile(configPath, JSON.stringify(config, null, 2));
+  logger.info({ extensionId }, "Outbound config override cleared — base config restored");
 }
 
 function serviceNameFor(ext: NonNullable<Awaited<ReturnType<typeof getExtWithRelations>>>): string {

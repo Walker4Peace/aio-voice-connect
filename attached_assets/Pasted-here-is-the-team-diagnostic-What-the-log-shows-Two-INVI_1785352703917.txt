@@ -1,0 +1,32 @@
+here is the team diagnostic
+
+What the log shows
+
+Two INVITEs, same Call-ID, 352ms apart:
+
+17:49:54.565 — INVITE received: e4ab7f1b... → RTP port 44123, Contact: +212661209845 17:49:54.917 — INVITE received: e4ab7f1b... → RTP port 41446, Contact: unknown
+
+Both are processed identically — no branching, no re-INVITE detection.
+
+Answers to your 4 questions
+
+Why is the same INVITE processed twice? The binary's INVITE handler fires on every incoming INVITE unconditionally. It does not check whether a call session already exists for that Call-ID before starting a new one. Both INVITEs go through the exact same code path: create RTP listener → route to ElevenLabs → register bridge.
+
+Is the second a re-INVITE? Yes. In SIP, a re-INVITE reuses the same Call-ID to update an existing dialog (typically to renegotiate media when the remote leg connects). The evidence: same Call-ID, 352ms gap, second Contact shows unknown (Yeastar's placeholder during bridge setup). The binary should detect this and update the existing bridge's RTP parameters — it doesn't.
+
+Is there a guard preventing duplicate bridges? No. The log proves it explicitly:
+
+17:49:55.554 — Registered bridge for call: e4ab7f1b... ← session 1 17:49:55.562 — Registered bridge for call: e4ab7f1b... ← session 2, same Call-ID
+
+"Registered bridge" fires twice for the same Call-ID. There is no deduplication check in the bridge registry.
+
+Should bridge creation wait for 200 OK from the callee? Yes — that would be the correct behavior. But the binary auto-answers the INVITE immediately (200 OK with SDP sent at line 27, then Routing call to ElevenLabs at line 32) without waiting for any callee-side confirmation. The ACK warning on line 35 (SIP request handler not found: method=ACK) shows the binary doesn't even handle the ACK properly.
+Where the bug is
+
+Entirely inside the binary (outbound.go → SIP INVITE handler). Specifically:
+
+No Call-ID lookup before creating a new session No re-INVITE detection (same Call-ID + existing dialog = update, not new session) No bridge deduplication guard This cannot be fixed from the server side (outboundContext.ts, outbound.ts, etc.). Those files only affect what context the binary reads — not how the binary handles SIP signaling. The fix requires modifying the binary's INVITE handler to check for an existing bridge before creating a new one.
+
+The only thing our server-side fix (non-consuming context) changed is that both sessions now get the correct outbound overrides instead of just the first one. The duplicate sessions themselves are a binary issue.
+
+what do you think?

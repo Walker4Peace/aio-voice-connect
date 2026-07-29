@@ -13,6 +13,7 @@ import { z } from "zod/v4";
 import { db, outboundCallsTable, extensionsTable, deploymentsTable, type Client, type AgentConfig } from "@workspace/db";
 import { logger } from "../lib/logger.js";
 import { setPendingContext, consumePendingContext } from "../services/outboundContext.js";
+import { applyOutboundConfigOverride } from "../services/deployment.js";
 import { executeTool } from "../services/toolExecutor.js";
 import { getYeastarToken, yeastarPost, evictYeastarToken } from "../services/yeastarAuth.js";
 
@@ -97,7 +98,7 @@ router.post("/outbound/call", async (req, res) => {
     return;
   }
 
-  // Store runtime context so sip-agent can retrieve it
+  // Store runtime context so sip-agent can retrieve it (kept for compatibility)
   setPendingContext(data.extensionId, {
     callId: callRecord.id,
     firstMessage: data.firstMessage ?? undefined,
@@ -106,6 +107,28 @@ router.post("/outbound/call", async (req, res) => {
     webhookUrl: data.webhookUrl ?? undefined,
     createdAt: new Date(),
   });
+
+  // Hot-swap config.json with outbound overrides BEFORE triggering the Yeastar dial.
+  // The sip-agent binary re-reads config.json on each SIP INVITE, so writing the file
+  // here ensures every INVITE (including the duplicate re-INVITE from Yeastar) uses the
+  // correct persona instead of falling back to the inbound defaults.
+  if (data.firstMessage || data.systemPromptOverride) {
+    try {
+      await applyOutboundConfigOverride(data.extensionId, {
+        firstMessage: data.firstMessage ?? null,
+        systemPromptOverride: data.systemPromptOverride ?? null,
+      });
+      logger.info(
+        { extensionId: data.extensionId, callId: callRecord.id },
+        "Outbound config override applied — binary will use outbound persona on next INVITE",
+      );
+    } catch (err) {
+      logger.error(
+        { err, extensionId: data.extensionId },
+        "Failed to write outbound config override — call will use base config values",
+      );
+    }
+  }
 
   // Attempt to trigger the call via Yeastar Make Call API
   const yeastarResult = await tryYeastarMakeCall({
