@@ -34,18 +34,23 @@ app.use(cors({
   credentials: true,
 }));
 
-// Session middleware
+// In the Replit preview the app runs inside a cross-site iframe (replit.com
+// embeds an iframe from replit.dev).  Chrome blocks SameSite=Lax cookies set
+// from a cross-site iframe, so the session cookie is never stored and every
+// request after login looks unauthenticated.  SameSite=None + Secure opts the
+// cookie into cross-site delivery — required for any third-party iframe context.
+// On the VPS nginx handles HTTPS termination and forwards X-Forwarded-Proto,
+// so req.secure is true there too.  The trust-proxy:1 setting above makes
+// Express honour that header.
+const inReplit = !!process.env["REPL_ID"];
 app.use(session({
   secret: process.env["SESSION_SECRET"] ?? "change-me-in-production",
   resave: false,
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
-    // nginx terminates SSL; Express always receives plain HTTP internally.
-    // Never set secure:true here — it breaks HTTP access (IP-only, no cert).
-    // Nginx enforces HTTPS at the edge when certbot is configured.
-    secure: false,
-    sameSite: "lax",
+    secure: inReplit,           // true in Replit (HTTPS via proxy); false on plain-HTTP VPS
+    sameSite: inReplit ? "none" : "lax",
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   },
 }));
