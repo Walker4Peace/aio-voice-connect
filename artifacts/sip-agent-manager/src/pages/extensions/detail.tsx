@@ -181,7 +181,7 @@ export default function ExtensionDetail() {
         {!statusLoading && deployStatus && (
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-1.5 shrink-0">
             <RefreshCw className="h-3 w-3" />
-            Last updated: {timeAgo(deployStatus.lastStartedAt)}
+            {t("extDetail.lastUpdated", { time: timeAgo(deployStatus.lastStartedAt) })}
           </div>
         )}
       </div>
@@ -197,13 +197,13 @@ export default function ExtensionDetail() {
               <Users className="h-5 w-5 text-muted-foreground" />
             </div>
             <div>
-              <h2 className="font-semibold text-base">SIP Agent</h2>
-              <p className="text-xs text-muted-foreground">{hasAgentConfig ? "Deploy and manage this extension" : t("extDetail.assignFirst")}</p>
+              <h2 className="font-semibold text-base">{t("extDetail.sipAgentTitle")}</h2>
+              <p className="text-xs text-muted-foreground">{hasAgentConfig ? t("extDetail.deployManage") : t("extDetail.assignFirst")}</p>
             </div>
           </div>
           {deployStatus?.uptimeSeconds != null && isRunning && (
             <div className="flex items-center gap-1.5 text-sm font-medium">
-              <span className="text-muted-foreground text-xs">Uptime</span>
+              <span className="text-muted-foreground text-xs">{t("extDetail.uptime")}</span>
               <span className="flex items-center gap-1 text-green-700">
                 <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
                 {formatUptime(deployStatus.uptimeSeconds)}
@@ -334,7 +334,7 @@ export default function ExtensionDetail() {
                     <dl className="space-y-0 border rounded-lg overflow-hidden">
                       {[
                         { label: t("extDetail.name"), value: extension.agentConfig.name, mono: false },
-                        { label: "Provider", value: <ProviderBadge provider={extension.agentConfig.provider} />, mono: false },
+                        { label: t("extDetail.provider"), value: <ProviderBadge provider={extension.agentConfig.provider} />, mono: false },
                         { label: t("extDetail.apiKey"), value: showApiKey ? extension.agentConfig.apiKey : maskString(extension.agentConfig.apiKey), mono: true, toggle: () => setShowApiKey(v => !v) },
                         ...(extension.agentConfig.modelId ? [{ label: t("extDetail.model"), value: showModel ? extension.agentConfig.modelId : maskString(extension.agentConfig.modelId, 6), mono: true, toggle: () => setShowModel(v => !v) }] : []),
                         { label: t("extDetail.voice"), value: extension.agentConfig.voiceId || "—", mono: false },
@@ -360,13 +360,13 @@ export default function ExtensionDetail() {
                           <Bot className="h-3.5 w-3.5 text-blue-600" />
                         </div>
                         <div>
-                          <p className="text-xs font-semibold text-blue-700">About this agent</p>
-                          <p className="text-xs text-blue-600">AI voice agent configuration applied to this extension.</p>
+                          <p className="text-xs font-semibold text-blue-700">{t("extDetail.aboutAgent")}</p>
+                          <p className="text-xs text-blue-600">{t("extDetail.aboutAgentDesc")}</p>
                         </div>
                       </div>
                       <Link href={`/agent-configs/${extension.agentConfig.id}/edit`}>
                         <Button variant="ghost" size="sm" className="h-6 text-xs text-blue-600 hover:text-blue-700 px-2 gap-1 shrink-0" type="button">
-                          View Details <ExternalLink className="h-3 w-3" />
+                          {t("extDetail.viewDetails")} <ExternalLink className="h-3 w-3" />
                         </Button>
                       </Link>
                     </div>
@@ -435,7 +435,7 @@ export default function ExtensionDetail() {
                 </div>
                 <Link href={`/ipbxs/${extension.clientId}`}>
                   <Button variant="ghost" size="sm" className="h-6 text-xs text-blue-600 hover:text-blue-700 px-2 gap-1">
-                    View IPBX <ExternalLink className="h-3 w-3" />
+                    {t("extDetail.viewIPBX")} <ExternalLink className="h-3 w-3" />
                   </Button>
                 </Link>
               </div>
@@ -449,14 +449,14 @@ export default function ExtensionDetail() {
               <div className="flex items-center gap-2">
                 <CheckCircle2 className={cn("h-4 w-4 shrink-0", deployStatus?.sipRegistered ? "text-green-500" : "text-muted-foreground")} />
                 <div>
-                  <p className={cn("text-xs font-semibold", deployStatus?.sipRegistered ? "text-green-700" : "text-muted-foreground")}>SIP Registration</p>
+                  <p className={cn("text-xs font-semibold", deployStatus?.sipRegistered ? "text-green-700" : "text-muted-foreground")}>{t("extDetail.sipRegistration")}</p>
                   <p className={cn("text-xs", deployStatus?.sipRegistered ? "text-green-600" : "text-muted-foreground")}>
-                    {deployStatus?.sipRegistered ? "Extension is registered on IPBX." : "Not currently registered."}
+                    {deployStatus?.sipRegistered ? t("extDetail.sipRegisteredMsg") : t("extDetail.notRegistered")}
                   </p>
                 </div>
               </div>
               {deployStatus?.sipRegistered && (
-                <span className="text-xs font-medium text-green-700 bg-green-100 border border-green-200 rounded px-2 py-0.5">Registered</span>
+                <span className="text-xs font-medium text-green-700 bg-green-100 border border-green-200 rounded px-2 py-0.5">{t("extDetail.sipRegisteredBadge")}</span>
               )}
             </div>
           </div>

@@ -455,7 +455,7 @@ export default function OutboundPage() {
                   <TableHead>{t("outbound.thStatus")}</TableHead>
                   <TableHead>{t("outbound.thFirstMessage")}</TableHead>
                   <TableHead className="text-right">{t("outbound.thInitiated")}</TableHead>
-                  <TableHead className="w-10"></TableHead>
+                  <TableHead className="w-10">{t("outbound.thAction")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

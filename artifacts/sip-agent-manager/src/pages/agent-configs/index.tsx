@@ -78,7 +78,7 @@ export default function AgentConfigsList() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">{t("agents.title")}</h1>
-          <p className="text-muted-foreground mt-1 text-sm">Configure and manage AI voice agents for your extensions.</p>
+          <p className="text-muted-foreground mt-1 text-sm">{t("agents.configureDesc")}</p>
         </div>
         <Link href="/agent-configs/new">
           <Button className="gap-2"><Plus className="h-4 w-4" /> {t("agents.newAgent")}</Button>
@@ -98,8 +98,8 @@ export default function AgentConfigsList() {
               </div>
             </div>
             <div>
-              <p className="font-semibold text-foreground text-base">No AI agents configured</p>
-              <p className="text-sm text-muted-foreground mt-1">Create your first AI agent to start assigning it to SIP extensions.</p>
+              <p className="font-semibold text-foreground text-base">{t("agents.noConfigured")}</p>
+              <p className="text-sm text-muted-foreground mt-1">{t("agents.createFirstDesc")}</p>
             </div>
             <Link href="/agent-configs/new">
               <Button className="gap-2 mt-1"><Plus className="h-4 w-4" /> {t("agents.newAgent")}</Button>
@@ -165,7 +165,7 @@ export default function AgentConfigsList() {
                               <DropdownMenuContent align="end">
                                 <DropdownMenuItem asChild>
                                   <Link href={`/agent-configs/${config.id}/edit`} className="flex items-center gap-2 cursor-pointer">
-                                    <Pencil className="h-4 w-4" /> Edit Agent
+                                    <Pencil className="h-4 w-4" /> {t("agents.editAgent")}
                                   </Link>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
@@ -173,14 +173,14 @@ export default function AgentConfigsList() {
                                   onClick={() => handleDuplicate(config)}
                                   disabled={createConfig.isPending}
                                 >
-                                  <Copy className="h-4 w-4" /> Duplicate Agent
+                                  <Copy className="h-4 w-4" /> {t("agents.duplicateAgent")}
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem
                                   className="text-destructive focus:text-destructive flex items-center gap-2 cursor-pointer"
                                   onClick={() => setDeletingId(config.id)}
                                 >
-                                  <Trash2 className="h-4 w-4" /> Delete Agent
+                                  <Trash2 className="h-4 w-4" /> {t("agents.deleteAgent")}
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
@@ -192,7 +192,7 @@ export default function AgentConfigsList() {
                 </tbody>
               </table>
               <div className="px-4 py-3 border-t text-xs text-muted-foreground">
-                Showing {configs?.length ?? 0} of {configs?.length ?? 0} {configs?.length === 1 ? "agent" : "agents"}
+                {t("agents.showing", { count: configs?.length ?? 0 })}
               </div>
             </>
           )}

@@ -87,7 +87,7 @@ function AgentRow({ ext, status }: {
             <span className="text-xs text-muted-foreground">{ext.agentConfig.name}</span>
           </div>
         ) : (
-          <span className="text-xs text-muted-foreground italic">No agent</span>
+          <span className="text-xs text-muted-foreground italic">{t("common.noAgent")}</span>
         )}
       </td>
       <td className="py-3 px-4">
@@ -95,7 +95,7 @@ function AgentRow({ ext, status }: {
           <div className="flex items-center gap-1.5">
             <span className={cn("h-2 w-2 rounded-full shrink-0", isRunning ? "bg-green-500" : "bg-gray-300")} />
             <span className={cn("text-sm font-medium", isRunning ? "text-green-700" : "text-muted-foreground")}>
-              {isRunning ? "Running" : "Down"}
+              {isRunning ? t("dashboard.running") : t("deploy.status.stopped")}
             </span>
           </div>
         ) : (
@@ -196,16 +196,16 @@ export default function Dashboard() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">{t("dashboard.title")}</h1>
-          <p className="text-muted-foreground mt-1 text-sm">Monitor your IPBX systems, AI agents and voice activity.</p>
+          <p className="text-muted-foreground mt-1 text-sm">{t("dashboard.subtitle")}</p>
         </div>
       </div>
 
       {/* Stat cards */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-        <StatCard icon={Server}   label="IPBX Systems"          value={stats?.totalClients ?? 0}  iconBg="bg-blue-50"   iconColor="text-blue-600" />
-        <StatCard icon={Users}    label="Extensions"             value={stats?.totalExtensions ?? 0} iconBg="bg-gray-100"   iconColor="text-gray-500" />
-        <StatCard icon={Activity} label="Registered Extensions"  value={runningCount}              iconBg="bg-green-50"  iconColor="text-green-600" />
-        <StatCard icon={Bot}      label="AI Agents"              value={agentConfigs?.length ?? 0} iconBg="bg-purple-50" iconColor="text-purple-600" />
+        <StatCard icon={Server}   label={t("dashboard.statIPBX")}      value={stats?.totalClients ?? 0}    iconBg="bg-blue-50"   iconColor="text-blue-600" />
+        <StatCard icon={Users}    label={t("dashboard.statExtensions")} value={stats?.totalExtensions ?? 0} iconBg="bg-gray-100"   iconColor="text-gray-500" />
+        <StatCard icon={Activity} label={t("dashboard.statRegistered")} value={runningCount}                iconBg="bg-green-50"  iconColor="text-green-600" />
+        <StatCard icon={Bot}      label={t("dashboard.statAgents")}     value={agentConfigs?.length ?? 0}  iconBg="bg-purple-50" iconColor="text-purple-600" />
       </div>
 
       {/* Live Agent Status */}
@@ -219,16 +219,16 @@ export default function Dashboard() {
             <div className="flex items-center gap-3 text-sm">
               <span className="flex items-center gap-1.5">
                 <span className="h-2 w-2 rounded-full bg-green-500" />
-                <span className="text-green-700 font-medium">{runningCount} Running</span>
+                <span className="text-green-700 font-medium">{runningCount} {t("dashboard.running")}</span>
               </span>
               <span className="flex items-center gap-1.5">
                 <span className="h-2 w-2 rounded-full bg-gray-400" />
-                <span className="text-muted-foreground">{stoppedCount} Down</span>
+                <span className="text-muted-foreground">{stoppedCount} {t("deploy.status.stopped")}</span>
               </span>
             </div>
             <Link href="/extensions">
               <Button variant="ghost" size="sm" className="text-primary h-7 gap-0.5 text-xs font-medium hover:text-primary">
-                View all extensions <ArrowUpRight className="h-3.5 w-3.5" />
+                {t("dashboard.viewAllExtensions")} <ArrowUpRight className="h-3.5 w-3.5" />
               </Button>
             </Link>
           </div>
@@ -244,12 +244,12 @@ export default function Dashboard() {
             <table className="w-full">
               <thead>
                 <tr className="text-xs text-muted-foreground bg-muted/30 border-b">
-                  <th className="text-left font-medium py-2.5 px-4">Extension</th>
-                  <th className="text-left font-medium py-2.5 px-4">Name</th>
-                  <th className="text-left font-medium py-2.5 px-4">AI Agent</th>
-                  <th className="text-left font-medium py-2.5 px-4">Runtime Status</th>
-                  <th className="text-left font-medium py-2.5 px-4">Last Activity</th>
-                  <th className="text-left font-medium py-2.5 px-4">Actions</th>
+                  <th className="text-left font-medium py-2.5 px-4">{t("dashboard.thExtension")}</th>
+                  <th className="text-left font-medium py-2.5 px-4">{t("dashboard.thName")}</th>
+                  <th className="text-left font-medium py-2.5 px-4">{t("dashboard.thAgent")}</th>
+                  <th className="text-left font-medium py-2.5 px-4">{t("dashboard.thStatus")}</th>
+                  <th className="text-left font-medium py-2.5 px-4">{t("dashboard.thLastActivity")}</th>
+                  <th className="text-left font-medium py-2.5 px-4">{t("dashboard.thActions")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -269,12 +269,12 @@ export default function Dashboard() {
             <PhoneCall className="h-4 w-4 text-muted-foreground" />
             <div>
               <h2 className="font-semibold text-base">{t("dashboard.callsHistory")}</h2>
-              <p className="text-xs text-muted-foreground mt-0.5">Last 5 calls across your deployed extensions.</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{t("dashboard.last5Calls")}</p>
             </div>
           </div>
           <Link href="/calls">
             <Button variant="ghost" size="sm" className="text-primary h-7 gap-0.5 text-xs font-medium hover:text-primary">
-              View all call history <ArrowUpRight className="h-3.5 w-3.5" />
+              {t("dashboard.viewAllCalls")} <ArrowUpRight className="h-3.5 w-3.5" />
             </Button>
           </Link>
         </div>

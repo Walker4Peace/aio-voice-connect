@@ -62,6 +62,7 @@ const LEVEL_STYLES: Record<string, string> = {
 };
 
 function CopyButton({ text }: { text: string }) {
+  const { t } = useTranslation();
   const [copied, setCopied] = React.useState(false);
   return (
     <Button
@@ -70,7 +71,7 @@ function CopyButton({ text }: { text: string }) {
       onClick={() => { navigator.clipboard.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1500); }); }}
     >
       {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-      {copied ? "Copied!" : "Copy Logs"}
+      {copied ? t("logs.copied") : t("logs.copyLogs")}
     </Button>
   );
 }
@@ -150,13 +151,13 @@ export default function LogsPage() {
       {/* Page header */}
       <div>
         <h1 className="text-3xl font-bold tracking-tight">{t("logs.title")}</h1>
-        <p className="text-muted-foreground mt-1 text-sm">Monitor system and extension activity in real time.</p>
+        <p className="text-muted-foreground mt-1 text-sm">{t("logs.description")}</p>
       </div>
 
       {/* Controls */}
       <div className="flex flex-wrap items-end gap-3 justify-between">
         <div className="space-y-1">
-          <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Log Source</label>
+          <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t("logs.source")}</label>
           <Select value={selectedValue} onValueChange={setSelectedValue}>
             <SelectTrigger className="w-64">
               <SelectValue placeholder={t("logs.selectSource")} />
@@ -198,7 +199,7 @@ export default function LogsPage() {
             className="gap-1.5 text-destructive border-destructive/30 hover:bg-destructive/10"
             onClick={handleClear}
           >
-            <Trash2 className="h-4 w-4" /> Clear View
+            <Trash2 className="h-4 w-4" /> {t("logs.clearView")}
           </Button>
           <Button
             variant={isLive ? "default" : "outline"} size="sm"
@@ -244,10 +245,10 @@ export default function LogsPage() {
             <table className="w-full">
               <thead>
                 <tr className="text-gray-600 bg-[#161b22] sticky top-0 border-b border-gray-800">
-                  <th className="text-left font-medium py-2 px-4 w-44">Timestamp</th>
-                  <th className="text-left font-medium py-2 px-2 w-16">Level</th>
-                  <th className="text-left font-medium py-2 px-2 w-40">Source</th>
-                  <th className="text-left font-medium py-2 px-3">Message</th>
+                  <th className="text-left font-medium py-2 px-4 w-44">{t("logs.thTimestamp")}</th>
+                  <th className="text-left font-medium py-2 px-2 w-16">{t("logs.thLevel")}</th>
+                  <th className="text-left font-medium py-2 px-2 w-40">{t("logs.thSource")}</th>
+                  <th className="text-left font-medium py-2 px-3">{t("logs.thMessage")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -289,12 +290,12 @@ export default function LogsPage() {
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1.5">
               <span className={`h-2 w-2 rounded-full ${isLive ? "bg-green-500 animate-pulse" : "bg-gray-600"}`} />
-              {isLive ? "Live connection" : "Not connected"}
+              {isLive ? t("logs.liveConnection") : t("logs.notConnected")}
             </span>
             {lastTs && (
-              <span>Last event: {lastTs}</span>
+              <span>{t("logs.lastEvent", { ts: lastTs })}</span>
             )}
-            <span>{parsedLines.length} log entries</span>
+            <span>{t("logs.entries", { count: parsedLines.length })}</span>
           </div>
           <div className="flex items-center gap-1">
             <CopyButton text={displayedLines.join("\n")} />
@@ -304,7 +305,7 @@ export default function LogsPage() {
               onClick={downloadLogs}
               disabled={displayedLines.length === 0}
             >
-              <Download className="h-3.5 w-3.5" /> Download Logs
+              <Download className="h-3.5 w-3.5" /> {t("logs.downloadLogs")}
             </Button>
           </div>
         </div>

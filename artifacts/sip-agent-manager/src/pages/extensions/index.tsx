@@ -231,8 +231,8 @@ export default function ExtensionsList() {
               </div>
             </div>
             <div>
-              <p className="font-semibold text-foreground text-base">No extensions configured</p>
-              <p className="text-sm text-muted-foreground mt-1">Add your first SIP extension and assign it to an AI agent.</p>
+              <p className="font-semibold text-foreground text-base">{t("extensions.noExtensions")}</p>
+              <p className="text-sm text-muted-foreground mt-1">{t("extensions.addFirstDesc")}</p>
             </div>
             <Button className="gap-2 mt-1" onClick={() => setOpen(true)}>
               <Plus className="h-4 w-4" /> {t("extensions.addExt")}
@@ -246,7 +246,7 @@ export default function ExtensionsList() {
             <div className="relative flex-1 min-w-48 max-w-xs">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search extensions..."
+                placeholder={t("extensions.searchPlaceholder")}
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 className="pl-9 h-9"
@@ -254,37 +254,37 @@ export default function ExtensionsList() {
             </div>
             <Select value={filterClientId} onValueChange={setFilterClientId}>
               <SelectTrigger className="w-36 h-9">
-                <SelectValue placeholder="All IPBXs" />
+                <SelectValue placeholder={t("extensions.allIPBXs")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All IPBXs</SelectItem>
+                <SelectItem value="all">{t("extensions.allIPBXs")}</SelectItem>
                 {clients?.map(c => <SelectItem key={c.id} value={c.id.toString()}>{c.name}</SelectItem>)}
               </SelectContent>
             </Select>
             <Select value={filterStatus} onValueChange={setFilterStatus}>
               <SelectTrigger className="w-36 h-9">
-                <SelectValue placeholder="All Statuses" />
+                <SelectValue placeholder={t("extensions.allStatuses")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="running">Running</SelectItem>
-                <SelectItem value="stopped">Down</SelectItem>
-                <SelectItem value="error">Error</SelectItem>
+                <SelectItem value="all">{t("extensions.allStatuses")}</SelectItem>
+                <SelectItem value="running">{t("extensions.running")}</SelectItem>
+                <SelectItem value="stopped">{t("deploy.status.stopped")}</SelectItem>
+                <SelectItem value="error">{t("common.error")}</SelectItem>
               </SelectContent>
             </Select>
             <Select value={filterAgentId} onValueChange={setFilterAgentId}>
               <SelectTrigger className="w-40 h-9">
-                <SelectValue placeholder="All AI Agents" />
+                <SelectValue placeholder={t("extensions.allAgents")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All AI Agents</SelectItem>
+                <SelectItem value="all">{t("extensions.allAgents")}</SelectItem>
                 {agentConfigs?.map(a => <SelectItem key={a.id} value={a.id.toString()}>{a.name}</SelectItem>)}
               </SelectContent>
             </Select>
             {hasFilters && (
               <Button variant="ghost" size="sm" className="h-9 gap-1 text-muted-foreground"
                 onClick={() => { setSearch(""); setFilterClientId("all"); setFilterStatus("all"); setFilterAgentId("all"); }}>
-                <X className="h-3.5 w-3.5" /> Clear
+                <X className="h-3.5 w-3.5" /> {t("extensions.clearFilters")}
               </Button>
             )}
           </div>
@@ -295,7 +295,7 @@ export default function ExtensionsList() {
             ) : filtered.length === 0 ? (
               <div className="py-12 text-center text-muted-foreground">
                 <Users className="h-8 w-8 mx-auto mb-2 opacity-30" />
-                <p className="text-sm">{hasFilters ? "No extensions match your filters." : t("extensions.noExtensions")}</p>
+                <p className="text-sm">{hasFilters ? t("extensions.noMatchFilters") : t("extensions.noExtensions")}</p>
               </div>
             ) : (
               <>
@@ -303,12 +303,12 @@ export default function ExtensionsList() {
                   <thead>
                     <tr className="text-xs text-muted-foreground bg-muted/30 border-b">
                       <th className="text-left font-medium py-3 px-4">{t("extensions.thExt")}</th>
-                      <th className="text-left font-medium py-3 px-4">Name</th>
+                      <th className="text-left font-medium py-3 px-4">{t("extensions.thName")}</th>
                       <th className="text-left font-medium py-3 px-4">{t("extensions.thIPBX")}</th>
                       <th className="text-left font-medium py-3 px-4">{t("extensions.thAgent")}</th>
                       <th className="text-left font-medium py-3 px-4">{t("extensions.thStatus")}</th>
-                      <th className="text-left font-medium py-3 px-4">Last Activity</th>
-                      <th className="text-left font-medium py-3 px-4">Created On</th>
+                      <th className="text-left font-medium py-3 px-4">{t("extensions.thLastActivity")}</th>
+                      <th className="text-left font-medium py-3 px-4">{t("extensions.thCreatedOn")}</th>
                       <th className="text-right font-medium py-3 px-4">{t("extensions.thAction")}</th>
                     </tr>
                   </thead>
@@ -366,7 +366,7 @@ export default function ExtensionsList() {
                                 </span>
                               </div>
                               <p className="text-[11px] text-muted-foreground pl-3 mt-0.5">
-                                {isRunning ? "Running" : "Not running"}
+                                {isRunning ? t("extensions.running") : t("extensions.notRunning")}
                               </p>
                             </div>
                           </td>
@@ -387,14 +387,14 @@ export default function ExtensionsList() {
                                 <DropdownMenuContent align="end">
                                   <DropdownMenuItem asChild>
                                     <Link href={`/extensions/${ext.id}`} className="flex items-center gap-2 cursor-pointer">
-                                      View Details
+                                      {t("extensions.viewDetails")}
                                     </Link>
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
                                     className="text-destructive focus:text-destructive flex items-center gap-2 cursor-pointer"
                                     onClick={() => setDeletingId(ext.id)}
                                   >
-                                    <Trash2 className="h-4 w-4" /> Delete Extension
+                                    <Trash2 className="h-4 w-4" /> {t("extensions.deleteExt")}
                                   </DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>
@@ -406,7 +406,7 @@ export default function ExtensionsList() {
                   </tbody>
                 </table>
                 <div className="px-4 py-3 border-t text-xs text-muted-foreground">
-                  Showing {filtered.length} of {extensions?.length ?? 0} extensions
+                  {t("extensions.showing", { count: filtered.length, total: extensions?.length ?? 0 })}
                 </div>
               </>
             )}
