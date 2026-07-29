@@ -335,7 +335,7 @@ export default function ExtensionsList() {
                               <div className="flex items-center gap-2">
                                 <Server className="h-3.5 w-3.5 text-blue-500 shrink-0" />
                                 <div>
-                                  <Link href={`/ipbxs/${ext.clientId}`} className="text-sm font-medium hover:underline text-foreground">{ext.client.name}</Link>
+                                  <span className="text-sm font-medium text-foreground">{ext.client.name}</span>
                                   {ext.client.sipServer && (
                                     <p className="text-[11px] text-muted-foreground font-mono">
                                       {ext.client.sipServer.includes(":") ? ext.client.sipServer.split(":").slice(0, -1).join(":") : ext.client.sipServer}

@@ -284,13 +284,13 @@ export default function ClientDetail() {
               </Form>
             ) : (
               <div>
-                <FieldRow icon={Server} label="IPBX Name">
+                <FieldRow icon={Server} label={t("clientDetail.fieldIPBXName")}>
                   <span className="font-medium">{client.name}</span>
                 </FieldRow>
-                <FieldRow icon={Globe} label="IP Address / Domain">
+                <FieldRow icon={Globe} label={t("clientDetail.fieldIPDomain")}>
                   <span className="font-mono">{client.sipDomain || sipHost || "—"}</span>
                 </FieldRow>
-                <FieldRow icon={Network} label="SIP Server">
+                <FieldRow icon={Network} label={t("clientDetail.fieldSipServer")}>
                   <div className="flex items-center gap-2">
                     <span className="font-mono">{sipHost || "—"}</span>
                     {sipPort && (
@@ -300,47 +300,47 @@ export default function ClientDetail() {
                     )}
                   </div>
                 </FieldRow>
-                <FieldRow icon={Settings} label="API Configuration">
+                <FieldRow icon={Settings} label={t("clientDetail.fieldApiConfig")}>
                   {hasYeastarConfig ? (
                     <div className="space-y-1">
                       <p className="font-mono text-xs break-all">{c.yeastarApiUrl}</p>
                       <div className="flex items-center gap-1.5 text-xs text-green-600">
-                        <CheckCircle className="h-3 w-3" /> OAuth credentials configured
+                        <CheckCircle className="h-3 w-3" /> {t("clientDetail.oauthConfigured")}
                       </div>
                     </div>
                   ) : (
-                    <span className="text-muted-foreground italic text-sm">Not configured</span>
+                    <span className="text-muted-foreground italic text-sm">{t("clientDetail.notConfigured")}</span>
                   )}
                 </FieldRow>
-                <FieldRow icon={CircleCheck} label="API Status">
+                <FieldRow icon={CircleCheck} label={t("clientDetail.fieldApiStatus")}>
                   <div className="space-y-1.5">
                     <div className="flex items-center gap-2">
                       {c.yeastarVerified === true ? (
                         <span className="inline-flex items-center gap-1.5 text-xs font-medium text-green-700 bg-green-50 border border-green-200 rounded px-2 py-0.5">
-                          <span className="h-1.5 w-1.5 bg-green-500 rounded-full" /> Connected
+                          <span className="h-1.5 w-1.5 bg-green-500 rounded-full" /> {t("clientDetail.apiConnected")}
                         </span>
                       ) : c.yeastarVerified === false ? (
                         <span className="inline-flex items-center gap-1.5 text-xs font-medium text-red-700 bg-red-50 border border-red-200 rounded px-2 py-0.5">
-                          <span className="h-1.5 w-1.5 bg-red-500 rounded-full" /> Error
+                          <span className="h-1.5 w-1.5 bg-red-500 rounded-full" /> {t("clientDetail.apiError")}
                         </span>
                       ) : (
-                        <span className="text-xs text-muted-foreground">Not tested</span>
+                        <span className="text-xs text-muted-foreground">{t("clientDetail.apiNotTested")}</span>
                       )}
                       {hasYeastarConfig && (
                         <Button variant="outline" size="sm" className="h-6 px-2 text-xs gap-1" onClick={handleTestConnection} disabled={testStatus === "testing"}>
                           {testStatus === "testing" ? <Loader2 className="h-3 w-3 animate-spin" /> : <FlaskConical className="h-3 w-3" />}
-                          Test Connection
+                          {t("clientDetail.testConnection")}
                         </Button>
                       )}
                     </div>
-                    {testStatus === "success" && <p className="text-xs text-green-600">Last checked: just now</p>}
+                    {testStatus === "success" && <p className="text-xs text-green-600">{t("clientDetail.lastChecked")}</p>}
                     {testStatus === "error" && <p className="text-xs text-destructive break-all">{testError}</p>}
                   </div>
                 </FieldRow>
-                <FieldRow icon={Calendar} label="Added On">
+                <FieldRow icon={Calendar} label={t("clientDetail.addedOn")}>
                   <span className="font-mono text-sm">{formatDate(client.createdAt)}</span>
                 </FieldRow>
-                <FieldRow icon={FileText} label="Notes">
+                <FieldRow icon={FileText} label={t("clientDetail.fieldNotes")}>
                   <span className={client.description ? "" : "text-muted-foreground"}>{client.description || "—"}</span>
                 </FieldRow>
 
@@ -362,7 +362,7 @@ export default function ClientDetail() {
           <div className="flex items-center justify-between px-5 py-4 border-b">
             <div className="flex items-center gap-2">
               <Phone className="h-4 w-4 text-muted-foreground" />
-              <h2 className="font-semibold text-sm">Extensions on this IPBX</h2>
+              <h2 className="font-semibold text-sm">{t("clientDetail.extOnIPBX")}</h2>
             </div>
             <Button variant="outline" size="sm" className="h-8 gap-2 text-xs" onClick={() => setLinkDialogOpen(true)}>
               <Link2 className="h-3.5 w-3.5" /> {t("clientDetail.linkExtension")}
@@ -413,7 +413,7 @@ export default function ClientDetail() {
                 <div className="mt-3 flex justify-end">
                   <Link href="/extensions">
                     <Button variant="ghost" size="sm" className="text-primary text-xs gap-1 hover:text-primary">
-                      View all extensions <ExternalLink className="h-3.5 w-3.5" />
+                      {t("clientDetail.viewAllExt")} <ExternalLink className="h-3.5 w-3.5" />
                     </Button>
                   </Link>
                 </div>

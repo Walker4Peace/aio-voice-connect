@@ -205,39 +205,40 @@ function CallTableRow({ callId, legs, extNumber, isOutbound = false, outboundPho
             </TableCell>
             {/* Duration */}
             <TableCell className="text-xs text-muted-foreground tabular-nums">
-              <div className="flex items-center justify-between gap-2">
-                <span>{duration ?? "—"}</span>
-                {onDelete && (
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <button
-                        onClick={(e) => e.stopPropagation()}
-                        className="opacity-0 group-hover/row:opacity-100 p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-all"
-                        title="Delete this call"
+              {duration ?? "—"}
+            </TableCell>
+            {/* Action */}
+            <TableCell>
+              {onDelete && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <button
+                      onClick={(e) => e.stopPropagation()}
+                      className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                      title="Delete this call"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>{t("calls.deleteCallTitle")}</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        {t("calls.deleteCallDesc", { callId: callId.slice(0, 8) + "…" })}
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+                      <AlertDialogAction
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        onClick={() => onDelete(callId)}
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>{t("calls.deleteCallTitle")}</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          {t("calls.deleteCallDesc", { callId: callId.slice(0, 8) + "…" })}
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
-                        <AlertDialogAction
-                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                          onClick={() => onDelete(callId)}
-                        >
-                          {t("common.delete")}
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                )}
-              </div>
+                        {t("common.delete")}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
             </TableCell>
           </TableRow>
         </CollapsibleTrigger>
@@ -245,7 +246,7 @@ function CallTableRow({ callId, legs, extNumber, isOutbound = false, outboundPho
         {/* Accordion legs — newest first */}
         <CollapsibleContent asChild>
           <TableRow className="hover:bg-transparent">
-            <TableCell colSpan={6} className="p-0 border-t-0">
+            <TableCell colSpan={7} className="p-0 border-t-0">
               <div className="bg-muted/20 divide-y border-b">
                 {legsDesc.map((leg, i) => (
                   <div key={i} className="flex items-center gap-3 px-10 py-2.5">
@@ -339,6 +340,7 @@ export function CallHistoryTable({
             <TableHead>{t("calls.thCalled")}</TableHead>
             <TableHead>{t("calls.thDate")}</TableHead>
             <TableHead>{t("calls.thDuration")}</TableHead>
+            <TableHead className="w-10">{t("calls.thAction")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

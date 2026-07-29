@@ -162,7 +162,7 @@ export default function ClientsList() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">{t("clients.title")}</h1>
-          <p className="text-muted-foreground mt-1 text-sm">Manage your IPBX systems and SIP connection settings.</p>
+          <p className="text-muted-foreground mt-1 text-sm">{t("clients.description")}</p>
         </div>
         <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) { setTestStatus("idle"); setTestError(""); } }}>
           <DialogTrigger asChild>
@@ -244,8 +244,8 @@ export default function ClientsList() {
               </div>
             </div>
             <div>
-              <p className="font-semibold text-foreground text-base">No IPBX configured</p>
-              <p className="text-sm text-muted-foreground mt-1">Add your first IPBX to start connecting SIP extensions with AI voice agents.</p>
+              <p className="font-semibold text-foreground text-base">{t("clients.noIPBX")}</p>
+              <p className="text-sm text-muted-foreground mt-1">{t("clients.addFirstDesc")}</p>
             </div>
             <Button className="gap-2 mt-1" onClick={() => setOpen(true)}>
               <Plus className="h-4 w-4" /> {t("clients.addIPBX")}
@@ -261,13 +261,13 @@ export default function ClientsList() {
               <table className="w-full">
                 <thead>
                   <tr className="text-xs text-muted-foreground bg-muted/30 border-b">
-                    <th className="text-left font-medium py-3 px-4">IPBX</th>
-                    <th className="text-left font-medium py-3 px-4">SIP Server</th>
-                    <th className="text-left font-medium py-3 px-4">SIP Port</th>
-                    <th className="text-left font-medium py-3 px-4">API Status</th>
-                    <th className="text-left font-medium py-3 px-4">Extensions</th>
-                    <th className="text-left font-medium py-3 px-4">Last Synced</th>
-                    <th className="text-right font-medium py-3 px-4">Actions</th>
+                    <th className="text-left font-medium py-3 px-4">{t("clients.thIPBX")}</th>
+                    <th className="text-left font-medium py-3 px-4">{t("clients.thSipServer")}</th>
+                    <th className="text-left font-medium py-3 px-4">{t("clients.thSipPort")}</th>
+                    <th className="text-left font-medium py-3 px-4">{t("clients.thApiStatus")}</th>
+                    <th className="text-left font-medium py-3 px-4">{t("clients.thExtensions")}</th>
+                    <th className="text-left font-medium py-3 px-4">{t("clients.thLastSynced")}</th>
+                    <th className="text-right font-medium py-3 px-4">{t("clients.thActions")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -304,19 +304,19 @@ export default function ClientsList() {
                             <div className="flex flex-col gap-0.5">
                               <span className={`inline-flex items-center gap-1.5 text-xs font-medium ${apiConnected ? "text-green-700" : "text-muted-foreground"}`}>
                                 <span className={`h-1.5 w-1.5 rounded-full inline-block ${apiConnected ? "bg-green-500" : "bg-gray-400"}`} />
-                                {apiConnected ? "Connected" : apiConfigured ? "Configured" : "Not tested"}
+                                {apiConnected ? t("clients.apiConnected") : apiConfigured ? t("clients.apiConfigured") : t("clients.apiNotTested")}
                               </span>
-                              {apiConnected && <span className="text-[11px] text-muted-foreground pl-3">Verified</span>}
+                              {apiConnected && <span className="text-[11px] text-muted-foreground pl-3">{t("clients.apiVerified")}</span>}
                             </div>
                           ) : (
-                            <span className="text-xs text-muted-foreground italic">No API</span>
+                            <span className="text-xs text-muted-foreground italic">{t("clients.apiNoApi")}</span>
                           )}
                         </td>
                         <td className="py-3.5 px-4">
                           <div className="flex items-center gap-1.5">
                             <Users className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                             <span className="text-sm text-foreground">{extCount}</span>
-                            <span className="text-xs text-muted-foreground">{extCount === 1 ? "Extension" : "Extensions"}</span>
+                            <span className="text-xs text-muted-foreground">{t("clients.thExtensions")}</span>
                           </div>
                         </td>
                         <td className="py-3.5 px-4 text-xs text-muted-foreground">
@@ -340,12 +340,12 @@ export default function ClientsList() {
                               <DropdownMenuContent align="end">
                                 <DropdownMenuItem asChild>
                                   <Link href={`/ipbxs/${client.id}`} className="flex items-center gap-2 cursor-pointer">
-                                    <Eye className="h-4 w-4" /> View Details
+                                    <Eye className="h-4 w-4" /> {t("clients.viewDetails")}
                                   </Link>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem asChild>
                                   <Link href={`/ipbxs/${client.id}`} className="flex items-center gap-2 cursor-pointer">
-                                    <RefreshCw className="h-4 w-4" /> Test API Connection
+                                    <RefreshCw className="h-4 w-4" /> {t("clients.testApiConn")}
                                   </Link>
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
@@ -353,7 +353,7 @@ export default function ClientsList() {
                                   className="text-destructive focus:text-destructive flex items-center gap-2 cursor-pointer"
                                   onClick={() => setDeletingId(client.id)}
                                 >
-                                  <Trash2 className="h-4 w-4" /> Delete IPBX
+                                  <Trash2 className="h-4 w-4" /> {t("clients.deleteIPBX")}
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
@@ -365,7 +365,7 @@ export default function ClientsList() {
                 </tbody>
               </table>
               <div className="px-4 py-3 border-t text-xs text-muted-foreground">
-                Showing {clients?.length ?? 0} of {clients?.length ?? 0} IPBX
+                {t("clients.showing", { count: clients?.length ?? 0, total: clients?.length ?? 0 })}
               </div>
             </>
           )}
