@@ -459,18 +459,22 @@ async function buildConfig(
       break;
     }
     case "elevenlabs": {
+      const firstMsg = overrides?.firstMessage ?? cfg.greeting;
       const sysPrompt = overrides?.systemPromptOverride ?? cfg.systemPrompt;
-      // For OUTBOUND calls (overrides object is provided), do NOT bake first_message
-      // into config.json. The context_webhook_url endpoint delivers it and holds the
-      // response until the customer actually answers, ensuring the greeting is timed
-      // correctly. It also implements first-one-wins so only the first of the two
-      // ElevenLabs sessions the binary opens per call receives the greeting — the
-      // second gets null and starts in listen mode instead of double-greeting.
-      // For INBOUND calls (overrides is absent), include cfg.greeting as normal.
-      const configFirstMsg = overrides != null ? null : cfg.greeting;
+      // IMPORTANT: first_message MUST be non-empty in config.json for outbound calls.
+      // The binary checks whether first_message is set before deciding to call
+      // context_webhook_url — if first_message is absent/empty it skips the webhook
+      // entirely, which means the long-poll never fires and the greeting plays into
+      // silence (before the customer answers).
+      //
+      // The context_webhook_url endpoint is still the authoritative source: it delays
+      // its response until the customer answers, and implements first-one-wins so only
+      // session 1 gets the real firstMessage (session 2 gets null and falls through
+      // to the ElevenLabs agent's own default — configure that to blank in the
+      // ElevenLabs dashboard so session 2 starts in listen mode).
       base["elevenlabs"] = {
         agent_id: cfg.modelId ?? "",
-        ...(configFirstMsg ? { first_message: configFirstMsg } : {}),
+        ...(firstMsg ? { first_message: firstMsg } : {}),
         ...(sysPrompt ? { system_prompt: sysPrompt } : {}),
       };
       break;
