@@ -201,15 +201,42 @@ router.get("/outbound/context/:extensionId", (req, res) => {
     return;
   }
 
-  // Consume the pending context (one-time read)
+  // Diagnostic: log every call to this endpoint so we can see exactly when
+  // the binary calls it (at registration/startup vs per-INVITE) and from where.
+  const callerIp = req.ip ?? req.socket.remoteAddress ?? "unknown";
+  const callerAgent = req.headers["user-agent"] ?? "none";
+
+  // Consume the pending context (one-time read — non-destructive, kept for re-INVITE)
   const ctx = consumePendingContext(extensionId);
 
   if (!ctx) {
+    logger.warn(
+      { extensionId, callerIp, callerAgent, pending: false },
+      "Outbound context fetched by sip-agent — NO CONTEXT FOUND (pending: false). " +
+      "If this fires at extension startup/registration rather than per-INVITE, " +
+      "the binary is fetching context before the call is triggered. " +
+      "Check timing: was POST /api/outbound/call called before this request?"
+    );
     res.json({ pending: false, firstMessage: null, systemPromptOverride: null, variables: null, callId: null });
     return;
   }
 
-  logger.info({ extensionId, callId: ctx.callId }, "Outbound context consumed by sip-agent");
+  const ageMs = Date.now() - ctx.createdAt.getTime();
+  logger.info(
+    {
+      extensionId,
+      callId: ctx.callId,
+      callerIp,
+      callerAgent,
+      pending: true,
+      ageMs,
+      hasFirstMessage: !!ctx.firstMessage,
+      hasSystemPrompt: !!ctx.systemPromptOverride,
+      hasVariables: !!ctx.variables,
+      firstMessagePreview: ctx.firstMessage ? ctx.firstMessage.slice(0, 60) : null,
+    },
+    "Outbound context fetched by sip-agent — context found and returned (pending: true)"
+  );
 
   res.json({
     pending: true,
