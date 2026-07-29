@@ -461,20 +461,25 @@ async function buildConfig(
     case "elevenlabs": {
       const firstMsg = overrides?.firstMessage ?? cfg.greeting;
       const sysPrompt = overrides?.systemPromptOverride ?? cfg.systemPrompt;
-      // IMPORTANT: first_message MUST be non-empty in config.json for outbound calls.
-      // The binary checks whether first_message is set before deciding to call
-      // context_webhook_url — if first_message is absent/empty it skips the webhook
-      // entirely, which means the long-poll never fires and the greeting plays into
-      // silence (before the customer answers).
+      // KEY BEHAVIOUR (confirmed from binary logs):
+      //   • first_message PRESENT in config.json → binary uses it directly and
+      //     SKIPS context_webhook_url entirely. The greeting plays immediately
+      //     after the SIP INVITE (i.e. into ringback, before the customer answers).
+      //   • first_message ABSENT in config.json → binary calls context_webhook_url,
+      //     which lets the Node.js side delay the response until the customer answers.
       //
-      // The context_webhook_url endpoint is still the authoritative source: it delays
-      // its response until the customer answers, and implements first-one-wins so only
-      // session 1 gets the real firstMessage (session 2 gets null and falls through
-      // to the ElevenLabs agent's own default — configure that to blank in the
-      // ElevenLabs dashboard so session 2 starts in listen mode).
+      // Therefore for OUTBOUND calls (overrides provided) we deliberately omit
+      // first_message so the binary calls the webhook.  The context endpoint serves
+      // the greeting only after waitForCallAnswered() resolves, and implements
+      // first-one-wins deduplication so only session 1 gets the greeting (session 2
+      // gets null → starts in listen mode, provided the ElevenLabs agent's own
+      // "First Message" field is cleared in the dashboard).
+      //
+      // For INBOUND calls (no overrides) first_message is included as normal so
+      // the binary greets callers immediately on answer.
       base["elevenlabs"] = {
         agent_id: cfg.modelId ?? "",
-        ...(firstMsg ? { first_message: firstMsg } : {}),
+        ...(!overrides && firstMsg ? { first_message: firstMsg } : {}),
         ...(sysPrompt ? { system_prompt: sysPrompt } : {}),
       };
       break;

@@ -86,6 +86,19 @@ Source: P-Series Software Edition Developer Guide (PDF, confirmed July 2026)
 - **Customer answered detection**: wait for `outbound.member_status === "ANSWER"` OR `extension.member_status === "ANSWERED"` (either confirms the customer picked up).
 - Non-zero errcode on `call/query` usually means no active calls (not a real error) — treat as empty list and continue polling.
 
+## sip-agent binary: context_webhook_url vs first_message in config.json
+
+**Confirmed from live logs (July 2026):**
+
+- `first_message` **present** in config.json → binary uses it directly, **skips** `context_webhook_url` entirely. Greeting plays immediately into ringback.
+- `first_message` **absent** in config.json → binary calls `context_webhook_url`, which is the timing-control hook.
+
+**Why this matters:** To delay the greeting until the customer answers (outbound timing fix), `first_message` must be **omitted** from the outbound config.json. The Node.js context endpoint then serves the greeting after `waitForCallAnswered()` resolves.
+
+**How to apply:** In `deployment.ts` `buildConfig()`, for the `elevenlabs` case: only include `first_message` when `overrides` is not provided (inbound). When `overrides` is provided (outbound restart), omit it — condition: `!overrides && firstMsg`.
+
+The previous session had this backwards (thought non-empty first_message triggered the webhook — wrong).
+
 ## Error codes
 
 | Code  | Meaning |
