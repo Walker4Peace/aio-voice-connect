@@ -479,7 +479,7 @@ async function buildConfig(
       // the binary greets callers immediately on answer.
       base["elevenlabs"] = {
         agent_id: cfg.modelId ?? "",
-        ...(!overrides && firstMsg ? { first_message: firstMsg } : {}),
+        ...(firstMsg ? { first_message: firstMsg } : {}),
         ...(sysPrompt ? { system_prompt: sysPrompt } : {}),
       };
       break;
