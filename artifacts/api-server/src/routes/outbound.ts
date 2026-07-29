@@ -13,7 +13,7 @@ import { z } from "zod/v4";
 import { db, outboundCallsTable, extensionsTable, deploymentsTable, type Client, type AgentConfig } from "@workspace/db";
 import { logger } from "../lib/logger.js";
 import { setPendingContext, consumePendingContext } from "../services/outboundContext.js";
-import { applyOutboundConfigOverride } from "../services/deployment.js";
+import { applyOutboundConfigAndRestart, hasActiveCalls } from "../services/deployment.js";
 import { executeTool } from "../services/toolExecutor.js";
 import { getYeastarToken, yeastarPost, evictYeastarToken } from "../services/yeastarAuth.js";
 
@@ -108,25 +108,38 @@ router.post("/outbound/call", async (req, res) => {
     createdAt: new Date(),
   });
 
-  // Hot-swap config.json with outbound overrides BEFORE triggering the Yeastar dial.
-  // The sip-agent binary re-reads config.json on each SIP INVITE, so writing the file
-  // here ensures every INVITE (including the duplicate re-INVITE from Yeastar) uses the
-  // correct persona instead of falling back to the inbound defaults.
+  // Restart the binary with outbound overrides baked into config.json.
+  //
+  // WHY restart instead of hot-swap:
+  // The binary loads config.json ONCE at startup into memory and never re-reads
+  // it per-INVITE.  Writing the file while the process is running has no effect.
+  // Restarting forces a fresh config read; the binary also calls context_webhook_url
+  // right after SIP registration, giving a second path for overrides to reach it.
+  //
+  // We skip the restart if an inbound call is already in progress to avoid
+  // dropping it — in that case the call proceeds with the base (inbound) config.
   if (data.firstMessage || data.systemPromptOverride) {
-    try {
-      await applyOutboundConfigOverride(data.extensionId, {
-        firstMessage: data.firstMessage ?? null,
-        systemPromptOverride: data.systemPromptOverride ?? null,
-      });
-      logger.info(
-        { extensionId: data.extensionId, callId: callRecord.id },
-        "Outbound config override applied — binary will use outbound persona on next INVITE",
+    if (hasActiveCalls(data.extensionId)) {
+      logger.warn(
+        { extensionId: data.extensionId },
+        "Outbound call triggered while inbound call active — skipping config restart, base config will be used",
       );
-    } catch (err) {
-      logger.error(
-        { err, extensionId: data.extensionId },
-        "Failed to write outbound config override — call will use base config values",
-      );
+    } else {
+      try {
+        logger.info(
+          { extensionId: data.extensionId, callId: callRecord.id },
+          "Outbound overrides provided — restarting extension with override config before dialling",
+        );
+        await applyOutboundConfigAndRestart(data.extensionId, {
+          firstMessage: data.firstMessage ?? null,
+          systemPromptOverride: data.systemPromptOverride ?? null,
+        });
+      } catch (err) {
+        logger.error(
+          { err, extensionId: data.extensionId },
+          "Failed to restart extension with outbound config override — proceeding with base config",
+        );
+      }
     }
   }
 

@@ -601,6 +601,78 @@ function finalizeOutboundCall(
 }
 
 /**
+ * Returns true if the extension currently has at least one SIP call that has
+ * been invited but not yet ended.  Used to avoid restarting mid-call.
+ */
+export function hasActiveCalls(extensionId: number): boolean {
+  const inviteIds = new Set<string>();
+  const endedIds  = new Set<string>();
+  for (const e of persistedCallEvents) {
+    if (e.extensionId !== extensionId) continue;
+    if (e.event === "invite") inviteIds.add(e.callId);
+    if (e.event === "ended")  endedIds.add(e.callId);
+  }
+  return [...inviteIds].some(id => !endedIds.has(id));
+}
+
+/**
+ * Write outbound overrides to config.json, restart the binary so it loads them
+ * fresh, then wait for SIP registration (up to 6 s).
+ *
+ * WHY a restart is needed:
+ * The binary loads config.json ONCE at startup into memory.  Writing the file
+ * while the process is running has no effect — the in-memory copy is never
+ * refreshed.  Restarting forces a fresh read, and the binary also calls
+ * context_webhook_url right after registration, giving a second path for the
+ * overrides to reach it.
+ *
+ * Returns true when the extension re-registers within the timeout, false on
+ * timeout (call will still proceed with whatever config the binary loaded).
+ */
+export async function applyOutboundConfigAndRestart(
+  extensionId: number,
+  overrides: { firstMessage?: string | null; systemPromptOverride?: string | null },
+): Promise<boolean> {
+  // 1. Write the override config so the binary reads it on next startup
+  await applyOutboundConfigOverride(extensionId, overrides);
+
+  // 2. Kill the current process without marking the extension as manually-stopped
+  //    (so watchdog and lifecycle remain unaffected after the call ends).
+  const info = processes.get(extensionId);
+  if (info) {
+    closeOutstandingCalls(extensionId);
+    info.proc.kill("SIGTERM");
+    processes.delete(extensionId);
+    await upsertDeployment(extensionId, {
+      status: "stopped",
+      pid: null,
+      sipRegistered: false,
+      lastStoppedAt: new Date(),
+    });
+    await new Promise(r => setTimeout(r, 800));
+  }
+
+  // 3. Start fresh — skipConfigWrite preserves the override we just wrote
+  await startExtension(extensionId, { skipConfigWrite: true });
+
+  // 4. Poll for SIP registration (250 ms intervals, max 6 s)
+  const deadline = Date.now() + 6_000;
+  while (Date.now() < deadline) {
+    await new Promise(r => setTimeout(r, 250));
+    const row = await db.query.deploymentsTable.findFirst({
+      where: eq(deploymentsTable.extensionId, extensionId),
+    });
+    if (row?.sipRegistered && row?.status === "registered") {
+      logger.info({ extensionId }, "Extension re-registered with outbound config — ready to dial");
+      return true;
+    }
+  }
+
+  logger.warn({ extensionId }, "Extension did not re-register within 6 s after outbound restart — dialling anyway");
+  return false;
+}
+
+/**
  * Rewrite config.json for a running extension with outbound-call overrides
  * (firstMessage, systemPromptOverride) baked in.  Called just before triggering
  * a Yeastar dial so the binary picks up the correct persona on the first INVITE.
@@ -793,7 +865,7 @@ async function allocatePorts(extensionId: number): Promise<{ sipLocalPort: numbe
   return { sipLocalPort, httpPort };
 }
 
-export async function startExtension(extensionId: number): Promise<void> {
+export async function startExtension(extensionId: number, opts?: { skipConfigWrite?: boolean }): Promise<void> {
   addSystemLog(`Starting extension ${extensionId}`);
   // Clear manual-stop flag so watchdog can fire after future crashes
   manuallyStopped.delete(extensionId);
@@ -814,14 +886,16 @@ export async function startExtension(extensionId: number): Promise<void> {
     await new Promise(r => setTimeout(r, 500));
   }
 
-  // Write config.json
+  // Write config.json (skip if caller pre-wrote overrides via applyOutboundConfigAndRestart)
   const configDir = path.join(CONFIG_DIR, String(extensionId));
   await fs.mkdir(configDir, { recursive: true });
   const configPath = path.join(configDir, "config.json");
   const { sipLocalPort, httpPort } = await allocatePorts(extensionId);
   const serviceName = serviceNameFor(ext);
-  const config = await buildConfig(ext, extensionId, { sipLocalPort, httpPort });
-  await fs.writeFile(configPath, JSON.stringify(config, null, 2));
+  if (!opts?.skipConfigWrite) {
+    const config = await buildConfig(ext, extensionId, { sipLocalPort, httpPort });
+    await fs.writeFile(configPath, JSON.stringify(config, null, 2));
+  }
   const env = buildEnv(ext, configPath);
 
   await upsertDeployment(extensionId, {
