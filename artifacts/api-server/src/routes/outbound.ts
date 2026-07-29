@@ -16,6 +16,7 @@ import { setPendingContext, consumePendingContext } from "../services/outboundCo
 import { applyOutboundConfigAndRestart, hasActiveCalls } from "../services/deployment.js";
 import { executeTool } from "../services/toolExecutor.js";
 import { getYeastarToken, yeastarPost, evictYeastarToken } from "../services/yeastarAuth.js";
+import { waitForCallAnswered } from "../services/yeastarCalls.js";
 
 const router = Router();
 
@@ -159,6 +160,20 @@ router.post("/outbound/call", async (req, res) => {
     return;
   }
 
+  // Store the Yeastar call_id in the pending context so the context endpoint
+  // can query the exact call when polling for answer state.
+  if (yeastarResult.yeastarCallId) {
+    setPendingContext(data.extensionId, {
+      callId: callRecord.id,
+      yeastarCallId: yeastarResult.yeastarCallId,
+      firstMessage: data.firstMessage ?? undefined,
+      systemPromptOverride: data.systemPromptOverride ?? undefined,
+      variables: data.variables ?? undefined,
+      webhookUrl: data.webhookUrl ?? undefined,
+      createdAt: new Date(),
+    });
+  }
+
   // Mark as dialing
   const [updated] = await db.update(outboundCallsTable)
     .set({ status: "dialing", updatedAt: new Date() })
@@ -229,34 +244,85 @@ router.delete("/outbound/calls/:id", async (req, res) => {
 });
 
 // ── Outbound context endpoint (consumed by sip-agent at call start) ──────────
+//
+// WHY this endpoint long-polls instead of responding immediately:
+//
+// The sip-agent binary calls this endpoint right after receiving a SIP INVITE,
+// to get the firstMessage/systemPromptOverride before starting the ElevenLabs
+// session. By holding the response until Yeastar's call/query API shows the
+// extension in TALK state (customer answered), we ensure the binary only opens
+// the ElevenLabs session — and sends the greeting — once the customer is
+// already on the line.
+//
+// Fail-open: if Yeastar is not configured, the API is unreachable, or the
+// 25-second timeout fires, we return the context immediately so the call
+// is never permanently blocked.
 
-router.get("/outbound/context/:extensionId", (req, res) => {
+router.get("/outbound/context/:extensionId", async (req, res) => {
   const extensionId = Number(req.params["extensionId"]);
   if (!Number.isFinite(extensionId)) {
     res.status(400).json({ error: "Invalid extensionId" });
     return;
   }
 
-  // Diagnostic: log every call to this endpoint so we can see exactly when
-  // the binary calls it (at registration/startup vs per-INVITE) and from where.
   const callerIp = req.ip ?? req.socket.remoteAddress ?? "unknown";
   const callerAgent = req.headers["user-agent"] ?? "none";
 
-  // Consume the pending context (one-time read — non-destructive, kept for re-INVITE)
+  // Read the pending context (non-destructive — kept for the re-INVITE if one arrives)
   const ctx = consumePendingContext(extensionId);
 
   if (!ctx) {
     logger.warn(
       { extensionId, callerIp, callerAgent, pending: false },
-      "Outbound context fetched by sip-agent — NO CONTEXT FOUND (pending: false). " +
-      "If this fires at extension startup/registration rather than per-INVITE, " +
-      "the binary is fetching context before the call is triggered. " +
-      "Check timing: was POST /api/outbound/call called before this request?"
+      "Outbound context fetched by sip-agent — NO CONTEXT FOUND. " +
+      "Binary may have called this before POST /api/outbound/call, or context already expired.",
     );
     res.json({ pending: false, firstMessage: null, systemPromptOverride: null, variables: null, callId: null });
     return;
   }
 
+  // ── Wait for the customer to answer before releasing context ───────────────
+  // Look up the extension and its Yeastar client credentials so we can poll
+  // the PBX for call state changes.
+  try {
+    const ext = await db.query.extensionsTable.findFirst({
+      where: eq(extensionsTable.id, extensionId),
+      with: { client: true },
+    });
+
+    const client = ext?.client as {
+      id: number;
+      yeastarApiUrl?: string | null;
+      yeastarClientId?: string | null;
+      yeastarClientSecret?: string | null;
+    } | null | undefined;
+
+    if (client?.yeastarApiUrl && client?.yeastarClientId && client?.yeastarClientSecret) {
+      // Poll Yeastar until outbound leg shows ANSWER, or timeout (fail-open).
+      // Pass the Yeastar call_id so we query the exact call rather than all
+      // calls for the extension (more reliable when calls overlap).
+      await waitForCallAnswered(
+        {
+          id: client.id,
+          yeastarApiUrl: client.yeastarApiUrl,
+          yeastarClientId: client.yeastarClientId,
+          yeastarClientSecret: client.yeastarClientSecret,
+        },
+        ext!.extensionNumber,
+        { callId: ctx.yeastarCallId },
+      );
+    } else {
+      logger.debug(
+        { extensionId },
+        "Outbound context: no Yeastar credentials — returning context immediately",
+      );
+    }
+  } catch (err) {
+    // DB or unexpected error — fail open
+    logger.warn({ err, extensionId }, "Outbound context: error during answer-wait — returning immediately");
+  }
+
+  // ── Return the context to the binary ──────────────────────────────────────
   const ageMs = Date.now() - ctx.createdAt.getTime();
   logger.info(
     {
@@ -271,7 +337,7 @@ router.get("/outbound/context/:extensionId", (req, res) => {
       hasVariables: !!ctx.variables,
       firstMessagePreview: ctx.firstMessage ? ctx.firstMessage.slice(0, 60) : null,
     },
-    "Outbound context fetched by sip-agent — context found and returned (pending: true)"
+    "Outbound context: returning config to sip-agent (customer answered or fail-open)",
   );
 
   res.json({
@@ -324,7 +390,7 @@ interface YeastarCallParams {
   callerId?: string;
 }
 
-async function tryYeastarMakeCall(params: YeastarCallParams): Promise<{ error?: string }> {
+async function tryYeastarMakeCall(params: YeastarCallParams): Promise<{ error?: string; yeastarCallId?: string }> {
   const client = params.ext.client as {
     id: number;
     yeastarApiUrl?: string | null;
@@ -362,11 +428,11 @@ async function tryYeastarMakeCall(params: YeastarCallParams): Promise<{ error?: 
 
     const response = await yeastarPost(url, dialBody);
 
-    interface DialResponse { errcode?: number; errmsg?: string }
+    interface DialResponse { errcode?: number; errmsg?: string; call_id?: string }
     const data = response.json<DialResponse>();
 
     logger.info(
-      { extensionId: params.ext.id, status: response.status, errcode: data.errcode, errmsg: data.errmsg, body: response.text },
+      { extensionId: params.ext.id, status: response.status, errcode: data.errcode, errmsg: data.errmsg, yeastarCallId: data.call_id, body: response.text },
       "Yeastar: dial response",
     );
 
@@ -383,8 +449,12 @@ async function tryYeastarMakeCall(params: YeastarCallParams): Promise<{ error?: 
       return { error: `Yeastar API error (HTTP ${response.status}): errcode=${data.errcode ?? "?"} — ${detail}` };
     }
 
-    logger.info({ extensionId: params.ext.id, phoneNumber: params.phoneNumber }, "Yeastar Make Call API called successfully");
-    return {};
+    logger.info(
+      { extensionId: params.ext.id, phoneNumber: params.phoneNumber, yeastarCallId: data.call_id },
+      "Yeastar Make Call API called successfully",
+    );
+    // Return the Yeastar call_id so the caller can use it for precise call/query polling
+    return { yeastarCallId: data.call_id };
   };
 
   try {

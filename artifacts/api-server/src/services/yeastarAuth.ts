@@ -223,3 +223,50 @@ export async function testYeastarConnection(
 export function evictYeastarToken(clientDbId: number): void {
   tokenCache.delete(clientDbId);
 }
+
+// ── Generic GET helper ────────────────────────────────────────────────────────
+
+/**
+ * Make a GET request to a Yeastar PBX URL (token passed as query param).
+ * Same quirks as yeastarPost: always returns HTTP 200, success = errcode 0.
+ */
+export async function yeastarGet(
+  url: string,
+  headers: Record<string, string> = {},
+): Promise<{ ok: boolean; status: number; text: string; json<T>(): T }> {
+  return new Promise((resolve, reject) => {
+    const parsed = new URL(url);
+    const isHttps = parsed.protocol === "https:";
+    const lib: typeof https = isHttps ? https : (http as unknown as typeof https);
+
+    const req = lib.request(
+      {
+        hostname: parsed.hostname,
+        port: Number(parsed.port) || (isHttps ? 443 : 80),
+        path: parsed.pathname + (parsed.search || ""),
+        method: "GET",
+        headers: {
+          "User-Agent": "SipAgent/1.0",
+          ...headers,
+        },
+        rejectUnauthorized: false,
+      },
+      (res) => {
+        const chunks: Buffer[] = [];
+        res.on("data", (c: Buffer) => chunks.push(c));
+        res.on("end", () => {
+          const text = Buffer.concat(chunks).toString("utf8");
+          resolve({
+            ok: true,
+            status: res.statusCode ?? 200,
+            text,
+            json<T>() { return JSON.parse(text) as T; },
+          });
+        });
+        res.on("error", reject);
+      },
+    );
+    req.on("error", reject);
+    req.end();
+  });
+}

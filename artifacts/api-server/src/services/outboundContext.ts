@@ -23,6 +23,8 @@
 
 export interface OutboundCallContext {
   callId: number; // outbound_calls.id from DB
+  /** Yeastar call_id returned by call/dial — used for precise call/query polling */
+  yeastarCallId?: string;
   firstMessage?: string;
   systemPromptOverride?: string;
   variables?: Record<string, unknown>;
