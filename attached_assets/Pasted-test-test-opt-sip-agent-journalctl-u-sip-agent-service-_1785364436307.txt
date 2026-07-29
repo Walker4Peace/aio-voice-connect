@@ -1,0 +1,57 @@
+test@test:/opt/sip-agent$ journalctl -u sip-agent.service -f
+juil. 29 22:31:38 test systemd[1]: sip-agent.service: Deactivated successfully.
+juil. 29 22:31:38 test systemd[1]: Stopped SIP Agent API Server.
+juil. 29 22:31:38 test systemd[1]: sip-agent.service: Consumed 9.048s CPU time.
+juil. 29 22:31:38 test systemd[1]: Started SIP Agent API Server.
+juil. 29 22:31:39 test sip-agent[5007]: Warning: connect.session() MemoryStore is not
+juil. 29 22:31:39 test sip-agent[5007]: designed for a production environment, as it will leak
+juil. 29 22:31:39 test sip-agent[5007]: memory, and will not scale past a single process.
+juil. 29 22:31:39 test sip-agent[5007]: {"level":30,"time":1785364299199,"pid":5007,"hostname":"test","port":3101,"msg":"Server listening"}
+juil. 29 22:31:39 test sip-agent[5007]: {"level":30,"time":1785364299254,"pid":5007,"hostname":"test","count":180,"msg":"Loaded call events from DB"}
+juil. 29 22:31:39 test sip-agent[5007]: {"level":30,"time":1785364299254,"pid":5007,"hostname":"test","msg":"Deployment state reconciled on startup"}
+juil. 29 22:32:43 test sip-agent[5007]: {"level":30,"time":1785364363706,"pid":5007,"hostname":"test","req":{"id":1,"method":"GET","url":"/api/deploy/call-events"},"res":{"statusCode":401},"responseTime":23,"msg":"request completed"}
+juil. 29 22:32:43 test sip-agent[5007]: {"level":30,"time":1785364363711,"pid":5007,"hostname":"test","req":{"id":2,"method":"GET","url":"/api/deploy/all"},"res":{"statusCode":401},"responseTime":3,"msg":"request completed"}
+juil. 29 22:32:46 test sip-agent[5007]: {"level":30,"time":1785364366452,"pid":5007,"hostname":"test","req":{"id":3,"method":"GET","url":"/api/auth/me"},"res":{"statusCode":200},"responseTime":75,"msg":"request completed"}
+juil. 29 22:32:56 test sip-agent[5007]: {"level":30,"time":1785364376835,"pid":5007,"hostname":"test","req":{"id":4,"method":"POST","url":"/api/auth/login"},"res":{"statusCode":200},"responseTime":489,"msg":"request completed"}
+juil. 29 22:32:56 test sip-agent[5007]: {"level":30,"time":1785364376854,"pid":5007,"hostname":"test","req":{"id":5,"method":"GET","url":"/api/auth/me"},"res":{"statusCode":200},"responseTime":13,"msg":"request completed"}
+juil. 29 22:32:56 test sip-agent[5007]: {"level":30,"time":1785364376933,"pid":5007,"hostname":"test","req":{"id":6,"method":"GET","url":"/api/extensions"},"res":{"statusCode":304},"responseTime":32,"msg":"request completed"}
+juil. 29 22:32:56 test sip-agent[5007]: {"level":30,"time":1785364376950,"pid":5007,"hostname":"test","req":{"id":8,"method":"GET","url":"/api/agent-configs"},"res":{"statusCode":304},"responseTime":18,"msg":"request completed"}
+juil. 29 22:32:56 test sip-agent[5007]: {"level":30,"time":1785364376964,"pid":5007,"hostname":"test","req":{"id":9,"method":"GET","url":"/api/deploy/call-events"},"res":{"statusCode":304},"responseTime":16,"msg":"request completed"}
+juil. 29 22:32:56 test sip-agent[5007]: {"level":30,"time":1785364376978,"pid":5007,"hostname":"test","req":{"id":10,"method":"GET","url":"/api/deploy/all"},"res":{"statusCode":200},"responseTime":16,"msg":"request completed"}
+juil. 29 22:32:56 test sip-agent[5007]: {"level":30,"time":1785364376995,"pid":5007,"hostname":"test","req":{"id":7,"method":"GET","url":"/api/stats"},"res":{"statusCode":304},"responseTime":93,"msg":"request completed"}
+juil. 29 22:33:01 test sip-agent[5007]: {"level":30,"time":1785364381993,"pid":5007,"hostname":"test","req":{"id":11,"method":"GET","url":"/api/deploy/all"},"res":{"statusCode":304},"responseTime":5,"msg":"request completed"}
+juil. 29 22:33:02 test sip-agent[5007]: {"level":30,"time":1785364382348,"pid":5007,"hostname":"test","extensionId":1,"sipLocalPort":7060,"offset":4331243,"msg":"Patched sip-agent binary local SIP port"}
+juil. 29 22:33:02 test sip-agent[5007]: {"level":30,"time":1785364382395,"pid":5007,"hostname":"test","extensionId":1,"patchedBin":"/tmp/sip-agent/1/sip-agent","sipLocalPort":7060,"msg":"Spawning patched sip-agent"}
+juil. 29 22:33:02 test sip-agent[5007]: [ext:1] [2026-07-29T22:33:02.460Z] 2026/07/29 22:33:02 Loaded config with 0 functions
+juil. 29 22:33:02 test sip-agent[5007]: [ext:1] [2026-07-29T22:33:02.463Z] 2026/07/29 22:33:02 Starting HTTP API server on :19000
+juil. 29 22:33:02 test sip-agent[5007]: [ext:1] [2026-07-29T22:33:02.463Z] 2026/07/29 22:33:02 Starting SIP client with configuration:
+juil. 29 22:33:02 test sip-agent[5007]: [ext:1] [2026-07-29T22:33:02.464Z] 2026/07/29 22:33:02 Username: 1005, Domain: 192.168.11.90, Server: 192.168.11.90:5060, Transport: udp
+juil. 29 22:33:02 test sip-agent[5007]: [ext:1] [2026-07-29T22:33:02.464Z] 2026/07/29 22:33:02 Auth ID: TjoCu4uhmD (using separate authorization ID)
+juil. 29 22:33:02 test sip-agent[5007]: [ext:1] [2026-07-29T22:33:02.464Z] 2026/07/29 22:33:02 No OPENAI_API_KEY set - calls will use fallback audio handling
+juil. 29 22:33:02 test sip-agent[5007]: [ext:1] [2026-07-29T22:33:02.464Z] 2026/07/29 22:33:02 DEBUG: Determined outbound IP as 192.168.11.101
+juil. 29 22:33:02 test sip-agent[5007]: [ext:1] [2026-07-29T22:33:02.464Z] 2026/07/29 22:33:02 Local IP determined as: 192.168.11.101
+juil. 29 22:33:02 test sip-agent[5007]: {"level":30,"time":1785364382467,"pid":5007,"hostname":"test","req":{"id":12,"method":"POST","url":"/api/deploy/1/start"},"res":{"statusCode":200},"responseTime":165,"msg":"request completed"}
+juil. 29 22:33:02 test sip-agent[5007]: {"level":30,"time":1785364382480,"pid":5007,"hostname":"test","req":{"id":13,"method":"GET","url":"/api/deploy/all"},"res":{"statusCode":200},"responseTime":5,"msg":"request completed"}
+juil. 29 22:33:02 test sip-agent[5007]: [ext:1] [2026-07-29T22:33:02.570Z] 2026/07/29 22:33:02 DEBUG: Retrieved external IP as 105.188.3.70
+juil. 29 22:33:02 test sip-agent[5007]: [ext:1] [2026-07-29T22:33:02.570Z] 2026/07/29 22:33:02 External IP determined as: 105.188.3.70
+juil. 29 22:33:02 test sip-agent[5007]: [ext:1] [2026-07-29T22:33:02.571Z] 2026/07/29 22:33:02 Sending REGISTER request via sipgo client.
+juil. 29 22:33:02 test sip-agent[5007]: [ext:1] [2026-07-29T22:33:02.572Z] 2026/07/29 22:33:02 Auth: digestUsername=TjoCu4uhmD, realm=YSAsterisk, uri=sip:192.168.11.90, password=EmkWA6lT7y
+juil. 29 22:33:02 test sip-agent[5007]: [ext:1] [2026-07-29T22:33:02.572Z] 2026/07/29 22:33:02 Resending REGISTER with Authorization header (CSeq=2).
+juil. 29 22:33:02 test sip-agent[5007]: [ext:1] [2026-07-29T22:33:02.572Z] 2026/07/29 22:33:02 Authorization: Digest username="TjoCu4uhmD", realm="YSAsterisk", nonce="1785364382/2d78ce5415513c6e16444ad8e9887056", uri="sip:192.168.11.90", response="b5f51b08f834083bc2f8f38006fe0246", algorithm=MD5
+juil. 29 22:33:02 test sip-agent[5007]: [ext:1] [2026-07-29T22:33:02.575Z] 2026/07/29 22:33:02 Received REGISTER response: SIP/2.0 200 OK
+juil. 29 22:33:02 test sip-agent[5007]: [ext:1] [2026-07-29T22:33:02.575Z] Via: SIP/2.0/UDP 192.168.11.101:55892;rport=55892;received=192.168.11.101;branch=z9hG4bK.kGd10br8QjBd7cy6
+juil. 29 22:33:02 test sip-agent[5007]: [ext:1] [2026-07-29T22:33:02.575Z] Call-ID: kaofYHzD4sG79xHb
+juil. 29 22:33:02 test sip-agent[5007]: [ext:1] [2026-07-29T22:33:02.575Z] From: <sip:1005@192.168.11.90>;tag=9zNHHxOx
+juil. 29 22:33:02 test sip-agent[5007]: [ext:1] [2026-07-29T22:33:02.575Z] To: <sip:1005@192.168.11.90>;tag=z9hG4bK.kGd10br8QjBd7cy6
+juil. 29 22:33:02 test sip-agent[5007]: [ext:1] [2026-07-29T22:33:02.576Z] CSeq: 2 REGISTER
+juil. 29 22:33:02 test sip-agent[5007]: [ext:1] [2026-07-29T22:33:02.576Z] Date: Wed, 29 Jul 2026 22:33:02 GMT
+juil. 29 22:33:02 test sip-agent[5007]: [ext:1] [2026-07-29T22:33:02.576Z] Contact: <sip:1005@192.168.11.101:53736>;expires=523
+juil. 29 22:33:02 test sip-agent[5007]: [ext:1] [2026-07-29T22:33:02.576Z] Contact: <sip:1005@192.168.11.101:55892>;expires=623
+juil. 29 22:33:02 test sip-agent[5007]: [ext:1] [2026-07-29T22:33:02.576Z] Expires: 640
+juil. 29 22:33:02 test sip-agent[5007]: [ext:1] [2026-07-29T22:33:02.576Z] Server: Yeastar PSE
+juil. 29 22:33:02 test sip-agent[5007]: [ext:1] [2026-07-29T22:33:02.576Z] Content-Length: 0
+juil. 29 22:33:02 test sip-agent[5007]: [ext:1] [2026-07-29T22:33:02.576Z] 2026/07/29 22:33:02 Registration successful!
+juil. 29 22:33:02 test sip-agent[5007]: [ext:1] [2026-07-29T22:33:02.576Z] 2026/07/29 22:33:02 Initial REGISTER request sent.
+juil. 29 22:33:02 test sip-agent[5007]: [ext:1] [2026-07-29T22:33:02.579Z] 2026/07/29 22:33:02 SIP server is now listening for incoming messages.
+juil. 29 22:33:02 test sip-agent[5007]: [ext:1] [2026-07-29T22:33:02.579Z] 2026/07/29 22:33:02 WARN SIP request handler not found caller=Server method=NOTIFY
+juil. 29 22:33:02 test sip-agent[5007]: {"level":30,"time":1785364382981,"pid":5007,"hostname":"test","req":{"id":14,"method":"GET","url":"/api/deploy/call-events"},"res":{"statusCode":304},"responseTime":7,"msg":"request completed"}
