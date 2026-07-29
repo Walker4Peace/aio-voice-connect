@@ -1,0 +1,30 @@
+—		—	[2026-07-29T18:26:14.256Z] 2026/07/29 18:26:14 Loaded config with 0 functions
+—		—	[2026-07-29T18:26:14.278Z] 2026/07/29 18:26:14 Starting HTTP API server on :19000
+—		—	[2026-07-29T18:26:14.278Z] 2026/07/29 18:26:14 Starting SIP client with configuration:
+—		—	[2026-07-29T18:26:14.278Z] 2026/07/29 18:26:14 Username: 1005, Domain: 192.168.11.90, Server: 192.168.11.90:5060, Transport: udp
+—		—	[2026-07-29T18:26:14.278Z] 2026/07/29 18:26:14 Auth ID: TjoCu4uhmD (using separate authorization ID)
+—		—	[2026-07-29T18:26:14.278Z] 2026/07/29 18:26:14 No OPENAI_API_KEY set - calls will use fallback audio handling
+—		—	[2026-07-29T18:26:14.289Z] 2026/07/29 18:26:14 DEBUG: Determined outbound IP as 192.168.11.128
+—		—	[2026-07-29T18:26:14.296Z] 2026/07/29 18:26:14 Local IP determined as: 192.168.11.128
+—		—	[2026-07-29T18:26:14.631Z] 2026/07/29 18:26:14 DEBUG: Retrieved external IP as 196.115.109.15
+—		—	[2026-07-29T18:26:14.631Z] 2026/07/29 18:26:14 External IP determined as: 196.115.109.15
+—		—	[2026-07-29T18:26:14.631Z] 2026/07/29 18:26:14 Sending REGISTER request via sipgo client.
+—		—	[2026-07-29T18:26:14.644Z] 2026/07/29 18:26:14 Auth: digestUsername=TjoCu4uhmD, realm=YSAsterisk, uri=sip:192.168.11.90, password=EmkWA6lT7y
+—		—	[2026-07-29T18:26:14.645Z] 2026/07/29 18:26:14 Resending REGISTER with Authorization header (CSeq=2).
+—		—	[2026-07-29T18:26:14.645Z] 2026/07/29 18:26:14 Authorization: Digest username="TjoCu4uhmD", realm="YSAsterisk", nonce="1785349574/623500191d33cc458a084dbb6f9aca41", uri="sip:192.168.11.90", response="36098ad1e5c23fe0002ccfe23f327c84", algorithm=MD5
+—		—	[2026-07-29T18:26:14.671Z] 2026/07/29 18:26:14 Received REGISTER response: SIP/2.0 200 OK
+—		—	[2026-07-29T18:26:14.671Z] Via: SIP/2.0/UDP 192.168.11.128:56213;received=192.168.11.128;branch=z9hG4bK.mAniN9iJHZsJpw44;rport=56213
+—		—	[2026-07-29T18:26:14.671Z] Call-ID: n6Lu4ZC8AFn7CNAW
+—		—	[2026-07-29T18:26:14.671Z] From: <sip:1005@192.168.11.90>;tag=TaPsBM0z
+—		—	[2026-07-29T18:26:14.671Z] To: <sip:1005@192.168.11.90>;tag=z9hG4bK.mAniN9iJHZsJpw44
+—		—	[2026-07-29T18:26:14.672Z] CSeq: 2 REGISTER
+—		—	[2026-07-29T18:26:14.672Z] Date: Wed, 29 Jul 2026 18:26:14 GMT
+—		—	[2026-07-29T18:26:14.672Z] Contact: <sip:1005@192.168.11.128:41010>;expires=527
+—		—	[2026-07-29T18:26:14.672Z] Contact: <sip:1005@192.168.11.128:56213>;expires=641
+—		—	[2026-07-29T18:26:14.672Z] Expires: 652
+—		—	[2026-07-29T18:26:14.672Z] Server: Yeastar PSE
+—		—	[2026-07-29T18:26:14.672Z] Content-Length: 0
+—		—	[2026-07-29T18:26:14.672Z] 2026/07/29 18:26:14 Registration successful!
+—		—	[2026-07-29T18:26:14.719Z] 2026/07/29 18:26:14 Initial REGISTER request sent.
+—		—	[2026-07-29T18:26:14.741Z] 2026/07/29 18:26:14 WARN SIP request handler not found caller=Server method=NOTIFY
+—		—	[2026-07-29T18:26:14.741Z] 2026/07/29 18:26:14 SIP server is now listening for incoming messages.

@@ -781,6 +781,8 @@ export async function startExtension(extensionId: number): Promise<void> {
       const entry = `[${timestamp}] ${line}`;
       info.logs.push(entry);
       if (info.logs.length > MAX_LOG_LINES) info.logs.shift();
+      // Mirror binary output to stdout so it appears in journalctl
+      process.stdout.write(`[ext:${extensionId}] ${entry}\n`);
 
       // Parse and persist call events so history survives extension stop
       parseAndStoreCallEvents(extensionId, line, timestamp);
