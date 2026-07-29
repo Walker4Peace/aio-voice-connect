@@ -346,27 +346,9 @@ async function tryYeastarMakeCall(params: YeastarCallParams): Promise<{ error?: 
   };
 
   const ext = params.ext as { extensionNumber: string };
-  //
-  // WHY caller/callee are swapped from the "obvious" order:
-  //
-  // Yeastar's call/dial is CALLER-FIRST: the PBX rings `caller` first and only
-  // calls `callee` after `caller` answers.  If the AI extension is the caller,
-  // sip-agent answers immediately, opens an ElevenLabs session, and the AI
-  // speaks into silence while the customer's phone is still ringing.  When the
-  // customer finally picks up, Yeastar sends a re-INVITE which the binary treats
-  // as a NEW call → a second ElevenLabs session.  Result: two sessions, phantom
-  // audio, wasted ElevenLabs credits.
-  //
-  // By making the CUSTOMER the caller (called first by Yeastar) and the AI
-  // extension the callee (called only after the customer answers), the binary
-  // receives its first INVITE only when the customer is already on the line.
-  // One session, no phantom audio, customer hears the greeting immediately.
-  //
-  // caller_id_number controls what the customer sees on their screen when
-  // Yeastar dials them — it is still passed through unchanged.
   const dialBody = {
-    caller: params.phoneNumber,   // customer — called first; answers before AI is involved
-    callee: ext.extensionNumber,  // AI extension — called only after customer picks up
+    caller: ext.extensionNumber,
+    callee: params.phoneNumber,
     ...(params.callerId ? { caller_id_number: params.callerId } : {}),
   };
 
