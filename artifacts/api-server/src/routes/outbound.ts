@@ -20,6 +20,36 @@ import { waitForCallAnswered } from "../services/yeastarCalls.js";
 
 const router = Router();
 
+// ── Per-extension answer-wait deduplication ───────────────────────────────────
+//
+// The binary opens TWO ElevenLabs sessions per outbound call (binary behaviour,
+// cannot be changed).  Both sessions call GET /api/outbound/context/:extensionId
+// within ~200 ms of each other.
+//
+// Without deduplication:
+//   - Both requests independently poll Yeastar (double the API calls)
+//   - Both receive firstMessage and both greet simultaneously → double audio
+//
+// With deduplication:
+//   - The first request creates one shared poll Promise; the second reuses it
+//   - Only the FIRST request receives the real firstMessage (session 1 greets)
+//   - The SECOND request receives firstMessage: null (session 2 starts in
+//     listen mode — no greeting, waits for user to speak)
+//
+// NOTE: This only works correctly when first_message is NOT baked into
+// config.json.  deployment.ts omits first_message for outbound restarts so
+// that returning null here actually suppresses the second session's greeting.
+
+/** Shared Yeastar poll promise per extensionId (avoids duplicate PBX API calls). */
+const pendingAnswerWaits = new Map<number, Promise<boolean>>();
+
+/**
+ * Timestamp (ms) when firstMessage was last served for a given extensionId.
+ * Used to detect the duplicate session within the dedup window.
+ */
+const firstMessageServedAt = new Map<number, number>();
+const FIRST_MESSAGE_DEDUP_MS = 30_000;
+
 // ── Auth helpers ─────────────────────────────────────────────────────────────
 
 /** Verify X-Api-Key header against OUTBOUND_API_KEY env var (if configured). */
@@ -281,6 +311,11 @@ router.get("/outbound/context/:extensionId", async (req, res) => {
     return;
   }
 
+  // ── Detect duplicate session (binary opens two ElevenLabs sessions per call) ─
+  const lastServedMs = firstMessageServedAt.get(extensionId);
+  const isDuplicateSession =
+    lastServedMs !== undefined && Date.now() - lastServedMs < FIRST_MESSAGE_DEDUP_MS;
+
   // ── Wait for the customer to answer before releasing context ───────────────
   // Look up the extension and its Yeastar client credentials so we can poll
   // the PBX for call state changes.
@@ -298,19 +333,27 @@ router.get("/outbound/context/:extensionId", async (req, res) => {
     } | null | undefined;
 
     if (client?.yeastarApiUrl && client?.yeastarClientId && client?.yeastarClientSecret) {
-      // Poll Yeastar until outbound leg shows ANSWER, or timeout (fail-open).
-      // Pass the Yeastar call_id so we query the exact call rather than all
-      // calls for the extension (more reliable when calls overlap).
-      await waitForCallAnswered(
-        {
-          id: client.id,
-          yeastarApiUrl: client.yeastarApiUrl,
-          yeastarClientId: client.yeastarClientId,
-          yeastarClientSecret: client.yeastarClientSecret,
-        },
-        ext!.extensionNumber,
-        { callId: ctx.yeastarCallId },
-      );
+      // Reuse an existing in-progress poll if one is already running for this
+      // extension (the second of the binary's two sessions arrives ~200 ms
+      // after the first — both can await the same Promise, which halves Yeastar
+      // API traffic and ensures they release at the exact same moment).
+      let waitPromise = pendingAnswerWaits.get(extensionId);
+      if (!waitPromise) {
+        waitPromise = waitForCallAnswered(
+          {
+            id: client.id,
+            yeastarApiUrl: client.yeastarApiUrl,
+            yeastarClientId: client.yeastarClientId,
+            yeastarClientSecret: client.yeastarClientSecret,
+          },
+          ext!.extensionNumber,
+          { callId: ctx.yeastarCallId },
+        );
+        pendingAnswerWaits.set(extensionId, waitPromise);
+        // Remove from map when done so the next independent call starts fresh.
+        waitPromise.finally(() => pendingAnswerWaits.delete(extensionId));
+      }
+      await waitPromise;
     } else {
       logger.debug(
         { extensionId },
@@ -320,6 +363,16 @@ router.get("/outbound/context/:extensionId", async (req, res) => {
   } catch (err) {
     // DB or unexpected error — fail open
     logger.warn({ err, extensionId }, "Outbound context: error during answer-wait — returning immediately");
+  }
+
+  // ── First-one-wins: only the first session gets the greeting ──────────────
+  // Record when we served firstMessage for this extension so the second session
+  // (which arrives ~200 ms later) is detected as a duplicate and gets null.
+  const servedFirstMessage = isDuplicateSession ? null : (ctx.firstMessage ?? null);
+  if (!isDuplicateSession) {
+    firstMessageServedAt.set(extensionId, Date.now());
+    // Expire the dedup record after the window so unrelated future calls are unaffected.
+    setTimeout(() => firstMessageServedAt.delete(extensionId), FIRST_MESSAGE_DEDUP_MS);
   }
 
   // ── Return the context to the binary ──────────────────────────────────────
@@ -332,17 +385,20 @@ router.get("/outbound/context/:extensionId", async (req, res) => {
       callerAgent,
       pending: true,
       ageMs,
-      hasFirstMessage: !!ctx.firstMessage,
+      isDuplicateSession,
+      hasFirstMessage: !!servedFirstMessage,
       hasSystemPrompt: !!ctx.systemPromptOverride,
       hasVariables: !!ctx.variables,
-      firstMessagePreview: ctx.firstMessage ? ctx.firstMessage.slice(0, 60) : null,
+      firstMessagePreview: servedFirstMessage ? servedFirstMessage.slice(0, 60) : null,
     },
-    "Outbound context: returning config to sip-agent (customer answered or fail-open)",
+    isDuplicateSession
+      ? "Outbound context: duplicate session — suppressing firstMessage (session 2 starts in listen mode)"
+      : "Outbound context: returning config to sip-agent (customer answered or fail-open)",
   );
 
   res.json({
     pending: true,
-    firstMessage: ctx.firstMessage ?? null,
+    firstMessage: servedFirstMessage,
     systemPromptOverride: ctx.systemPromptOverride ?? null,
     variables: ctx.variables ?? null,
     callId: ctx.callId,
@@ -420,7 +476,7 @@ async function tryYeastarMakeCall(params: YeastarCallParams): Promise<{ error?: 
 
   // Yeastar P-Series passes the access token as a query parameter, not a Bearer header.
   // On TOKEN EXPIRED (10004) we evict the cache and retry once with a fresh token.
-  const attemptDial = async (retrying = false): Promise<{ error?: string }> => {
+  const attemptDial = async (retrying = false): Promise<{ error?: string; yeastarCallId?: string }> => {
     const accessToken = await getYeastarToken(yeastarClient);
     const url = `${yeastarClient.yeastarApiUrl.replace(/\/$/, "")}/openapi/v1.0/call/dial?access_token=${encodeURIComponent(accessToken)}`;
 
