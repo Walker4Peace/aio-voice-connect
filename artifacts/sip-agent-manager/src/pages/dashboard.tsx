@@ -94,8 +94,8 @@ function AgentRow({ ext, status }: {
       <td className="py-3 px-4">
         {isOutbound ? (
           <div className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full shrink-0 bg-orange-400" />
-            <span className="text-sm font-medium text-orange-600">{t("extensions.outboundBadge")}</span>
+            <span className="h-2 w-2 rounded-full shrink-0 bg-[#F1C40F]" />
+            <span className="text-sm font-medium text-[#92740A]">{t("extensions.outboundBadge")}</span>
           </div>
         ) : status ? (
           <div className="flex items-center gap-1.5">

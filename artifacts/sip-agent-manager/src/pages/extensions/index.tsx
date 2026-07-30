@@ -361,8 +361,8 @@ export default function ExtensionsList() {
                             {ext.agentConfig?.mode === "outbound" ? (
                               <div>
                                 <div className="flex items-center gap-1.5">
-                                  <span className="h-1.5 w-1.5 rounded-full shrink-0 bg-orange-400" />
-                                  <span className="text-xs font-medium text-orange-600">{t("extensions.outboundBadge")}</span>
+                                  <span className="h-1.5 w-1.5 rounded-full shrink-0 bg-[#F1C40F]" />
+                                  <span className="text-xs font-medium text-[#92740A]">{t("extensions.outboundBadge")}</span>
                                 </div>
                                 <p className="text-[11px] text-muted-foreground pl-3 mt-0.5">{t("extensions.outboundBadgeDesc")}</p>
                               </div>

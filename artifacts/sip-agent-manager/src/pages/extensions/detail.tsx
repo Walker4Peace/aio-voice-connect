@@ -189,20 +189,23 @@ export default function ExtensionDetail() {
 
       {/* Deployment Panel — inbound: manual deploy; outbound: info card only */}
       {isOutbound ? (
-        <div className="bg-card border rounded-xl shadow-sm border-l-4 border-l-orange-400 overflow-hidden">
+        <div className="bg-card border rounded-xl shadow-sm border-l-4 border-l-[#F1C40F] overflow-hidden">
           <div className="flex items-center gap-3 px-5 py-4 border-b">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-50">
-              <Phone className="h-5 w-5 text-orange-500" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#FEFCE8]">
+              <Phone className="h-5 w-5 text-[#F1C40F]" />
             </div>
             <div>
-              <h2 className="font-semibold text-base">{t("extDetail.outboundModeTitle")}</h2>
+              <h2 className="font-semibold text-base">
+                {t("extDetail.outboundModeTitle")}{" "}
+                <span className="text-sm font-normal text-muted-foreground">{t("extDetail.outboundModeTitleSub")}</span>
+              </h2>
               <p className="text-xs text-muted-foreground">{t("extDetail.outboundModeSubtitle")}</p>
             </div>
           </div>
           <div className="px-5 py-4">
-            <div className="flex items-start gap-3 rounded-lg bg-orange-50 border border-orange-100 p-3">
-              <Info className="h-4 w-4 text-orange-500 mt-0.5 shrink-0" />
-              <p className="text-sm text-orange-700">{t("extDetail.outboundModeInfo")}</p>
+            <div className="flex items-start gap-3 rounded-lg bg-[#FEFCE8] border border-[#FEF08A] p-3">
+              <Info className="h-4 w-4 text-[#92740A] mt-0.5 shrink-0" />
+              <p className="text-sm text-[#78610A]">{t("extDetail.outboundModeInfo")}</p>
             </div>
           </div>
         </div>

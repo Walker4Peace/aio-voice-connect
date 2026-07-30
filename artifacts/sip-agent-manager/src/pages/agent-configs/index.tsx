@@ -143,7 +143,7 @@ export default function AgentConfigsList() {
                           {config.mode === "inbound" ? (
                             <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">{t("agents.modeInbound")}</span>
                           ) : config.mode === "outbound" ? (
-                            <span className="inline-flex items-center rounded-full bg-orange-100 px-2 py-0.5 text-xs font-medium text-orange-700">{t("agents.modeOutbound")}</span>
+                            <span className="inline-flex items-center rounded-full bg-[#FEF9C3] px-2 py-0.5 text-xs font-medium text-[#92740A]">{t("agents.modeOutbound")}</span>
                           ) : (
                             <span className="text-muted-foreground italic text-xs">{t("agents.modeNotSet")}</span>
                           )}
