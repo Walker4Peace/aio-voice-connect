@@ -1109,7 +1109,7 @@ const fr: typeof en = {
   "outbound.thExtension":          "Extension",
   "outbound.thStatus":             "Statut",
   "outbound.thFirstMessage":       "Premier message",
-  "outbound.thInitiated":          "Initié",
+  "outbound.thInitiated":          "Initié le",
   "outbound.clearAll":             "Tout effacer",
   "outbound.clearTitle":           "Effacer tout l'historique des appels sortants ?",
   "outbound.clearDesc":            "Cela supprimera définitivement {{count}} enregistrements d'appels sortants. Cette action est irréversible.",
