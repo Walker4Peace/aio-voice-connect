@@ -358,17 +358,27 @@ export default function ExtensionsList() {
                             )}
                           </td>
                           <td className="py-3.5 px-4">
-                            <div>
-                              <div className="flex items-center gap-1.5">
-                                <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${isRunning ? "bg-green-500" : "bg-gray-300"}`} />
-                                <span className={`text-xs font-medium ${isRunning ? "text-green-700" : "text-muted-foreground"}`}>
-                                  {isRunning ? t("deploy.status.registered") : t("deploy.status.stopped")}
-                                </span>
+                            {ext.agentConfig?.mode === "outbound" ? (
+                              <div>
+                                <div className="flex items-center gap-1.5">
+                                  <span className="h-1.5 w-1.5 rounded-full shrink-0 bg-orange-400" />
+                                  <span className="text-xs font-medium text-orange-600">{t("extensions.outboundBadge")}</span>
+                                </div>
+                                <p className="text-[11px] text-muted-foreground pl-3 mt-0.5">{t("extensions.outboundBadgeDesc")}</p>
                               </div>
-                              <p className="text-[11px] text-muted-foreground pl-3 mt-0.5">
-                                {isRunning ? t("extensions.running") : t("extensions.notRunning")}
-                              </p>
-                            </div>
+                            ) : (
+                              <div>
+                                <div className="flex items-center gap-1.5">
+                                  <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${isRunning ? "bg-green-500" : "bg-gray-300"}`} />
+                                  <span className={`text-xs font-medium ${isRunning ? "text-green-700" : "text-muted-foreground"}`}>
+                                    {isRunning ? t("deploy.status.registered") : t("deploy.status.stopped")}
+                                  </span>
+                                </div>
+                                <p className="text-[11px] text-muted-foreground pl-3 mt-0.5">
+                                  {isRunning ? t("extensions.running") : t("extensions.notRunning")}
+                                </p>
+                              </div>
+                            )}
                           </td>
                           <td className="py-3.5 px-4 text-xs text-muted-foreground">
                             {isRunning && s?.lastStartedAt ? timeAgo(s.lastStartedAt) : "—"}

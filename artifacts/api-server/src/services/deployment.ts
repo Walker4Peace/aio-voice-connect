@@ -1022,21 +1022,13 @@ export async function startExtension(extensionId: number, opts?: { skipConfigWri
     logger.info({ extensionId, code, signal }, "sip-agent process exited");
     upsertDeployment(extensionId, { status, pid: null, lastStoppedAt: new Date(), lastError, sipRegistered: false }).catch(() => {});
 
-    // Auto-restart in inbound mode after outbound call completes.
-    // The binary in "outbound" mode exits when the call ends (hangup_on_task_complete).
-    // We restart it immediately with the normal inbound config so the extension stays live.
+    // Outbound call completed — clear the mode flag and stay stopped.
+    // Outbound extensions are one-shot: started per call, stopped when done.
+    // No inbound restart; use the outbound trigger to start the next call.
     if (outboundCallModes.has(extensionId)) {
       outboundCallModes.delete(extensionId);
-      if (!manuallyStopped.has(extensionId)) {
-        logger.info({ extensionId }, "Outbound call ended — restarting extension in inbound mode");
-        setTimeout(() => {
-          startExtension(extensionId).catch(err => {
-            logger.error({ err, extensionId }, "Failed to restart extension after outbound call");
-            upsertDeployment(extensionId, { status: "error", lastError: (err as Error).message }).catch(() => {});
-          });
-        }, 1500);
-        return; // skip watchdog — this is expected, not a crash
-      }
+      logger.info({ extensionId, code, signal }, "Outbound call ended — extension returning to idle (stopped)");
+      return; // expected exit — skip watchdog
     }
 
     // Watchdog: if this was an unexpected crash (not a manual stop) and watchdog is on, start pinging

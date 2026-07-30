@@ -104,6 +104,7 @@ export default function ExtensionDetail() {
   const isRunning     = deployStatus?.status === "registered" || deployStatus?.status === "starting" || deployStatus?.status === "reconnecting";
   const isStarting    = deployStatus?.status === "starting";
   const isReconnecting = deployStatus?.status === "reconnecting";
+  const isOutbound    = extension?.agentConfig?.mode === "outbound";
 
   const agentForm = useForm<z.infer<typeof agentSchema>>({
     resolver: zodResolver(agentSchema),
@@ -186,111 +187,131 @@ export default function ExtensionDetail() {
         )}
       </div>
 
-      {/* Deployment Panel */}
-      <div className={cn(
-        "bg-card border rounded-xl shadow-sm border-l-4 overflow-hidden",
-        isReconnecting ? "border-l-orange-500" : isRunning ? "border-l-green-500" : deployStatus?.status === "error" ? "border-l-red-500" : "border-l-muted"
-      )}>
-        <div className="flex items-start justify-between px-5 py-4 border-b">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted">
-              <Users className="h-5 w-5 text-muted-foreground" />
+      {/* Deployment Panel — inbound: manual deploy; outbound: info card only */}
+      {isOutbound ? (
+        <div className="bg-card border rounded-xl shadow-sm border-l-4 border-l-orange-400 overflow-hidden">
+          <div className="flex items-center gap-3 px-5 py-4 border-b">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-50">
+              <Phone className="h-5 w-5 text-orange-500" />
             </div>
             <div>
-              <h2 className="font-semibold text-base">{t("extDetail.sipAgentTitle")}</h2>
-              <p className="text-xs text-muted-foreground">{hasAgentConfig ? t("extDetail.deployManage") : t("extDetail.assignFirst")}</p>
+              <h2 className="font-semibold text-base">{t("extDetail.outboundModeTitle")}</h2>
+              <p className="text-xs text-muted-foreground">{t("extDetail.outboundModeSubtitle")}</p>
             </div>
           </div>
-          {deployStatus?.uptimeSeconds != null && isRunning && (
-            <div className="flex items-center gap-1.5 text-sm font-medium">
-              <span className="text-muted-foreground text-xs">{t("extDetail.uptime")}</span>
-              <span className="flex items-center gap-1 text-green-700">
-                <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-                {formatUptime(deployStatus.uptimeSeconds)}
-              </span>
+          <div className="px-5 py-4">
+            <div className="flex items-start gap-3 rounded-lg bg-orange-50 border border-orange-100 p-3">
+              <Info className="h-4 w-4 text-orange-500 mt-0.5 shrink-0" />
+              <p className="text-sm text-orange-700">{t("extDetail.outboundModeInfo")}</p>
             </div>
-          )}
+          </div>
         </div>
-
-        <div className="px-5 py-4 space-y-4">
-          {deployStatus?.lastError && deployStatus.status !== "registered" && (
-            <div className="flex items-start gap-2 rounded-md bg-destructive/10 border border-destructive/20 p-3 text-sm text-destructive">
-              <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
-              <span className="font-mono text-xs break-all">{deployStatus.lastError}</span>
-            </div>
-          )}
-
-          <div className="flex flex-wrap items-center gap-2">
-            {!isRunning ? (
-              <Button
-                className="gap-2"
-                disabled={!hasAgentConfig || start.isPending}
-                onClick={() => handleAction(start, "deploy.deploy")}
-              >
-                {start.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
-                {start.isPending ? t("deploy.deploying") : t("deploy.deploy")}
-              </Button>
-            ) : (
-              <>
-                <Button variant="outline" className="gap-2 border-red-200 text-red-600 hover:bg-red-50"
-                  disabled={stop.isPending} onClick={() => handleAction(stop, "deploy.stop")}>
-                  {stop.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Square className="h-4 w-4" />}
-                  {t("deploy.stop")}
-                </Button>
-                <Button variant="outline" className="gap-2"
-                  disabled={restart.isPending} onClick={() => handleAction(restart, "deploy.restart")}>
-                  {restart.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <RotateCcw className="h-4 w-4" />}
-                  {t("deploy.restart")}
-                </Button>
-              </>
-            )}
-            {isStarting && (
-              <span className="flex items-center gap-1 text-sm text-yellow-600">
-                <Loader2 className="h-3 w-3 animate-spin" /> {t("extDetail.waitingSip")}
-              </span>
-            )}
-            {isReconnecting && (
-              <span className="flex items-center gap-1 text-sm text-orange-600">
-                <Loader2 className="h-3 w-3 animate-spin" /> {t("extDetail.yeastarUnreach")}
-              </span>
-            )}
-          </div>
-
-          {/* Watchdog toggle */}
-          <div className="flex items-center justify-between gap-4 pt-3 border-t">
-            <div className="flex items-start gap-3">
-              <ShieldCheck className={cn("h-4 w-4 mt-0.5 shrink-0", watchdog?.enabled ? "text-green-500" : "text-muted-foreground")} />
+      ) : (
+        <div className={cn(
+          "bg-card border rounded-xl shadow-sm border-l-4 overflow-hidden",
+          isReconnecting ? "border-l-orange-500" : isRunning ? "border-l-green-500" : deployStatus?.status === "error" ? "border-l-red-500" : "border-l-muted"
+        )}>
+          <div className="flex items-start justify-between px-5 py-4 border-b">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted">
+                <Users className="h-5 w-5 text-muted-foreground" />
+              </div>
               <div>
-                <p className="text-sm font-medium">{t("extDetail.watchdogLabel")}</p>
-                <p className="text-xs text-muted-foreground max-w-lg">
-                  {t("extDetail.watchdogDesc")}
-                  {watchdog?.pinging && (
-                    <span className="ml-1 inline-flex items-center gap-1 text-yellow-600">
-                      <Loader2 className="h-2.5 w-2.5 animate-spin" /> {t("extDetail.pinging")}
-                    </span>
-                  )}
-                </p>
+                <h2 className="font-semibold text-base">{t("extDetail.sipAgentTitle")}</h2>
+                <p className="text-xs text-muted-foreground">{hasAgentConfig ? t("extDetail.deployManage") : t("extDetail.assignFirst")}</p>
               </div>
             </div>
-            <button
-              onClick={() => setWatchdog.mutate(!watchdog?.enabled, {
-                onSuccess: () => toast({ title: watchdog?.enabled ? t("extDetail.watchdogDisabled") : t("extDetail.watchdogEnabled") }),
-                onError: (e) => toast({ variant: "destructive", title: t("extDetail.watchdogFailed"), description: e.message }),
-              })}
-              disabled={setWatchdog.isPending}
-              className={cn(
-                "relative inline-flex h-6 w-11 items-center rounded-full transition-colors shrink-0",
-                watchdog?.enabled ? "bg-green-500" : "bg-gray-200"
+            {deployStatus?.uptimeSeconds != null && isRunning && (
+              <div className="flex items-center gap-1.5 text-sm font-medium">
+                <span className="text-muted-foreground text-xs">{t("extDetail.uptime")}</span>
+                <span className="flex items-center gap-1 text-green-700">
+                  <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                  {formatUptime(deployStatus.uptimeSeconds)}
+                </span>
+              </div>
+            )}
+          </div>
+
+          <div className="px-5 py-4 space-y-4">
+            {deployStatus?.lastError && deployStatus.status !== "registered" && (
+              <div className="flex items-start gap-2 rounded-md bg-destructive/10 border border-destructive/20 p-3 text-sm text-destructive">
+                <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+                <span className="font-mono text-xs break-all">{deployStatus.lastError}</span>
+              </div>
+            )}
+
+            <div className="flex flex-wrap items-center gap-2">
+              {!isRunning ? (
+                <Button
+                  className="gap-2"
+                  disabled={!hasAgentConfig || start.isPending}
+                  onClick={() => handleAction(start, "deploy.deploy")}
+                >
+                  {start.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
+                  {start.isPending ? t("deploy.deploying") : t("deploy.deploy")}
+                </Button>
+              ) : (
+                <>
+                  <Button variant="outline" className="gap-2 border-red-200 text-red-600 hover:bg-red-50"
+                    disabled={stop.isPending} onClick={() => handleAction(stop, "deploy.stop")}>
+                    {stop.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Square className="h-4 w-4" />}
+                    {t("deploy.stop")}
+                  </Button>
+                  <Button variant="outline" className="gap-2"
+                    disabled={restart.isPending} onClick={() => handleAction(restart, "deploy.restart")}>
+                    {restart.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <RotateCcw className="h-4 w-4" />}
+                    {t("deploy.restart")}
+                  </Button>
+                </>
               )}
-            >
-              <span className={cn(
-                "inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform",
-                watchdog?.enabled ? "translate-x-6" : "translate-x-1"
-              )} />
-            </button>
+              {isStarting && (
+                <span className="flex items-center gap-1 text-sm text-yellow-600">
+                  <Loader2 className="h-3 w-3 animate-spin" /> {t("extDetail.waitingSip")}
+                </span>
+              )}
+              {isReconnecting && (
+                <span className="flex items-center gap-1 text-sm text-orange-600">
+                  <Loader2 className="h-3 w-3 animate-spin" /> {t("extDetail.yeastarUnreach")}
+                </span>
+              )}
+            </div>
+
+            {/* Watchdog toggle */}
+            <div className="flex items-center justify-between gap-4 pt-3 border-t">
+              <div className="flex items-start gap-3">
+                <ShieldCheck className={cn("h-4 w-4 mt-0.5 shrink-0", watchdog?.enabled ? "text-green-500" : "text-muted-foreground")} />
+                <div>
+                  <p className="text-sm font-medium">{t("extDetail.watchdogLabel")}</p>
+                  <p className="text-xs text-muted-foreground max-w-lg">
+                    {t("extDetail.watchdogDesc")}
+                    {watchdog?.pinging && (
+                      <span className="ml-1 inline-flex items-center gap-1 text-yellow-600">
+                        <Loader2 className="h-2.5 w-2.5 animate-spin" /> {t("extDetail.pinging")}
+                      </span>
+                    )}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setWatchdog.mutate(!watchdog?.enabled, {
+                  onSuccess: () => toast({ title: watchdog?.enabled ? t("extDetail.watchdogDisabled") : t("extDetail.watchdogEnabled") }),
+                  onError: (e) => toast({ variant: "destructive", title: t("extDetail.watchdogFailed"), description: e.message }),
+                })}
+                disabled={setWatchdog.isPending}
+                className={cn(
+                  "relative inline-flex h-6 w-11 items-center rounded-full transition-colors shrink-0",
+                  watchdog?.enabled ? "bg-green-500" : "bg-gray-200"
+                )}
+              >
+                <span className={cn(
+                  "inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform",
+                  watchdog?.enabled ? "translate-x-6" : "translate-x-1"
+                )} />
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Two-column: SIP Credentials + AI Agent */}
       <div className="grid gap-5 lg:grid-cols-2">
