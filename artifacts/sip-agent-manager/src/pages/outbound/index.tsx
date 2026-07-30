@@ -514,11 +514,8 @@ export default function OutboundPage() {
                           {call.firstMessage ?? "—"}
                         </span>
                       </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col">
-                          <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">{t("outbound.thInitiated")}</span>
-                          <span className="text-sm text-muted-foreground">{formatDateTime(call.createdAt)}</span>
-                        </div>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {formatDateTime(call.createdAt)}
                       </TableCell>
                       <TableCell>
                         <Button
