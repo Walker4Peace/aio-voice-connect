@@ -337,9 +337,6 @@ export default function ClientDetail() {
                     {testStatus === "error" && <p className="text-xs text-destructive break-all">{testError}</p>}
                   </div>
                 </FieldRow>
-                <FieldRow icon={Calendar} label={t("clientDetail.addedOn")}>
-                  <span className="font-mono text-sm">{formatDate(client.createdAt)}</span>
-                </FieldRow>
                 <FieldRow icon={FileText} label={t("clientDetail.fieldNotes")}>
                   <span className={client.description ? "" : "text-muted-foreground"}>{client.description || "—"}</span>
                 </FieldRow>
@@ -361,7 +358,7 @@ export default function ClientDetail() {
         <div className="lg:col-span-3 bg-card border rounded-xl shadow-sm overflow-hidden">
           <div className="flex items-center justify-between px-5 py-4 border-b">
             <div className="flex items-center gap-2">
-              <Phone className="h-4 w-4 text-muted-foreground" />
+              <Users className="h-4 w-4 text-muted-foreground" />
               <h2 className="font-semibold text-sm">{t("clientDetail.extOnIPBX")}</h2>
             </div>
             <Button variant="outline" size="sm" className="h-8 gap-2 text-xs" onClick={() => setLinkDialogOpen(true)}>
