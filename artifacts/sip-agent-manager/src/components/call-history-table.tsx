@@ -233,12 +233,44 @@ function CallTableRow({ callId, legs, extNumber, isOutbound = false, outboundPho
             <TableCell className="text-xs text-muted-foreground tabular-nums">
               {duration ?? "—"}
             </TableCell>
+            {/* Action */}
+            {onDelete && (
+              <TableCell className="text-center">
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <button
+                      className="inline-flex items-center justify-center h-7 w-7 rounded border border-border text-muted-foreground hover:text-destructive hover:border-destructive/50 hover:bg-destructive/10 transition-colors"
+                      title="Delete call"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete this call?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will permanently remove the record for call <span className="font-mono">{callId.slice(0, 8)}…</span>. This cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        onClick={() => onDelete(callId)}
+                      >
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </TableCell>
+            )}
           </TableRow>
 
         {/* Accordion legs — newest first */}
         <CollapsibleContent asChild>
           <TableRow className="hover:bg-transparent">
-            <TableCell colSpan={6} className="p-0 border-t-0">
+            <TableCell colSpan={onDelete ? 7 : 6} className="p-0 border-t-0">
               <div className="bg-muted/20 divide-y border-b">
                 {legsDesc.map((leg, i) => (
                   <div key={i} className="flex items-center gap-3 px-10 py-2.5">
@@ -332,6 +364,7 @@ export function CallHistoryTable({
             <TableHead>{t("calls.thCalled")}</TableHead>
             <TableHead>{t("calls.thDate")}</TableHead>
             <TableHead>{t("calls.thDuration")}</TableHead>
+            {onDeleteCall && <TableHead className="w-16 text-center">{t("calls.thAction")}</TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
