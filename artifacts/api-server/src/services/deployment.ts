@@ -3,7 +3,7 @@ import path from "path";
 import fs from "fs/promises";
 import net from "net";
 import { db, extensionsTable, deploymentsTable, callEventsTable, agentToolsTable, outboundCallsTable, agentConfigsTable, type Deployment } from "@workspace/db";
-import { eq, inArray, and, asc } from "drizzle-orm";
+import { eq, inArray, and, asc, desc } from "drizzle-orm";
 import { logger } from "../lib/logger.js";
 
 const SIP_AGENT_BIN =
@@ -1293,11 +1293,14 @@ export async function reconcileOnStartup() {
     .set({ status: "stopped", pid: null, sipRegistered: false, updatedAt: new Date() })
     .where(inArray(deploymentsTable.status, ["registered", "reconnecting", "starting"]));
 
-  // Load recent call events from DB into memory cache
+  // Load the NEWEST call events from DB into memory cache so in-flight parsers
+  // have recent context (e.g. callId backfill, contact matching).
+  // Load newest-first then reverse so the array stays chronological (oldest→newest).
   try {
     const rows = await db.select().from(callEventsTable)
-      .orderBy(callEventsTable.timestamp)
+      .orderBy(desc(callEventsTable.timestamp))
       .limit(MAX_PERSISTED_EVENTS);
+    rows.reverse();
     for (const row of rows) {
       persistedCallEvents.push({
         extensionId: row.extensionId,

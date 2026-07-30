@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { db, outboundCallsTable } from "@workspace/db";
-import { inArray } from "drizzle-orm";
+import { db, outboundCallsTable, callEventsTable } from "@workspace/db";
+import { inArray, desc } from "drizzle-orm";
 import {
   startExtension,
   stopExtension,
@@ -32,7 +32,39 @@ router.get("/deploy/all", async (_req, res) => {
 
 // GET /api/deploy/call-events — persistent call history + live active count
 router.get("/deploy/call-events", async (_req, res) => {
-  const events = getPersistedCallEvents();
+  // Always read from DB so history survives server restarts.
+  // Fall back to in-memory cache if DB is unavailable.
+  let dbRows: { extensionId: number; callId: string; event: string; timestamp: Date; detail: string | null }[] = [];
+  try {
+    dbRows = await db
+      .select()
+      .from(callEventsTable)
+      .orderBy(desc(callEventsTable.timestamp))
+      .limit(500);
+  } catch {
+    // DB unavailable — fall back to in-memory cache
+    dbRows = getPersistedCallEvents().map(e => ({
+      extensionId: e.extensionId,
+      callId: e.callId,
+      event: e.event,
+      timestamp: new Date(e.timestamp),
+      detail: e.detail ?? null,
+    }));
+  }
+
+  // Merge with any in-memory events not yet flushed to DB
+  // (events arrive faster than fire-and-forget inserts complete)
+  const dbCallIds = new Set(dbRows.map(r => `${r.extensionId}:${r.callId}:${r.event}:${r.timestamp.getTime()}`));
+  const memOnly = getPersistedCallEvents().filter(
+    e => !dbCallIds.has(`${e.extensionId}:${e.callId}:${e.event}:${new Date(e.timestamp).getTime()}`)
+  );
+
+  type EventRow = { extensionId: number; callId: string; event: string; timestamp: string; detail?: string };
+  const events: EventRow[] = [
+    ...dbRows.map(r => ({ extensionId: r.extensionId, callId: r.callId, event: r.event, timestamp: r.timestamp.toISOString(), detail: r.detail ?? undefined })),
+    ...memOnly.map(e => ({ extensionId: e.extensionId, callId: e.callId, event: e.event, timestamp: e.timestamp, detail: e.detail })),
+  ];
+
   const runningIds = new Set(getRunningExtensionIds());
 
   // Active calls: invites without a matching ended, only for extensions still running
@@ -48,7 +80,6 @@ router.get("/deploy/call-events", async (_req, res) => {
   }
 
   // Determine which callIds are outbound (triggered via our dial-out API)
-  // Return { callId, phoneNumber } so the frontend can display the real destination number.
   const uniqueCallIds = [...new Set(events.map(e => e.callId))];
   let outboundCalls: { callId: string; phoneNumber: string }[] = [];
   if (uniqueCallIds.length > 0) {
@@ -65,7 +96,7 @@ router.get("/deploy/call-events", async (_req, res) => {
     (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
   );
 
-  res.json({ events: sorted.slice(0, 100), activeCallCount: activeCalls.size, outboundCalls });
+  res.json({ events: sorted.slice(0, 200), activeCallCount: activeCalls.size, outboundCalls });
 });
 
 // DELETE /api/deploy/call-events — clear all call history
