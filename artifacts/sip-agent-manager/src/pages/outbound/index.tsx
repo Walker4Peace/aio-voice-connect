@@ -542,7 +542,7 @@ export default function OutboundPage() {
                     variant={page === currentPage ? "default" : "outline"}
                     size="sm"
                     className="h-8 w-8 p-0 text-xs"
-                    onClick={() => { setCurrentPage(page); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                    onClick={() => { setCurrentPage(page); document.querySelector('main')?.scrollTo({ top: 0, behavior: "smooth" }); }}
                   >
                     {page}
                   </Button>
