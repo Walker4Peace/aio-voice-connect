@@ -670,14 +670,10 @@ export async function applyOutboundConfigAndRestart(
   overrides: { firstMessage?: string | null; systemPromptOverride?: string | null },
   outboundTarget?: { phoneNumber: string; callerId?: string | null; taskDescription?: string | null },
 ): Promise<boolean> {
-  // 1. Write the outbound config so the binary reads it on next startup
-  await applyOutboundConfigOverride(extensionId, overrides, outboundTarget);
-  // 2. Track that this extension is running in outbound mode so proc.on("exit")
-  //    knows to restart it with the normal inbound config when the call ends.
+  // 1. Track outbound mode so proc.on("exit") knows to stay stopped after the call.
   if (outboundTarget) outboundCallModes.add(extensionId);
 
-  // 2. Kill the current process without marking the extension as manually-stopped
-  //    (so watchdog and lifecycle remain unaffected after the call ends).
+  // 2. Kill existing process if running — does not set manuallyStopped.
   const info = processes.get(extensionId);
   if (info) {
     closeOutstandingCalls(extensionId);
@@ -692,8 +688,10 @@ export async function applyOutboundConfigAndRestart(
     await new Promise(r => setTimeout(r, 800));
   }
 
-  // 3. Start fresh — skipConfigWrite preserves the override we just wrote
-  await startExtension(extensionId, { skipConfigWrite: true });
+  // 3. Start fresh — config.json is written inside startExtension with correct
+  //    port allocation, outboundTarget, and overrides baked in.
+  //    Works even if this extension has never been started before.
+  await startExtension(extensionId, { overrides, outboundTarget });
 
   // 4. Poll for SIP registration (250 ms intervals, max 8 s)
   //    In outbound mode the binary registers and immediately dials — by the time
@@ -907,7 +905,11 @@ async function allocatePorts(extensionId: number): Promise<{ sipLocalPort: numbe
   return { sipLocalPort, httpPort };
 }
 
-export async function startExtension(extensionId: number, opts?: { skipConfigWrite?: boolean }): Promise<void> {
+export async function startExtension(extensionId: number, opts?: {
+  skipConfigWrite?: boolean;
+  overrides?: { firstMessage?: string | null; systemPromptOverride?: string | null };
+  outboundTarget?: { phoneNumber: string; callerId?: string | null; taskDescription?: string | null };
+}): Promise<void> {
   addSystemLog(`Starting extension ${extensionId}`);
   // Clear manual-stop flag so watchdog can fire after future crashes
   manuallyStopped.delete(extensionId);
@@ -928,14 +930,20 @@ export async function startExtension(extensionId: number, opts?: { skipConfigWri
     await new Promise(r => setTimeout(r, 500));
   }
 
-  // Write config.json (skip if caller pre-wrote overrides via applyOutboundConfigAndRestart)
+  // Write config.json — always done here so port allocation and config are in sync.
+  // Pass outboundTarget/overrides when starting in outbound call mode.
   const configDir = path.join(CONFIG_DIR, String(extensionId));
   await fs.mkdir(configDir, { recursive: true });
   const configPath = path.join(configDir, "config.json");
   const { sipLocalPort, httpPort } = await allocatePorts(extensionId);
   const serviceName = serviceNameFor(ext);
   if (!opts?.skipConfigWrite) {
-    const config = await buildConfig(ext, extensionId, { sipLocalPort, httpPort });
+    const config = await buildConfig(
+      ext, extensionId,
+      { sipLocalPort, httpPort },
+      opts?.overrides,
+      opts?.outboundTarget,
+    );
     await fs.writeFile(configPath, JSON.stringify(config, null, 2));
   }
   const env = buildEnv(ext, configPath);
