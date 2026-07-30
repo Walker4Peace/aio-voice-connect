@@ -58,7 +58,7 @@ export default function AgentConfigsList() {
 
   const handleDuplicate = (config: NonNullable<typeof configs>[number]) => {
       createConfig.mutate(
-        { data: { name: `${config.name} (copy)`, provider: config.provider, apiKey: config.apiKey, modelId: config.modelId ?? undefined, voiceId: config.voiceId ?? undefined, language: config.language ?? undefined, systemPrompt: config.systemPrompt ?? undefined } },
+        { data: { name: `${config.name} (copy)`, provider: config.provider, apiKey: config.apiKey, modelId: config.modelId ?? undefined, voiceId: config.voiceId ?? undefined, language: config.language ?? undefined, systemPrompt: config.systemPrompt ?? undefined, mode: config.mode ?? undefined } },
         {
           onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: getListAgentConfigsQueryKey() });
