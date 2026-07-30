@@ -92,23 +92,48 @@ const EXT_ROW_COLOR: Record<string, string> = {
 const ALL_SYSTEM_CATEGORIES = ["ALL", "DEPLOYMENT", "WATCHDOG", "STARTUP", "YEASTAR", "HTTP"] as const;
 type SystemCategory = typeof ALL_SYSTEM_CATEGORIES[number];
 
+// ── Clipboard helper (works inside cross-origin iframes) ─────────────────────
+
+function copyToClipboard(text: string): Promise<void> {
+  // Prefer the modern async API when available and in a secure context
+  if (typeof navigator !== "undefined" && navigator.clipboard && window.isSecureContext) {
+    return navigator.clipboard.writeText(text).catch(() => execCommandFallback(text));
+  }
+  return execCommandFallback(text);
+}
+
+function execCommandFallback(text: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const el = document.createElement("textarea");
+    el.value = text;
+    el.setAttribute("readonly", "");
+    el.style.cssText = "position:fixed;left:-9999px;top:-9999px;opacity:0";
+    document.body.appendChild(el);
+    el.focus();
+    el.select();
+    const ok = document.execCommand("copy");
+    document.body.removeChild(el);
+    ok ? resolve() : reject(new Error("copy failed"));
+  });
+}
+
 // ── Copy button ───────────────────────────────────────────────────────────────
 
 function CopyButton({ text }: { text: string }) {
-  const [copied, setCopied] = React.useState(false);
+  const [state, setState] = React.useState<"idle" | "ok" | "err">("idle");
   return (
     <Button
       variant="ghost" size="sm"
       className="gap-1.5 text-xs text-gray-400 hover:text-white hover:bg-white/10 h-7"
+      disabled={!text}
       onClick={() => {
-        navigator.clipboard.writeText(text).then(() => {
-          setCopied(true);
-          setTimeout(() => setCopied(false), 1500);
-        });
+        copyToClipboard(text)
+          .then(() => { setState("ok"); setTimeout(() => setState("idle"), 1500); })
+          .catch(() => { setState("err"); setTimeout(() => setState("idle"), 1500); });
       }}
     >
-      {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-      {copied ? "Copied!" : "Copy"}
+      {state === "ok"  ? <Check className="h-3.5 w-3.5 text-green-400" /> : <Copy className="h-3.5 w-3.5" />}
+      {state === "ok"  ? "Copied!" : state === "err" ? "Failed" : "Copy"}
     </Button>
   );
 }
@@ -122,6 +147,7 @@ function TerminalShell({
   isLive,
   children,
   lines,
+  copyText,
   onLiveToggle,
   onClear,
 }: {
@@ -131,11 +157,13 @@ function TerminalShell({
   isLive: boolean;
   children: React.ReactNode;
   lines: string[];
+  /** Text written to clipboard — pass all buffered lines when paused, visible lines when live */
+  copyText: string;
   onLiveToggle: () => void;
   onClear: () => void;
 }) {
   const downloadLogs = () => {
-    const blob = new Blob([lines.join("\n")], { type: "text/plain" });
+    const blob = new Blob([copyText], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -193,7 +221,7 @@ function TerminalShell({
           <span>{lines.length} entries</span>
         </span>
         <div className="flex items-center gap-1">
-          <CopyButton text={lines.join("\n")} />
+          <CopyButton text={copyText} />
           <Button
             variant="ghost" size="sm"
             className="gap-1.5 text-xs text-gray-400 hover:text-white hover:bg-white/10 h-7"
@@ -292,6 +320,7 @@ function ExtensionTab() {
         isEmpty={parsed.length === 0}
         isLive={isLive}
         lines={lines}
+        copyText={isLive ? lines.join("\n") : allLines.join("\n")}
         onLiveToggle={() => {
           if (!isLive) setClearedAt(allLines.length);
           setIsLive(v => !v);
@@ -382,6 +411,11 @@ function SystemTab() {
       isEmpty={visible.length === 0}
       isLive={isLive}
       lines={visibleRaw}
+      copyText={
+        isLive
+          ? visibleRaw.join("\n")
+          : allLines.filter(l => filterCat === "ALL" || parseSysLine(l).category === filterCat).join("\n")
+      }
       onLiveToggle={() => {
         if (!isLive) setClearedAt(allLines.length);
         setIsLive(v => !v);
