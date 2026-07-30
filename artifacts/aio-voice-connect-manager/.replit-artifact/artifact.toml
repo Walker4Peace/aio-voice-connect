@@ -16,7 +16,7 @@ run = "pnpm --filter @workspace/aio-voice-connect-manager run dev"
 [services.production]
 build = [ "pnpm", "--filter", "@workspace/aio-voice-connect-manager", "run", "build" ]
 serve = "static"
-publicDir = "artifacts/sip-agent-manager/dist/public"
+publicDir = "artifacts/aio-voice-connect-manager/dist/public"
 
 [[services.production.rewrites]]
 from = "/*"

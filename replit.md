@@ -8,7 +8,7 @@ This is a pnpm monorepo with the following packages:
 
 | Package | Path | Description |
 |---|---|---|
-| `@workspace/sip-agent-manager` | `artifacts/sip-agent-manager/` | React + Vite frontend dashboard |
+| `@workspace/aio-voice-connect-manager` | `artifacts/aio-voice-connect-manager/` | React + Vite frontend dashboard |
 | `@workspace/api-server` | `artifacts/api-server/` | Express 5 REST API backend |
 | `@workspace/db` | `lib/db/` | Drizzle ORM schema + database client |
 | `@workspace/api-zod` | `lib/api-zod/` | Shared Zod validation schemas |
@@ -24,7 +24,7 @@ Both services start automatically via the configured workflows:
 
 To start manually:
 ```bash
-pnpm --filter @workspace/sip-agent-manager run dev   # frontend
+pnpm --filter @workspace/aio-voice-connect-manager run dev   # frontend
 pnpm --filter @workspace/api-server run dev           # backend
 ```
 
@@ -60,7 +60,7 @@ cd lib/db && pnpm run push
 
 # 3. Start both services (or use the Replit "Run" button)
 PORT=8080 pnpm --filter @workspace/api-server run dev                       # API on PORT 8080
-PORT=23208 BASE_PATH=/ pnpm --filter @workspace/sip-agent-manager run dev  # Frontend on PORT 23208
+PORT=23208 BASE_PATH=/ pnpm --filter @workspace/aio-voice-connect-manager run dev  # Frontend on PORT 23208
 
 # Note: the Replit "Run" button (or configured workflows) injects PORT and BASE_PATH
 # automatically — the env vars above are only needed for manual terminal runs.
