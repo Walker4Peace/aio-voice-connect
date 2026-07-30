@@ -307,8 +307,6 @@ export default function ExtensionsList() {
                       <th className="text-left font-medium py-3 px-4">{t("extensions.thIPBX")}</th>
                       <th className="text-left font-medium py-3 px-4">{t("extensions.thAgent")}</th>
                       <th className="text-left font-medium py-3 px-4">{t("extensions.thStatus")}</th>
-                      <th className="text-left font-medium py-3 px-4">{t("extensions.thLastActivity")}</th>
-                      <th className="text-left font-medium py-3 px-4">{t("extensions.thCreatedOn")}</th>
                       <th className="text-right font-medium py-3 px-4">{t("extensions.thAction")}</th>
                     </tr>
                   </thead>
@@ -379,12 +377,6 @@ export default function ExtensionsList() {
                                 </p>
                               </div>
                             )}
-                          </td>
-                          <td className="py-3.5 px-4 text-xs text-muted-foreground">
-                            {isRunning && s?.lastStartedAt ? timeAgo(s.lastStartedAt) : "—"}
-                          </td>
-                          <td className="py-3.5 px-4 text-xs text-muted-foreground">
-                            {extWithDate.createdAt ? new Date(extWithDate.createdAt).toLocaleDateString() : "—"}
                           </td>
                           <td className="py-3.5 px-4">
                             <div className="flex justify-end">
