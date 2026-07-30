@@ -418,7 +418,7 @@ function SystemTab() {
           <SelectContent>
             {ALL_SYSTEM_CATEGORIES.map(cat => (
               <SelectItem key={cat} value={cat} className="text-xs">
-                {cat === "ALL" ? "ALL" : cat.charAt(0) + cat.slice(1).toLowerCase()}
+                {cat === "ALL" ? t("logs.allCategories") : cat.charAt(0) + cat.slice(1).toLowerCase()}
               </SelectItem>
             ))}
           </SelectContent>

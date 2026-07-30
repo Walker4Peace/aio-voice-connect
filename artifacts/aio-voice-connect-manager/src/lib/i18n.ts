@@ -1122,7 +1122,7 @@ const fr: typeof en = {
   "logs.selectExtPlaceholder":"Sélectionnez une extension pour voir ses journaux SIP…",
   "logs.thTime":              "Heure",
   "logs.thCategory":          "Catégorie",
-  "logs.allCategories":       "Toutes les catégories",
+  "logs.allCategories":       "Tous",
   "logs.notRegistered":       "Non enregistré",
   "logs.statusRunning":       "En cours",
   "logs.statusDown":          "Hors service",
