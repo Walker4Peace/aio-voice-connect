@@ -167,11 +167,12 @@ export default function ExtensionsList() {
           <DialogTrigger asChild>
             <Button className="gap-2"><Plus className="h-4 w-4" /> {t("extensions.addExt")}</Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
             <DialogHeader>
               <DialogTitle>{t("extensions.dialogTitle")}</DialogTitle>
               <DialogDescription>{t("extensions.dialogDesc")}</DialogDescription>
             </DialogHeader>
+            <div className="overflow-y-auto flex-1 px-1">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <div className="grid grid-cols-2 gap-4">
@@ -225,6 +226,7 @@ export default function ExtensionsList() {
                 </div>
               </form>
             </Form>
+            </div>
           </DialogContent>
         </Dialog>
       </div>

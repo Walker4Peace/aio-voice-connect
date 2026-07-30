@@ -29,7 +29,7 @@ import {
 import {
   ArrowLeft, Phone, Edit, Save, X, Link2, Trash2, FlaskConical, CheckCircle,
   XCircle, Loader2, Server, Globe, Network, Settings, Calendar, FileText,
-  CircleCheck, ExternalLink,
+  CircleCheck, ExternalLink, Users, Info,
 } from "lucide-react";
 import { ProviderBadge } from "@/components/provider-badge";
 import { formatDate } from "@/lib/utils";
@@ -441,41 +441,77 @@ export default function ClientDetail() {
 
       {/* Link Extensions Dialog */}
       <Dialog open={linkDialogOpen} onOpenChange={setLinkDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>{t("clientDetail.dialogTitle", { name: client.name })}</DialogTitle>
-            <DialogDescription>{t("clientDetail.dialogDesc")}</DialogDescription>
-          </DialogHeader>
-          {availableExtensions.length === 0 ? (
-            <div className="py-8 text-center text-muted-foreground">
-              <Phone className="h-8 w-8 mx-auto mb-2 opacity-40" />
-              <p className="text-sm">{t("clientDetail.noAvailable")}</p>
-              <p className="text-xs mt-1">{t("clientDetail.noAvailNote")}</p>
+        <DialogContent className="max-w-lg max-h-[85vh] flex flex-col gap-0 p-0 overflow-hidden">
+          {/* Header */}
+          <div className="flex items-start gap-4 p-6 pb-4 shrink-0">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted shrink-0">
+              <Users className="h-7 w-7 text-muted-foreground" />
             </div>
-          ) : (
-            <div className="space-y-2 max-h-64 overflow-y-auto">
-              {availableExtensions.map(ext => (
-                <div
-                  key={ext.id}
-                  className="flex items-center gap-3 rounded-md border px-3 py-2.5 hover:bg-muted/30 cursor-pointer transition-colors"
-                  onClick={() => toggleExt(ext.id)}
-                >
-                  <Checkbox checked={selectedExtIds.includes(ext.id)} onCheckedChange={() => toggleExt(ext.id)} onClick={e => e.stopPropagation()} />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-sm font-medium">{ext.extensionNumber}</span>
-                      {ext.displayName && <span className="text-xs text-muted-foreground">{ext.displayName}</span>}
-                      {ext.clientId === clientId && <Badge variant="secondary" className="text-xs py-0">{t("clientDetail.linked")}</Badge>}
+            <div className="flex-1 min-w-0">
+              <h2 className="text-xl font-semibold leading-tight">{t("clientDetail.dialogTitle", { name: client.name })}</h2>
+              <p className="text-sm text-muted-foreground mt-0.5">{t("clientDetail.dialogDesc")}</p>
+            </div>
+          </div>
+
+          {/* Scrollable content */}
+          <div className="flex-1 overflow-y-auto px-6 space-y-3 pb-2">
+            {availableExtensions.length === 0 ? (
+              <div className="py-8 text-center text-muted-foreground">
+                <Users className="h-8 w-8 mx-auto mb-2 opacity-40" />
+                <p className="text-sm">{t("clientDetail.noAvailable")}</p>
+                <p className="text-xs mt-1">{t("clientDetail.noAvailNote")}</p>
+              </div>
+            ) : (
+              availableExtensions.map(ext => {
+                const isLinked = ext.clientId === clientId;
+                const isSelected = selectedExtIds.includes(ext.id);
+                return (
+                  <div
+                    key={ext.id}
+                    className="flex items-center gap-4 rounded-xl border bg-card p-4 hover:bg-muted/20 cursor-pointer transition-colors"
+                    onClick={() => toggleExt(ext.id)}
+                  >
+                    <Checkbox
+                      checked={isSelected}
+                      onCheckedChange={() => toggleExt(ext.id)}
+                      onClick={e => e.stopPropagation()}
+                      className="h-5 w-5 shrink-0"
+                    />
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted shrink-0">
+                      <Users className="h-6 w-6 text-muted-foreground" />
                     </div>
-                    {ext.agentConfig && <div className="mt-0.5"><ProviderBadge provider={ext.agentConfig.provider} /></div>}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-base">{ext.extensionNumber}</span>
+                        {ext.displayName && <span className="text-sm text-muted-foreground">{ext.displayName}</span>}
+                      </div>
+                      {ext.agentConfig && <div className="mt-1"><ProviderBadge provider={ext.agentConfig.provider} /></div>}
+                    </div>
+                    {isLinked && (
+                      <span className="flex items-center gap-1.5 text-xs font-medium text-green-600 bg-green-50 border border-green-200 rounded-full px-3 py-1 shrink-0">
+                        <span className="h-1.5 w-1.5 bg-green-500 rounded-full" />
+                        {t("clientDetail.linked")}
+                      </span>
+                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })
+            )}
+
+            {/* Note */}
+            <div className="flex items-start gap-3 rounded-xl bg-blue-50/60 border border-blue-100 p-4">
+              <Info className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-medium text-blue-700">{t("clientDetail.noteTitle")}</p>
+                <p className="text-xs text-blue-600 mt-0.5">{t("clientDetail.noteDesc")}</p>
+              </div>
             </div>
-          )}
-          <div className="flex justify-end gap-2 pt-2 border-t">
-            <Button variant="ghost" onClick={() => setLinkDialogOpen(false)}>{t("common.cancel")}</Button>
-            <Button onClick={handleLinkExtensions} disabled={linking || availableExtensions.length === 0}>
+          </div>
+
+          {/* Footer */}
+          <div className="flex justify-end gap-3 px-6 py-4 border-t shrink-0">
+            <Button variant="outline" onClick={() => setLinkDialogOpen(false)}>{t("common.cancel")}</Button>
+            <Button onClick={handleLinkExtensions} disabled={linking || availableExtensions.length === 0} className="px-8">
               {linking ? t("common.saving") : t("common.save")}
             </Button>
           </div>

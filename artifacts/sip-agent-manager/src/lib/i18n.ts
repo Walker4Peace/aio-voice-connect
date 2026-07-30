@@ -213,8 +213,8 @@ const en = {
   "clients.deleteIPBX":       "Delete IPBX",
   "clients.noIPBX":           "No IPBX configured",
   "clients.addFirstDesc":     "Add your first IPBX to start connecting SIP extensions with AI voice agents.",
-  "clients.showing":          "Showing {{count}} of {{total}} IPBX",
-  "clients.showingRange":     "Showing {{from}} to {{to}} of {{total}} IPBXs",
+  "clients.showing":          "Showing {{count}} IPBX(s)",
+  "clients.showingRange":     "Showing from {{from}} to {{to}} of {{total}} IPBX(s)",
 
   // ── IPBX detail ───────────────────────────────────────────────────────────
   "clientDetail.loading":     "Loading IPBX data...",
@@ -235,7 +235,9 @@ const en = {
   "clientDetail.dialogDesc":  "Select extensions to link to this IPBX. An extension can only be linked to one IPBX.",
   "clientDetail.noAvailable": "No available extensions.",
   "clientDetail.noAvailNote": "Create extensions first from the Extensions page.",
-  "clientDetail.linked":      "linked",
+  "clientDetail.linked":      "Linked",
+  "clientDetail.noteTitle":   "Note",
+  "clientDetail.noteDesc":    "Only extensions that are not already linked to another IPBX are shown.",
   "clientDetail.noAgent":     "No agent",
   "clientDetail.thExt":       "Ext",
   "clientDetail.thName":      "Display Name",
@@ -313,8 +315,8 @@ const en = {
   "extensions.notRunning":    "Not running",
   "extensions.viewDetails":   "View Details",
   "extensions.deleteExt":     "Delete Extension",
-  "extensions.showing":       "Showing {{count}} of {{total}} extensions",
-  "extensions.showingRange":  "Showing {{from}} to {{to}} of {{total}} extensions",
+  "extensions.showing":       "Showing {{count}} extension(s)",
+  "extensions.showingRange":  "Showing from {{from}} to {{to}} of {{total}} extension(s)",
   "extensions.noMatchFilters":"No extensions match your filters.",
   "extensions.clearFilters":  "Clear",
 
@@ -785,7 +787,7 @@ const fr: typeof en = {
   "clients.deleteIPBX":       "Supprimer l'IPBX",
   "clients.noIPBX":           "Aucun IPBX configuré",
   "clients.addFirstDesc":     "Ajoutez votre premier IPBX pour commencer à connecter des extensions SIP avec des agents vocaux IA.",
-  "clients.showing":          "Affichage de {{count}} sur {{total}} IPBX",
+  "clients.showing":          "Affichage de {{count}} IPBX",
   "clients.showingRange":     "Affichage de {{from}} à {{to}} sur {{total}} IPBX",
 
   // ── IPBX detail ───────────────────────────────────────────────────────────
@@ -807,7 +809,9 @@ const fr: typeof en = {
   "clientDetail.dialogDesc":  "Sélectionnez les extensions à lier à cet IPBX. Une extension ne peut être liée qu'à un seul IPBX.",
   "clientDetail.noAvailable": "Aucune extension disponible.",
   "clientDetail.noAvailNote": "Créez d'abord des extensions depuis la page Extensions.",
-  "clientDetail.linked":      "liée",
+  "clientDetail.linked":      "Liée",
+  "clientDetail.noteTitle":   "Note",
+  "clientDetail.noteDesc":    "Seules les extensions non liées à un autre IPBX sont affichées.",
   "clientDetail.noAgent":     "Aucun agent",
   "clientDetail.thExt":       "Ext.",
   "clientDetail.thName":      "Nom d'affichage",
@@ -885,8 +889,8 @@ const fr: typeof en = {
   "extensions.notRunning":    "Inactif",
   "extensions.viewDetails":   "Voir les détails",
   "extensions.deleteExt":     "Supprimer l'extension",
-  "extensions.showing":       "Affichage de {{count}} sur {{total}} extensions",
-  "extensions.showingRange":  "Affichage de {{from}} à {{to}} sur {{total}} extensions",
+  "extensions.showing":       "Affichage de {{count}} extension(s)",
+  "extensions.showingRange":  "Affichage de {{from}} à {{to}} sur {{total}} extension(s)",
   "extensions.noMatchFilters":"Aucune extension ne correspond aux filtres.",
   "extensions.clearFilters":  "Effacer",
 
