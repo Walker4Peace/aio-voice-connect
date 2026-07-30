@@ -391,9 +391,9 @@ export default function ClientDetail() {
                     {extensions.map((ext) => (
                       <tr key={ext.id} className="border-b last:border-0 hover:bg-muted/20">
                         <td className="py-2.5 px-3">
-                          <Link href={`/extensions/${ext.id}`} className="font-mono font-semibold text-primary hover:underline text-sm">
+                          <span className="font-mono font-semibold text-foreground text-sm">
                             {ext.extensionNumber}
-                          </Link>
+                          </span>
                         </td>
                         <td className="py-2.5 px-3 text-sm">{ext.displayName || "—"}</td>
                         <td className="py-2.5 px-3">
