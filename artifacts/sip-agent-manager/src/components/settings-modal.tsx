@@ -140,8 +140,8 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                   {(["en", "fr"] as const).map(l => (
                     <button key={l} type="button"
                       onClick={() => setLanguage(l)}
-                      className={cn("flex-1 flex items-center justify-center gap-1.5 rounded-md border px-3 py-2 text-sm font-medium transition-colors",
-                        language === l ? "border-primary bg-primary text-primary-foreground" : "border-input bg-background hover:bg-muted")}
+                      className={cn("flex-1 cursor-pointer flex items-center justify-center gap-1.5 rounded-md border px-3 py-2 text-sm font-medium transition-all",
+                        language === l ? "border-primary bg-primary text-primary-foreground shadow-sm" : "border-input bg-background hover:bg-muted hover:shadow-sm")}
                     >
                       <img
                         src={l === "en" ? "https://flagcdn.com/20x15/gb.png" : "https://flagcdn.com/20x15/fr.png"}

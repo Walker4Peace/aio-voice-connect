@@ -67,7 +67,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             {/* Blue settings button (avatar circle) */}
             <button
               onClick={() => setSettingsOpen(true)}
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-sidebar-primary/20 text-sidebar-primary shrink-0 hover:bg-sidebar-primary/40 transition-colors"
+              className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-sidebar-primary/20 text-sidebar-primary shrink-0 hover:bg-sidebar-primary/40 hover:shadow-sm transition-colors"
               title={t("nav.settings")}
             >
               <Settings className="h-4 w-4" />
@@ -79,7 +79,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             {/* Logout button */}
             <button
               onClick={() => logout()}
-              className="shrink-0 p-1 rounded hover:bg-sidebar-accent/70 text-sidebar-foreground/60 hover:text-sidebar-foreground transition-colors"
+              className="shrink-0 cursor-pointer p-1 rounded hover:bg-sidebar-accent/70 text-sidebar-foreground/60 hover:text-sidebar-foreground hover:shadow-sm transition-colors"
               title={t("nav.signOut")}
             >
               <LogOut className="h-4 w-4" />

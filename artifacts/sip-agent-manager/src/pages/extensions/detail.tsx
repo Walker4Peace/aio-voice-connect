@@ -299,7 +299,7 @@ export default function ExtensionDetail() {
                 })}
                 disabled={setWatchdog.isPending}
                 className={cn(
-                  "relative inline-flex h-6 w-11 items-center rounded-full transition-colors shrink-0",
+                  "relative inline-flex h-6 w-11 cursor-pointer items-center rounded-full transition-colors shrink-0",
                   watchdog?.enabled ? "bg-green-500" : "bg-gray-200"
                 )}
               >
@@ -364,29 +364,24 @@ export default function ExtensionDetail() {
                           <dt className="text-muted-foreground font-medium shrink-0">{label}</dt>
                           <dd className={cn("text-right flex items-center gap-1.5 min-w-0", mono ? "font-mono text-xs" : "")}>
                             <span className="truncate max-w-[160px]">{value}</span>
-                            {toggle && (
-                              <button type="button" onClick={toggle} className="text-muted-foreground hover:text-foreground shrink-0">
-                                {mono && label === t("extDetail.apiKey") && showApiKey ? <EyeOff className="h-3 w-3" /> : mono ? <Eye className="h-3 w-3" /> : null}
-                              </button>
-                            )}
                           </dd>
                         </div>
                       ))}
                     </dl>
 
                     {/* About this agent info box */}
-                    <div className="rounded-lg bg-blue-50 border border-blue-100 p-3 flex items-center justify-between gap-3">
+                    <div className="rounded-lg bg-purple-50 border border-purple-100 p-3 flex items-center justify-between gap-3">
                       <div className="flex items-center gap-2">
-                        <div className="h-6 w-6 flex items-center justify-center rounded bg-blue-100 shrink-0">
-                          <Bot className="h-3.5 w-3.5 text-blue-600" />
+                        <div className="h-6 w-6 flex items-center justify-center rounded bg-purple-100 shrink-0">
+                          <Bot className="h-3.5 w-3.5 text-purple-600" />
                         </div>
                         <div>
-                          <p className="text-xs font-semibold text-blue-700">{t("extDetail.aboutAgent")}</p>
-                          <p className="text-xs text-blue-600">{t("extDetail.aboutAgentDesc")}</p>
+                          <p className="text-xs font-semibold text-purple-700">{t("extDetail.aboutAgent")}</p>
+                          <p className="text-xs text-purple-600">{t("extDetail.aboutAgentDesc")}</p>
                         </div>
                       </div>
                       <Link href={`/agent-configs/${extension.agentConfig.id}/edit`}>
-                        <Button variant="ghost" size="sm" className="h-6 text-xs text-blue-600 hover:text-blue-700 px-2 gap-1 shrink-0" type="button">
+                        <Button variant="ghost" size="sm" className="h-6 text-xs text-purple-600 hover:text-purple-700 px-2 gap-1 shrink-0" type="button">
                           {t("extDetail.viewDetails")} <ExternalLink className="h-3 w-3" />
                         </Button>
                       </Link>

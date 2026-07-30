@@ -176,18 +176,20 @@ function CallTableRow({ callId, legs, extNumber, isOutbound = false, outboundPho
     <Collapsible open={isOpen} onOpenChange={onToggle} asChild>
       <>
         <TableRow className="hover:bg-muted/40 select-none group/row">
-            {/* Call ID — only this cell toggles the detail row */}
-            <CollapsibleTrigger asChild>
-              <TableCell className="cursor-pointer font-mono text-xs text-muted-foreground">
-                <div className="flex items-center gap-1.5">
-                  {isOpen
-                    ? <ChevronDown  className="h-3.5 w-3.5 shrink-0" />
-                    : <ChevronRight className="h-3.5 w-3.5 shrink-0" />}
-                  <span>{callId.slice(0, 8)}…</span>
-                  <CopyButton value={callId} />
-                </div>
-              </TableCell>
-            </CollapsibleTrigger>
+            {/* Call ID — only the arrow box toggles the detail row */}
+            <TableCell className="font-mono text-xs text-muted-foreground">
+              <div className="flex items-center gap-1.5">
+                <CollapsibleTrigger asChild>
+                  <button className="flex h-5 w-5 cursor-pointer items-center justify-center rounded border border-border bg-muted/50 hover:bg-muted transition-colors shrink-0">
+                    {isOpen
+                      ? <ChevronDown  className="h-3 w-3 shrink-0" />
+                      : <ChevronRight className="h-3 w-3 shrink-0" />}
+                  </button>
+                </CollapsibleTrigger>
+                <span>{callId.slice(0, 8)}…</span>
+                <CopyButton value={callId} />
+              </div>
+            </TableCell>
             {/* Direction */}
             <TableCell>
               {isOutbound ? (
@@ -221,7 +223,7 @@ function CallTableRow({ callId, legs, extNumber, isOutbound = false, outboundPho
                   <AlertDialogTrigger asChild>
                     <button
                       onClick={(e) => e.stopPropagation()}
-                      className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                      className="cursor-pointer p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
                       title="Delete this call"
                     >
                       <Trash2 className="h-3.5 w-3.5" />

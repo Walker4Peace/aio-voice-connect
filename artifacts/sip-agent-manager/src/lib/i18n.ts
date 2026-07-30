@@ -319,7 +319,7 @@ const en = {
   "extDetail.loading":        "Loading extension data...",
   "extDetail.notFound":       "Extension not found.",
   "extDetail.noDisplayName":  "No display name",
-  "extDetail.sipAgentTitle":  "AI Voice Agent",
+  "extDetail.sipAgentTitle":  "SIP Agent",
   "extDetail.deployDesc":     "Deploy and manage this extension's AI voice agent.",
   "extDetail.assignFirst":    "Assign an AI Agent below before deploying.",
   "extDetail.waitingSip":     "Waiting for SIP registration…",
