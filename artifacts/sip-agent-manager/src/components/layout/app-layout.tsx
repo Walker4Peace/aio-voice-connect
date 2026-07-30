@@ -47,10 +47,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 <div
                   onClick={() => setMobileMenuOpen(false)}
                   className={cn(
-                    "flex cursor-pointer items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors",
+                    "flex cursor-pointer items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-all",
                     isActive
-                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                      : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm"
+                      : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground hover:shadow-md"
                   )}
                 >
                   <item.icon className="h-5 w-5" />

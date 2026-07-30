@@ -175,18 +175,19 @@ function CallTableRow({ callId, legs, extNumber, isOutbound = false, outboundPho
   return (
     <Collapsible open={isOpen} onOpenChange={onToggle} asChild>
       <>
-        <CollapsibleTrigger asChild>
-          <TableRow className="cursor-pointer hover:bg-muted/40 select-none group/row">
-            {/* Call ID */}
-            <TableCell className="font-mono text-xs text-muted-foreground">
-              <div className="flex items-center gap-1.5">
-                {isOpen
-                  ? <ChevronDown  className="h-3.5 w-3.5 shrink-0" />
-                  : <ChevronRight className="h-3.5 w-3.5 shrink-0" />}
-                <span>{callId.slice(0, 8)}…</span>
-                <CopyButton value={callId} />
-              </div>
-            </TableCell>
+        <TableRow className="hover:bg-muted/40 select-none group/row">
+            {/* Call ID — only this cell toggles the detail row */}
+            <CollapsibleTrigger asChild>
+              <TableCell className="cursor-pointer font-mono text-xs text-muted-foreground">
+                <div className="flex items-center gap-1.5">
+                  {isOpen
+                    ? <ChevronDown  className="h-3.5 w-3.5 shrink-0" />
+                    : <ChevronRight className="h-3.5 w-3.5 shrink-0" />}
+                  <span>{callId.slice(0, 8)}…</span>
+                  <CopyButton value={callId} />
+                </div>
+              </TableCell>
+            </CollapsibleTrigger>
             {/* Direction */}
             <TableCell>
               {isOutbound ? (
@@ -247,7 +248,6 @@ function CallTableRow({ callId, legs, extNumber, isOutbound = false, outboundPho
               )}
             </TableCell>
           </TableRow>
-        </CollapsibleTrigger>
 
         {/* Accordion legs — newest first */}
         <CollapsibleContent asChild>
