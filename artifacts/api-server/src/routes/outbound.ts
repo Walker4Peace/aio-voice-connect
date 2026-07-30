@@ -102,13 +102,16 @@ router.post("/outbound/call", async (req, res) => {
     return;
   }
 
-  // Check deployment status
-  const deployment = await db.query.deploymentsTable.findFirst({
-    where: eq(deploymentsTable.extensionId, data.extensionId),
-  });
-  if (!deployment || deployment.status === "stopped") {
-    res.status(400).json({ error: "Extension is not running. Start it before triggering outbound calls." });
-    return;
+  // For inbound-mode extensions require the binary to be running.
+  // Outbound-mode extensions start themselves per call — no pre-deploy needed.
+  if (ext.agentConfig.mode !== "outbound") {
+    const deployment = await db.query.deploymentsTable.findFirst({
+      where: eq(deploymentsTable.extensionId, data.extensionId),
+    });
+    if (!deployment || deployment.status === "stopped") {
+      res.status(400).json({ error: "Extension is not running. Start it before triggering outbound calls." });
+      return;
+    }
   }
 
   // Create outbound call record
