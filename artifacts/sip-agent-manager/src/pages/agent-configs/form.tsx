@@ -28,7 +28,7 @@ const formSchema = z.object({
   name: z.string().min(1),
   provider: z.enum(["openai", "elevenlabs", "gemini", "deepgram", "cartesia"]),
   apiKey: z.string().min(1),
-  mode: z.enum(["inbound", "outbound", "both"]).default("inbound"),
+  mode: z.enum(["inbound", "outbound"]).default("inbound"),
   voiceId: z.string().optional(),
   modelId: z.string().optional(),
   systemPrompt: z.string().optional(),
@@ -69,7 +69,7 @@ export default function AgentConfigForm() {
         name: existingConfig.name,
         provider: existingConfig.provider,
         apiKey: existingConfig.apiKey,
-        mode: (existingConfig.mode as "inbound" | "outbound" | "both") || "inbound",
+        mode: (existingConfig.mode === "outbound" ? "outbound" : "inbound") as "inbound" | "outbound",
         voiceId: existingConfig.voiceId || "",
         modelId: existingConfig.modelId || "",
         systemPrompt: existingConfig.systemPrompt || "",
@@ -197,7 +197,6 @@ export default function AgentConfigForm() {
                       <SelectContent>
                         <SelectItem value="inbound">{t("agentForm.inbound")}</SelectItem>
                         <SelectItem value="outbound">{t("agentForm.outbound")}</SelectItem>
-                        <SelectItem value="both">{t("agentForm.both")}</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />

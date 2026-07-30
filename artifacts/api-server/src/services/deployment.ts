@@ -419,12 +419,13 @@ async function buildConfig(
   //   1. Our API calls Yeastar dial_out (caller=extension, callee=destination)
   //   2. Yeastar sends a SIP INVITE *to* the sip-agent (extension)
   //   3. sip-agent answers → Yeastar bridges the callee → AI conversation starts
-  // Step 2 requires the binary to be registered.  A binary in pure "outbound"
-  // mode does not register (it expects to place calls itself), so we must give
-  // it "both" for any mode that involves outbound calls.  The context_webhook_url
-  // already distinguishes the two: if a pending outbound context is found the
-  // binary uses firstMessage/systemPromptOverride; otherwise it handles the call
-  // as a normal inbound.
+  // Step 2 requires the binary to be registered.  The binary's own "outbound"
+  // mode does not register with the PBX (it expects to place calls itself), so
+  // we always pass "both" to the binary when the agent config is "outbound".
+  // This keeps the binary registered so Yeastar can INVITE it for outbound legs.
+  // The context_webhook_url distinguishes the two: if a pending outbound context
+  // is found the binary uses firstMessage/systemPromptOverride; otherwise it
+  // handles the call as a normal inbound.
   const binaryMode = cfg.mode === "inbound" ? "inbound" : "both";
 
   const base: Record<string, unknown> = {

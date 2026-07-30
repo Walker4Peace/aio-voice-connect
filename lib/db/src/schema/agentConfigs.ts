@@ -15,7 +15,7 @@ export const agentConfigsTable = pgTable("agent_configs", {
   systemPrompt: text("system_prompt"),
   greeting: text("greeting"),
   language: text("language"),
-  // "inbound" = only handle inbound calls, "outbound" = only outbound, "both" = handle both
+  // "inbound" = only handle inbound calls, "outbound" = only handle outbound calls
   mode: text("mode").notNull().default("inbound"),
   extraConfig: text("extra_config"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
