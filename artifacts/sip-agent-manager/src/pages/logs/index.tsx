@@ -1,5 +1,5 @@
 import React from "react";
-import { useAllDeployStatuses, useDeployLogs, useSystemLogs, classifyLogLine } from "@/hooks/use-deploy";
+import { useAllDeployStatuses, useDeployLogs, useSystemLogs, useClearExtensionLogs, useClearSystemLogs, classifyLogLine } from "@/hooks/use-deploy";
 import { useListExtensions } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -244,19 +244,17 @@ function ExtensionTab() {
 
   const [selectedId, setSelectedId] = React.useState<string>("");
   const [isLive, setIsLive] = React.useState(false);
-  const [clearedAt, setClearedAt] = React.useState(0);
   const endRef = React.useRef<HTMLDivElement>(null);
 
   const extId = selectedId ? Number(selectedId) : 0;
 
-  const { data } = useDeployLogs(extId, !!extId, isLive);
+  const { data, refetch } = useDeployLogs(extId, !!extId, isLive);
+  const clearExtLogs = useClearExtensionLogs(extId);
   const allLines = data?.lines ?? [];
-  const lines = allLines.slice(clearedAt);
-  const parsed = React.useMemo(() => lines.map(parseExtLine), [lines]);
+  const parsed = React.useMemo(() => allLines.map(parseExtLine), [allLines]);
 
   React.useEffect(() => {
     setIsLive(false);
-    setClearedAt(0);
   }, [selectedId]);
 
   React.useEffect(() => {
@@ -266,6 +264,11 @@ function ExtensionTab() {
   const selectedExt = extensions?.find(e => e.id === extId);
   const selectedStatus = allStatuses?.find(s => s.extensionId === extId);
   const isRunning = selectedStatus?.status === "registered" || selectedStatus?.status === "starting" || selectedStatus?.status === "reconnecting";
+
+  const handleClear = () => {
+    if (!extId) return;
+    clearExtLogs.mutate(undefined, { onSuccess: () => refetch() });
+  };
 
   return (
     <div className="space-y-4">
@@ -280,18 +283,26 @@ function ExtensionTab() {
             {extensions?.map((ext) => {
               const st = allStatuses?.find(s => s.extensionId === ext.id);
               const running = st?.status === "registered" || st?.status === "starting" || st?.status === "reconnecting";
+              const isOutbound = ext.agentConfig?.mode === "outbound";
               return (
                 <SelectItem key={ext.id} value={ext.id.toString()}>
                   <span className="flex items-center gap-2">
                     <Phone className="h-3.5 w-3.5 text-muted-foreground" />
                     <span>Extension {ext.extensionNumber}{ext.displayName ? ` — ${ext.displayName}` : ""}</span>
                     {st ? (
-                      <>
-                        <span className={`h-2 w-2 rounded-full shrink-0 ${running ? "bg-green-500" : "bg-red-400"}`} />
-                        <span className={`text-xs ${running ? "text-green-600" : "text-red-500"}`}>
-                          {running ? "Registered" : "Stopped"}
-                        </span>
-                      </>
+                      isOutbound ? (
+                        <>
+                          <span className="h-2 w-2 rounded-full shrink-0 bg-[#F1C40F]" />
+                          <span className="text-xs text-[#92740A]">Outbound</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className={`h-2 w-2 rounded-full shrink-0 ${running ? "bg-green-500" : "bg-red-400"}`} />
+                          <span className={`text-xs ${running ? "text-green-600" : "text-red-500"}`}>
+                            {running ? "Running" : "Down"}
+                          </span>
+                        </>
+                      )
                     ) : null}
                   </span>
                 </SelectItem>
@@ -312,20 +323,17 @@ function ExtensionTab() {
             }
             {selectedStatus && (
               <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${isRunning ? "text-green-400 bg-green-400/10 border-green-400/20" : "text-gray-500 bg-gray-500/10 border-gray-500/20"}`}>
-                {selectedStatus.status}
+                {isRunning ? "Registered" : "Not Registered"}
               </span>
             )}
           </>
         }
         isEmpty={parsed.length === 0}
         isLive={isLive}
-        lines={lines}
-        copyText={isLive ? lines.join("\n") : allLines.join("\n")}
-        onLiveToggle={() => {
-          if (!isLive) setClearedAt(allLines.length);
-          setIsLive(v => !v);
-        }}
-        onClear={() => setClearedAt(allLines.length)}
+        lines={allLines}
+        copyText={allLines.join("\n")}
+        onLiveToggle={() => setIsLive(v => !v)}
+        onClear={handleClear}
       >
         <table className="w-full">
           <thead>
@@ -368,16 +376,16 @@ function ExtensionTab() {
 
 function SystemTab() {
   const [isLive, setIsLive] = React.useState(false);
-  const [clearedAt, setClearedAt] = React.useState(0);
   const [filterCat, setFilterCat] = React.useState<SystemCategory>("ALL");
   const endRef = React.useRef<HTMLDivElement>(null);
 
-  const { data } = useSystemLogs(true, isLive);
+  const { data, refetch } = useSystemLogs(true, isLive);
+  const clearSysLogs = useClearSystemLogs();
   const allLines = data?.lines ?? [];
 
   const parsed = React.useMemo(
-    () => allLines.slice(clearedAt).map(parseSysLine),
-    [allLines, clearedAt],
+    () => allLines.map(parseSysLine),
+    [allLines],
   );
 
   const visible = React.useMemo(
@@ -390,6 +398,10 @@ function SystemTab() {
   }, [visible.length, isLive]);
 
   const visibleRaw = visible.map(p => p.raw);
+
+  const handleClear = () => {
+    clearSysLogs.mutate(undefined, { onSuccess: () => refetch() });
+  };
 
   return (
     <TerminalShell
@@ -411,16 +423,9 @@ function SystemTab() {
       isEmpty={visible.length === 0}
       isLive={isLive}
       lines={visibleRaw}
-      copyText={
-        isLive
-          ? visibleRaw.join("\n")
-          : allLines.filter(l => filterCat === "ALL" || parseSysLine(l).category === filterCat).join("\n")
-      }
-      onLiveToggle={() => {
-        if (!isLive) setClearedAt(allLines.length);
-        setIsLive(v => !v);
-      }}
-      onClear={() => setClearedAt(allLines.length)}
+      copyText={visibleRaw.join("\n")}
+      onLiveToggle={() => setIsLive(v => !v)}
+      onClear={handleClear}
     >
       <table className="w-full">
         <thead>

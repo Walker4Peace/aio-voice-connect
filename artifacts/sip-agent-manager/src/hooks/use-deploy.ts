@@ -111,6 +111,28 @@ export function useSetWatchdog(extensionId: number) {
   });
 }
 
+export function useClearSystemLogs() {
+  const qc = useQueryClient();
+  return useMutation<void>({
+    mutationFn: () =>
+      fetch("/api/deploy/system/logs", { method: "DELETE" }).then(() => undefined),
+    onSuccess: () => {
+      qc.setQueryData(["system-logs"], { lines: [] });
+    },
+  });
+}
+
+export function useClearExtensionLogs(extensionId: number) {
+  const qc = useQueryClient();
+  return useMutation<void>({
+    mutationFn: () =>
+      fetch(`/api/deploy/${extensionId}/logs`, { method: "DELETE" }).then(() => undefined),
+    onSuccess: () => {
+      qc.setQueryData(["deploy-logs", extensionId], { extensionId, lines: [] });
+    },
+  });
+}
+
 export function statusLabel(status: DeployStatus["status"]) {
   switch (status) {
     case "registered":   return "Registered";

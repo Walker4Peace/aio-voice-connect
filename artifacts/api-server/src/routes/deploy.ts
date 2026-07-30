@@ -6,11 +6,13 @@ import {
   stopExtension,
   restartExtension,
   getLogs,
+  clearExtensionLogs,
   getStatus,
   getAllStatuses,
   getPersistedCallEvents,
   getRunningExtensionIds,
   getSystemLogs,
+  clearSystemLogs,
   deleteCallByCallId,
   clearAllCallEvents,
   setWatchdogEnabled,
@@ -22,6 +24,12 @@ const router = Router();
 // GET /api/deploy/system/logs — application-level log buffer
 router.get("/deploy/system/logs", (_req, res) => {
   res.json({ lines: getSystemLogs() });
+});
+
+// DELETE /api/deploy/system/logs — wipe the in-memory system log buffer
+router.delete("/deploy/system/logs", (_req, res) => {
+  clearSystemLogs();
+  res.json({ ok: true });
 });
 
 // GET /api/deploy/all — status for every deployed extension
@@ -136,6 +144,17 @@ router.get("/deploy/:extensionId/logs", async (req, res) => {
   }
   const lines = getLogs(extensionId);
   res.json({ extensionId, lines });
+});
+
+// DELETE /api/deploy/:extensionId/logs — wipe the in-memory log buffer for this extension
+router.delete("/deploy/:extensionId/logs", (req, res) => {
+  const extensionId = Number(req.params["extensionId"]);
+  if (!Number.isFinite(extensionId)) {
+    res.status(400).json({ error: "Invalid extensionId" });
+    return;
+  }
+  clearExtensionLogs(extensionId);
+  res.json({ ok: true });
 });
 
 // POST /api/deploy/:extensionId/start

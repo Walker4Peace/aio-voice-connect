@@ -1190,6 +1190,12 @@ export function getLogs(extensionId: number): string[] {
   return processes.get(extensionId)?.logs ?? exitedLogs.get(extensionId) ?? [];
 }
 
+export function clearExtensionLogs(extensionId: number): void {
+  exitedLogs.delete(extensionId);
+  const proc = processes.get(extensionId);
+  if (proc) proc.logs = [];
+}
+
 // ── System / application log buffer ────────────────────────────────────────
 const MAX_SYSTEM_LOG_LINES = 300;
 const systemLogBuffer: string[] = [];
@@ -1204,6 +1210,10 @@ export function addSystemLog(line: string, category: SystemLogCategory = "DEPLOY
 
 export function getSystemLogs(): string[] {
   return [...systemLogBuffer];
+}
+
+export function clearSystemLogs(): void {
+  systemLogBuffer.length = 0;
 }
 
 export async function getStatus(extensionId: number) {
