@@ -2,7 +2,7 @@ import { spawn, ChildProcess } from "child_process";
 import path from "path";
 import fs from "fs/promises";
 import net from "net";
-import { db, extensionsTable, deploymentsTable, callEventsTable, agentToolsTable, outboundCallsTable, type Deployment } from "@workspace/db";
+import { db, extensionsTable, deploymentsTable, callEventsTable, agentToolsTable, outboundCallsTable, agentConfigsTable, type Deployment } from "@workspace/db";
 import { eq, inArray, and, asc } from "drizzle-orm";
 import { logger } from "../lib/logger.js";
 
@@ -1270,6 +1270,25 @@ export async function getAllStatuses() {
 // On server start, mark any lingering "running" rows as stopped (processes don't survive restarts)
 export async function reconcileOnStartup() {
   addSystemLog("Server starting — reconciling deployment state");
+
+  // Capture inbound extensions that were running BEFORE we mark them stopped,
+  // so we can auto-restart them after initialization.
+  let inboundToRestart: number[] = [];
+  try {
+    const rows = await db
+      .select({ extensionId: deploymentsTable.extensionId })
+      .from(deploymentsTable)
+      .innerJoin(extensionsTable, eq(extensionsTable.id, deploymentsTable.extensionId))
+      .innerJoin(agentConfigsTable, eq(agentConfigsTable.id, extensionsTable.agentConfigId))
+      .where(and(
+        inArray(deploymentsTable.status, ["registered", "reconnecting", "starting"]),
+        eq(agentConfigsTable.mode, "inbound"),
+      ));
+    inboundToRestart = rows.map(r => r.extensionId);
+  } catch (err) {
+    logger.error({ err }, "Failed to query running inbound extensions for auto-restart");
+  }
+
   await db.update(deploymentsTable)
     .set({ status: "stopped", pid: null, sipRegistered: false, updatedAt: new Date() })
     .where(inArray(deploymentsTable.status, ["registered", "reconnecting", "starting"]));
@@ -1295,4 +1314,21 @@ export async function reconcileOnStartup() {
 
   addSystemLog("Deployment state reconciled on startup");
   logger.info("Deployment state reconciled on startup");
+
+  // Auto-restart inbound extensions that were running before the server restarted.
+  // Deferred 4 s to let the HTTP server and DB pool fully initialize first.
+  if (inboundToRestart.length > 0) {
+    logger.info({ extensionIds: inboundToRestart }, "Scheduling auto-restart for inbound extensions");
+    setTimeout(async () => {
+      for (const extensionId of inboundToRestart) {
+        try {
+          addSystemLog(`Auto-restarting inbound extension ${extensionId} after server restart`);
+          await startExtension(extensionId);
+          logger.info({ extensionId }, "Auto-restarted inbound extension after server restart");
+        } catch (err) {
+          logger.error({ err, extensionId }, "Failed to auto-restart inbound extension after server restart");
+        }
+      }
+    }, 4000);
+  }
 }

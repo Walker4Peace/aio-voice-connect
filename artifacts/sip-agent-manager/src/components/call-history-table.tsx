@@ -163,8 +163,14 @@ function CallTableRow({ callId, legs, extNumber, isOutbound = false, outboundPho
     ? "text-purple-600"
     : "text-blue-500";
 
-  // Legs displayed newest-first
-  const legsDesc = [...legs].reverse();
+  // Legs displayed in fixed logical order: ended/error → ai → invite/answered
+  const LEG_ORDER: Record<string, number> = { ended: 0, error: 1, connected_ai: 2, answered: 3, invite: 4 };
+  const legsDesc = [...legs].sort((a, b) => {
+    const oa = LEG_ORDER[a.event] ?? 5;
+    const ob = LEG_ORDER[b.event] ?? 5;
+    if (oa !== ob) return oa - ob;
+    return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+  });
 
   return (
     <Collapsible open={isOpen} onOpenChange={onToggle} asChild>

@@ -144,7 +144,7 @@ export default function CallsPage() {
                   variant={p === page ? "default" : "outline"}
                   size="sm"
                   className="h-8 w-8 p-0 text-xs"
-                  onClick={() => setPage(p)}
+                  onClick={() => { setPage(p); window.scrollTo({ top: 0, behavior: "smooth" }); }}
                 >
                   {p}
                 </Button>

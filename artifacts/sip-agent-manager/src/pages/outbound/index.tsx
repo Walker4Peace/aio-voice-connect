@@ -539,7 +539,7 @@ export default function OutboundPage() {
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
                   <button
                     key={page}
-                    onClick={() => setCurrentPage(page)}
+                    onClick={() => { setCurrentPage(page); window.scrollTo({ top: 0, behavior: "smooth" }); }}
                     className={`h-8 w-8 rounded text-sm font-medium transition-colors ${
                       page === currentPage
                         ? "bg-primary text-primary-foreground"
