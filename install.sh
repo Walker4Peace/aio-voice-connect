@@ -311,7 +311,7 @@ sudo -u "${APP_USER}" bash -c "
     set -e
     cd '${INSTALL_DIR}'
     echo '[INFO]  Running type-check...'
-    pnpm run typecheck 2>&1
+    pnpm run typecheck --reporter=append-only 2>&1
 " || die "Type-check failed. Fix the TypeScript errors above before re-running the installer."
 success "Type-check passed"
 
