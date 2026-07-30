@@ -281,10 +281,10 @@ function ExtensionTab() {
       <div className="space-y-1">
         <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t("logs.extension")}</label>
         <Select value={selectedId} onValueChange={setSelectedId}>
-          <SelectTrigger className="w-96">
+          <SelectTrigger className="w-full max-w-xl">
             <SelectValue placeholder={t("logs.selectExtPlaceholder")} />
           </SelectTrigger>
-          <SelectContent className="w-96">
+          <SelectContent className="w-full max-w-xl">
             {extensions?.map((ext) => {
               const st = allStatuses?.find(s => s.extensionId === ext.id);
               const running = st?.status === "registered" || st?.status === "starting" || st?.status === "reconnecting";
@@ -418,7 +418,7 @@ function SystemTab() {
           <SelectContent>
             {ALL_SYSTEM_CATEGORIES.map(cat => (
               <SelectItem key={cat} value={cat} className="text-xs">
-                {cat === "ALL" ? t("logs.allCategories") : cat.charAt(0) + cat.slice(1).toLowerCase()}
+                {cat === "ALL" ? "ALL" : cat.charAt(0) + cat.slice(1).toLowerCase()}
               </SelectItem>
             ))}
           </SelectContent>
