@@ -475,22 +475,22 @@ export default function LogsPage() {
         </p>
       </div>
 
-      <Tabs defaultValue="extension">
+      <Tabs defaultValue="system">
         <TabsList className="mb-4">
-          <TabsTrigger value="extension" className="gap-1.5">
-            <Phone className="h-3.5 w-3.5" /> Extension
-          </TabsTrigger>
           <TabsTrigger value="system" className="gap-1.5">
             <Server className="h-3.5 w-3.5" /> System
           </TabsTrigger>
+          <TabsTrigger value="extension" className="gap-1.5">
+            <Phone className="h-3.5 w-3.5" /> Extension
+          </TabsTrigger>
         </TabsList>
-
-        <TabsContent value="extension">
-          <ExtensionTab />
-        </TabsContent>
 
         <TabsContent value="system">
           <SystemTab />
+        </TabsContent>
+
+        <TabsContent value="extension">
+          <ExtensionTab />
         </TabsContent>
       </Tabs>
     </div>
