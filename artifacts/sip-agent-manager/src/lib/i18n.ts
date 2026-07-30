@@ -412,6 +412,8 @@ const en = {
   "agents.duplicateAgent":    "Duplicate Agent",
   "agents.deleteAgent":       "Delete Agent",
   "agents.showing":           "Showing {{count}} agent(s)",
+  "agents.showingSimple":     "Showing {{count}} agent(s)",
+  "agents.showingRange":      "Showing from {{from}} to {{to}} of {{total}} agents",
 
   // ── Agent config form ─────────────────────────────────────────────────────
   "agentForm.editTitle":      "Edit AI Agent",
@@ -979,6 +981,8 @@ const fr: typeof en = {
   "agents.duplicateAgent":    "Dupliquer l'agent",
   "agents.deleteAgent":       "Supprimer l'agent",
   "agents.showing":           "Affichage de {{count}} agent(s)",
+  "agents.showingSimple":     "Affichage de {{count}} agent(s)",
+  "agents.showingRange":      "Affichage de {{from}} à {{to}} sur {{total}} agents",
 
   // ── Agent config form ─────────────────────────────────────────────────────
   "agentForm.editTitle":      "Modifier l'agent IA",

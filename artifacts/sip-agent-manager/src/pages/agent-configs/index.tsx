@@ -35,15 +35,26 @@ function CopyButton({ value }: { value: string }) {
   );
 }
 
+const PAGE_SIZE = 10;
+
 export default function AgentConfigsList() {
   const { t } = useTranslation();
   const { data: configs, isLoading } = useListAgentConfigs();
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [deletingId, setDeletingId] = React.useState<number | null>(null);
+  const [page, setPage] = React.useState(1);
 
   const deleteConfig = useDeleteAgentConfig();
   const createConfig = useCreateAgentConfig();
+
+  const total = configs?.length ?? 0;
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+  const pagedConfigs = (configs ?? []).slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  const showingText = total <= PAGE_SIZE
+    ? t("agents.showingSimple", { count: total })
+    : t("agents.showingRange", { from: (page - 1) * PAGE_SIZE + 1, to: Math.min(page * PAGE_SIZE, total), total });
 
   const handleDuplicate = (config: NonNullable<typeof configs>[number]) => {
       createConfig.mutate(
@@ -123,7 +134,7 @@ export default function AgentConfigsList() {
                   </tr>
                 </thead>
                 <tbody>
-                  {(configs ?? []).map((config) => {
+                  {pagedConfigs.map((config) => {
                     const initial = config.name.charAt(0).toUpperCase();
 
                     return (
@@ -188,8 +199,23 @@ export default function AgentConfigsList() {
                   })}
                 </tbody>
               </table>
-              <div className="px-4 py-3 border-t text-xs text-muted-foreground">
-                {t("agents.showing", { count: configs?.length ?? 0 })}
+              <div className="flex items-center justify-between px-4 py-3 border-t">
+                <span className="text-xs text-muted-foreground">{showingText}</span>
+                {totalPages > 1 && (
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                      <Button
+                        key={p}
+                        variant={p === page ? "default" : "outline"}
+                        size="sm"
+                        className="h-8 w-8 p-0 text-xs"
+                        onClick={() => { setPage(p); document.querySelector('main')?.scrollTo({ top: 0, behavior: "smooth" }); }}
+                      >
+                        {p}
+                      </Button>
+                    ))}
+                  </div>
+                )}
               </div>
             </>
           )}
