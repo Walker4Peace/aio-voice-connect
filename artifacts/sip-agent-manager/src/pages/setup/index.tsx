@@ -268,9 +268,8 @@ export default function SetupWizard() {
                 </div>
               )}
 
-              <div className="flex justify-between pt-2 border-t">
-                <Button variant="ghost" onClick={() => setStep("finish")}>{t("setup.skipForNow")}</Button>
-                <Button onClick={() => setStep("finish")} disabled={!domainResult?.ok && !domainResult} variant={domainResult?.ok ? "default" : "outline"}>
+              <div className="flex justify-end pt-2 border-t">
+                <Button onClick={() => setStep("finish")} variant={domainResult?.ok ? "default" : "outline"}>
                   {domainResult?.ok ? t("setup.continue") : t("setup.skip")}
                 </Button>
               </div>

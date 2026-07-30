@@ -185,7 +185,7 @@ export default function ClientsList() {
             </DialogHeader>
             <div className="overflow-y-auto flex-1 px-1">
               <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                   <FormField control={form.control} name="name" render={({ field }) => (
                     <FormItem><FormLabel>{t("clients.ipbxName")}</FormLabel><FormControl><Input placeholder="Office IPBX" {...field} /></FormControl><FormMessage /></FormItem>
                   )} />

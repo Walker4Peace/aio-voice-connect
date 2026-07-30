@@ -234,8 +234,8 @@ export default function ExtensionsList() {
         <div className="border-2 border-dashed rounded-xl bg-card">
           <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
             <div className="relative">
-              <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-blue-50">
-                <Phone className="h-8 w-8 text-blue-400" />
+              <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-muted">
+                <Users className="h-8 w-8 text-muted-foreground/50" />
               </div>
               <div className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground">
                 <Plus className="h-3 w-3" />
