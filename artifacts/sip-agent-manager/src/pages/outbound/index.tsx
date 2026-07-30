@@ -535,19 +535,17 @@ export default function OutboundPage() {
             </Table>
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-center gap-1 py-3 border-t">
+              <div className="flex items-center justify-center gap-1 px-4 py-3 border-t">
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                  <button
+                  <Button
                     key={page}
+                    variant={page === currentPage ? "default" : "outline"}
+                    size="sm"
+                    className="h-8 w-8 p-0 text-xs"
                     onClick={() => { setCurrentPage(page); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-                    className={`h-8 w-8 rounded text-sm font-medium transition-colors ${
-                      page === currentPage
-                        ? "bg-primary text-primary-foreground"
-                        : "hover:bg-muted text-muted-foreground"
-                    }`}
                   >
                     {page}
-                  </button>
+                  </Button>
                 ))}
               </div>
             )}
