@@ -289,20 +289,18 @@ function ExtensionTab() {
                   <span className="flex items-center gap-2">
                     <Phone className="h-3.5 w-3.5 text-muted-foreground" />
                     <span>Extension {ext.extensionNumber}{ext.displayName ? ` — ${ext.displayName}` : ""}</span>
-                    {st ? (
-                      isOutbound ? (
-                        <>
-                          <span className="h-2 w-2 rounded-full shrink-0 bg-[#F1C40F]" />
-                          <span className="text-xs text-[#92740A]">Outbound</span>
-                        </>
-                      ) : (
-                        <>
-                          <span className={`h-2 w-2 rounded-full shrink-0 ${running ? "bg-green-500" : "bg-red-400"}`} />
-                          <span className={`text-xs ${running ? "text-green-600" : "text-red-500"}`}>
-                            {running ? "Running" : "Down"}
-                          </span>
-                        </>
-                      )
+                    {isOutbound ? (
+                      <>
+                        <span className="h-2 w-2 rounded-full shrink-0 bg-[#F1C40F]" />
+                        <span className="text-xs text-[#92740A]">Outbound</span>
+                      </>
+                    ) : st ? (
+                      <>
+                        <span className={`h-2 w-2 rounded-full shrink-0 ${running ? "bg-green-500" : "bg-red-400"}`} />
+                        <span className={`text-xs ${running ? "text-green-600" : "text-red-500"}`}>
+                          {running ? "Running" : "Down"}
+                        </span>
+                      </>
                     ) : null}
                   </span>
                 </SelectItem>
@@ -321,7 +319,7 @@ function ExtensionTab() {
               ? <>Ext {selectedExt.extensionNumber}{selectedExt.displayName ? ` — ${selectedExt.displayName}` : ""}</>
               : <span className="text-gray-600">No extension selected</span>
             }
-            {selectedStatus && (
+            {(selectedStatus || selectedExt?.agentConfig?.mode === "outbound") && (
               <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${isRunning ? "text-green-400 bg-green-400/10 border-green-400/20" : "text-gray-500 bg-gray-500/10 border-gray-500/20"}`}>
                 {isRunning ? "Registered" : "Not Registered"}
               </span>
