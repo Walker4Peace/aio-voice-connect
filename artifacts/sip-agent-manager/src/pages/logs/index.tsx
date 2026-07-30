@@ -159,10 +159,10 @@ export default function LogsPage() {
         <div className="space-y-1">
           <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t("logs.source")}</label>
           <Select value={selectedValue} onValueChange={setSelectedValue}>
-            <SelectTrigger className="w-64">
+            <SelectTrigger className="w-96">
               <SelectValue placeholder={t("logs.selectSource")} />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="w-96">
               <SelectItem value={SYSTEM_VALUE}>
                 <span className="flex items-center gap-2">
                   <Server className="h-3.5 w-3.5 text-muted-foreground" />
@@ -171,19 +171,25 @@ export default function LogsPage() {
               </SelectItem>
               {extensions?.map((ext) => {
                 const st = allStatuses?.find(s => s.extensionId === ext.id);
+                const isOutbound = ext.agentConfig?.mode === "outbound";
                 const isRunning = st?.status === "registered" || st?.status === "starting" || st?.status === "reconnecting";
                 return (
                   <SelectItem key={ext.id} value={ext.id.toString()}>
                     <span className="flex items-center gap-2">
                       <Phone className="h-3.5 w-3.5 text-muted-foreground" />
                       <span>Extension {ext.extensionNumber}{ext.displayName ? ` (${ext.displayName})` : ""}</span>
-                      {st && (
-                        <span className={`h-2 w-2 rounded-full shrink-0 ${isRunning ? "bg-green-500" : "bg-red-400"}`} />
-                      )}
-                      {st && (
-                        <span className={`text-xs ${isRunning ? "text-green-600" : "text-red-500"}`}>
-                          {isRunning ? "Registered" : "Down"}
-                        </span>
+                      {isOutbound ? (
+                        <>
+                          <span className="h-2 w-2 rounded-full shrink-0 bg-[#F1C40F]" />
+                          <span className="text-xs text-[#92740A]">Outbound</span>
+                        </>
+                      ) : st && (
+                        <>
+                          <span className={`h-2 w-2 rounded-full shrink-0 ${isRunning ? "bg-green-500" : "bg-red-400"}`} />
+                          <span className={`text-xs ${isRunning ? "text-green-600" : "text-red-500"}`}>
+                            {isRunning ? "Running" : "Down"}
+                          </span>
+                        </>
                       )}
                     </span>
                   </SelectItem>
