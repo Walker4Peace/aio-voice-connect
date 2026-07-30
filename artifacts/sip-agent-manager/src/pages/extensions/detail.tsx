@@ -179,12 +179,6 @@ export default function ExtensionDetail() {
             </div>
           </div>
         </div>
-        {!statusLoading && deployStatus && (
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-1.5 shrink-0">
-            <RefreshCw className="h-3 w-3" />
-            {t("extDetail.lastUpdated", { time: timeAgo(deployStatus.lastStartedAt) })}
-          </div>
-        )}
       </div>
 
       {/* Deployment Panel — inbound: manual deploy; outbound: info card only */}

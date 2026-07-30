@@ -441,8 +441,8 @@ export default function ClientDetail() {
         <DialogContent className="max-w-lg max-h-[85vh] flex flex-col gap-0 p-0 overflow-hidden">
           {/* Header */}
           <div className="flex items-start gap-4 p-6 pb-4 shrink-0">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted shrink-0">
-              <Users className="h-7 w-7 text-muted-foreground" />
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted shrink-0 text-3xl">
+              🔗
             </div>
             <div className="flex-1 min-w-0">
               <h2 className="text-xl font-semibold leading-tight">{t("clientDetail.dialogTitle", { name: client.name })}</h2>

@@ -36,11 +36,11 @@ import { Plus, Server, Trash2, FlaskConical, Loader2, CheckCircle, XCircle, More
 function timeAgo(dateStr: string | null | undefined): string {
   if (!dateStr) return "—";
   const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
-  if (diff < 5) return "just now";
-  if (diff < 60) return `${diff}s ago`;
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-  return `${Math.floor(diff / 86400)}d ago`;
+  if (diff < 5) return "à l'instant";
+  if (diff < 60) return `il y a ${diff}s`;
+  if (diff < 3600) return `il y a ${Math.floor(diff / 60)}m`;
+  if (diff < 86400) return `il y a ${Math.floor(diff / 3600)}h`;
+  return `il y a ${Math.floor(diff / 86400)}j`;
 }
 
 const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, "") + "/api";
@@ -75,6 +75,7 @@ export default function ClientsList() {
   const [deletingId, setDeletingId] = React.useState<number | null>(null);
   const [testStatus, setTestStatus] = React.useState<TestStatus>("idle");
   const [testError, setTestError] = React.useState<string>("");
+  const [testingClientId, setTestingClientId] = React.useState<number | null>(null);
 
   const [page, setPage] = React.useState(1);
   const PAGE_SIZE = 10;
@@ -102,6 +103,28 @@ export default function ClientsList() {
     resolver: zodResolver(formSchema),
     defaultValues: { name: "", description: "", sipDomain: "", sipHost: "", sipPort: "5060", yeastarApiUrl: "", yeastarClientId: "", yeastarClientSecret: "" },
   });
+
+  const handleTestClientConnection = async (clientId: number) => {
+    setTestingClientId(clientId);
+    try {
+      const res = await fetch(`${API_BASE}/clients/${clientId}/yeastar/test`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      const data = await res.json() as { success: boolean; error?: string };
+      if (data.success) {
+        toast({ title: t("clients.yeastarTestSuccess") });
+        queryClient.invalidateQueries({ queryKey: getListClientsQueryKey() });
+      } else {
+        toast({ variant: "destructive", title: t("clients.yeastarTestFailed"), description: data.error });
+      }
+    } catch (err) {
+      toast({ variant: "destructive", title: t("common.error"), description: (err as Error).message });
+    } finally {
+      setTestingClientId(null);
+    }
+  };
 
   const handleTestConnection = async () => {
     const values = form.getValues();
@@ -227,7 +250,7 @@ export default function ClientsList() {
                     )}
                   </div>
                   <FormField control={form.control} name="description" render={({ field }) => (
-                    <FormItem><FormLabel>{t("clients.notes")}</FormLabel><FormControl><Textarea placeholder="Details about this IPBX..." {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>{t("clients.notes")}</FormLabel><FormControl><Textarea placeholder={t("clients.notesPlaceholder")} {...field} /></FormControl><FormMessage /></FormItem>
                   )} />
                   <div className="flex justify-end pt-4">
                     <Button type="submit" disabled={createClient.isPending}>
@@ -353,10 +376,15 @@ export default function ClientsList() {
                                     <Eye className="h-4 w-4" /> {t("clients.viewDetails")}
                                   </Link>
                                 </DropdownMenuItem>
-                                <DropdownMenuItem asChild>
-                                  <Link href={`/ipbxs/${client.id}`} className="flex items-center gap-2 cursor-pointer">
-                                    <RefreshCw className="h-4 w-4" /> {t("clients.testApiConn")}
-                                  </Link>
+                                <DropdownMenuItem
+                                  className="flex items-center gap-2 cursor-pointer"
+                                  disabled={testingClientId === client.id}
+                                  onClick={() => handleTestClientConnection(client.id)}
+                                >
+                                  {testingClientId === client.id
+                                    ? <Loader2 className="h-4 w-4 animate-spin" />
+                                    : <RefreshCw className="h-4 w-4" />}
+                                  {t("clients.testApiConn")}
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem

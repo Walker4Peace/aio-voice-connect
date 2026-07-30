@@ -256,7 +256,7 @@ export default function ExtensionsList() {
         <>
           {/* Search + filters */}
           <div className="flex flex-wrap items-center gap-3">
-            <div className="relative flex-1 min-w-48 max-w-xs">
+            <div className="relative flex-1 min-w-64 max-w-sm">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder={t("extensions.searchPlaceholder")}
@@ -266,7 +266,7 @@ export default function ExtensionsList() {
               />
             </div>
             <Select value={filterClientId} onValueChange={setFilterClientId}>
-              <SelectTrigger className="w-36 h-9">
+              <SelectTrigger className="w-48 h-9">
                 <SelectValue placeholder={t("extensions.allIPBXs")} />
               </SelectTrigger>
               <SelectContent>
@@ -275,7 +275,7 @@ export default function ExtensionsList() {
               </SelectContent>
             </Select>
             <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger className="w-36 h-9">
+              <SelectTrigger className="w-48 h-9">
                 <SelectValue placeholder={t("extensions.allStatuses")} />
               </SelectTrigger>
               <SelectContent>
@@ -286,7 +286,7 @@ export default function ExtensionsList() {
               </SelectContent>
             </Select>
             <Select value={filterAgentId} onValueChange={setFilterAgentId}>
-              <SelectTrigger className="w-40 h-9">
+              <SelectTrigger className="w-52 h-9">
                 <SelectValue placeholder={t("extensions.allAgents")} />
               </SelectTrigger>
               <SelectContent>
