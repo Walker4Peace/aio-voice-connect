@@ -139,9 +139,9 @@ function TriggerDialog({ open, onOpenChange, extensions, onSuccess }: TriggerDia
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Only show extensions configured for outbound or both modes
+  // Only show extensions configured for outbound mode
   const outboundExtensions = extensions.filter(
-    e => e.agentConfig?.mode === "outbound" || e.agentConfig?.mode === "both"
+    e => e.agentConfig?.mode === "outbound"
   );
 
   const [extensionId, setExtensionId] = React.useState("");
@@ -247,7 +247,7 @@ function TriggerDialog({ open, onOpenChange, extensions, onSuccess }: TriggerDia
             </Select>
             {outboundExtensions.length === 0 && extensions.length > 0 && (
               <p className="text-xs text-muted-foreground">
-                {t("outbound.noOutboundExtensionsHint", "Configure an agent with outbound or both mode on the Extensions page.")}
+                {t("outbound.noOutboundExtensionsHint", "Configure an agent with outbound mode on the Extensions page.")}
               </p>
             )}
           </div>

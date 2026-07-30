@@ -500,7 +500,7 @@ async function buildConfig(
   // (customer answered).  This matches SIP4AI's outbound flow and guarantees
   // the AI never speaks during ringback.
   // Without outboundTarget the binary registers and waits for inbound INVITEs.
-  const binaryMode = outboundTarget ? "outbound" : (cfg.mode === "inbound" ? "inbound" : "both");
+  const binaryMode = outboundTarget ? "outbound" : "inbound";
 
   const base: Record<string, unknown> = {
     mode: binaryMode,
@@ -820,7 +820,7 @@ export async function applyOutboundConfigOverride(
   logger.info(
     {
       extensionId,
-      mode: outboundTarget ? "outbound" : "inbound/both",
+      mode: outboundTarget ? "outbound" : "inbound",
       target: outboundTarget?.phoneNumber ?? null,
       hasFirstMessage: !!(overrides.firstMessage),
       hasSystemPrompt: !!(overrides.systemPromptOverride),

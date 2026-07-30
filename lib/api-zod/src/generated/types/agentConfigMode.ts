@@ -12,5 +12,4 @@ export type AgentConfigMode = typeof AgentConfigMode[keyof typeof AgentConfigMod
 export const AgentConfigMode = {
   inbound: 'inbound',
   outbound: 'outbound',
-  both: 'both',
 } as const;

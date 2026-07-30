@@ -728,7 +728,6 @@ components:
       enum:
         - inbound
         - outbound
-        - both
 
     AgentConfig:
       type: object
