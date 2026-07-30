@@ -2,7 +2,7 @@ kind = "web"
 previewPath = "/"
 title = "AIO Voice Connect Manager"
 version = "1.0.0"
-id = "artifacts/sip-agent-manager"
+id = "artifacts/aio-voice-connect-manager"
 router = "path"
 
 [[services]]
