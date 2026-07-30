@@ -199,23 +199,22 @@ export default function AgentConfigsList() {
                   })}
                 </tbody>
               </table>
-              <div className="flex items-center justify-between px-4 py-3 border-t">
+              <div className="grid grid-cols-3 items-center px-4 py-3 border-t">
                 <span className="text-xs text-muted-foreground">{showingText}</span>
-                {totalPages > 1 && (
-                  <div className="flex items-center gap-1">
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                      <Button
-                        key={p}
-                        variant={p === page ? "default" : "outline"}
-                        size="sm"
-                        className="h-8 w-8 p-0 text-xs"
-                        onClick={() => { setPage(p); document.querySelector('main')?.scrollTo({ top: 0, behavior: "smooth" }); }}
-                      >
-                        {p}
-                      </Button>
-                    ))}
-                  </div>
-                )}
+                <div className="flex items-center justify-center gap-1">
+                  {totalPages > 1 && Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                    <Button
+                      key={p}
+                      variant={p === page ? "default" : "outline"}
+                      size="sm"
+                      className="h-8 w-8 p-0 text-xs"
+                      onClick={() => { setPage(p); document.querySelector('main')?.scrollTo({ top: 0, behavior: "smooth" }); }}
+                    >
+                      {p}
+                    </Button>
+                  ))}
+                </div>
+                <div />
               </div>
             </>
           )}

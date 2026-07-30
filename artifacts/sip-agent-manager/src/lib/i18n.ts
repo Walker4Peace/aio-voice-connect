@@ -214,6 +214,7 @@ const en = {
   "clients.noIPBX":           "No IPBX configured",
   "clients.addFirstDesc":     "Add your first IPBX to start connecting SIP extensions with AI voice agents.",
   "clients.showing":          "Showing {{count}} of {{total}} IPBX",
+  "clients.showingRange":     "Showing {{from}} to {{to}} of {{total}} IPBXs",
 
   // ── IPBX detail ───────────────────────────────────────────────────────────
   "clientDetail.loading":     "Loading IPBX data...",
@@ -313,6 +314,7 @@ const en = {
   "extensions.viewDetails":   "View Details",
   "extensions.deleteExt":     "Delete Extension",
   "extensions.showing":       "Showing {{count}} of {{total}} extensions",
+  "extensions.showingRange":  "Showing {{from}} to {{to}} of {{total}} extensions",
   "extensions.noMatchFilters":"No extensions match your filters.",
   "extensions.clearFilters":  "Clear",
 
@@ -784,6 +786,7 @@ const fr: typeof en = {
   "clients.noIPBX":           "Aucun IPBX configuré",
   "clients.addFirstDesc":     "Ajoutez votre premier IPBX pour commencer à connecter des extensions SIP avec des agents vocaux IA.",
   "clients.showing":          "Affichage de {{count}} sur {{total}} IPBX",
+  "clients.showingRange":     "Affichage de {{from}} à {{to}} sur {{total}} IPBX",
 
   // ── IPBX detail ───────────────────────────────────────────────────────────
   "clientDetail.loading":     "Chargement des données IPBX...",
@@ -883,6 +886,7 @@ const fr: typeof en = {
   "extensions.viewDetails":   "Voir les détails",
   "extensions.deleteExt":     "Supprimer l'extension",
   "extensions.showing":       "Affichage de {{count}} sur {{total}} extensions",
+  "extensions.showingRange":  "Affichage de {{from}} à {{to}} sur {{total}} extensions",
   "extensions.noMatchFilters":"Aucune extension ne correspond aux filtres.",
   "extensions.clearFilters":  "Effacer",
 

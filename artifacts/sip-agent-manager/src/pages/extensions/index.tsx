@@ -82,6 +82,10 @@ export default function ExtensionsList() {
   const [filterClientId, setFilterClientId] = React.useState("all");
   const [filterStatus, setFilterStatus] = React.useState("all");
   const [filterAgentId, setFilterAgentId] = React.useState("all");
+  const [page, setPage] = React.useState(1);
+  const PAGE_SIZE = 10;
+
+  React.useEffect(() => { setPage(1); }, [search, filterClientId, filterStatus, filterAgentId]);
 
   const createExtension = useCreateExtension();
   const deleteExtension = useDeleteExtension();
@@ -143,6 +147,13 @@ export default function ExtensionsList() {
       return true;
     });
   }, [extensions, search, filterClientId, filterStatus, filterAgentId, statusMap]);
+
+  const totalFiltered = filtered.length;
+  const totalPages = Math.ceil(totalFiltered / PAGE_SIZE);
+  const pagedFiltered = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const showingText = totalFiltered <= PAGE_SIZE
+    ? t("extensions.showing", { count: totalFiltered, total: extensions?.length ?? 0 })
+    : t("extensions.showingRange", { from: (page - 1) * PAGE_SIZE + 1, to: Math.min(page * PAGE_SIZE, totalFiltered), total: totalFiltered });
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -311,7 +322,7 @@ export default function ExtensionsList() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filtered.map((ext) => {
+                    {pagedFiltered.map((ext) => {
                       const s = statusMap.get(ext.id);
                       const st = (s?.status ?? "stopped") as string;
                       const isRunning = st === "registered" || st === "starting" || st === "reconnecting";
@@ -407,8 +418,22 @@ export default function ExtensionsList() {
                     })}
                   </tbody>
                 </table>
-                <div className="px-4 py-3 border-t text-xs text-muted-foreground">
-                  {t("extensions.showing", { count: filtered.length, total: extensions?.length ?? 0 })}
+                <div className="grid grid-cols-3 items-center px-4 py-3 border-t">
+                  <span className="text-xs text-muted-foreground">{showingText}</span>
+                  <div className="flex items-center justify-center gap-1">
+                    {totalPages > 1 && Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                      <Button
+                        key={p}
+                        variant={p === page ? "default" : "outline"}
+                        size="sm"
+                        className="h-8 w-8 p-0 text-xs"
+                        onClick={() => { setPage(p); document.querySelector('main')?.scrollTo({ top: 0, behavior: "smooth" }); }}
+                      >
+                        {p}
+                      </Button>
+                    ))}
+                  </div>
+                  <div />
                 </div>
               </>
             )}

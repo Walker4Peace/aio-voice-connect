@@ -76,8 +76,18 @@ export default function ClientsList() {
   const [testStatus, setTestStatus] = React.useState<TestStatus>("idle");
   const [testError, setTestError] = React.useState<string>("");
 
+  const [page, setPage] = React.useState(1);
+  const PAGE_SIZE = 10;
+
   const createClient = useCreateClient();
   const deleteClient = useDeleteClient();
+
+  const total = clients?.length ?? 0;
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+  const pagedClients = (clients ?? []).slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const showingText = total <= PAGE_SIZE
+    ? t("clients.showing", { count: total, total })
+    : t("clients.showingRange", { from: (page - 1) * PAGE_SIZE + 1, to: Math.min(page * PAGE_SIZE, total), total });
 
   // Count extensions per client
   const extCountMap = React.useMemo(() => {
@@ -271,7 +281,7 @@ export default function ClientsList() {
                   </tr>
                 </thead>
                 <tbody>
-                  {(clients ?? []).map((client) => {
+                  {pagedClients.map((client) => {
                     const { sipHost, sipPort } = parseSipServer(client.sipServer);
                     const c = client as typeof client & { yeastarApiUrl?: string | null; yeastarVerified?: boolean | null; createdAt?: string; updatedAt?: string };
                     const extCount = extCountMap.get(client.id) ?? 0;
@@ -364,8 +374,22 @@ export default function ClientsList() {
                   })}
                 </tbody>
               </table>
-              <div className="px-4 py-3 border-t text-xs text-muted-foreground">
-                {t("clients.showing", { count: clients?.length ?? 0, total: clients?.length ?? 0 })}
+              <div className="grid grid-cols-3 items-center px-4 py-3 border-t">
+                <span className="text-xs text-muted-foreground">{showingText}</span>
+                <div className="flex items-center justify-center gap-1">
+                  {totalPages > 1 && Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                    <Button
+                      key={p}
+                      variant={p === page ? "default" : "outline"}
+                      size="sm"
+                      className="h-8 w-8 p-0 text-xs"
+                      onClick={() => { setPage(p); document.querySelector('main')?.scrollTo({ top: 0, behavior: "smooth" }); }}
+                    >
+                      {p}
+                    </Button>
+                  ))}
+                </div>
+                <div />
               </div>
             </>
           )}
