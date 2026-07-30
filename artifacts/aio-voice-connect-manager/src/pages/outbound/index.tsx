@@ -49,7 +49,7 @@ interface Extension {
   id: number;
   extensionNumber: string;
   displayName: string | null;
-  agentConfig?: { name: string } | null;
+  agentConfig?: { name: string; mode: string } | null;
 }
 
 // ── Fetch helpers ─────────────────────────────────────────────────────────────
@@ -138,6 +138,12 @@ function TriggerDialog({ open, onOpenChange, extensions, onSuccess }: TriggerDia
   const { t } = useTranslation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Only show extensions configured for outbound or both modes
+  const outboundExtensions = extensions.filter(
+    e => e.agentConfig?.mode === "outbound" || e.agentConfig?.mode === "both"
+  );
+
   const [extensionId, setExtensionId] = React.useState("");
   const [phoneNumber, setPhoneNumber] = React.useState("");
   const [callerId, setCallerId] = React.useState("");
@@ -222,12 +228,16 @@ function TriggerDialog({ open, onOpenChange, extensions, onSuccess }: TriggerDia
           {/* Extension */}
           <div className="space-y-1">
             <Label htmlFor="ext">{t("outbound.extension")} <span className="text-destructive">*</span></Label>
-            <Select value={extensionId} onValueChange={setExtensionId}>
+            <Select value={extensionId} onValueChange={setExtensionId} disabled={outboundExtensions.length === 0}>
               <SelectTrigger id="ext">
-                <SelectValue placeholder={t("outbound.selectExtension")} />
+                <SelectValue placeholder={
+                  outboundExtensions.length === 0
+                    ? t("outbound.noOutboundExtensions", "No outbound extensions configured")
+                    : t("outbound.selectExtension")
+                } />
               </SelectTrigger>
               <SelectContent>
-                {extensions.map(e => (
+                {outboundExtensions.map(e => (
                   <SelectItem key={e.id} value={String(e.id)}>
                     {e.extensionNumber}{e.displayName ? ` — ${e.displayName}` : ""}
                     {e.agentConfig ? ` (${e.agentConfig.name})` : ""}
@@ -235,6 +245,11 @@ function TriggerDialog({ open, onOpenChange, extensions, onSuccess }: TriggerDia
                 ))}
               </SelectContent>
             </Select>
+            {outboundExtensions.length === 0 && extensions.length > 0 && (
+              <p className="text-xs text-muted-foreground">
+                {t("outbound.noOutboundExtensionsHint", "Configure an agent with outbound or both mode on the Extensions page.")}
+              </p>
+            )}
           </div>
 
           {/* Phone number */}

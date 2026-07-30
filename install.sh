@@ -44,7 +44,6 @@ step()    { echo -e "\n${BOLD}${BLUE}▶ $*${NC}"; }
 die()     { echo -e "\n${RED}[ERROR]${NC} $*" >&2; echo -e "${RED}Installation failed. See output above for details.${NC}" >&2; exit 1; }
 
 # ── Configuration ─────────────────────────────────────────────────────────────
-# TODO: Replace with the actual GitHub repository URL before hosting this script.
 REPO_URL="${AIO_VOICE_CONNECT_REPO_URL:-https://github.com/Walker4Peace/ai-agent.git}"
 
 APP_USER="aio-voice-connect"
