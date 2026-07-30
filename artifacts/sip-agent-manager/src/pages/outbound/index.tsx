@@ -21,7 +21,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { PhoneOutgoing, RefreshCw, Info, Trash2, Eraser } from "lucide-react";
+import { PhoneOutgoing, RefreshCw, Info, Trash2 } from "lucide-react";
 import { useTimezone } from "@/contexts/timezone-context";
 
 const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, "") + "/api";
@@ -432,7 +432,7 @@ export default function OutboundPage() {
           </Button>
           {calls.length > 0 && (
             <Button variant="outline" size="sm" className="text-destructive border-destructive/30 hover:bg-destructive hover:text-destructive-foreground" onClick={() => setClearConfirmOpen(true)}>
-              <Eraser className="h-4 w-4 mr-1" />
+              <Trash2 className="h-4 w-4 mr-1" />
               {t("outbound.clearAll")}
             </Button>
           )}

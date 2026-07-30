@@ -50,10 +50,27 @@ function CopyButton({ value }: { value: string }) {
   const [copied, setCopied] = React.useState(false);
   const handleCopy = (e: React.MouseEvent) => {
     e.stopPropagation();
-    navigator.clipboard.writeText(value).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    });
+    const done = () => { setCopied(true); setTimeout(() => setCopied(false), 1500); };
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(value).then(done).catch(() => {
+        // fallback for iframe / non-https contexts
+        const el = document.createElement("textarea");
+        el.value = value;
+        el.style.position = "fixed"; el.style.opacity = "0";
+        document.body.appendChild(el); el.select();
+        document.execCommand("copy");
+        document.body.removeChild(el);
+        done();
+      });
+    } else {
+      const el = document.createElement("textarea");
+      el.value = value;
+      el.style.position = "fixed"; el.style.opacity = "0";
+      document.body.appendChild(el); el.select();
+      document.execCommand("copy");
+      document.body.removeChild(el);
+      done();
+    }
   };
   return (
     <button
