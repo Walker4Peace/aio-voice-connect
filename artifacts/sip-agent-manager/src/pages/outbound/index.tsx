@@ -418,29 +418,29 @@ export default function OutboundPage() {
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
+      <div>
+        <div className="flex items-center justify-between gap-4">
           <h1 className="text-3xl font-bold tracking-tight">{t("outbound.title")}</h1>
-          <p className="text-muted-foreground mt-1 text-sm">
-            {t("outbound.description")}
-          </p>
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <Button variant="outline" size="sm" onClick={() => void refetch()}>
-            <RefreshCw className="h-4 w-4 mr-1" />
-            {t("outbound.refresh")}
-          </Button>
-          {calls.length > 0 && (
-            <Button variant="outline" size="sm" className="text-destructive border-destructive/30 hover:bg-destructive hover:text-destructive-foreground" onClick={() => setClearConfirmOpen(true)}>
-              <Trash2 className="h-4 w-4 mr-1" />
-              {t("outbound.clearAll")}
+          <div className="flex items-center gap-2 shrink-0">
+            <Button variant="outline" size="sm" onClick={() => void refetch()}>
+              <RefreshCw className="h-4 w-4 mr-1" />
+              {t("outbound.refresh")}
             </Button>
-          )}
-          <Button size="sm" onClick={() => setTriggerOpen(true)}>
-            <PhoneOutgoing className="h-4 w-4 mr-1" />
-            {t("outbound.triggerCall")}
-          </Button>
+            {calls.length > 0 && (
+              <Button variant="outline" size="sm" className="text-destructive border-destructive/30 hover:bg-destructive hover:text-destructive-foreground" onClick={() => setClearConfirmOpen(true)}>
+                <Trash2 className="h-4 w-4 mr-1" />
+                {t("outbound.clearAll")}
+              </Button>
+            )}
+            <Button size="sm" onClick={() => setTriggerOpen(true)}>
+              <PhoneOutgoing className="h-4 w-4 mr-1" />
+              {t("outbound.triggerCall")}
+            </Button>
+          </div>
         </div>
+        <p className="text-muted-foreground mt-1 text-sm">
+          {t("outbound.description")}
+        </p>
       </div>
 
       {/* API info card */}
@@ -486,7 +486,7 @@ export default function OutboundPage() {
                   <TableHead>{t("outbound.thExtension")}</TableHead>
                   <TableHead>{t("outbound.thStatus")}</TableHead>
                   <TableHead>{t("outbound.thFirstMessage")}</TableHead>
-                  <TableHead className="text-right">{t("outbound.thInitiated")}</TableHead>
+                  <TableHead>{t("outbound.thInitiated")}</TableHead>
                   <TableHead className="w-10">{t("outbound.thAction")}</TableHead>
                 </TableRow>
               </TableHeader>
@@ -514,8 +514,11 @@ export default function OutboundPage() {
                           {call.firstMessage ?? "—"}
                         </span>
                       </TableCell>
-                      <TableCell className="text-right text-sm text-muted-foreground">
-                        {formatDateTime(call.createdAt)}
+                      <TableCell>
+                        <div className="flex flex-col">
+                          <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">{t("outbound.thInitiated")}</span>
+                          <span className="text-sm text-muted-foreground">{formatDateTime(call.createdAt)}</span>
+                        </div>
                       </TableCell>
                       <TableCell>
                         <Button
