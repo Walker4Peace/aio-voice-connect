@@ -86,18 +86,25 @@ Source: P-Series Software Edition Developer Guide (PDF, confirmed July 2026)
 - **Customer answered detection**: wait for `outbound.member_status === "ANSWER"` OR `extension.member_status === "ANSWERED"` (either confirms the customer picked up).
 - Non-zero errcode on `call/query` usually means no active calls (not a real error) — treat as empty list and continue polling.
 
-## sip-agent binary: context_webhook_url vs first_message in config.json
+## sip-agent binary: correct outbound call flow (SIP4AI approach)
 
-**Confirmed from live logs (July 2026):**
+**Confirmed from SIP4AI reference implementation (July 2026):**
 
-- `first_message` **present** in config.json → binary uses it directly, **skips** `context_webhook_url` entirely. Greeting plays immediately into ringback.
-- `first_message` **absent** in config.json → binary calls `context_webhook_url`, which is the timing-control hook.
+The only correct way to avoid "AI speaks during ringback" is to use `mode:"outbound"` with an `outbound.target_number` in config.json. The binary then:
+1. Registers with PBX
+2. Places the SIP INVITE itself
+3. Waits for `200 OK` (customer answered)
+4. ONLY THEN connects to ElevenLabs and sends `first_message`
 
-**Why this matters:** To delay the greeting until the customer answers (outbound timing fix), `first_message` must be **omitted** from the outbound config.json. The Node.js context endpoint then serves the greeting after `waitForCallAnswered()` resolves.
+**Our previous (wrong) approach:** Yeastar's `dial_out` REST API places the call → Yeastar sends SIP INVITE to our binary → binary treats it as inbound → connects ElevenLabs immediately during ringback → AI speaks before customer answers.
 
-**How to apply:** In `deployment.ts` `buildConfig()`, for the `elevenlabs` case: only include `first_message` when `overrides` is not provided (inbound). When `overrides` is provided (outbound restart), omit it — condition: `!overrides && firstMsg`.
+**How to apply in deployment.ts `buildConfig()`:**
+- Pass `outboundTarget?: { phoneNumber, callerId, taskDescription }` as 5th argument
+- When present: set `mode:"outbound"`, add `outbound: { target_number, hangup_on_task_complete: true }` section
+- Do NOT call Yeastar `dial_out` API — binary handles the SIP call itself
+- `outboundCallModes` Set tracks which extensions are in outbound mode; `proc.on("exit")` auto-restarts them in inbound mode after call ends
 
-The previous session had this backwards (thought non-empty first_message triggered the webhook — wrong).
+**`context_webhook_url` (confirmed dead code):** The binary never calls this regardless of `first_message` presence. All webhook-delay approaches were attempted and failed. The SIP4AI outbound mode is the only working solution.
 
 ## Error codes
 

@@ -41,6 +41,9 @@ const exitedLogs = new Map<number, string[]>();
 const watchdogEnabled = new Set<number>();
 // Extensions intentionally stopped by the user — watchdog must NOT restart these
 const manuallyStopped = new Set<number>();
+// Extensions currently running in outbound-call mode (binary places call itself).
+// On exit they are automatically restarted with the normal inbound config.
+const outboundCallModes = new Set<number>();
 // Active interval timers pinging the Yeastar server
 const watchdogTimers = new Map<number, ReturnType<typeof setInterval>>();
 const WATCHDOG_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
@@ -398,6 +401,7 @@ async function buildConfig(
   extensionId: number,
   ports: { sipLocalPort: number; httpPort: number },
   overrides?: { firstMessage?: string | null; systemPromptOverride?: string | null },
+  outboundTarget?: { phoneNumber: string; callerId?: string | null; taskDescription?: string | null },
 ) {
   if (!ext?.agentConfig) return null;
   const cfg = ext.agentConfig;
@@ -419,14 +423,12 @@ async function buildConfig(
   //   1. Our API calls Yeastar dial_out (caller=extension, callee=destination)
   //   2. Yeastar sends a SIP INVITE *to* the sip-agent (extension)
   //   3. sip-agent answers → Yeastar bridges the callee → AI conversation starts
-  // Step 2 requires the binary to be registered.  The binary's own "outbound"
-  // mode does not register with the PBX (it expects to place calls itself), so
-  // we always pass "both" to the binary when the agent config is "outbound".
-  // This keeps the binary registered so Yeastar can INVITE it for outbound legs.
-  // The context_webhook_url distinguishes the two: if a pending outbound context
-  // is found the binary uses firstMessage/systemPromptOverride; otherwise it
-  // handles the call as a normal inbound.
-  const binaryMode = cfg.mode === "inbound" ? "inbound" : "both";
+  // When outboundTarget is provided the binary places the SIP INVITE itself
+  // (mode:"outbound") and only connects to ElevenLabs after receiving 200 OK
+  // (customer answered).  This matches SIP4AI's outbound flow and guarantees
+  // the AI never speaks during ringback.
+  // Without outboundTarget the binary registers and waits for inbound INVITEs.
+  const binaryMode = outboundTarget ? "outbound" : (cfg.mode === "inbound" ? "inbound" : "both");
 
   const base: Record<string, unknown> = {
     mode: binaryMode,
@@ -445,6 +447,16 @@ async function buildConfig(
     // Callback URLs for tool execution and outbound call context injection
     tools_callback_url: `${apiBaseUrl}/tools/execute`,
     context_webhook_url: `${apiBaseUrl}/outbound/context/${extensionId}`,
+    // When outboundTarget is set the binary places the SIP call itself and waits
+    // for 200 OK before connecting to ElevenLabs — correct timing, single session.
+    ...(outboundTarget ? {
+      outbound: {
+        target_number: outboundTarget.phoneNumber,
+        ...(outboundTarget.callerId ? { caller_id: outboundTarget.callerId } : {}),
+        ...(outboundTarget.taskDescription ? { task_description: outboundTarget.taskDescription } : {}),
+        hangup_on_task_complete: true,
+      },
+    } : {}),
   };
   // API keys are NOT embedded in config.json — passed via environment variables only.
   switch (cfg.provider as AiProviderKey) {
@@ -639,25 +651,30 @@ export function hasActiveCalls(extensionId: number): boolean {
 }
 
 /**
- * Write outbound overrides to config.json, restart the binary so it loads them
- * fresh, then wait for SIP registration (up to 6 s).
+ * Write outbound config to disk, restart the binary in outbound mode so it
+ * places the SIP call itself, and wait for SIP registration (up to 8 s).
  *
- * WHY a restart is needed:
- * The binary loads config.json ONCE at startup into memory.  Writing the file
- * while the process is running has no effect — the in-memory copy is never
- * refreshed.  Restarting forces a fresh read, and the binary also calls
- * context_webhook_url right after registration, giving a second path for the
- * overrides to reach it.
+ * When outboundTarget is provided the binary uses mode:"outbound" with the
+ * target_number baked in.  It registers, sends the INVITE, waits for 200 OK
+ * (customer answered), and ONLY THEN connects to ElevenLabs.  This eliminates
+ * the "AI speaks during ringback" bug and guarantees a single ElevenLabs session.
+ *
+ * On process exit the extension is automatically restarted in inbound mode
+ * (see proc.on("exit") handler in startExtension).
  *
  * Returns true when the extension re-registers within the timeout, false on
- * timeout (call will still proceed with whatever config the binary loaded).
+ * timeout (binary will proceed anyway from its own SIP stack).
  */
 export async function applyOutboundConfigAndRestart(
   extensionId: number,
   overrides: { firstMessage?: string | null; systemPromptOverride?: string | null },
+  outboundTarget?: { phoneNumber: string; callerId?: string | null; taskDescription?: string | null },
 ): Promise<boolean> {
-  // 1. Write the override config so the binary reads it on next startup
-  await applyOutboundConfigOverride(extensionId, overrides);
+  // 1. Write the outbound config so the binary reads it on next startup
+  await applyOutboundConfigOverride(extensionId, overrides, outboundTarget);
+  // 2. Track that this extension is running in outbound mode so proc.on("exit")
+  //    knows to restart it with the normal inbound config when the call ends.
+  if (outboundTarget) outboundCallModes.add(extensionId);
 
   // 2. Kill the current process without marking the extension as manually-stopped
   //    (so watchdog and lifecycle remain unaffected after the call ends).
@@ -678,35 +695,34 @@ export async function applyOutboundConfigAndRestart(
   // 3. Start fresh — skipConfigWrite preserves the override we just wrote
   await startExtension(extensionId, { skipConfigWrite: true });
 
-  // 4. Poll for SIP registration (250 ms intervals, max 6 s)
-  const deadline = Date.now() + 6_000;
+  // 4. Poll for SIP registration (250 ms intervals, max 8 s)
+  //    In outbound mode the binary registers and immediately dials — by the time
+  //    we get here the call is likely already placed.
+  const deadline = Date.now() + 8_000;
   while (Date.now() < deadline) {
     await new Promise(r => setTimeout(r, 250));
     const row = await db.query.deploymentsTable.findFirst({
       where: eq(deploymentsTable.extensionId, extensionId),
     });
     if (row?.sipRegistered && row?.status === "registered") {
-      logger.info({ extensionId }, "Extension re-registered with outbound config — ready to dial");
+      logger.info({ extensionId }, "Extension re-registered with outbound config — binary is dialling");
       return true;
     }
   }
 
-  logger.warn({ extensionId }, "Extension did not re-register within 6 s after outbound restart — dialling anyway");
+  logger.warn({ extensionId }, "Extension did not re-register within 8 s after outbound restart — binary may still dial");
   return false;
 }
 
 /**
- * Rewrite config.json for a running extension with outbound-call overrides
- * (firstMessage, systemPromptOverride) baked in.  Called just before triggering
- * a Yeastar dial so the binary picks up the correct persona on the first INVITE.
- *
- * The binary re-reads config.json on every INVITE (confirmed by DEBUG: appConfig=true
- * appearing once per ElevenLabs connection in the logs), so writing the file before
- * the dial is sufficient — no process restart needed.
+ * Rewrite config.json for an extension with outbound-call config baked in.
+ * When outboundTarget is provided the config uses mode:"outbound" with the
+ * target_number so the binary places the call itself (SIP4AI-style).
  */
 export async function applyOutboundConfigOverride(
   extensionId: number,
   overrides: { firstMessage?: string | null; systemPromptOverride?: string | null },
+  outboundTarget?: { phoneNumber: string; callerId?: string | null; taskDescription?: string | null },
 ): Promise<void> {
   const deployment = await db.query.deploymentsTable.findFirst({
     where: eq(deploymentsTable.extensionId, extensionId),
@@ -719,12 +735,14 @@ export async function applyOutboundConfigOverride(
   if (!ext) return;
 
   const configDir = path.join(CONFIG_DIR, String(extensionId));
+  await fs.mkdir(configDir, { recursive: true });
   const configPath = path.join(configDir, "config.json");
   const config = await buildConfig(
     ext,
     extensionId,
     { sipLocalPort: deployment.sipLocalPort, httpPort: deployment.httpPort },
     overrides,
+    outboundTarget,
   );
   if (!config) return;
 
@@ -732,11 +750,12 @@ export async function applyOutboundConfigOverride(
   logger.info(
     {
       extensionId,
+      mode: outboundTarget ? "outbound" : "inbound/both",
+      target: outboundTarget?.phoneNumber ?? null,
       hasFirstMessage: !!(overrides.firstMessage),
       hasSystemPrompt: !!(overrides.systemPromptOverride),
-      firstMessagePreview: overrides.firstMessage ? overrides.firstMessage.slice(0, 60) : null,
     },
-    "Outbound config override written to disk — binary will use these values on next INVITE",
+    "Outbound config written — binary will place the call itself after restart",
   );
 }
 
@@ -1002,6 +1021,23 @@ export async function startExtension(extensionId: number, opts?: { skipConfigWri
     const lastError = (!wasKilled && code !== 0) ? `Process exited with code ${code}` : null;
     logger.info({ extensionId, code, signal }, "sip-agent process exited");
     upsertDeployment(extensionId, { status, pid: null, lastStoppedAt: new Date(), lastError, sipRegistered: false }).catch(() => {});
+
+    // Auto-restart in inbound mode after outbound call completes.
+    // The binary in "outbound" mode exits when the call ends (hangup_on_task_complete).
+    // We restart it immediately with the normal inbound config so the extension stays live.
+    if (outboundCallModes.has(extensionId)) {
+      outboundCallModes.delete(extensionId);
+      if (!manuallyStopped.has(extensionId)) {
+        logger.info({ extensionId }, "Outbound call ended — restarting extension in inbound mode");
+        setTimeout(() => {
+          startExtension(extensionId).catch(err => {
+            logger.error({ err, extensionId }, "Failed to restart extension after outbound call");
+            upsertDeployment(extensionId, { status: "error", lastError: (err as Error).message }).catch(() => {});
+          });
+        }, 1500);
+        return; // skip watchdog — this is expected, not a crash
+      }
+    }
 
     // Watchdog: if this was an unexpected crash (not a manual stop) and watchdog is on, start pinging
     if (!manuallyStopped.has(extensionId) && watchdogEnabled.has(extensionId)) {

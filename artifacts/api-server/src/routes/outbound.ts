@@ -139,72 +139,47 @@ router.post("/outbound/call", async (req, res) => {
     createdAt: new Date(),
   });
 
-  // Restart the binary with outbound overrides baked into config.json.
-  //
-  // WHY restart instead of hot-swap:
-  // The binary loads config.json ONCE at startup into memory and never re-reads
-  // it per-INVITE.  Writing the file while the process is running has no effect.
-  // Restarting forces a fresh config read; the binary also calls context_webhook_url
-  // right after SIP registration, giving a second path for overrides to reach it.
-  //
-  // We skip the restart if an inbound call is already in progress to avoid
-  // dropping it — in that case the call proceeds with the base (inbound) config.
-  if (data.firstMessage || data.systemPromptOverride) {
-    if (hasActiveCalls(data.extensionId)) {
-      logger.warn(
-        { extensionId: data.extensionId },
-        "Outbound call triggered while inbound call active — skipping config restart, base config will be used",
-      );
-    } else {
-      try {
-        logger.info(
-          { extensionId: data.extensionId, callId: callRecord.id },
-          "Outbound overrides provided — restarting extension with override config before dialling",
-        );
-        await applyOutboundConfigAndRestart(data.extensionId, {
-          firstMessage: data.firstMessage ?? null,
-          systemPromptOverride: data.systemPromptOverride ?? null,
-        });
-      } catch (err) {
-        logger.error(
-          { err, extensionId: data.extensionId },
-          "Failed to restart extension with outbound config override — proceeding with base config",
-        );
-      }
-    }
-  }
-
-  // Attempt to trigger the call via Yeastar Make Call API
-  const yeastarResult = await tryYeastarMakeCall({
-    ext,
-    phoneNumber: data.phoneNumber,
-    callerId: data.callerId ?? undefined,
-  });
-
-  if (yeastarResult.error) {
-    // Update status to reflect dial attempt failure
+  // Block if an active call is already in progress on this extension.
+  if (hasActiveCalls(data.extensionId)) {
     await db.update(outboundCallsTable)
-      .set({ status: "failed", error: yeastarResult.error, updatedAt: new Date() })
+      .set({ status: "failed", error: "Extension is handling an active call", updatedAt: new Date() })
       .where(eq(outboundCallsTable.id, callRecord.id));
-    res.status(202).json({ ...callRecord, status: "failed", error: yeastarResult.error });
+    res.status(409).json({ error: "Extension is handling an active call. Try again shortly." });
     return;
   }
 
-  // Store the Yeastar call_id in the pending context so the context endpoint
-  // can query the exact call when polling for answer state.
-  if (yeastarResult.yeastarCallId) {
-    setPendingContext(data.extensionId, {
-      callId: callRecord.id,
-      yeastarCallId: yeastarResult.yeastarCallId,
-      firstMessage: data.firstMessage ?? undefined,
-      systemPromptOverride: data.systemPromptOverride ?? undefined,
-      variables: data.variables ?? undefined,
-      webhookUrl: data.webhookUrl ?? undefined,
-      createdAt: new Date(),
-    });
+  // Restart the binary in SIP4AI-style outbound mode:
+  //   • config.json gets mode:"outbound" + outbound.target_number
+  //   • Binary places the SIP INVITE itself (no Yeastar dial API needed)
+  //   • Binary waits for 200 OK (customer answers) BEFORE connecting ElevenLabs
+  //   • This guarantees the AI only speaks after pickup — single session, correct timing
+  //   • When the call ends the binary exits; proc.on("exit") restarts it in inbound mode
+  try {
+    logger.info(
+      { extensionId: data.extensionId, callId: callRecord.id, phoneNumber: data.phoneNumber },
+      "Restarting extension in outbound mode — binary will place the call itself",
+    );
+    await applyOutboundConfigAndRestart(
+      data.extensionId,
+      {
+        firstMessage: data.firstMessage ?? null,
+        systemPromptOverride: data.systemPromptOverride ?? null,
+      },
+      {
+        phoneNumber: data.phoneNumber,
+        callerId: data.callerId ?? null,
+      },
+    );
+  } catch (err) {
+    logger.error({ err, extensionId: data.extensionId }, "Failed to restart extension in outbound mode");
+    await db.update(outboundCallsTable)
+      .set({ status: "failed", error: (err as Error).message, updatedAt: new Date() })
+      .where(eq(outboundCallsTable.id, callRecord.id));
+    res.status(500).json({ error: "Failed to start outbound call: " + (err as Error).message });
+    return;
   }
 
-  // Mark as dialing
+  // Mark as dialing — the binary is now registered and placing the SIP call
   const [updated] = await db.update(outboundCallsTable)
     .set({ status: "dialing", updatedAt: new Date() })
     .where(eq(outboundCallsTable.id, callRecord.id))

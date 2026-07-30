@@ -1,0 +1,120 @@
+rootroot@sip4ai:/opt/sip4ai$ CONFIG_FILE=config.json SIP_USERNAME=1005 SIP_AUTH_ID=TjoCu4uhmD SIP_PASSWORD=EmkWA6lT7y SIP_DOMAIN=192.168.11.90 SIP_SERVER=192.168.11.90:5060 ELEVEN_LABS_API_KEY=YOUR_API_KEY /usr/local/bin/sip4ai
+2026/07/30 02:28:42 Loaded config with 0 functions
+2026/07/30 02:28:42 Starting HTTP API server on :8080
+2026/07/30 02:28:42 Starting SIP client with configuration:
+2026/07/30 02:28:42 Username: 1005, Domain: 192.168.11.90, Server: 192.168.11.90:5060, Transport: udp
+2026/07/30 02:28:42 Auth ID: TjoCu4uhmD (using separate authorization ID)
+2026/07/30 02:28:42 No OPENAI_API_KEY set - calls will use fallback audio handling
+2026/07/30 02:28:42 DEBUG: Determined outbound IP as 192.168.11.102
+2026/07/30 02:28:42 Local IP determined as: 192.168.11.102
+2026/07/30 02:28:42 DEBUG: Retrieved external IP as 105.188.3.70
+2026/07/30 02:28:42 External IP determined as: 105.188.3.70
+2026/07/30 02:28:42 === OUTBOUND CALLING MODE ===
+2026/07/30 02:28:42 Target: 0661209845
+2026/07/30 02:28:42 Task: Call to confirm appointment...
+2026/07/30 02:28:42 Result webhook:
+2026/07/30 02:28:42 Sending REGISTER request via sipgo client.
+2026/07/30 02:28:42 Auth: digestUsername=TjoCu4uhmD, realm=YSAsterisk, uri=sip:192.168.11.90, password=EmkWA6lT7y
+2026/07/30 02:28:42 Resending REGISTER with Authorization header (CSeq=2).
+2026/07/30 02:28:42 Authorization: Digest username="TjoCu4uhmD", realm="YSAsterisk", nonce="1785378522/214bf2fdaac47f5046d6b0c977c715dc", uri="sip:192.168.11.90", response="adc954672acf55b7d05528500b978389", algorithm=MD5
+2026/07/30 02:28:42 Received REGISTER response: SIP/2.0 200 OK
+Via: SIP/2.0/UDP 192.168.11.102:51624;rport=51624;received=192.168.11.102;branch=z9hG4bK.k9WGRnYxM9ShUpBp
+Call-ID: dI1fID51k24oqD6I
+From: <sip:1005@192.168.11.90>;tag=sy2yU6sN
+To: <sip:1005@192.168.11.90>;tag=z9hG4bK.k9WGRnYxM9ShUpBp
+CSeq: 2 REGISTER
+Date: Thu, 30 Jul 2026 02:28:42 GMT
+Contact: <sip:1005@192.168.11.102:51624>;expires=620
+Expires: 642
+Server: Yeastar PSE
+Content-Length: 0
+
+2026/07/30 02:28:42 Registration successful!
+2026/07/30 02:28:42 Registered with SIP provider
+2026/07/30 02:28:42 WARN SIP request handler not found caller=Server method=NOTIFY
+2026/07/30 02:28:42 Initiating outbound call to 0661209845
+2026/07/30 02:28:42 RTP listener created on 0.0.0.0:49098
+2026/07/30 02:28:42 Sending INVITE to sip:0661209845@192.168.11.90
+2026/07/30 02:28:42 SDP Offer:
+v=0
+o=- 4384074548153458232 3243247990753025514 IN IP4 105.188.3.70
+s=-
+c=IN IP4 105.188.3.70
+t=0 0
+m=audio 49098 RTP/AVP 0 8 18 101
+a=rtpmap:0 PCMU/8000
+a=rtpmap:8 PCMA/8000
+a=rtpmap:18 G729/8000
+a=rtpmap:101 telephone-event/8000
+a=fmtp:101 0-16
+a=ptime:20
+a=sendrecv
+2026/07/30 02:28:42 Received 401 Unauthorized
+2026/07/30 02:28:42 First 401 received. Response:
+SIP/2.0 401 Unauthorized
+Via: SIP/2.0/UDP 192.168.11.102:51624;rport=51624;received=192.168.11.102;branch=z9hG4bK.YwRk38HtybENdmID
+Call-ID: OTJBd1FEL824Ym6e-1785378522702339578
+From: "Little Bird Electronics" <sip:1005@192.168.11.90>;tag=TPqUTdNo
+To: <sip:0661209845@192.168.11.90>;tag=z9hG4bK.YwRk38HtybENdmID
+CSeq: 1 INVITE
+WWW-Authenticate: Digest  realm="YSAsterisk",nonce="1785378522/214bf2fdaac47f5046d6b0c977c715dc",opaque="213a8937521e240f",algorithm=md5,qop="auth"
+Server: Yeastar PSE
+Content-Length: 0
+
+2026/07/30 02:28:42 Auth URI: sip:0661209845@192.168.11.90, Realm: YSAsterisk
+2026/07/30 02:28:42 Auth header: Digest username="TjoCu4uhmD", realm="YSAsterisk", nonce="1785378522/214bf2fdaac47f5046d6b0c977c715dc", uri="sip:0661209845@192.168.11.90", response="b7db5f22a79538279c57237e387a81db", algorithm=MD5
+2026/07/30 02:28:42 Resending INVITE with authorization...
+2026/07/30 02:28:42 Received 100 Trying
+2026/07/30 02:28:42 Call progress: Trying
+2026/07/30 02:28:43 Received 183 Session Progress
+2026/07/30 02:28:43 Call progress: Session Progress
+2026/07/30 02:28:51 Received 200 OK
+2026/07/30 02:28:51 Call answered!
+2026/07/30 02:28:51 Remote RTP address: 192.168.11.90:10560
+2026/07/30 02:28:51 ACK sent
+2026/07/30 02:28:51 Sending NAT hole-punch packets to 192.168.11.90:10560
+2026/07/30 02:28:51 Connecting to ElevenLabs Conversational AI (agent: agent_6601kyr6qgqnetzaz8yycsv5pq7x)...
+2026/07/30 02:28:51 Connected to ElevenLabs Conversational AI
+2026/07/30 02:28:51 Note: first_message/system_prompt in config require 'Allow client overrides' in ElevenLabs dashboard
+2026/07/30 02:28:51 If override fails, the agent's default greeting will be used
+2026/07/30 02:28:51 DEBUG: appConfig=true
+2026/07/30 02:28:51 DEBUG: ElevenLabs.FirstMessage='Hello!', SystemPrompt='You are assitant', Functions=0
+2026/07/30 02:28:51 Overriding first_message: Hello!
+2026/07/30 02:28:51 Overriding system prompt
+2026/07/30 02:28:51 Sending conversation initiation to ElevenLabs: {"conversation_config_override":{"agent":{"first_message":"Hello!","prompt":{"prompt":"You are assitant"}}},"type":"conversation_initiation_client_data"}
+2026/07/30 02:28:51 Registered bridge for call: OTJBd1FEL824Ym6e-1785378522702339578
+2026/07/30 02:28:51 Outbound call active - AI is now talking to remote party
+2026/07/30 02:28:51 Starting outbound ElevenLabs to RTP bridge...
+2026/07/30 02:28:51 ElevenLabs outbound conversation: conv_6901kyrdmt6gexqb3kj7b1hys5fp
+2026/07/30 02:28:51 Starting outbound RTP to ElevenLabs bridge...
+2026/07/30 02:28:51 Outbound RTP packet #1 from 192.168.11.90:10560, size=172
+2026/07/30 02:28:51 AI: Hello!
+2026/07/30 02:28:52 Outbound sent 1 RTP packets to 192.168.11.90:10560
+2026/07/30 02:28:53 Outbound RTP packet #100 from 192.168.11.90:10560, size=172
+2026/07/30 02:28:54 Remote: Allô?
+2026/07/30 02:28:55 AI: Bonjour ! Comment puis-je vous aider aujourd'hui ?
+2026/07/30 02:28:55 Outbound RTP packet #200 from 192.168.11.90:10560, size=172
+2026/07/30 02:28:56 Outbound sent 100 RTP packets to 192.168.11.90:10560
+2026/07/30 02:28:57 Outbound RTP packet #300 from 192.168.11.90:10560, size=172
+2026/07/30 02:28:59 Outbound RTP packet #400 from 192.168.11.90:10560, size=172
+2026/07/30 02:29:00 WARN SIP request handler not found caller=Server method=BYE
+^C
+rootroot@sip4ai:/opt/sip4ai$ cat /opt/sip4ai/config.json
+{
+  "mode": "outbound",
+  "provider": "elevenlabs",
+
+  "elevenlabs": {
+    "agent_id": "agent_6601kyr6qgqnetzaz8yycsv5pq7x",
+    "first_message": "Hello!",
+    "system_prompt": "You are assitant"
+  },
+
+  "outbound": {
+    "target_number": "0661209845",
+    "task_description": "Call to confirm appointment...",
+    "hangup_on_task_complete": true
+  }
+}
+
+rootroot@sip4ai:/opt/sip4ai$
