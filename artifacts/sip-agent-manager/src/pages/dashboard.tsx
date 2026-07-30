@@ -60,7 +60,7 @@ function StatCard({ icon: Icon, label, value, iconBg, iconColor }: {
 }
 
 function AgentRow({ ext, status }: {
-  ext: { id: number; extensionNumber: string; displayName?: string | null; agentConfig?: { provider: string; name: string } | null };
+  ext: { id: number; extensionNumber: string; displayName?: string | null; agentConfig?: { provider: string; name: string; mode?: string | null } | null };
   status: DeployStatus | undefined;
 }) {
   const { toast } = useToast();
@@ -68,6 +68,7 @@ function AgentRow({ ext, status }: {
   const start   = useStartExtension(ext.id);
   const stop    = useStopExtension(ext.id);
   const restart = useRestartExtension(ext.id);
+  const isOutbound = ext.agentConfig?.mode === "outbound";
   const isRunning = status?.status === "registered" || status?.status === "starting" || status?.status === "reconnecting";
   const isReg     = status?.sipRegistered ?? false;
 
@@ -91,7 +92,12 @@ function AgentRow({ ext, status }: {
         )}
       </td>
       <td className="py-3 px-4">
-        {status ? (
+        {isOutbound ? (
+          <div className="flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-full shrink-0 bg-orange-400" />
+            <span className="text-sm font-medium text-orange-600">{t("extensions.outboundBadge")}</span>
+          </div>
+        ) : status ? (
           <div className="flex items-center gap-1.5">
             <span className={cn("h-2 w-2 rounded-full shrink-0", isRunning ? "bg-green-500" : "bg-gray-300")} />
             <span className={cn("text-sm font-medium", isRunning ? "text-green-700" : "text-muted-foreground")}>
@@ -103,11 +109,11 @@ function AgentRow({ ext, status }: {
         )}
       </td>
       <td className="py-3 px-4 text-xs text-muted-foreground">
-        {isRunning && status?.lastStartedAt ? timeAgo(status.lastStartedAt) : "—"}
+        {isOutbound ? t("extensions.outboundBadgeDesc") : isRunning && status?.lastStartedAt ? timeAgo(status.lastStartedAt) : "—"}
       </td>
       <td className="py-3 px-4">
         <div className="flex items-center gap-1.5">
-          {!isRunning ? (
+          {!isOutbound && (!isRunning ? (
             <Button
               size="sm" variant="outline"
               className="h-7 px-3 text-xs gap-1 text-primary border-primary/30 hover:bg-primary hover:text-primary-foreground"
@@ -139,7 +145,7 @@ function AgentRow({ ext, status }: {
                 <RotateCcw className="h-3 w-3" /> {t("deploy.restart")}
               </Button>
             </>
-          )}
+          ))}
           <Link href={`/extensions/${ext.id}`}>
             <Button size="sm" variant="ghost" className="h-7 px-2 text-xs gap-0.5 text-primary">
               {t("deploy.details")} <ArrowUpRight className="h-3 w-3" />
