@@ -146,12 +146,14 @@ function AgentRow({ ext, status }: {
               </Button>
             </>
           ))}
-          <Link href={`/extensions/${ext.id}`}>
-            <Button size="sm" variant="ghost" className="h-7 px-2 text-xs gap-0.5 text-primary">
-              {t("deploy.details")} <ArrowUpRight className="h-3 w-3" />
-            </Button>
-          </Link>
         </div>
+      </td>
+      <td className="py-3 px-4">
+        <Link href={`/extensions/${ext.id}`}>
+          <Button size="sm" variant="ghost" className="h-7 px-2 text-xs gap-0.5 text-primary">
+            {t("deploy.details")} <ArrowUpRight className="h-3 w-3" />
+          </Button>
+        </Link>
       </td>
     </tr>
   );
@@ -256,6 +258,7 @@ export default function Dashboard() {
                   <th className="text-left font-medium py-2.5 px-4">{t("dashboard.thStatus")}</th>
                   <th className="text-left font-medium py-2.5 px-4">{t("dashboard.thLastActivity")}</th>
                   <th className="text-left font-medium py-2.5 px-4">{t("dashboard.thActions")}</th>
+                  <th className="text-left font-medium py-2.5 px-4">{t("deploy.details")}</th>
                 </tr>
               </thead>
               <tbody>
