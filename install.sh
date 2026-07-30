@@ -310,8 +310,10 @@ step "Type-checking and building all packages (this may take a few minutes)"
 sudo -u "${APP_USER}" bash -c "
     set -e
     cd '${INSTALL_DIR}'
-    echo '[INFO]  Running type-check...'
-    pnpm run typecheck --reporter=append-only 2>&1
+    echo '[INFO]  Running type-check (shared libs)...'
+    pnpm run typecheck:libs 2>&1
+    echo '[INFO]  Running type-check (artifacts)...'
+    pnpm -r --reporter=append-only --filter './artifacts/**' --filter './scripts' --if-present run typecheck 2>&1
 " || die "Type-check failed. Fix the TypeScript errors above before re-running the installer."
 success "Type-check passed"
 

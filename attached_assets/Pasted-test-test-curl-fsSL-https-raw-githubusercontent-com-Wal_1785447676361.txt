@@ -1,0 +1,92 @@
+test@test:~$ curl -fsSL https://raw.githubusercontent.com/Walker4Peace/ai-agent/main/install.sh | sudo bash
+[WARN]  Low RAM: 1927 MB detected. 2 GB or more is recommended for stable operation.
+
+AIO Voice Connect Installer
+Server IP  : 192.168.11.106
+Install dir: /opt/aio-voice-connect
+Dashboard  : http://192.168.11.106:3100
+OS         : Ubuntu 22.04.5 LTS
+Arch       : x86_64
+RAM        : 1927 MB
+Free disk  : 11327 MB
+
+
+▶ Installing system dependencies
+[✓]    Node.js v20.20.2
+[✓]    pnpm 10.34.5
+
+▶ Creating system user
+[✓]    User 'aio-voice-connect' already exists
+
+▶ Cloning repository
+[INFO]  Repository already present — pulling latest changes...
+remote: Enumerating objects: 18, done.
+remote: Counting objects: 100% (18/18), done.
+remote: Compressing objects: 100% (4/4), done.
+remote: Total 10 (delta 6), reused 10 (delta 6), pack-reused 0 (from 0)
+Unpacking objects: 100% (10/10), 7.21 KiB | 160.00 KiB/s, done.
+From https://github.com/Walker4Peace/ai-agent
+   9b71e86..4749748  main       -> origin/main
+Updating 9b71e86..4749748
+Fast-forward
+ .../aio-voice-connect-manager/src/lib/i18n.ts      |   1 +
+ ...raw-githubusercontent-com-Wal_1785447433146.txt | 608 +++++++++++++++++++++
+ install.sh                                         |   2 +-
+ 3 files changed, 610 insertions(+), 1 deletion(-)
+ create mode 100644 attached_assets/Pasted-test-test-curl-fsSL-https-raw-githubusercontent-com-Wal_1785447433146.txt
+[✓]    Repository updated
+
+▶ Setting up sip-agent binary
+[✓]    bind_override.so installed to /usr/local/lib/
+[✓]    sip-agent binary ready at /opt/aio-voice-connect/.bin/sip-agent
+
+▶ Configuring PostgreSQL
+could not change directory to "/home/test": Permission denied
+could not change directory to "/home/test": Permission denied
+[✓]    Database user 'aio_voice_connect' already exists (password updated)
+could not change directory to "/home/test": Permission denied
+[✓]    Database 'aio_voice_connect' already exists
+could not change directory to "/home/test": Permission denied
+
+▶ Generating .env configuration
+[✓]    .env written to /opt/aio-voice-connect/.env
+
+▶ Installing project dependencies (this may take a few minutes)
+[INFO]  Lock file found — using --frozen-lockfile
+Scope: all 9 workspace projects
+Lockfile is up to date, resolution step is skipped
+Already up to date
+. preinstall$
+└─ Done in 18ms
+Done in 3.8s using pnpm v10.34.5
+[✓]    Node.js dependencies installed
+
+▶ Type-checking and building all packages (this may take a few minutes)
+[INFO]  Running type-check...
+
+> workspace@0.0.0 typecheck /opt/aio-voice-connect
+> pnpm run typecheck:libs && pnpm -r --filter "./artifacts/**" --filter "./scripts" --if-present run typecheck --reporter=append-only
+
+
+> workspace@0.0.0 typecheck:libs /opt/aio-voice-connect
+> tsc --build
+
+Scope: 4 of 9 workspace projects
+artifacts/aio-voice-connect-manager typecheck$
+│
+└─ Failed in 316ms at /opt/aio-voice-connect/artifacts/aio-voice-connect-manager
+artifacts/api-server typecheck$
+│
+└─ Failed in 351ms at /opt/aio-voice-connect/artifacts/api-server
+/opt/aio-voice-connect/artifacts/aio-voice-connect-manager:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @workspace/aio-voice-connect-manager@0.0.0 typecheck: `tsc -p tsconfig.json --noEmit --reporter=append-only`
+Exit status 1
+artifacts/mockup-sandbox typecheck$
+└─ Running...
+scripts typecheck$
+└─ Running...
+ ELIFECYCLE  Command failed with exit code 1.
+
+[ERROR] Type-check failed. Fix the TypeScript errors above before re-running the installer.
+Installation failed. See output above for details.
+test@test:~$
