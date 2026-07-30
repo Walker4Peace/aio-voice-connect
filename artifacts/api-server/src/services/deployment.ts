@@ -1013,6 +1013,22 @@ export async function startExtension(extensionId: number, opts?: {
       } else if (reg === "error") {
         upsertDeployment(extensionId, { status: "error", lastError: line }).catch(() => {});
       }
+
+      // Outbound BYE workaround: the binary in outbound mode logs
+      // "WARN SIP request handler not found caller=Server method=BYE"
+      // instead of handling the BYE itself, so the ElevenLabs WebSocket
+      // stays open until their max-duration limit.  We detect that log
+      // line and kill the process ourselves so the session closes cleanly.
+      if (
+        outboundCallModes.has(extensionId) &&
+        /WARN SIP request handler not found.*method=BYE/i.test(line)
+      ) {
+        logger.info({ extensionId }, "Outbound BYE detected via WARN log — terminating binary to close ElevenLabs session");
+        const dying = processes.get(extensionId);
+        if (dying) {
+          dying.proc.kill("SIGTERM");
+        }
+      }
     }
   };
 
