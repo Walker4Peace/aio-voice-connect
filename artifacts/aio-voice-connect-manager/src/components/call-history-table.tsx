@@ -247,18 +247,18 @@ function CallTableRow({ callId, legs, extNumber, isOutbound = false, outboundPho
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
-                      <AlertDialogTitle>Delete this call?</AlertDialogTitle>
+                      <AlertDialogTitle>{t("calls.deleteCallTitle")}</AlertDialogTitle>
                       <AlertDialogDescription>
-                        This will permanently remove the record for call <span className="font-mono">{callId.slice(0, 8)}…</span>. This cannot be undone.
+                        {t("calls.deleteCallDesc", { callId: callId.slice(0, 8) + "…" })}
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
                       <AlertDialogAction
                         className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                         onClick={() => onDelete(callId)}
                       >
-                        Delete
+                        {t("common.delete")}
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>

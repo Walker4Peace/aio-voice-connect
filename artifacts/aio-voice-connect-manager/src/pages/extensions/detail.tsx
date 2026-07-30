@@ -136,10 +136,18 @@ export default function ExtensionDetail() {
   const handleAgentSave = (values: z.infer<typeof agentSchema>) => {
     if (!extension) return;
     const agentConfigId = values.agentConfigId === "none" ? null : Number(values.agentConfigId);
+    const newConfig = agentConfigs?.find(a => a.id === agentConfigId);
+    const switchingToOutbound = newConfig?.mode === "outbound" && extension.agentConfig?.mode !== "outbound";
     updateExtension.mutate(
       { id: extensionId, data: { extensionNumber: extension.extensionNumber, sipUsername: extension.sipUsername, sipAuthId: extension.sipAuthId, sipPassword: extension.sipPassword, clientId: extension.clientId ?? null, agentConfigId } },
       {
-        onSuccess: () => { queryClient.invalidateQueries({ queryKey: getGetExtensionQueryKey(extensionId) }); toast({ title: t("extDetail.agentUpdated") }); },
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: getGetExtensionQueryKey(extensionId) });
+          toast({ title: t("extDetail.agentUpdated") });
+          if (switchingToOutbound && isRunning) {
+            stop.mutate(undefined);
+          }
+        },
         onError: () => toast({ variant: "destructive", title: t("extDetail.agentUpdateFailed") }),
       }
     );

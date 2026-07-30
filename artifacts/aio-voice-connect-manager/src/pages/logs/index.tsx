@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { useAllDeployStatuses, useDeployLogs, useSystemLogs, useClearExtensionLogs, useClearSystemLogs, classifyLogLine } from "@/hooks/use-deploy";
 import { useListExtensions } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
@@ -120,6 +121,7 @@ function execCommandFallback(text: string): Promise<void> {
 // ── Copy button ───────────────────────────────────────────────────────────────
 
 function CopyButton({ text }: { text: string }) {
+  const { t } = useTranslation();
   const [state, setState] = React.useState<"idle" | "ok" | "err">("idle");
   return (
     <Button
@@ -133,7 +135,7 @@ function CopyButton({ text }: { text: string }) {
       }}
     >
       {state === "ok"  ? <Check className="h-3.5 w-3.5 text-green-400" /> : <Copy className="h-3.5 w-3.5" />}
-      {state === "ok"  ? "Copied!" : state === "err" ? "Failed" : "Copy"}
+      {state === "ok"  ? t("logs.copied") : state === "err" ? t("logs.failed") : t("logs.copy")}
     </Button>
   );
 }
@@ -162,6 +164,8 @@ function TerminalShell({
   onLiveToggle: () => void;
   onClear: () => void;
 }) {
+  const { t } = useTranslation();
+
   const downloadLogs = () => {
     const blob = new Blob([copyText], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
@@ -186,7 +190,7 @@ function TerminalShell({
             className="gap-1.5 text-xs text-destructive/70 hover:text-destructive hover:bg-destructive/10 h-7"
             onClick={onClear}
           >
-            <Trash2 className="h-3.5 w-3.5" /> Clear
+            <Trash2 className="h-3.5 w-3.5" /> {t("logs.clear")}
           </Button>
           <Button
             variant={isLive ? "default" : "outline"} size="sm"
@@ -194,7 +198,7 @@ function TerminalShell({
             onClick={onLiveToggle}
           >
             <RefreshCw className={`h-3.5 w-3.5 ${isLive ? "animate-spin" : ""}`} />
-            {isLive ? "Live" : "Go Live"}
+            {isLive ? t("logs.live") : t("logs.goLive")}
           </Button>
         </div>
       </div>
@@ -204,8 +208,8 @@ function TerminalShell({
         {isEmpty ? (
           <div className="flex flex-col items-center justify-center h-full gap-2 text-gray-500">
             {isLive
-              ? <><RefreshCw className="h-5 w-5 animate-spin opacity-40" /><p className="italic">Waiting for new log entries…</p></>
-              : <><RefreshCw className="h-5 w-5 opacity-30" /><p className="italic">Click <strong className="text-gray-400">Go Live</strong> to start streaming logs</p></>
+              ? <><RefreshCw className="h-5 w-5 animate-spin opacity-40" /><p className="italic">{t("logs.waitingEntries")}</p></>
+              : <><RefreshCw className="h-5 w-5 opacity-30" /><p className="italic">{t("logs.clickGoLive1")} <strong className="text-gray-400">{t("logs.goLive")}</strong> {t("logs.clickGoLive2")}</p></>
             }
           </div>
         ) : children}
@@ -216,9 +220,9 @@ function TerminalShell({
         <span className="flex items-center gap-4">
           <span className="flex items-center gap-1.5">
             <span className={`h-2 w-2 rounded-full ${isLive ? "bg-green-500 animate-pulse" : "bg-gray-600"}`} />
-            {isLive ? "Live" : "Paused"}
+            {isLive ? t("logs.live") : t("logs.paused")}
           </span>
-          <span>{lines.length} entries</span>
+          <span>{t("logs.entries", { count: lines.length })}</span>
         </span>
         <div className="flex items-center gap-1">
           <CopyButton text={copyText} />
@@ -228,7 +232,7 @@ function TerminalShell({
             onClick={downloadLogs}
             disabled={lines.length === 0}
           >
-            <Download className="h-3.5 w-3.5" /> Download
+            <Download className="h-3.5 w-3.5" /> {t("logs.download")}
           </Button>
         </div>
       </div>
@@ -239,6 +243,7 @@ function TerminalShell({
 // ── Extension tab ─────────────────────────────────────────────────────────────
 
 function ExtensionTab() {
+  const { t } = useTranslation();
   const { data: extensions } = useListExtensions();
   const { data: allStatuses } = useAllDeployStatuses();
 
@@ -274,10 +279,10 @@ function ExtensionTab() {
     <div className="space-y-4">
       {/* Extension selector */}
       <div className="space-y-1">
-        <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Extension</label>
+        <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t("logs.extension")}</label>
         <Select value={selectedId} onValueChange={setSelectedId}>
           <SelectTrigger className="w-96">
-            <SelectValue placeholder="Select an extension to view its SIP logs…" />
+            <SelectValue placeholder={t("logs.selectExtPlaceholder")} />
           </SelectTrigger>
           <SelectContent className="w-96">
             {extensions?.map((ext) => {
@@ -292,13 +297,13 @@ function ExtensionTab() {
                     {isOutbound ? (
                       <>
                         <span className="h-2 w-2 rounded-full shrink-0 bg-[#F1C40F]" />
-                        <span className="text-xs text-[#92740A]">Outbound</span>
+                        <span className="text-xs text-[#92740A]">{t("extensions.outboundBadge")}</span>
                       </>
                     ) : st ? (
                       <>
                         <span className={`h-2 w-2 rounded-full shrink-0 ${running ? "bg-green-500" : "bg-red-400"}`} />
                         <span className={`text-xs ${running ? "text-green-600" : "text-red-500"}`}>
-                          {running ? "Running" : "Down"}
+                          {running ? t("logs.statusRunning") : t("logs.statusDown")}
                         </span>
                       </>
                     ) : null}
@@ -317,11 +322,11 @@ function ExtensionTab() {
             <Phone className="h-3.5 w-3.5" />
             {selectedExt
               ? <>Ext {selectedExt.extensionNumber}{selectedExt.displayName ? ` — ${selectedExt.displayName}` : ""}</>
-              : <span className="text-gray-600">No extension selected</span>
+              : <span className="text-gray-600">{t("logs.noExtSelected")}</span>
             }
             {(selectedStatus || selectedExt?.agentConfig?.mode === "outbound") && (
               <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${isRunning ? "text-green-400 bg-green-400/10 border-green-400/20" : "text-gray-500 bg-gray-500/10 border-gray-500/20"}`}>
-                {isRunning ? "Registered" : "Not Registered"}
+                {isRunning ? t("deploy.status.registered") : t("logs.notRegistered")}
               </span>
             )}
           </>
@@ -336,9 +341,9 @@ function ExtensionTab() {
         <table className="w-full">
           <thead>
             <tr className="text-gray-600 bg-[#161b22] sticky top-0 border-b border-gray-800 z-10">
-              <th className="text-left font-medium py-2 px-4 w-28">Time</th>
-              <th className="text-left font-medium py-2 px-2 w-16">Level</th>
-              <th className="text-left font-medium py-2 px-3">Message</th>
+              <th className="text-left font-medium py-2 px-4 w-28">{t("logs.thTime")}</th>
+              <th className="text-left font-medium py-2 px-2 w-16">{t("logs.thLevel")}</th>
+              <th className="text-left font-medium py-2 px-3">{t("logs.thMessage")}</th>
             </tr>
           </thead>
           <tbody>
@@ -373,6 +378,7 @@ function ExtensionTab() {
 // ── System tab ────────────────────────────────────────────────────────────────
 
 function SystemTab() {
+  const { t } = useTranslation();
   const [isLive, setIsLive] = React.useState(false);
   const [filterCat, setFilterCat] = React.useState<SystemCategory>("ALL");
   const endRef = React.useRef<HTMLDivElement>(null);
@@ -403,7 +409,7 @@ function SystemTab() {
 
   return (
     <TerminalShell
-      headerLeft={<><Server className="h-3.5 w-3.5" />System</>}
+      headerLeft={<><Server className="h-3.5 w-3.5" />{t("logs.system")}</>}
       headerRight={
         <Select value={filterCat} onValueChange={v => setFilterCat(v as SystemCategory)}>
           <SelectTrigger className="h-7 text-xs w-36 border-gray-700 bg-transparent text-gray-300">
@@ -412,7 +418,7 @@ function SystemTab() {
           <SelectContent>
             {ALL_SYSTEM_CATEGORIES.map(cat => (
               <SelectItem key={cat} value={cat} className="text-xs">
-                {cat === "ALL" ? "All categories" : cat.charAt(0) + cat.slice(1).toLowerCase()}
+                {cat === "ALL" ? t("logs.allCategories") : cat.charAt(0) + cat.slice(1).toLowerCase()}
               </SelectItem>
             ))}
           </SelectContent>
@@ -428,9 +434,9 @@ function SystemTab() {
       <table className="w-full">
         <thead>
           <tr className="text-gray-600 bg-[#161b22] sticky top-0 border-b border-gray-800 z-10">
-            <th className="text-left font-medium py-2 px-4 w-28">Time</th>
-            <th className="text-left font-medium py-2 px-2 w-28">Category</th>
-            <th className="text-left font-medium py-2 px-3">Message</th>
+            <th className="text-left font-medium py-2 px-4 w-28">{t("logs.thTime")}</th>
+            <th className="text-left font-medium py-2 px-2 w-28">{t("logs.thCategory")}</th>
+            <th className="text-left font-medium py-2 px-3">{t("logs.thMessage")}</th>
           </tr>
         </thead>
         <tbody>
@@ -464,22 +470,23 @@ function SystemTab() {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function LogsPage() {
+  const { t } = useTranslation();
   return (
     <div className="space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Logs</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{t("logs.title")}</h1>
         <p className="text-muted-foreground mt-1 text-sm">
-          Real-time SIP agent output and server activity. Logs are in-memory and reset on restart.
+          {t("logs.pageDesc")}
         </p>
       </div>
 
       <Tabs defaultValue="system">
         <TabsList className="mb-4">
           <TabsTrigger value="system" className="gap-1.5">
-            <Server className="h-3.5 w-3.5" /> System
+            <Server className="h-3.5 w-3.5" /> {t("logs.system")}
           </TabsTrigger>
           <TabsTrigger value="extension" className="gap-1.5">
-            <Phone className="h-3.5 w-3.5" /> Extension
+            <Phone className="h-3.5 w-3.5" /> {t("logs.extension")}
           </TabsTrigger>
         </TabsList>
 
