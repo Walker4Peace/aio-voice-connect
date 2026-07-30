@@ -518,15 +518,13 @@ export default function OutboundPage() {
                         {formatDateTime(call.createdAt)}
                       </TableCell>
                       <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                        <button
+                          className="inline-flex items-center justify-center h-7 w-7 rounded border border-border text-muted-foreground hover:text-destructive hover:border-destructive/50 hover:bg-destructive/10 transition-colors cursor-pointer"
                           onClick={() => setDeleteTargetId(call.id)}
                           title={t("outbound.deleteRecord")}
                         >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
                       </TableCell>
                     </TableRow>
                   );

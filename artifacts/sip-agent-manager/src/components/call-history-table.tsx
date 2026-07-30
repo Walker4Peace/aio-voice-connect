@@ -239,7 +239,7 @@ function CallTableRow({ callId, legs, extNumber, isOutbound = false, outboundPho
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <button
-                      className="inline-flex items-center justify-center h-7 w-7 rounded border border-border text-muted-foreground hover:text-destructive hover:border-destructive/50 hover:bg-destructive/10 transition-colors"
+                      className="inline-flex items-center justify-center h-7 w-7 rounded border border-border text-muted-foreground hover:text-destructive hover:border-destructive/50 hover:bg-destructive/10 transition-colors cursor-pointer"
                       title="Delete call"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
