@@ -13,7 +13,7 @@ import { z } from "zod/v4";
 import { db, outboundCallsTable, extensionsTable, deploymentsTable, type Client, type AgentConfig } from "@workspace/db";
 import { logger } from "../lib/logger.js";
 import { setPendingContext, consumePendingContext } from "../services/outboundContext.js";
-import { applyOutboundConfigAndRestart, hasActiveCalls } from "../services/deployment.js";
+import { applyOutboundConfigAndRestart } from "../services/deployment.js";
 import { executeTool } from "../services/toolExecutor.js";
 import { getYeastarToken, yeastarPost, evictYeastarToken } from "../services/yeastarAuth.js";
 import { waitForCallAnswered } from "../services/yeastarCalls.js";
@@ -138,15 +138,6 @@ router.post("/outbound/call", async (req, res) => {
     webhookUrl: data.webhookUrl ?? undefined,
     createdAt: new Date(),
   });
-
-  // Block if an active call is already in progress on this extension.
-  if (hasActiveCalls(data.extensionId)) {
-    await db.update(outboundCallsTable)
-      .set({ status: "failed", error: "Extension is handling an active call", updatedAt: new Date() })
-      .where(eq(outboundCallsTable.id, callRecord.id));
-    res.status(409).json({ error: "Extension is handling an active call. Try again shortly." });
-    return;
-  }
 
   // Restart the binary in SIP4AI-style outbound mode:
   //   • config.json gets mode:"outbound" + outbound.target_number
