@@ -172,7 +172,7 @@ function TerminalShell({
       </div>
 
       {/* Log body */}
-      <div className="h-[480px] overflow-y-auto font-mono text-xs">
+      <div className="h-[480px] overflow-y-auto font-mono text-xs [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-[#0d1117] [&::-webkit-scrollbar-thumb]:bg-gray-600 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-500">
         {isEmpty ? (
           <div className="flex flex-col items-center justify-center h-full gap-2 text-gray-500">
             {isLive
@@ -252,19 +252,16 @@ function ExtensionTab() {
             {extensions?.map((ext) => {
               const st = allStatuses?.find(s => s.extensionId === ext.id);
               const running = st?.status === "registered" || st?.status === "starting" || st?.status === "reconnecting";
-              const isOutbound = ext.agentConfig?.mode === "outbound";
               return (
                 <SelectItem key={ext.id} value={ext.id.toString()}>
                   <span className="flex items-center gap-2">
                     <Phone className="h-3.5 w-3.5 text-muted-foreground" />
                     <span>Extension {ext.extensionNumber}{ext.displayName ? ` — ${ext.displayName}` : ""}</span>
-                    {isOutbound ? (
-                      <span className="text-xs text-yellow-600">Outbound</span>
-                    ) : st ? (
+                    {st ? (
                       <>
                         <span className={`h-2 w-2 rounded-full shrink-0 ${running ? "bg-green-500" : "bg-red-400"}`} />
                         <span className={`text-xs ${running ? "text-green-600" : "text-red-500"}`}>
-                          {running ? "Running" : "Down"}
+                          {running ? "Registered" : "Stopped"}
                         </span>
                       </>
                     ) : null}
