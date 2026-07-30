@@ -11,6 +11,7 @@ import {
 } from "@workspace/api-zod";
 import { testYeastarConnection, evictYeastarToken } from "../services/yeastarAuth.js";
 import { logger } from "../lib/logger.js";
+import { addSystemLog } from "../services/deployment.js";
 
 
 const router = Router();
@@ -48,8 +49,10 @@ router.post("/clients/yeastar/test", async (req, res) => {
   logger.info({ pbxUrl, clientId }, "Standalone Yeastar connection test");
   const result = await testYeastarConnection(pbxUrl, clientId, clientSecret);
   if (result.success) {
+    addSystemLog(`Yeastar connection test OK — ${pbxUrl}`, "YEASTAR");
     res.json({ success: true });
   } else {
+    addSystemLog(`Yeastar connection test FAILED — ${pbxUrl}: ${result.error}`, "YEASTAR");
     logger.warn({ pbxUrl, error: result.error }, "Standalone Yeastar connection test failed");
     res.status(422).json({ success: false, error: result.error });
   }
@@ -77,6 +80,12 @@ router.post("/clients", async (req, res) => {
       parsed.data.yeastarClientSecret,
     );
     yeastarVerified = testResult.success;
+    addSystemLog(
+      yeastarVerified
+        ? `Yeastar auth OK for new IPBX client ${client!.id}`
+        : `Yeastar auth FAILED for new IPBX client ${client!.id}: ${testResult.error}`,
+      "YEASTAR",
+    );
     logger.info({ clientId: client!.id, yeastarVerified }, "Yeastar auto-test on create");
     const [updated] = await db
       .update(clientsTable)
@@ -119,6 +128,12 @@ router.put("/clients/:id", async (req, res) => {
       parsed.data.yeastarClientSecret,
     );
     yeastarVerified = testResult.success;
+    addSystemLog(
+      yeastarVerified
+        ? `Yeastar auth OK for updated IPBX client ${id}`
+        : `Yeastar auth FAILED for updated IPBX client ${id}: ${testResult.error}`,
+      "YEASTAR",
+    );
     logger.info({ clientId: id, yeastarVerified }, "Yeastar auto-test on update");
   }
 

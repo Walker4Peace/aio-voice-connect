@@ -5,6 +5,7 @@ import pinoHttp from "pino-http";
 import router from "./routes/index.js";
 import { requireAuth } from "./middlewares/auth.js";
 import { logger } from "./lib/logger.js";
+import { addSystemLog } from "./services/deployment.js";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type {} from "./types/session.js";
@@ -74,6 +75,18 @@ app.use(session({
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Log mutating HTTP requests to the system log buffer (skip polls/healthz)
+app.use((req, res, next) => {
+  const method = req.method.toUpperCase();
+  if (method !== "GET" && method !== "HEAD" && method !== "OPTIONS") {
+    res.on("finish", () => {
+      const url = (req.originalUrl ?? req.path).split("?")[0];
+      addSystemLog(`${method} ${url} → ${res.statusCode}`, "HTTP");
+    });
+  }
+  next();
+});
 
 // Auth gate — public routes are whitelisted inside requireAuth
 app.use(requireAuth);

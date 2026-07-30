@@ -9,7 +9,7 @@ import { logger } from "../lib/logger.js";
 const SIP_AGENT_BIN =
   process.env["SIP_AGENT_BIN"] ?? "/home/runner/workspace/.bin/sip-agent";
 const CONFIG_DIR = "/tmp/sip-agent";
-const MAX_LOG_LINES = 300;
+const MAX_LOG_LINES = 500;
 // Ports must be exactly 4 digits so they fit in the binary patch (replaces ':5060').
 // Range: 7060–7998 (200 extensions, step 2 for SIP).
 const SIP_LOCAL_PORT_START = 7060;
@@ -75,30 +75,30 @@ async function runWatchdog(extensionId: number): Promise<void> {
   const ext = await getExtWithRelations(extensionId);
   const sipServer = ext?.client?.sipServer ?? "";
   if (!sipServer) {
-    addSystemLog(`Watchdog ext ${extensionId}: no SIP server configured, stopping watchdog`);
+    addSystemLog(`Watchdog ext ${extensionId}: no SIP server configured, stopping watchdog`, "WATCHDOG");
     cancelWatchdog(extensionId);
     return;
   }
   const [host, portStr] = sipServer.includes(":") ? sipServer.split(":") : [sipServer, "5060"];
   const port = Number(portStr) || 5060;
-  addSystemLog(`Watchdog ext ${extensionId}: pinging ${host}:${port}`);
+  addSystemLog(`Watchdog ext ${extensionId}: pinging ${host}:${port}`, "WATCHDOG");
   const reachable = await pingTcp(host, port);
   if (reachable) {
-    addSystemLog(`Watchdog ext ${extensionId}: Yeastar reachable — restarting extension`);
+    addSystemLog(`Watchdog ext ${extensionId}: Yeastar reachable — restarting extension`, "WATCHDOG");
     cancelWatchdog(extensionId);
     startExtension(extensionId).catch((err) => {
-      addSystemLog(`Watchdog ext ${extensionId}: restart failed — ${(err as Error).message}`);
+      addSystemLog(`Watchdog ext ${extensionId}: restart failed — ${(err as Error).message}`, "WATCHDOG");
       // Schedule a fresh watchdog so we retry on the next window
       scheduleWatchdog(extensionId);
     });
   } else {
-    addSystemLog(`Watchdog ext ${extensionId}: Yeastar unreachable, will retry`);
+    addSystemLog(`Watchdog ext ${extensionId}: Yeastar unreachable, will retry`, "WATCHDOG");
   }
 }
 
 function scheduleWatchdog(extensionId: number): void {
   cancelWatchdog(extensionId);
-  addSystemLog(`Watchdog ext ${extensionId}: monitoring started (ping every 5 min)`);
+  addSystemLog(`Watchdog ext ${extensionId}: monitoring started (ping every 5 min)`, "WATCHDOG");
   const t = setInterval(() => { runWatchdog(extensionId).catch(() => {}); }, WATCHDOG_INTERVAL_MS);
   watchdogTimers.set(extensionId, t);
 }
@@ -109,7 +109,7 @@ export function setWatchdogEnabled(extensionId: number, enabled: boolean): void 
   } else {
     watchdogEnabled.delete(extensionId);
     cancelWatchdog(extensionId);
-    addSystemLog(`Watchdog ext ${extensionId}: disabled`);
+    addSystemLog(`Watchdog ext ${extensionId}: disabled`, "WATCHDOG");
   }
 }
 
@@ -982,7 +982,7 @@ export async function startExtension(extensionId: number, opts?: {
   overrides?: { firstMessage?: string | null; systemPromptOverride?: string | null };
   outboundTarget?: { phoneNumber: string; callerId?: string | null; taskDescription?: string | null };
 }): Promise<void> {
-  addSystemLog(`Starting extension ${extensionId}`);
+  addSystemLog(`Starting extension ${extensionId}`, "DEPLOYMENT");
   // Clear manual-stop flag so watchdog can fire after future crashes
   manuallyStopped.delete(extensionId);
   // Cancel any pending watchdog ping (we're starting fresh)
@@ -1160,7 +1160,7 @@ async function restartExtensionInternal(extensionId: number): Promise<void> {
 }
 
 export async function stopExtension(extensionId: number): Promise<void> {
-  addSystemLog(`Stopping extension ${extensionId}`);
+  addSystemLog(`Stopping extension ${extensionId}`, "DEPLOYMENT");
   // Cancel any pending orphan cleanup so it doesn't race with manual stop/restart
   const orphanTimer = orphanCleanupTimers.get(extensionId);
   if (orphanTimer) { clearTimeout(orphanTimer); orphanCleanupTimers.delete(extensionId); }
@@ -1191,12 +1191,14 @@ export function getLogs(extensionId: number): string[] {
 }
 
 // ── System / application log buffer ────────────────────────────────────────
-const MAX_SYSTEM_LOG_LINES = 500;
+const MAX_SYSTEM_LOG_LINES = 300;
 const systemLogBuffer: string[] = [];
 
-export function addSystemLog(line: string): void {
+export type SystemLogCategory = "DEPLOYMENT" | "WATCHDOG" | "STARTUP" | "YEASTAR" | "HTTP";
+
+export function addSystemLog(line: string, category: SystemLogCategory = "DEPLOYMENT"): void {
   const timestamp = new Date().toISOString();
-  systemLogBuffer.push(`[${timestamp}] ${line}`);
+  systemLogBuffer.push(`[${timestamp}] [${category}] ${line}`);
   if (systemLogBuffer.length > MAX_SYSTEM_LOG_LINES) systemLogBuffer.shift();
 }
 
@@ -1269,7 +1271,7 @@ export async function getAllStatuses() {
 
 // On server start, mark any lingering "running" rows as stopped (processes don't survive restarts)
 export async function reconcileOnStartup() {
-  addSystemLog("Server starting — reconciling deployment state");
+  addSystemLog("Server starting — reconciling deployment state", "STARTUP");
 
   // Capture inbound extensions that were running BEFORE we mark them stopped,
   // so we can auto-restart them after initialization.
@@ -1315,7 +1317,7 @@ export async function reconcileOnStartup() {
     logger.error({ err }, "Failed to load call events from DB on startup");
   }
 
-  addSystemLog("Deployment state reconciled on startup");
+  addSystemLog("Deployment state reconciled on startup", "STARTUP");
   logger.info("Deployment state reconciled on startup");
 
   // Auto-restart inbound extensions that were running before the server restarted.
@@ -1325,7 +1327,7 @@ export async function reconcileOnStartup() {
     setTimeout(async () => {
       for (const extensionId of inboundToRestart) {
         try {
-          addSystemLog(`Auto-restarting inbound extension ${extensionId} after server restart`);
+          addSystemLog(`Auto-restarting inbound extension ${extensionId} after server restart`, "DEPLOYMENT");
           await startExtension(extensionId);
           logger.info({ extensionId }, "Auto-restarted inbound extension after server restart");
         } catch (err) {
