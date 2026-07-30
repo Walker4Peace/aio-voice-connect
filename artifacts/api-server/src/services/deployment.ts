@@ -189,6 +189,60 @@ function parseAndStoreCallEvents(extensionId: number, line: string, timestamp: s
     return;
   }
 
+  // ── Outbound: bridge registered (= 200 OK received, call answered) ───────
+  // In outbound mode the binary logs "Registered bridge for call: <callId>"
+  // after the remote party answers (200 OK).  We use this to:
+  //   • create the "invite" event that makes the call appear in Call History
+  //   • advance the outbound call record from "dialing" → "active"
+  // The inbound flow uses "INVITE received for call:" for this, so we guard
+  // with outboundCallModes.has() to avoid double-firing on inbound.
+  const bridgeMatch = body.match(/Registered bridge for call:\s*(\S+)/i);
+  if (bridgeMatch && outboundCallModes.has(extensionId)) {
+    const callId = normalizeCallId(bridgeMatch[1]);
+    const alreadyInvited = persistedCallEvents.some(
+      e => e.extensionId === extensionId && e.callId === callId && e.event === "invite"
+    );
+    if (!alreadyInvited) {
+      pushEvent({ extensionId, callId, event: "invite", timestamp });
+      void (async () => {
+        try {
+          await db
+            .update(outboundCallsTable)
+            .set({ callId, status: "active", updatedAt: new Date() })
+            .where(and(
+              eq(outboundCallsTable.extensionId, extensionId),
+              inArray(outboundCallsTable.status, ["pending", "dialing"]),
+            ));
+          logger.info({ extensionId, callId }, "Outbound bridge registered — callId linked, status → active");
+        } catch (err) {
+          logger.error({ err, extensionId }, "Failed to link outbound bridge callId");
+        }
+      })();
+    }
+    return;
+  }
+
+  // ── Outbound BYE (binary does not handle BYE, logs a WARN instead) ───────
+  // When the remote party hangs up in outbound mode the binary logs:
+  // "WARN SIP request handler not found caller=Server method=BYE"
+  // We store the ended event here so Call History shows the call as finished.
+  // Note: the process kill + finalizeOutboundCall also fires from handleData
+  // (the outbound BYE kill block); this is the companion event-storage side.
+  if (outboundCallModes.has(extensionId) && /WARN SIP request handler not found.*method=BYE/i.test(body)) {
+    const lastInvite = [...persistedCallEvents].reverse().find(
+      e => e.extensionId === extensionId && e.event === "invite"
+    );
+    const callId = lastInvite?.callId ?? "unknown";
+    const alreadyEnded = persistedCallEvents.some(
+      e => e.extensionId === extensionId && e.callId === callId && e.event === "ended"
+    );
+    if (!alreadyEnded) {
+      pushEvent({ extensionId, callId, event: "ended", timestamp });
+    }
+    finalizeOutboundCall(extensionId, "completed");
+    return;
+  }
+
   // ── Incoming INVITE ──────────────────────────────────────────────────────
   const inviteMatch = body.match(/INVITE received for call:\s*(\S+)/i);
   if (inviteMatch) {
@@ -1049,8 +1103,11 @@ export async function startExtension(extensionId: number, opts?: {
     // Outbound call completed — clear the mode flag and stay stopped.
     // Outbound extensions are one-shot: started per call, stopped when done.
     // No inbound restart; use the outbound trigger to start the next call.
+    // Also finalize the outbound call record as a safety net in case the
+    // BYE WARN log line was not detected (e.g. process killed externally).
     if (outboundCallModes.has(extensionId)) {
       outboundCallModes.delete(extensionId);
+      finalizeOutboundCall(extensionId, "completed");
       logger.info({ extensionId, code, signal }, "Outbound call ended — extension returning to idle (stopped)");
       return; // expected exit — skip watchdog
     }
