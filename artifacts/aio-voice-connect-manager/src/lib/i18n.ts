@@ -948,7 +948,7 @@ const fr: typeof en = {
   "extDetail.ipbxOption":     "Aucun IPBX",
   "extDetail.lastUpdated":    "Dernière mise à jour : {{time}}",
   "extDetail.deployManage":   "Déployer et gérer cette extension",
-  "extDetail.outboundModeTitle": "Mode Sortant — Aucun Déploiement Nécessaire",
+  "extDetail.outboundModeTitle": "SIP Agent",
   "extDetail.outboundModeTitleSub": "(Mode Sortant — Aucun Déploiement Nécessaire)",
   "extDetail.outboundModeSubtitle": "Cette extension démarre automatiquement lors d'un appel déclenché.",
   "extDetail.outboundModeInfo": "Les extensions sortantes sont à usage unique : lorsque vous déclenchez un appel depuis la page Sortant ou via l'API, l'agent démarre, passe l'appel et s'arrête à la fin. Aucun déploiement manuel n'est nécessaire.",
