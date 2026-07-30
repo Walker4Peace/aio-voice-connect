@@ -258,7 +258,7 @@ export default function Dashboard() {
                   <th className="text-left font-medium py-2.5 px-4">{t("dashboard.thStatus")}</th>
                   <th className="text-left font-medium py-2.5 px-4">{t("dashboard.thLastActivity")}</th>
                   <th className="text-left font-medium py-2.5 px-4">{t("dashboard.thActions")}</th>
-                  <th className="text-left font-medium py-2.5 px-4">{t("deploy.details")}</th>
+                  <th className="text-left font-medium py-2.5 px-4">{t("dashboard.thView")}</th>
                 </tr>
               </thead>
               <tbody>

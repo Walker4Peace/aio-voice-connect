@@ -153,6 +153,7 @@ const en = {
   "dashboard.thStatus":       "Runtime Status",
   "dashboard.thLastActivity": "Last Activity",
   "dashboard.thActions":      "Actions",
+  "dashboard.thView":         "View",
   "dashboard.last5Calls":     "Last 5 calls across your deployed extensions.",
   "dashboard.viewAllCalls":   "View all call history",
 
@@ -720,6 +721,7 @@ const fr: typeof en = {
   "dashboard.thStatus":       "Statut",
   "dashboard.thLastActivity": "Dernière activité",
   "dashboard.thActions":      "Actions",
+  "dashboard.thView":         "Voir",
   "dashboard.last5Calls":     "Les 5 derniers appels sur vos extensions déployées.",
   "dashboard.viewAllCalls":   "Voir tout l'historique des appels",
 
