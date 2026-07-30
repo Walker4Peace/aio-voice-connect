@@ -1,0 +1,350 @@
+test@test:/opt/sip-agent$ journalctl -u sip-agent.service -f | grep --line-buffered "\[ext:"
+juil. 29 23:55:50 test sip-agent[5735]: [ext:1] [2026-07-29T23:55:50.859Z] Expires: 642
+juil. 29 23:55:50 test sip-agent[5735]: [ext:1] [2026-07-29T23:55:50.859Z] Server: Yeastar PSE
+juil. 29 23:55:50 test sip-agent[5735]: [ext:1] [2026-07-29T23:55:50.860Z] Content-Length: 0
+juil. 29 23:55:50 test sip-agent[5735]: [ext:1] [2026-07-29T23:55:50.860Z] 2026/07/29 23:55:50 Registration successful!
+juil. 29 23:55:50 test sip-agent[5735]: [ext:1] [2026-07-29T23:55:50.860Z] 2026/07/29 23:55:50 Initial REGISTER request sent.
+juil. 29 23:55:50 test sip-agent[5735]: [ext:1] [2026-07-29T23:55:50.864Z] 2026/07/29 23:55:50 SIP server is now listening for incoming messages.
+juil. 29 23:55:51 test sip-agent[5735]: [ext:1] [2026-07-29T23:55:51.536Z] 2026/07/29 23:55:51 WARN SIP request handler not found caller=Server method=NOTIFY
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.169Z] 2026/07/29 23:57:22 Loaded config with 0 functions
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.170Z] 2026/07/29 23:57:22 Starting HTTP API server on :19000
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.170Z] 2026/07/29 23:57:22 Starting SIP client with configuration:
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.170Z] 2026/07/29 23:57:22 Username: 1005, Domain: 192.168.11.90, Server: 192.168.11.90:5060, Transport: udp
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.170Z] 2026/07/29 23:57:22 Auth ID: TjoCu4uhmD (using separate authorization ID)
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.170Z] 2026/07/29 23:57:22 No OPENAI_API_KEY set - calls will use fallback audio handling
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.171Z] 2026/07/29 23:57:22 DEBUG: Determined outbound IP as 192.168.11.101
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.171Z] 2026/07/29 23:57:22 Local IP determined as: 192.168.11.101
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.222Z] 2026/07/29 23:57:22 DEBUG: Retrieved external IP as 105.188.3.70
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.222Z] 2026/07/29 23:57:22 External IP determined as: 105.188.3.70
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.223Z] 2026/07/29 23:57:22 Sending REGISTER request via sipgo client.
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.224Z] 2026/07/29 23:57:22 Auth: digestUsername=TjoCu4uhmD, realm=YSAsterisk, uri=sip:192.168.11.90, password=EmkWA6lT7y
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.224Z] 2026/07/29 23:57:22 Resending REGISTER with Authorization header (CSeq=2).
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.225Z] 2026/07/29 23:57:22 Authorization: Digest username="TjoCu4uhmD", realm="YSAsterisk", nonce="1785369442/adb45a4e94745672260d8a8e220c4681", uri="sip:192.168.11.90", response="1a5c788379a16a38f4cfcbe403f03214", algorithm=MD5
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.245Z] 2026/07/29 23:57:22 Received REGISTER response: SIP/2.0 200 OK
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.246Z] Via: SIP/2.0/UDP 192.168.11.101:54590;rport=54590;received=192.168.11.101;branch=z9hG4bK.WtDjFCnqZ60Juvjh
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.246Z] Call-ID: N8eH1OOwt0uLs8ND
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.246Z] From: <sip:1005@192.168.11.90>;tag=Su2JK7zI
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.247Z] To: <sip:1005@192.168.11.90>;tag=z9hG4bK.WtDjFCnqZ60Juvjh
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.247Z] CSeq: 2 REGISTER
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.248Z] Date: Wed, 29 Jul 2026 23:57:22 GMT
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.248Z] Contact: <sip:1005@192.168.11.101:54590>;expires=617
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.251Z] Expires: 634
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.251Z] Server: Yeastar PSE
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.251Z] Content-Length: 0
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.251Z] 2026/07/29 23:57:22 Registration successful!
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.251Z] 2026/07/29 23:57:22 Initial REGISTER request sent.
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.252Z] 2026/07/29 23:57:22 WARN SIP request handler not found caller=Server method=NOTIFY
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.253Z] 2026/07/29 23:57:22 SIP server is now listening for incoming messages.
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.621Z] 2026/07/29 23:57:22 INVITE received for call: c2216340-5297-449c-aa03-b2cffba39cf0, auto-answering using sipgo.
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.660Z] 2026/07/29 23:57:22 RTP listener created on 0.0.0.0:60989
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.660Z] 2026/07/29 23:57:22 200 OK with SDP sent to caller.
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.660Z] 2026/07/29 23:57:22 Stored remote Contact for dialog: sip:+212661209845@192.168.11.90:5060
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.661Z] 2026/07/29 23:57:22 Registered dialog for call: c2216340-5297-449c-aa03-b2cffba39cf0
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.661Z] 2026/07/29 23:57:22 Parsed remote audio port: 10010
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.661Z] 2026/07/29 23:57:22 Remote RTP destination: 192.168.11.90:10010
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.661Z] 2026/07/29 23:57:22 Routing call to ElevenLabs Conversational AI
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.661Z] 2026/07/29 23:57:22 Using AI provider: elevenlabs
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.661Z] 2026/07/29 23:57:22 Sending NAT hole-punch packets to 192.168.11.90:10010
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.661Z] 2026/07/29 23:57:22 WARN SIP request handler not found caller=Server method=ACK
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.798Z] 2026/07/29 23:57:22 Connecting to ElevenLabs Conversational AI (agent: agent_3001kyqv5tqdf3ntr333x58ryjev)...
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.893Z] 2026/07/29 23:57:22 INVITE received for call: c2216340-5297-449c-aa03-b2cffba39cf0, auto-answering using sipgo.
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.894Z] 2026/07/29 23:57:22 RTP listener created on 0.0.0.0:38101
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.895Z] 2026/07/29 23:57:22 200 OK with SDP sent to caller.
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.896Z] 2026/07/29 23:57:22 Stored remote Contact for dialog: sip:unknown@192.168.11.90:5060
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.896Z] 2026/07/29 23:57:22 Registered dialog for call: c2216340-5297-449c-aa03-b2cffba39cf0
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.899Z] 2026/07/29 23:57:22 Parsed remote audio port: 10010
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.899Z] 2026/07/29 23:57:22 Remote RTP destination: 192.168.11.90:10010
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.899Z] 2026/07/29 23:57:22 Routing call to ElevenLabs Conversational AI
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.899Z] 2026/07/29 23:57:22 Using AI provider: elevenlabs
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.899Z] 2026/07/29 23:57:22 Sending NAT hole-punch packets to 192.168.11.90:10010
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.899Z] 2026/07/29 23:57:22 WARN SIP request handler not found caller=Server method=ACK
+juil. 29 23:57:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:22.999Z] 2026/07/29 23:57:22 Connecting to ElevenLabs Conversational AI (agent: agent_3001kyqv5tqdf3ntr333x58ryjev)...
+juil. 29 23:57:23 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:23.248Z] 2026/07/29 23:57:23 Connected to ElevenLabs Conversational AI
+juil. 29 23:57:23 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:23.249Z] 2026/07/29 23:57:23 DEBUG: appConfig=true
+juil. 29 23:57:23 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:23.249Z] 2026/07/29 23:57:23 DEBUG: ElevenLabs.FirstMessage='Bonjour, je suis Hakim de AIO PROCESS. Je vous appelle pour planifier un rendez-vous avec notre équipe. Avez-vous quelques minutes ?', SystemPrompt='Vous êtes Hakim, consultant IT chez AIO PROCESS. Vous appelez pour programmer un rendez-vous avec le client. Proposez des créneaux disponibles cette semaine. Soyez bref et professionnel. Répondez en français.', Functions=0
+juil. 29 23:57:23 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:23.249Z] 2026/07/29 23:57:23 Overriding first_message: Bonjour, je suis Hakim de AIO PROCESS. Je vous appelle pour planifier un rendez-vous avec notre équipe. Avez-vous quelques minutes ?
+juil. 29 23:57:23 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:23.249Z] 2026/07/29 23:57:23 Overriding system prompt
+juil. 29 23:57:23 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:23.249Z] 2026/07/29 23:57:23 Sending conversation initiation to ElevenLabs: {"conversation_config_override":{"agent":{"first_message":"Bonjour, je suis Hakim de AIO PROCESS. Je vous appelle pour planifier un rendez-vous avec notre équipe. Avez-vous quelques minutes ?","prompt":{"prompt":"Vous êtes Hakim, consultant IT chez AIO PROCESS. Vous appelez pour programmer un rendez-vous avec le client. Proposez des créneaux disponibles cette semaine. Soyez bref et professionnel. Répondez en français."}}},"type":"conversation_initiation_client_data"}
+juil. 29 23:57:23 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:23.249Z] 2026/07/29 23:57:23 Registered bridge for call: c2216340-5297-449c-aa03-b2cffba39cf0
+juil. 29 23:57:23 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:23.249Z] 2026/07/29 23:57:23 Starting RTP to ElevenLabs bridge (native μ-law 8kHz)...
+juil. 29 23:57:23 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:23.249Z] 2026/07/29 23:57:23 Starting ElevenLabs to RTP bridge (native μ-law 8kHz)...
+juil. 29 23:57:23 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:23.249Z] 2026/07/29 23:57:23 ElevenLabs raw message: {"conversation_initiation_metadata_event":{"conversation_id":"conv_3501kyr4zer2fvya4vht5m3gjq4e","agent_output_audio_format":"ulaw_8000","user_input_audio_format":"ulaw_8000","persistent_session_token...
+juil. 29 23:57:23 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:23.250Z] 2026/07/29 23:57:23 ElevenLabs conversation started: conv_3501kyr4zer2fvya4vht5m3gjq4e (audio format: ulaw_8000)
+juil. 29 23:57:23 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:23.369Z] 2026/07/29 23:57:23 Connected to ElevenLabs Conversational AI
+juil. 29 23:57:23 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:23.370Z] 2026/07/29 23:57:23 DEBUG: appConfig=true
+juil. 29 23:57:23 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:23.370Z] 2026/07/29 23:57:23 DEBUG: ElevenLabs.FirstMessage='Bonjour, je suis Hakim de AIO PROCESS. Je vous appelle pour planifier un rendez-vous avec notre équipe. Avez-vous quelques minutes ?', SystemPrompt='Vous êtes Hakim, consultant IT chez AIO PROCESS. Vous appelez pour programmer un rendez-vous avec le client. Proposez des créneaux disponibles cette semaine. Soyez bref et professionnel. Répondez en français.', Functions=0
+juil. 29 23:57:23 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:23.370Z] 2026/07/29 23:57:23 Overriding first_message: Bonjour, je suis Hakim de AIO PROCESS. Je vous appelle pour planifier un rendez-vous avec notre équipe. Avez-vous quelques minutes ?
+juil. 29 23:57:23 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:23.370Z] 2026/07/29 23:57:23 Overriding system prompt
+juil. 29 23:57:23 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:23.370Z] 2026/07/29 23:57:23 Sending conversation initiation to ElevenLabs: {"conversation_config_override":{"agent":{"first_message":"Bonjour, je suis Hakim de AIO PROCESS. Je vous appelle pour planifier un rendez-vous avec notre équipe. Avez-vous quelques minutes ?","prompt":{"prompt":"Vous êtes Hakim, consultant IT chez AIO PROCESS. Vous appelez pour programmer un rendez-vous avec le client. Proposez des créneaux disponibles cette semaine. Soyez bref et professionnel. Répondez en français."}}},"type":"conversation_initiation_client_data"}
+juil. 29 23:57:23 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:23.372Z] 2026/07/29 23:57:23 Registered bridge for call: c2216340-5297-449c-aa03-b2cffba39cf0
+juil. 29 23:57:23 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:23.372Z] 2026/07/29 23:57:23 Starting RTP to ElevenLabs bridge (native μ-law 8kHz)...
+juil. 29 23:57:23 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:23.372Z] 2026/07/29 23:57:23 Starting ElevenLabs to RTP bridge (native μ-law 8kHz)...
+juil. 29 23:57:23 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:23.372Z] 2026/07/29 23:57:23 ElevenLabs raw message: {"conversation_initiation_metadata_event":{"conversation_id":"conv_7601kyr4zevbe6xtp3b1sdhwx8wr","agent_output_audio_format":"ulaw_8000","user_input_audio_format":"ulaw_8000","persistent_session_token...
+juil. 29 23:57:23 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:23.372Z] 2026/07/29 23:57:23 ElevenLabs conversation started: conv_7601kyr4zevbe6xtp3b1sdhwx8wr (audio format: ulaw_8000)
+juil. 29 23:57:23 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:23.636Z] 2026/07/29 23:57:23 ElevenLabs raw message: {"audio_event":{"audio_base_64":"///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////...
+juil. 29 23:57:23 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:23.636Z] 2026/07/29 23:57:23 ElevenLabs audio chunk #1 received (4488 bytes)
+juil. 29 23:57:23 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:23.649Z] 2026/07/29 23:57:23 Sent 1 RTP packets to 192.168.11.90:10010
+juil. 29 23:57:23 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:23.786Z] 2026/07/29 23:57:23 ElevenLabs raw message: {"audio_event":{"audio_base_64":"///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////...
+juil. 29 23:57:23 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:23.787Z] 2026/07/29 23:57:23 ElevenLabs audio chunk #1 received (4488 bytes)
+juil. 29 23:57:23 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:23.796Z] 2026/07/29 23:57:23 ElevenLabs raw message: {"audio_event":{"audio_base_64":"yMnJx8fHyc3T2t/e4d3a4ul5X1tVU1RWWFpXUExIRkdGSElHRkVERERERERERUVERUE/PjxBSFXw+e9yV1xefNnSzc/U1tnSz8zJysvMzcvLycrIxsXCxMbJzs7OzcnKzNPc4N/a19nf9G9mZ2t1emhlW1dZU1VUUFBOTk5...
+juil. 29 23:57:23 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:23.796Z] 2026/07/29 23:57:23 Sent 1 RTP packets to 192.168.11.90:10010
+juil. 29 23:57:23 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:23.933Z] 2026/07/29 23:57:23 ElevenLabs raw message: {"audio_event":{"audio_base_64":"qK+otb1bJhwWFhorxaeYlpWWmZqdnqm5ZislHh4fIiMeHBgVFhcfULibl5iZoaa2rrfO5iofGBcaJdGqmJOTk5icoKSsvuAyKCEeHyElISAdGRcXGzLNoJaWlp6lt7u79t4xIRoXGSBYrJmRkZGXnKSrtM76OCsmISIjJyQ...
+juil. 29 23:57:24 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:24.100Z] 2026/07/29 23:57:24 ElevenLabs raw message: {"audio_event":{"audio_base_64":"RTcwGCErsZ+qoJuQmKi5tLpUIiMtLB8aJS0eFhNOjbdBxJ6PL0gYKa0eIRmuoKm5uaGZrCMoL78mJy2wl5yjspqapVdLv7LdLC5LTSMdIR4YEhWrmFS0uJKeNd0XuzAeHR2mta7Pr6Ce6y8vRGclNjqmnZ6jo5qfsF7Au7p...
+juil. 29 23:57:24 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:24.156Z] 2026/07/29 23:57:24 ElevenLabs raw message: {"audio_event":{"audio_base_64":"WkEkFxcYEAwLDw7FzRqqjor4l4qSrjGhNisRGy0hHhurqq+lkY+alZictbm/TEMvQ0lCPD9sQzArJSQYFBIRDC3oDy+dkSypiZOrt4ytOi29TBciJEwjMb6gqbCTlZuomZq00tG8MycqNicfJy4jHCYhGRkbLjYbLbavOb2...
+juil. 29 23:57:24 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:24.259Z] 2026/07/29 23:57:24 ElevenLabs raw message: {"audio_event":{"audio_base_64":"JCQdKBwsLiRdMNTOWqq+r6utp6uvpa63rL2zy869e+fgzc/pwr7Fvr69x+jbXTg5KywrHSofICccOCYtUjC9UMKuvq2trKmsr6a3sLC+sti/xODczsnU0cK/xcLDwN9qbUU5MCoxJCApHikfJTcjRTNPx0OvvLausqitr6m...
+juil. 29 23:57:24 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:24.349Z] 2026/07/29 23:57:24 ElevenLabs raw message: {"audio_event":{"audio_base_64":"nKY7Hh4hGhUgPbyunZGNjZGUmajgOjEpHx0fJB0aGhsZEhEYJrHeVpaOmqKYl59ANdkzFhosKCgyrJmYmo6NlZqepro6JiYeFxUWFBEPEBIXJrPXq5KTmJWTmJ/Kuu8sHCMhHR4pv8GunI+VlJCSmKavuDweHhoSDg4NDAw...
+juil. 29 23:57:24 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:24.558Z] 2026/07/29 23:57:24 ElevenLabs raw message: {"audio_event":{"audio_base_64":"///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////...
+juil. 29 23:57:24 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:24.674Z] 2026/07/29 23:57:24 ElevenLabs raw message: {"audio_event":{"audio_base_64":"///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////...
+juil. 29 23:57:25 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:25.044Z] 2026/07/29 23:57:25 RTP packet #1 received from 192.168.11.90:10010, size=172 bytes
+juil. 29 23:57:25 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:25.105Z] 2026/07/29 23:57:25 ElevenLabs raw message: {"ping_event":{"event_id":2,"ping_ms":null},"type":"ping"}
+juil. 29 23:57:25 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:25.230Z] 2026/07/29 23:57:25 ElevenLabs raw message: {"audio_event":{"audio_base_64":"z0S2OsXoTMhSWMRBxnVIvUrS8co8rzC2Stbo7WfWekuzLas0uku+Rr9Y5cQ+u0/VdsVDuT69Tchhx1LIW2S+Or1l5nDBRMBn88pn1Nzr21zIVMte0XzS5fzCScdqx0e6QL1Uzursz3TUeMZEtT7Aftdbu0nMyUvE/fvWykO...
+juil. 29 23:57:25 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:25.231Z] 2026/07/29 23:57:25 ElevenLabs raw message: {"agent_response_event":{"agent_response":"Bonjour, je suis Hakim de AIO PROCESS. Je vous appelle pour planifier un rendez-vous avec notre équipe. Avez-vous quelques minutes ?","event_id":1,"response...
+juil. 29 23:57:25 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:25.231Z] 2026/07/29 23:57:25 AI: Bonjour, je suis Hakim de AIO PROCESS. Je vous appelle pour planifier un rendez-vous avec notre équipe. Avez-vous quelques minutes ?
+juil. 29 23:57:25 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:25.232Z] 2026/07/29 23:57:25 ElevenLabs raw message: {"ping_event":{"event_id":2,"ping_ms":null},"type":"ping"}
+juil. 29 23:57:25 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:25.321Z] 2026/07/29 23:57:25 ElevenLabs raw message: {"audio_event":{"audio_base_64":"KiQkME1LR86wpZycoqKeoaWrxWtVMSEbFREQDxkhGiAqMradnaKfnZqbocQ8S0ctKCQeLcK5vqyim5CSnZ2coaes5EBtMCAfGRMXFRRVMye9Ta+Xk5+jn6SgrD4cJjcnJy0nUp6bnpmXlo6OoaqktrvOMy/d0jEsKR0ZGhE...
+juil. 29 23:57:25 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:25.322Z] 2026/07/29 23:57:25 ElevenLabs raw message: {"agent_response_event":{"agent_response":"Bonjour, je suis Hakim de AIO PROCESS. Je vous appelle pour planifier un rendez-vous avec notre équipe. Avez-vous quelques minutes ?","event_id":1,"response...
+juil. 29 23:57:25 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:25.323Z] 2026/07/29 23:57:25 AI: Bonjour, je suis Hakim de AIO PROCESS. Je vous appelle pour planifier un rendez-vous avec notre équipe. Avez-vous quelques minutes ?
+juil. 29 23:57:25 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:25.629Z] 2026/07/29 23:57:25 Sent 100 RTP packets to 192.168.11.90:10010
+juil. 29 23:57:25 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:25.661Z] 2026/07/29 23:57:25 ElevenLabs raw message: {"audio_event":{"audio_base_64":"MdNeS2Dx62Nrz7/purzOX1xYMTAxOjeftC67vlZar9p5V19iPUxFNTw+Ok0/RFJIQUtITU9K5lZHVUNMUEFESDpATTNERTQ/QzlMOzxYPExWPj3oO0lSTERLZThQREZCTURNRT9qPFNJP/U6TFl5PVv9PupPT0LQM2DwOlF...
+juil. 29 23:57:25 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:25.721Z] 2026/07/29 23:57:25 ElevenLabs raw message: {"audio_event":{"audio_base_64":"CRKspY/MjYyOiiyetlMXCCgSFhATxcWruaKKk5qfm5XwSS/h6CdIvJykqJmWmaettF4iFxANCAUFHyYIzbGOlbuEmIaeRp0pswkOFw0fCxsyx51zno6QkaebmKe7K2ZMWFk9qaSdoqebnaWxyWA0JRkUEA8LGCkOJyfHojW...
+juil. 29 23:57:25 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:25.770Z] 2026/07/29 23:57:25 Sent 100 RTP packets to 192.168.11.90:10010
+juil. 29 23:57:26 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:26.806Z] 2026/07/29 23:57:26 ElevenLabs raw message: {"ping_event":{"event_id":3,"ping_ms":151},"type":"ping"}
+juil. 29 23:57:26 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:26.928Z] 2026/07/29 23:57:26 ElevenLabs raw message: {"ping_event":{"event_id":3,"ping_ms":156},"type":"ping"}
+juil. 29 23:57:27 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:27.060Z] 2026/07/29 23:57:27 RTP packet #100 received from 192.168.11.90:10010, size=172 bytes
+juil. 29 23:57:27 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:27.631Z] 2026/07/29 23:57:27 Sent 200 RTP packets to 192.168.11.90:10010
+juil. 29 23:57:27 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:27.770Z] 2026/07/29 23:57:27 Sent 200 RTP packets to 192.168.11.90:10010
+juil. 29 23:57:28 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:28.508Z] 2026/07/29 23:57:28 ElevenLabs raw message: {"ping_event":{"event_id":4,"ping_ms":151},"type":"ping"}
+juil. 29 23:57:28 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:28.629Z] 2026/07/29 23:57:28 ElevenLabs raw message: {"ping_event":{"event_id":4,"ping_ms":153},"type":"ping"}
+juil. 29 23:57:29 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:29.024Z] 2026/07/29 23:57:29 RTP packet #200 received from 192.168.11.90:10010, size=172 bytes
+juil. 29 23:57:29 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:29.649Z] 2026/07/29 23:57:29 Sent 300 RTP packets to 192.168.11.90:10010
+juil. 29 23:57:29 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:29.789Z] 2026/07/29 23:57:29 Sent 300 RTP packets to 192.168.11.90:10010
+juil. 29 23:57:30 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:30.209Z] 2026/07/29 23:57:30 ElevenLabs raw message: {"ping_event":{"event_id":5,"ping_ms":150},"type":"ping"}
+juil. 29 23:57:30 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:30.331Z] 2026/07/29 23:57:30 ElevenLabs raw message: {"ping_event":{"event_id":5,"ping_ms":152},"type":"ping"}
+juil. 29 23:57:31 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:31.024Z] 2026/07/29 23:57:31 RTP packet #300 received from 192.168.11.90:10010, size=172 bytes
+juil. 29 23:57:31 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:31.910Z] 2026/07/29 23:57:31 ElevenLabs raw message: {"ping_event":{"event_id":6,"ping_ms":150},"type":"ping"}
+juil. 29 23:57:32 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:32.031Z] 2026/07/29 23:57:32 ElevenLabs raw message: {"ping_event":{"event_id":6,"ping_ms":151},"type":"ping"}
+juil. 29 23:57:33 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:33.090Z] 2026/07/29 23:57:33 RTP packet #400 received from 192.168.11.90:10010, size=172 bytes
+juil. 29 23:57:33 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:33.611Z] 2026/07/29 23:57:33 ElevenLabs raw message: {"ping_event":{"event_id":7,"ping_ms":150},"type":"ping"}
+juil. 29 23:57:33 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:33.733Z] 2026/07/29 23:57:33 ElevenLabs raw message: {"ping_event":{"event_id":7,"ping_ms":151},"type":"ping"}
+juil. 29 23:57:35 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:35.067Z] 2026/07/29 23:57:35 RTP packet #500 received from 192.168.11.90:10010, size=172 bytes
+juil. 29 23:57:35 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:35.311Z] 2026/07/29 23:57:35 ElevenLabs raw message: {"ping_event":{"event_id":8,"ping_ms":150},"type":"ping"}
+juil. 29 23:57:35 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:35.433Z] 2026/07/29 23:57:35 ElevenLabs raw message: {"ping_event":{"event_id":8,"ping_ms":151},"type":"ping"}
+juil. 29 23:57:36 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:36.700Z] 2026/07/29 23:57:36 ElevenLabs raw message: {"user_transcription_event":{"user_transcript":"Allô ?","event_id":63},"type":"user_transcript"}
+juil. 29 23:57:36 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:36.701Z] 2026/07/29 23:57:36 Caller: Allô ?
+juil. 29 23:57:36 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:36.704Z] 2026/07/29 23:57:36 ElevenLabs raw message: {"audio_event":{"audio_base_64":"///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////...
+juil. 29 23:57:36 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:36.816Z] 2026/07/29 23:57:36 ElevenLabs raw message: {"audio_event":{"audio_base_64":"PDo4NjIvLi40OkdTT01BPT4/SlVdWk5JRUpUad/e4ftfW1tt6djPz8zLx8G+u7u6ubi2tbW2uLq6ube1tre6v8LGyMbJzNb+XlBOT05OTEdDPjs4NzY1NDIyNzo/RUJCPjw8PkJESEZERUZNV2BpX1pSU1xu4dnY2N3Z0Mj...
+juil. 29 23:57:36 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:36.960Z] 2026/07/29 23:57:36 ElevenLabs raw message: {"audio_event":{"audio_base_64":"JxXNnYySmqGcjykRDxUgDxMVq5GfnpqLkZ3ZLahxJh0qr7mlrJmOkpo/Lh8SDAQEB0idMJmNh4ibryGqHAcJCS8nw9aihYuOta23NSoKHUO7tMeXlY2XpJ6kqiIVDw4OCAkMOYucm5GQirVFDhc0DBMLSqKclMuNjpZaGS0...
+juil. 29 23:57:37 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:37.012Z] 2026/07/29 23:57:37 ElevenLabs raw message: {"ping_event":{"event_id":9,"ping_ms":151},"type":"ping"}
+juil. 29 23:57:37 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:37.064Z] 2026/07/29 23:57:37 RTP packet #600 received from 192.168.11.90:10010, size=172 bytes
+juil. 29 23:57:37 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:37.134Z] 2026/07/29 23:57:37 ElevenLabs raw message: {"ping_event":{"event_id":9,"ping_ms":151},"type":"ping"}
+juil. 29 23:57:37 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:37.162Z] 2026/07/29 23:57:37 ElevenLabs raw message: {"audio_event":{"audio_base_64":"nqdMOCkjHBcYHBgbJik3RMisrqqiqK2zw1M4LScmHSEjISwvWb+wo52ZmZaVl5icnqqx0TcrICAYFhoVGBgcJiIzScS5s6ampqqlqrS0vMT+aOhfWtbCvL2wqqysqKavubbIRjErLCQaIh8bHxstKSRyTsTAvKattqiqr7C...
+juil. 29 23:57:37 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:37.509Z] 2026/07/29 23:57:37 Sent 400 RTP packets to 192.168.11.90:10010
+juil. 29 23:57:37 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:37.694Z] 2026/07/29 23:57:37 ElevenLabs raw message: {"audio_event":{"audio_base_64":"//////////////////////////////////////////////////////////////////////////////////////9+fv/////////////////////////////////////////////////////////////////////////////...
+juil. 29 23:57:37 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:37.719Z] 2026/07/29 23:57:37 ElevenLabs raw message: {"audio_event":{"audio_base_64":"217WdOfd/9l34N9l1Wzf7+tm3HFn4Op011nk5lfPX2r84Gzu5VvSX3veZdlk2F7OVtdb3Hhu11zVXNlr22d932lh31fbZ3Bf6ljycWj4a/JlamzjXeJe9WrxX9NT31LbWepuXNhd3VnRUNBU12fZaN577vVn0k3KU9RZ11b...
+juil. 29 23:57:37 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:37.719Z] 2026/07/29 23:57:37 ElevenLabs raw message: {"agent_response_event":{"agent_response":"Bonjour, je suis Hakim de AIO PROCESS. Je vous appelle pour planifier un rendez-vous. Seriez-vous disponible cette semaine ?","event_id":63,"response_id":"cd...
+juil. 29 23:57:37 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:37.719Z] 2026/07/29 23:57:37 AI: Bonjour, je suis Hakim de AIO PROCESS. Je vous appelle pour planifier un rendez-vous. Seriez-vous disponible cette semaine ?
+juil. 29 23:57:38 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:38.350Z] 2026/07/29 23:57:38 ElevenLabs raw message: {"audio_event":{"audio_base_64":"zM7Q0tPT09PU1trd4efp6ers8fxxaGFfYGRmZV9aV1VXWVxdXFlWVFRWWVpaWVZVVVdZXF1dW1paW11gY2RiYWFjZ2tub3BxdHn++PT09fX08Ozp6Onr7e3r6OXj5Obp7O3t6ujo6evu8vPy7+3u8PT5/f7+/f3/e3dzcXB...
+juil. 29 23:57:38 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:38.714Z] 2026/07/29 23:57:38 ElevenLabs raw message: {"ping_event":{"event_id":10,"ping_ms":150},"type":"ping"}
+juil. 29 23:57:38 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:38.834Z] 2026/07/29 23:57:38 ElevenLabs raw message: {"ping_event":{"event_id":10,"ping_ms":151},"type":"ping"}
+juil. 29 23:57:39 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:39.065Z] 2026/07/29 23:57:39 RTP packet #700 received from 192.168.11.90:10010, size=172 bytes
+juil. 29 23:57:39 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:39.509Z] 2026/07/29 23:57:39 Sent 500 RTP packets to 192.168.11.90:10010
+juil. 29 23:57:40 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:40.415Z] 2026/07/29 23:57:40 ElevenLabs raw message: {"ping_event":{"event_id":11,"ping_ms":150},"type":"ping"}
+juil. 29 23:57:40 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:40.535Z] 2026/07/29 23:57:40 ElevenLabs raw message: {"ping_event":{"event_id":11,"ping_ms":151},"type":"ping"}
+juil. 29 23:57:41 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:41.064Z] 2026/07/29 23:57:41 RTP packet #800 received from 192.168.11.90:10010, size=172 bytes
+juil. 29 23:57:41 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:41.509Z] 2026/07/29 23:57:41 Sent 600 RTP packets to 192.168.11.90:10010
+juil. 29 23:57:42 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:42.116Z] 2026/07/29 23:57:42 ElevenLabs raw message: {"ping_event":{"event_id":12,"ping_ms":150},"type":"ping"}
+juil. 29 23:57:42 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:42.236Z] 2026/07/29 23:57:42 ElevenLabs raw message: {"ping_event":{"event_id":12,"ping_ms":151},"type":"ping"}
+juil. 29 23:57:43 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:43.064Z] 2026/07/29 23:57:43 RTP packet #900 received from 192.168.11.90:10010, size=172 bytes
+juil. 29 23:57:43 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:43.816Z] 2026/07/29 23:57:43 ElevenLabs raw message: {"ping_event":{"event_id":13,"ping_ms":150},"type":"ping"}
+juil. 29 23:57:43 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:43.937Z] 2026/07/29 23:57:43 ElevenLabs raw message: {"ping_event":{"event_id":13,"ping_ms":151},"type":"ping"}
+juil. 29 23:57:45 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:45.064Z] 2026/07/29 23:57:45 RTP packet #1000 received from 192.168.11.90:10010, size=172 bytes
+juil. 29 23:57:45 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:45.516Z] 2026/07/29 23:57:45 ElevenLabs raw message: {"ping_event":{"event_id":14,"ping_ms":150},"type":"ping"}
+juil. 29 23:57:45 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:45.658Z] 2026/07/29 23:57:45 ElevenLabs raw message: {"ping_event":{"event_id":14,"ping_ms":151},"type":"ping"}
+juil. 29 23:57:46 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:46.799Z] 2026/07/29 23:57:46 ElevenLabs raw message: {"user_transcription_event":{"user_transcript":"Oui, disponible.","event_id":126},"type":"user_transcript"}
+juil. 29 23:57:46 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:46.799Z] 2026/07/29 23:57:46 Caller: Oui, disponible.
+juil. 29 23:57:46 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:46.803Z] 2026/07/29 23:57:46 ElevenLabs raw message: {"audio_event":{"audio_base_64":"//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////9+/35+/35+/37/////fv//fn7//35+fn5+fn5+fn5+fn7//37...
+juil. 29 23:57:46 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:46.949Z] 2026/07/29 23:57:46 Sent 700 RTP packets to 192.168.11.90:10010
+juil. 29 23:57:47 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:47.026Z] 2026/07/29 23:57:47 ElevenLabs raw message: {"audio_event":{"audio_base_64":"//7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////...
+juil. 29 23:57:47 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:47.064Z] 2026/07/29 23:57:47 RTP packet #1100 received from 192.168.11.90:10010, size=172 bytes
+juil. 29 23:57:47 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:47.218Z] 2026/07/29 23:57:47 ElevenLabs raw message: {"ping_event":{"event_id":15,"ping_ms":150},"type":"ping"}
+juil. 29 23:57:47 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:47.225Z] 2026/07/29 23:57:47 ElevenLabs raw message: {"audio_event":{"audio_base_64":"ramkpaanqamqq7C9/jwsJB0YEg4NDhEUFxkdHihFxq2npKKnpaKioqiss8jCv7+8wL3Fybq6tbGysbm3sa6op6eorayur6+7z0ozKiAcFxEODhIUFxkcHyAw27aopKCip6KhoqWrrr/Uw8C8wL+7xb22s6+wrrC3s7CsrK2...
+juil. 29 23:57:47 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:47.339Z] 2026/07/29 23:57:47 ElevenLabs raw message: {"ping_event":{"event_id":15,"ping_ms":151},"type":"ping"}
+juil. 29 23:57:47 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:47.549Z] 2026/07/29 23:57:47 ElevenLabs raw message: {"audio_event":{"audio_base_64":"uaqxpaCgnqKfqK6qsK+1trXGt7Kzrq6ssK+stLnKbT0tKCAYGBoYGRYcHBwwMF7mvKazoZ+hoKefqa6qsba/tbG7sa6xsa6qrrCst8hfTTopJx8aFxsbGhkZHh4rOEBgzquoqKOjo6Wio66vrq+1urW7uLCwsrWvrq+utLy...
+juil. 29 23:57:47 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:47.711Z] 2026/07/29 23:57:47 ElevenLabs raw message: {"audio_event":{"audio_base_64":"YrtivsfLvti5x8O8xrvEwbzHuMi8wcu2173KveK739a8VLtEvFLc8UjQPtY6WUg5Yi9TMTs8LUYuNTY6MEQzRDVWTjzMTcNVv3fAxr/A27rIuNO6ya+/zrbOrXu2xr+2y77Hv7tfvcTiukO6QMI/UFpJSDw+NDgtLiY0JS4...
+juil. 29 23:57:48 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:48.057Z] 2026/07/29 23:57:48 ElevenLabs raw message: {"audio_event":{"audio_base_64":"ERUPDRAMFT4bKt5em6CTn6aNoZ62Xt0q3hsVIBwlJDZLu5ibmY+PjpCSmqSdvUwzIB0UFg8NEAsSJBgiOT2mrJeko42hmam1sjq3Hh0nGyYeLivcn6ucl5GRkJGbm52x60EoHRsXEhEPDxMmFx8rLLbtn8GglqCXqp+xrrM...
+juil. 29 23:57:48 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:48.890Z] 2026/07/29 23:57:48 ElevenLabs raw message: {"audio_event":{"audio_base_64":"tcW8y/vOwrGro6ShoqelqaqqsMxGLiAbFxMVGhkdHh4eICox8sK2rK+xsLC3rq2xrbG6vb3Kx7vEwbrCwLe2sampqqWoq6iqrKqz3UwuHx0YFBcYFRcZGBsiKUO6rqehpaqorK6pqq+ttcnK13PMvsS6t8C8t7y1rrCuqqy...
+juil. 29 23:57:48 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:48.891Z] 2026/07/29 23:57:48 ElevenLabs raw message: {"agent_response_event":{"agent_response":"Excellent. Pourrions-nous fixer un rendez-vous cette semaine ? J'ai des créneaux disponibles jeudi après-midi ou vendredi matin. Qu'est-ce qui vous convien...
+juil. 29 23:57:48 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:48.891Z] 2026/07/29 23:57:48 AI: Excellent. Pourrions-nous fixer un rendez-vous cette semaine ? J'ai des créneaux disponibles jeudi après-midi ou vendredi matin. Qu'est-ce qui vous conviendrait le mieux ?
+juil. 29 23:57:48 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:48.919Z] 2026/07/29 23:57:48 ElevenLabs raw message: {"ping_event":{"event_id":16,"ping_ms":150},"type":"ping"}
+juil. 29 23:57:48 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:48.948Z] 2026/07/29 23:57:48 Sent 800 RTP packets to 192.168.11.90:10010
+juil. 29 23:57:49 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:49.040Z] 2026/07/29 23:57:49 ElevenLabs raw message: {"ping_event":{"event_id":16,"ping_ms":151},"type":"ping"}
+juil. 29 23:57:49 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:49.064Z] 2026/07/29 23:57:49 RTP packet #1200 received from 192.168.11.90:10010, size=172 bytes
+juil. 29 23:57:49 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:49.325Z] 2026/07/29 23:57:49 ElevenLabs raw message: {"audio_event":{"audio_base_64":"MsS8qaqpsrOxt6appqKjoKWu1UwuHhgPDRIVGycpJSIoKkBWV8O7vby1vLavsaussa+utLa0x87J1Mi6urezt7OsqaSfo6OkrbW/Sy4hFhETEBEVFRQWGh4uSNWuqqyopqymoqWkpautrru4s76/wNTSv7+6sre1r6+qo6S...
+juil. 29 23:57:50 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:50.619Z] 2026/07/29 23:57:50 ElevenLabs raw message: {"ping_event":{"event_id":17,"ping_ms":150},"type":"ping"}
+juil. 29 23:57:50 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:50.741Z] 2026/07/29 23:57:50 ElevenLabs raw message: {"ping_event":{"event_id":17,"ping_ms":151},"type":"ping"}
+juil. 29 23:57:50 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:50.948Z] 2026/07/29 23:57:50 Sent 900 RTP packets to 192.168.11.90:10010
+juil. 29 23:57:51 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:51.069Z] 2026/07/29 23:57:51 RTP packet #1300 received from 192.168.11.90:10010, size=172 bytes
+juil. 29 23:57:52 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:52.321Z] 2026/07/29 23:57:52 ElevenLabs raw message: {"ping_event":{"event_id":18,"ping_ms":150},"type":"ping"}
+juil. 29 23:57:52 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:52.442Z] 2026/07/29 23:57:52 ElevenLabs raw message: {"ping_event":{"event_id":18,"ping_ms":151},"type":"ping"}
+juil. 29 23:57:52 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:52.948Z] 2026/07/29 23:57:52 Sent 1000 RTP packets to 192.168.11.90:10010
+juil. 29 23:57:53 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:53.067Z] 2026/07/29 23:57:53 RTP packet #1400 received from 192.168.11.90:10010, size=172 bytes
+juil. 29 23:57:54 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:54.021Z] 2026/07/29 23:57:54 ElevenLabs raw message: {"ping_event":{"event_id":19,"ping_ms":150},"type":"ping"}
+juil. 29 23:57:54 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:54.142Z] 2026/07/29 23:57:54 ElevenLabs raw message: {"ping_event":{"event_id":19,"ping_ms":151},"type":"ping"}
+juil. 29 23:57:55 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:55.065Z] 2026/07/29 23:57:55 RTP packet #1500 received from 192.168.11.90:10010, size=172 bytes
+juil. 29 23:57:55 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:55.722Z] 2026/07/29 23:57:55 ElevenLabs raw message: {"ping_event":{"event_id":20,"ping_ms":150},"type":"ping"}
+juil. 29 23:57:55 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:55.844Z] 2026/07/29 23:57:55 ElevenLabs raw message: {"ping_event":{"event_id":20,"ping_ms":151},"type":"ping"}
+juil. 29 23:57:57 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:57.065Z] 2026/07/29 23:57:57 RTP packet #1600 received from 192.168.11.90:10010, size=172 bytes
+juil. 29 23:57:57 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:57.422Z] 2026/07/29 23:57:57 ElevenLabs raw message: {"ping_event":{"event_id":21,"ping_ms":150},"type":"ping"}
+juil. 29 23:57:57 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:57.544Z] 2026/07/29 23:57:57 ElevenLabs raw message: {"ping_event":{"event_id":21,"ping_ms":151},"type":"ping"}
+juil. 29 23:57:58 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:58.029Z] 2026/07/29 23:57:58 ElevenLabs raw message: {"user_transcription_event":{"user_transcript":"Le jeudi après-midi.","event_id":194},"type":"user_transcript"}
+juil. 29 23:57:58 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:58.030Z] 2026/07/29 23:57:58 Caller: Le jeudi après-midi.
+juil. 29 23:57:58 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:58.034Z] 2026/07/29 23:57:58 ElevenLabs raw message: {"audio_event":{"audio_base_64":"////fn7///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////9+fv///////37...
+juil. 29 23:57:58 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:58.172Z] 2026/07/29 23:57:58 ElevenLabs raw message: {"audio_event":{"audio_base_64":"///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////...
+juil. 29 23:57:58 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:58.465Z] 2026/07/29 23:57:58 ElevenLabs raw message: {"audio_event":{"audio_base_64":"DwwODhw3uaWWjIqJi4mNkZ7BPRwSCgYFBAUPCxJCQ5GXj4eHh4+Nmpw/Fh0NDggJDhgfJ6aYjIuJhoeKkZWnvSkVDwsKBwYICBI4HbOXlYeSjIqLmMS3JCkOCQ8OFRAePqCcnIyLh42PkJakMzggHxoRFBcZEhIZFzSqK6O...
+juil. 29 23:57:58 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:58.632Z] 2026/07/29 23:57:58 ElevenLabs raw message: {"audio_event":{"audio_base_64":"oaivSz07OFVN3b2tnZuZmZuam6GuVTMqIB0UDw8PEA8QEyHI1dytqJubm6HYvrxPMh8eHh8uKSUw3qimqKWoo56hq8TEvMvIe1DuvKysrKqpo6CjrLa8wc1MLychHh0bGBQUGB4nISEuQcm1rrO1o5+lrLK3vbvDPzA3Pz4...
+juil. 29 23:57:58 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:58.845Z] 2026/07/29 23:57:58 ElevenLabs raw message: {"audio_event":{"audio_base_64":"LjY0OmxL7efKur64vbi3urzKv8vN52TxfOJX++LPxtC+vba1ubS5uMLM3WFSPjwwMi4sLyovMTdBPlvtxbu7trSur7W7vrzJX0E7SEAxMS89RD1MSL66u7K1p6qrr7iuvcVeTEw5NysxLS4zKkM8ZfBrtL+rsrOqtKrHxsl...
+juil. 29 23:57:59 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:59.065Z] 2026/07/29 23:57:59 RTP packet #1700 received from 192.168.11.90:10010, size=172 bytes
+juil. 29 23:57:59 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:59.068Z] 2026/07/29 23:57:59 Sent 1100 RTP packets to 192.168.11.90:10010
+juil. 29 23:57:59 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:59.123Z] 2026/07/29 23:57:59 ElevenLabs raw message: {"ping_event":{"event_id":22,"ping_ms":150},"type":"ping"}
+juil. 29 23:57:59 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:59.245Z] 2026/07/29 23:57:59 ElevenLabs raw message: {"ping_event":{"event_id":22,"ping_ms":151},"type":"ping"}
+juil. 29 23:57:59 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:59.342Z] 2026/07/29 23:57:59 ElevenLabs raw message: {"audio_event":{"audio_base_64":"xcTBwb2/vbm6u73Awcp4QzcwKyMbGB4gGhcYIikhKTZNwLyyrK2koqiqrKqsvLWwucHOtq+4tbKsqbCtrbO0w9FZNS4nIBkWHhsWFxkiIB40P2i7uaWlp5yeoZ+joKuwpq64vbqst72wsKyssKqut7S+80QzLicbFRwfFhQ...
+juil. 29 23:57:59 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:59.343Z] 2026/07/29 23:57:59 ElevenLabs raw message: {"agent_response_event":{"agent_response":"Très bien. Jeudi après-midi, cela vous conviendrait-il vers quatorze heures ou plutôt en fin d'après-midi, vers seize heures ?","event_id":194,"response_...
+juil. 29 23:57:59 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:59.343Z] 2026/07/29 23:57:59 AI: Très bien. Jeudi après-midi, cela vous conviendrait-il vers quatorze heures ou plutôt en fin d'après-midi, vers seize heures ?
+juil. 29 23:57:59 test sip-agent[5735]: [ext:1] [2026-07-29T23:57:59.739Z] 2026/07/29 23:57:59 ElevenLabs raw message: {"audio_event":{"audio_base_64":"cGnb9+bkfujd2dPV39ni09bRzs7Q3Nfh3dbX0tPk5dTc3OP28Ofe9/Rwdfzv3+Xf+2NlaGjk1vZqTkhVcdvU8lpNTV3cz95iTU1m3dTZelhceNfLz+JiXfzSy8zd/Hzdyb/Ez+V40MO9v8refuzOxsDG1XVx1Me/xtdpY/r...
+juil. 29 23:58:00 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:00.824Z] 2026/07/29 23:58:00 ElevenLabs raw message: {"ping_event":{"event_id":23,"ping_ms":151},"type":"ping"}
+juil. 29 23:58:00 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:00.947Z] 2026/07/29 23:58:00 ElevenLabs raw message: {"ping_event":{"event_id":23,"ping_ms":151},"type":"ping"}
+juil. 29 23:58:01 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:01.065Z] 2026/07/29 23:58:01 RTP packet #1800 received from 192.168.11.90:10010, size=172 bytes
+juil. 29 23:58:01 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:01.068Z] 2026/07/29 23:58:01 Sent 1200 RTP packets to 192.168.11.90:10010
+juil. 29 23:58:02 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:02.525Z] 2026/07/29 23:58:02 ElevenLabs raw message: {"ping_event":{"event_id":24,"ping_ms":152},"type":"ping"}
+juil. 29 23:58:02 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:02.647Z] 2026/07/29 23:58:02 ElevenLabs raw message: {"ping_event":{"event_id":24,"ping_ms":152},"type":"ping"}
+juil. 29 23:58:03 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:03.065Z] 2026/07/29 23:58:03 RTP packet #1900 received from 192.168.11.90:10010, size=172 bytes
+juil. 29 23:58:03 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:03.069Z] 2026/07/29 23:58:03 Sent 1300 RTP packets to 192.168.11.90:10010
+juil. 29 23:58:04 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:04.227Z] 2026/07/29 23:58:04 ElevenLabs raw message: {"ping_event":{"event_id":25,"ping_ms":152},"type":"ping"}
+juil. 29 23:58:04 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:04.348Z] 2026/07/29 23:58:04 ElevenLabs raw message: {"ping_event":{"event_id":25,"ping_ms":151},"type":"ping"}
+juil. 29 23:58:05 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:05.065Z] 2026/07/29 23:58:05 RTP packet #2000 received from 192.168.11.90:10010, size=172 bytes
+juil. 29 23:58:05 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:05.926Z] 2026/07/29 23:58:05 ElevenLabs raw message: {"ping_event":{"event_id":26,"ping_ms":152},"type":"ping"}
+juil. 29 23:58:06 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:06.048Z] 2026/07/29 23:58:06 ElevenLabs raw message: {"ping_event":{"event_id":26,"ping_ms":151},"type":"ping"}
+juil. 29 23:58:07 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:07.065Z] 2026/07/29 23:58:07 RTP packet #2100 received from 192.168.11.90:10010, size=172 bytes
+juil. 29 23:58:07 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:07.245Z] 2026/07/29 23:58:07 ElevenLabs raw message: {"user_transcription_event":{"user_transcript":"Seize heures.","event_id":254},"type":"user_transcript"}
+juil. 29 23:58:07 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:07.246Z] 2026/07/29 23:58:07 Caller: Seize heures.
+juil. 29 23:58:07 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:07.249Z] 2026/07/29 23:58:07 ElevenLabs raw message: {"audio_event":{"audio_base_64":"///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////...
+juil. 29 23:58:07 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:07.473Z] 2026/07/29 23:58:07 ElevenLabs raw message: {"audio_event":{"audio_base_64":"Ozw6Oj08PkJEQ0lKSk5PTVVZV1peX2N8c33i2tzZ09XS0dPPzc/Oy8rJycfGxMPEwsHCw8LCwsLCwsHCw8PExcfKy8zO09TY2+Lt7/5xZWJeW1dVVVJPTExLSklHSUVISUJESklDRkVFRkVFS01IS05OTE9PWF1TWWBdWWB...
+juil. 29 23:58:07 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:07.627Z] 2026/07/29 23:58:07 ElevenLabs raw message: {"ping_event":{"event_id":27,"ping_ms":151},"type":"ping"}
+juil. 29 23:58:07 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:07.719Z] 2026/07/29 23:58:07 ElevenLabs raw message: {"audio_event":{"audio_base_64":"r7m2vLfItNG+u9y4zdG/cb9s7ss5vTBUTS1DLi8sJyQmIjAnJTEoOEQ450htuOrAv1/Cy+nAXeTQerzCyLa6r6ivqKmvpa+vrruxubq7w7zDysfN/r5N9PwxXzUxKiokIRwbGCQrGT4eLb03r+depb+0rz/OcEjeMjVOO8f...
+juil. 29 23:58:07 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:07.749Z] 2026/07/29 23:58:07 ElevenLabs raw message: {"ping_event":{"event_id":27,"ping_ms":151},"type":"ping"}
+juil. 29 23:58:08 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:08.271Z] 2026/07/29 23:58:08 ElevenLabs raw message: {"audio_event":{"audio_base_64":"TUUtIhgQDAkICxQmsKaZor1gHykfNHXdq7+ptaqlqqC6tTwrJx0rKnKwppudnKOstbqrpJuYl5qgrL3ZfPdtUDMnGxUPCwkJDxk7t6igvMQ0Mzo/vdq+ZtvGuqOinqm7TSonIisyRs+6q6ihoqSqrKuon52am52jq7bI1HF...
+juil. 29 23:58:08 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:08.290Z] 2026/07/29 23:58:08 Sent 1400 RTP packets to 192.168.11.90:10010
+juil. 29 23:58:08 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:08.430Z] 2026/07/29 23:58:08 ElevenLabs raw message: {"audio_event":{"audio_base_64":"w9a+1WJqbc7H27yxuLG0t7TLXU00KSEjHxgfHB0mHjROPsWxraSmqZ2jrae0r7lP0NFSTVXlxtjMsLSzsrSxwPVMOCsfISIXHR4cKB8v5EzCrKiin6idnrKouLy+O01dPjxJZMvEyKyrraqtr7d8QjMlHR0eFRscGygiOL/...
+juil. 29 23:58:08 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:08.536Z] 2026/07/29 23:58:08 ElevenLabs raw message: {"audio_event":{"audio_base_64":"LsSjmmueqbqeLzYcL18PHyA+Rias1KObqqKqmqfwtM3E3+290aiiq6Cemp2mn6utu09MMjErISMdGxsXFxQQGck/J/ivlq6poUaevi8gGMwdGyYgxVeuscaanaCwuKjIvM85fcutsbihoJubn56kpKq+1k5EQDUwLSckHRs...
+juil. 29 23:58:08 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:08.937Z] 2026/07/29 23:58:08 ElevenLabs raw message: {"audio_event":{"audio_base_64":"qrjUv6yppqGcnJ2jsrvFxVU5Kx4ZGBQPDg8Twp68q3Crs80vEyIfPzs1T7CWnqC3ycB9NRwhL0ywr6admJihqMC4rq+sp5+dnKKrr7i/7DYtJh0YFRANDg8dqbm2sqyjtMcbHSYoLCQuZp6coqWpqK9xIhwoLTxqvqWXlJy...
+juil. 29 23:58:08 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:08.938Z] 2026/07/29 23:58:08 ElevenLabs raw message: {"agent_response_event":{"agent_response":"Parfait. Donc, je note un rendez-vous pour jeudi à seize heures. Nous vous enverrons une confirmation par e-mail.\n","event_id":254,"response_id":"f464c9cd-...
+juil. 29 23:58:08 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:08.938Z] 2026/07/29 23:58:08 AI: Parfait. Donc, je note un rendez-vous pour jeudi à seize heures. Nous vous enverrons une confirmation par e-mail.
+juil. 29 23:58:08 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:08.939Z] 2026/07/29 23:58:08 ElevenLabs raw message: {"agent_tool_response":{"tool_name":"transfer_to_agent","tool_call_id":"tlcal_7201kyr50vepecbsgk1rtsz8fgad","tool_type":"system","is_error":false,"is_blocked":false,"event_id":254,"is_called":true},"t...
+juil. 29 23:58:08 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:08.940Z] 2026/07/29 23:58:08 ElevenLabs event: agent_tool_response
+juil. 29 23:58:08 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:08.940Z] 2026/07/29 23:58:08 ElevenLabs raw message: {"agent_tool_response":{"tool_name":"notify_condition_1_met","tool_call_id":"notify_condition_1_met_ba2753d028a74ebaa8ea513d5765fe47","tool_type":"workflow","is_error":false,"is_blocked":false,"event_...
+juil. 29 23:58:08 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:08.940Z] 2026/07/29 23:58:08 ElevenLabs event: agent_tool_response
+juil. 29 23:58:09 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:09.066Z] 2026/07/29 23:58:09 RTP packet #2200 received from 192.168.11.90:10010, size=172 bytes
+juil. 29 23:58:09 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:09.329Z] 2026/07/29 23:58:09 ElevenLabs raw message: {"ping_event":{"event_id":28,"ping_ms":150},"type":"ping"}
+juil. 29 23:58:09 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:09.385Z] 2026/07/29 23:58:09 ElevenLabs raw message: {"agent_tool_response":{"tool_name":"transfer_to_agent","tool_call_id":"tlcal_3501kyr50vwxf52b8gpm0m17zek1","tool_type":"system","is_error":false,"is_blocked":false,"event_id":254,"is_called":true},"t...
+juil. 29 23:58:09 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:09.386Z] 2026/07/29 23:58:09 ElevenLabs event: agent_tool_response
+juil. 29 23:58:09 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:09.389Z] 2026/07/29 23:58:09 ElevenLabs raw message: {"agent_tool_response":{"tool_name":"notify_condition_1_met","tool_call_id":"notify_condition_1_met_e8d97dac21f54f6ca24cc1b720cbb517","tool_type":"workflow","is_error":false,"is_blocked":false,"event_...
+juil. 29 23:58:09 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:09.389Z] 2026/07/29 23:58:09 ElevenLabs event: agent_tool_response
+juil. 29 23:58:09 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:09.450Z] 2026/07/29 23:58:09 ElevenLabs raw message: {"ping_event":{"event_id":28,"ping_ms":151},"type":"ping"}
+juil. 29 23:58:10 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:10.288Z] 2026/07/29 23:58:10 Sent 1500 RTP packets to 192.168.11.90:10010
+juil. 29 23:58:10 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:10.897Z] 2026/07/29 23:58:10 ElevenLabs raw message: {"audio_event":{"audio_base_64":"///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////...
+juil. 29 23:58:11 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:11.029Z] 2026/07/29 23:58:11 ElevenLabs raw message: {"ping_event":{"event_id":29,"ping_ms":150},"type":"ping"}
+juil. 29 23:58:11 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:11.056Z] 2026/07/29 23:58:11 ElevenLabs raw message: {"audio_event":{"audio_base_64":"4d/f39/f4ODg39/e3dzc3d7f4OHh4eLi5Ofr7u/w8fL09vj6/X13dXNxcXBxcG9ta2loaGlqa2xtbGxqaWdoaWxvcXNxcG5tbG1ucHN2eXt8fX1+/vz6+PX08vHx8fDv7u3s6+rq6urr6+zs7Ovr6+vq6uvs7e7v8PDw8fH...
+juil. 29 23:58:11 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:11.065Z] 2026/07/29 23:58:11 RTP packet #2300 received from 192.168.11.90:10010, size=172 bytes
+juil. 29 23:58:11 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:11.150Z] 2026/07/29 23:58:11 ElevenLabs raw message: {"ping_event":{"event_id":29,"ping_ms":151},"type":"ping"}
+juil. 29 23:58:11 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:11.252Z] 2026/07/29 23:58:11 ElevenLabs raw message: {"audio_event":{"audio_base_64":"v7y6uLa0tLSztLW1tre4ubu+wcbM0+JtWE1HQT06NzUzMS8uLSwsLC0uMTY8QkxYbeXWz8zKxcG9u7m4trW0s7S1tre3uLm7vL6/w8nP3PNjU0tEPjw6NzUyMC8uLSwsLC0vMzg9RU9k69vUz8rFwL68ure0srGxsrKys7S...
+juil. 29 23:58:11 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:11.397Z] 2026/07/29 23:58:11 ElevenLabs raw message: {"audio_event":{"audio_base_64":"xry1sbCyucLaV0AzLCQeGhcVFRccIi1B2rqwrKqqqqmpp6anqKyvt7/H0djNxLy3tLK1uL3H21Y+MyskHhsaGxwfJSw3StnAure5urq6t7W0tLa3ubm4uLe2tbKxsLGxsrW6vsrdZ0s9MiokISEhIyQmKi42PktYaf3h2NL...
+juil. 29 23:58:11 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:11.650Z] 2026/07/29 23:58:11 ElevenLabs raw message: {"audio_event":{"audio_base_64":"t6/MV0Y9WsPZRVvKua6rsbCnpaqssrWuq7O+uby6u8jt9cvPX09IQT08LicnIxwYFRMeHx0dIi5Yqq+0qZ6dnqS9wrS5QjMsKkf3Pjbet6eeoKagmpyfpaytqK3Ax8jNzctXSV5uRkRBNS8oJB0YEg4NGR4YHR48yZygsJy...
+juil. 29 23:58:11 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:11.776Z] 2026/07/29 23:58:11 ElevenLabs raw message: {"audio_event":{"audio_base_64":"p6OioaKlqK2ytrWwrq2rqqiloqCen6KmqK23vuk+LSEZExIREA8PFBUWHSg6abuqqKain6CipKitsru9ubWwrqyqqKWioJ6eoKSorre+dzoqIBkREhIQDxAWFhcfLD5Wu6urqKOgoaSlqa6xt7u2sq6urKmnpKCfnp6fpKm...
+juil. 29 23:58:12 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:12.289Z] 2026/07/29 23:58:12 Sent 1600 RTP packets to 192.168.11.90:10010
+juil. 29 23:58:12 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:12.471Z] 2026/07/29 23:58:12 ElevenLabs raw message: {"audio_event":{"audio_base_64":"DggVqUuuo5mOjpslyTAhFwsLHcQ/xqucj42iyLTQWzAfJbamqZ6alJCWpqqovVEvJCk2JhocGxcPDAssrkO8rZuRkK1Kr+4tGg4PICsdJ8mklpiinpacr9485LdjPMKknJieopuapsdONjYrGhIWGBINDAshrzk/rp2Uj6P...
+juil. 29 23:58:12 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:12.608Z] 2026/07/29 23:58:12 ElevenLabs raw message: {"audio_event":{"audio_base_64":"qrOeqrOnpK2vqrGurr61ysBHSEYsNiQoHSEhGx0cHxwkIyY3L0JOxtzCrryqsbCzra+6q7eur66trqqvqK+tsbCwwLrjy0ZNNzcxKiwkLB4jICAjISYkLiszP0Fj4MvPu7y9t7W2vLS/t7a4uLGwt6+ysrSxwLq4ycjLzfv...
+juil. 29 23:58:12 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:12.609Z] 2026/07/29 23:58:12 ElevenLabs raw message: {"agent_response_event":{"agent_response":"Excellent. Je note donc un rendez-vous pour jeudi à seize heures. Nous vous enverrons une confirmation par e-mail. Y a-t-il autre chose que je puisse faire ...
+juil. 29 23:58:12 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:12.609Z] 2026/07/29 23:58:12 AI: Excellent. Je note donc un rendez-vous pour jeudi à seize heures. Nous vous enverrons une confirmation par e-mail. Y a-t-il autre chose que je puisse faire pour vous aujourd'hui ?
+juil. 29 23:58:12 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:12.730Z] 2026/07/29 23:58:12 ElevenLabs raw message: {"ping_event":{"event_id":30,"ping_ms":150},"type":"ping"}
+juil. 29 23:58:12 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:12.852Z] 2026/07/29 23:58:12 ElevenLabs raw message: {"ping_event":{"event_id":30,"ping_ms":151},"type":"ping"}
+juil. 29 23:58:13 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:13.050Z] 2026/07/29 23:58:13 ElevenLabs raw message: {"audio_event":{"audio_base_64":"k5KUl56lscjO/dPIw7i7ub3K1FRCNCgiHBgUEA8QFRopWbWinZubn6KtuMNhbkc+NywqJCMoLEfCq52alpaZnKWstr++wbq5ura8vcbV5FhMPS8pIBsWEg8PExggO8uso6CfpamuurnDxMbsYjwxLiktNUe/rqOenp2go6e...
+juil. 29 23:58:13 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:13.065Z] 2026/07/29 23:58:13 RTP packet #2400 received from 192.168.11.90:10010, size=172 bytes
+juil. 29 23:58:14 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:14.288Z] 2026/07/29 23:58:14 Sent 1700 RTP packets to 192.168.11.90:10010
+juil. 29 23:58:14 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:14.431Z] 2026/07/29 23:58:14 ElevenLabs raw message: {"ping_event":{"event_id":31,"ping_ms":150},"type":"ping"}
+juil. 29 23:58:14 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:14.553Z] 2026/07/29 23:58:14 ElevenLabs raw message: {"ping_event":{"event_id":31,"ping_ms":151},"type":"ping"}
+juil. 29 23:58:15 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:15.065Z] 2026/07/29 23:58:15 RTP packet #2500 received from 192.168.11.90:10010, size=172 bytes
+juil. 29 23:58:16 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:16.138Z] 2026/07/29 23:58:16 ElevenLabs raw message: {"ping_event":{"event_id":32,"ping_ms":150},"type":"ping"}
+juil. 29 23:58:16 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:16.254Z] 2026/07/29 23:58:16 ElevenLabs raw message: {"ping_event":{"event_id":32,"ping_ms":151},"type":"ping"}
+juil. 29 23:58:16 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:16.289Z] 2026/07/29 23:58:16 Sent 1800 RTP packets to 192.168.11.90:10010
+juil. 29 23:58:17 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:17.065Z] 2026/07/29 23:58:17 RTP packet #2600 received from 192.168.11.90:10010, size=172 bytes
+juil. 29 23:58:17 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:17.832Z] 2026/07/29 23:58:17 ElevenLabs raw message: {"ping_event":{"event_id":33,"ping_ms":151},"type":"ping"}
+juil. 29 23:58:17 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:17.956Z] 2026/07/29 23:58:17 ElevenLabs raw message: {"ping_event":{"event_id":33,"ping_ms":151},"type":"ping"}
+juil. 29 23:58:18 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:18.288Z] 2026/07/29 23:58:18 Sent 1900 RTP packets to 192.168.11.90:10010
+juil. 29 23:58:19 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:19.066Z] 2026/07/29 23:58:19 RTP packet #2700 received from 192.168.11.90:10010, size=172 bytes
+juil. 29 23:58:19 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:19.533Z] 2026/07/29 23:58:19 ElevenLabs raw message: {"ping_event":{"event_id":34,"ping_ms":150},"type":"ping"}
+juil. 29 23:58:19 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:19.657Z] 2026/07/29 23:58:19 ElevenLabs raw message: {"ping_event":{"event_id":34,"ping_ms":151},"type":"ping"}
+juil. 29 23:58:20 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:20.290Z] 2026/07/29 23:58:20 Sent 2000 RTP packets to 192.168.11.90:10010
+juil. 29 23:58:21 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:21.065Z] 2026/07/29 23:58:21 RTP packet #2800 received from 192.168.11.90:10010, size=172 bytes
+juil. 29 23:58:21 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:21.234Z] 2026/07/29 23:58:21 ElevenLabs raw message: {"ping_event":{"event_id":35,"ping_ms":150},"type":"ping"}
+juil. 29 23:58:21 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:21.357Z] 2026/07/29 23:58:21 ElevenLabs raw message: {"ping_event":{"event_id":35,"ping_ms":151},"type":"ping"}
+juil. 29 23:58:22 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:22.935Z] 2026/07/29 23:58:22 ElevenLabs raw message: {"ping_event":{"event_id":36,"ping_ms":150},"type":"ping"}
+juil. 29 23:58:23 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:23.058Z] 2026/07/29 23:58:23 ElevenLabs raw message: {"ping_event":{"event_id":36,"ping_ms":151},"type":"ping"}
+juil. 29 23:58:23 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:23.067Z] 2026/07/29 23:58:23 RTP packet #2900 received from 192.168.11.90:10010, size=172 bytes
+juil. 29 23:58:24 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:24.105Z] 2026/07/29 23:58:24 ElevenLabs raw message: {"user_transcription_event":{"user_transcript":"Non, non, merci.","event_id":362},"type":"user_transcript"}
+juil. 29 23:58:24 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:24.106Z] 2026/07/29 23:58:24 Caller: Non, non, merci.
+juil. 29 23:58:24 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:24.109Z] 2026/07/29 23:58:24 ElevenLabs raw message: {"audio_event":{"audio_base_64":"///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////...
+juil. 29 23:58:24 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:24.256Z] 2026/07/29 23:58:24 ElevenLabs raw message: {"audio_event":{"audio_base_64":"LCwtLC4uOEE5QWPpTkzqZFZLTEtJRj1LWFVa4MnOyMTBv8LFyMXJz8rFw8C7uLazsrGwsbS1trq8vb6/wcDAv8DDxMXIzdLe7HFcUk1MSEVEQ0I/Pj08Ojg2NDMyMTAwMTE0OTw8Q05QUlxmYF9dWFVWUk9WXmJv5NjQy8b...
+juil. 29 23:58:24 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:24.526Z] 2026/07/29 23:58:24 ElevenLabs raw message: {"audio_event":{"audio_base_64":"8O3a913ZYOvb3V138NJbUObb3mnxYvlP7fzWXFvr+Xde+F958HVbdFzyXnRbam5aYF/g/2vkW010Xlpg/HpmWF9hZF9XbVt2cFBzYVVg/G5XXH5lXVZcW1B0aGdoXFldYmtSXVRkZU9laVxPeFtdXGZkVG5WVFRW+WRdVlp...
+juil. 29 23:58:24 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:24.594Z] 2026/07/29 23:58:24 ElevenLabs raw message: {"audio_event":{"audio_base_64":"6+vq6enp6enq6urq6uvr6urp6eno6Ono6Onp6enp6Ono6erp6+rr6+7u7u/v7+3t6unn5eTi4uDi5OLl5Ofn6+Xp8+rs7f7m3uXf2Nvl2+J+bWtjV1RcanXj0srIxsC7vLzWz7lQPk5GLis4KR8uUC0vyrnRvKmlrrussN3...
+juil. 29 23:58:24 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:24.635Z] 2026/07/29 23:58:24 ElevenLabs raw message: {"ping_event":{"event_id":37,"ping_ms":150},"type":"ping"}
+juil. 29 23:58:24 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:24.758Z] 2026/07/29 23:58:24 ElevenLabs raw message: {"ping_event":{"event_id":37,"ping_ms":151},"type":"ping"}
+juil. 29 23:58:25 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:25.008Z] 2026/07/29 23:58:25 ElevenLabs raw message: {"audio_event":{"audio_base_64":"///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////...
+juil. 29 23:58:25 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:25.009Z] 2026/07/29 23:58:25 ElevenLabs audio chunk #50 received (7856 bytes)
+juil. 29 23:58:25 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:25.009Z] 2026/07/29 23:58:25 ElevenLabs raw message: {"agent_response_event":{"agent_response":"[heureux] Parfait. Merci beaucoup et à jeudi ! Au revoir.","event_id":362,"response_id":"11327a7d-0cb8-43a7-ac43-66d9bcc02972","in_response_to_ids":["b4a9d9...
+juil. 29 23:58:25 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:25.009Z] 2026/07/29 23:58:25 AI: [heureux] Parfait. Merci beaucoup et à jeudi ! Au revoir.
+juil. 29 23:58:25 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:25.066Z] 2026/07/29 23:58:25 RTP packet #3000 received from 192.168.11.90:10010, size=172 bytes
+juil. 29 23:58:25 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:25.289Z] 2026/07/29 23:58:25 Sent 2100 RTP packets to 192.168.11.90:10010
+juil. 29 23:58:26 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:26.336Z] 2026/07/29 23:58:26 ElevenLabs raw message: {"ping_event":{"event_id":38,"ping_ms":150},"type":"ping"}
+juil. 29 23:58:26 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:26.459Z] 2026/07/29 23:58:26 ElevenLabs raw message: {"ping_event":{"event_id":38,"ping_ms":151},"type":"ping"}
+juil. 29 23:58:26 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:26.592Z] 2026/07/29 23:58:26 BYE received for call: c2216340-5297-449c-aa03-b2cffba39cf0
+juil. 29 23:58:26 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:26.597Z] 2026/07/29 23:58:26 Call ended (BYE received): c2216340-5297-449c-aa03-b2cffba39cf0
+juil. 29 23:58:26 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:26.610Z] 2026/07/29 23:58:26 RTP to ElevenLabs bridge stopping...
+juil. 29 23:58:27 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:27.290Z] 2026/07/29 23:58:27 Sent 2200 RTP packets to 192.168.11.90:10010
+juil. 29 23:58:28 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:28.038Z] 2026/07/29 23:58:28 ElevenLabs raw message: {"ping_event":{"event_id":39,"ping_ms":151},"type":"ping"}
+juil. 29 23:58:28 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:28.160Z] 2026/07/29 23:58:28 ElevenLabs raw message: {"ping_event":{"event_id":39,"ping_ms":151},"type":"ping"}
+juil. 29 23:58:28 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:28.160Z] 2026/07/29 23:58:28 ElevenLabs to RTP bridge stopping...
+juil. 29 23:58:28 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:28.161Z] 2026/07/29 23:58:28 Unregistered bridge for call: c2216340-5297-449c-aa03-b2cffba39cf0
+juil. 29 23:58:28 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:28.360Z] 2026/07/29 23:58:28 ElevenLabs raw message: {"agent_tool_response":{"tool_name":"end_call","tool_call_id":"end_call_c412868862af4ea6a4768ccbdff60b07","tool_type":"system","is_error":false,"is_blocked":false,"event_id":362,"is_called":true},"typ...
+juil. 29 23:58:28 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:28.360Z] 2026/07/29 23:58:28 ElevenLabs event: agent_tool_response
+juil. 29 23:58:28 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:28.364Z] 2026/07/29 23:58:28 ElevenLabs WebSocket closed normally
+juil. 29 23:58:28 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:28.407Z] 2026/07/29 23:58:28 RTP to ElevenLabs bridge stopping...
+juil. 29 23:58:28 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:28.408Z] 2026/07/29 23:58:28 Unregistered bridge for call: c2216340-5297-449c-aa03-b2cffba39cf0
+juil. 29 23:58:34 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:34.057Z] 2026/07/29 23:58:34 Loaded config with 0 functions
+juil. 29 23:58:34 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:34.058Z] 2026/07/29 23:58:34 Starting HTTP API server on :19000
+juil. 29 23:58:34 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:34.059Z] 2026/07/29 23:58:34 Starting SIP client with configuration:
+juil. 29 23:58:34 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:34.059Z] 2026/07/29 23:58:34 Username: 1005, Domain: 192.168.11.90, Server: 192.168.11.90:5060, Transport: udp
+juil. 29 23:58:34 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:34.059Z] 2026/07/29 23:58:34 Auth ID: TjoCu4uhmD (using separate authorization ID)
+juil. 29 23:58:34 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:34.059Z] 2026/07/29 23:58:34 No OPENAI_API_KEY set - calls will use fallback audio handling
+juil. 29 23:58:34 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:34.060Z] 2026/07/29 23:58:34 DEBUG: Determined outbound IP as 192.168.11.101
+juil. 29 23:58:34 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:34.060Z] 2026/07/29 23:58:34 Local IP determined as: 192.168.11.101
+juil. 29 23:58:34 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:34.164Z] 2026/07/29 23:58:34 DEBUG: Retrieved external IP as 105.188.3.70
+juil. 29 23:58:34 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:34.166Z] 2026/07/29 23:58:34 External IP determined as: 105.188.3.70
+juil. 29 23:58:34 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:34.166Z] 2026/07/29 23:58:34 Sending REGISTER request via sipgo client.
+juil. 29 23:58:34 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:34.169Z] 2026/07/29 23:58:34 Auth: digestUsername=TjoCu4uhmD, realm=YSAsterisk, uri=sip:192.168.11.90, password=EmkWA6lT7y
+juil. 29 23:58:34 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:34.169Z] 2026/07/29 23:58:34 Resending REGISTER with Authorization header (CSeq=2).
+juil. 29 23:58:34 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:34.170Z] 2026/07/29 23:58:34 Authorization: Digest username="TjoCu4uhmD", realm="YSAsterisk", nonce="1785369514/61677250a2f6ebde74d708bbbba7baa7", uri="sip:192.168.11.90", response="0dcd0918256ac979ae3a5c39b4ad10b6", algorithm=MD5
+juil. 29 23:58:34 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:34.173Z] 2026/07/29 23:58:34 Received REGISTER response: SIP/2.0 200 OK
+juil. 29 23:58:34 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:34.174Z] Via: SIP/2.0/UDP 192.168.11.101:57662;rport=57662;received=192.168.11.101;branch=z9hG4bK.Ncfl0fkjJZ01Zxn5
+juil. 29 23:58:34 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:34.174Z] Call-ID: KOtELb6zhXLaINgO
+juil. 29 23:58:34 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:34.175Z] From: <sip:1005@192.168.11.90>;tag=D9hwemMo
+juil. 29 23:58:34 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:34.175Z] To: <sip:1005@192.168.11.90>;tag=z9hG4bK.Ncfl0fkjJZ01Zxn5
+juil. 29 23:58:34 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:34.175Z] CSeq: 2 REGISTER
+juil. 29 23:58:34 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:34.175Z] Date: Wed, 29 Jul 2026 23:58:34 GMT
+juil. 29 23:58:34 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:34.175Z] Contact: <sip:1005@192.168.11.101:57662>;expires=630
+juil. 29 23:58:34 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:34.175Z] Expires: 645
+juil. 29 23:58:34 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:34.175Z] Server: Yeastar PSE
+juil. 29 23:58:34 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:34.175Z] Content-Length: 0
+juil. 29 23:58:34 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:34.175Z] 2026/07/29 23:58:34 Registration successful!
+juil. 29 23:58:34 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:34.175Z] 2026/07/29 23:58:34 Initial REGISTER request sent.
+juil. 29 23:58:34 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:34.179Z] 2026/07/29 23:58:34 SIP server is now listening for incoming messages.
+juil. 29 23:58:34 test sip-agent[5735]: [ext:1] [2026-07-29T23:58:34.192Z] 2026/07/29 23:58:34 WARN SIP request handler not found caller=Server method=NOTIFY

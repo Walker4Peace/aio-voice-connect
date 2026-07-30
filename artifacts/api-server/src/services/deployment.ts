@@ -460,23 +460,29 @@ async function buildConfig(
     }
     case "elevenlabs": {
       const firstMsg = overrides?.firstMessage ?? cfg.greeting;
-      const sysPrompt = overrides?.systemPromptOverride ?? cfg.systemPrompt;
+      const rawSysPrompt = overrides?.systemPromptOverride ?? cfg.systemPrompt;
       // KEY BEHAVIOUR (confirmed from binary logs):
       //   • first_message PRESENT in config.json → binary uses it directly and
       //     SKIPS context_webhook_url entirely. The greeting plays immediately
       //     after the SIP INVITE (i.e. into ringback, before the customer answers).
-      //   • first_message ABSENT in config.json → binary calls context_webhook_url,
-      //     which lets the Node.js side delay the response until the customer answers.
+      //   • first_message ABSENT in config.json → binary also skips context_webhook_url
+      //     (confirmed: the binary never calls the webhook regardless of first_message).
       //
-      // Therefore for OUTBOUND calls (overrides provided) we deliberately omit
-      // first_message so the binary calls the webhook.  The context endpoint serves
-      // the greeting only after waitForCallAnswered() resolves, and implements
-      // first-one-wins deduplication so only session 1 gets the greeting (session 2
-      // gets null → starts in listen mode, provided the ElevenLabs agent's own
-      // "First Message" field is cleared in the dashboard).
-      //
-      // For INBOUND calls (no overrides) first_message is included as normal so
-      // the binary greets callers immediately on answer.
+      // For OUTBOUND calls (overrides provided) the AI starts speaking before the
+      // customer picks up.  When the customer answers they naturally say "Allô ?" or
+      // "Oui ?" (standard French/Moroccan phone pickup), which ElevenLabs treats as a
+      // barge-in interruption and triggers a re-introduction — doubling token cost.
+      // We append a hint to the system prompt so the AI recognises these pickup phrases
+      // and continues the conversation without re-introducing itself.
+      const OUTBOUND_PICKUP_HINT =
+        "\n\nIMPORTANT — comportement au décrochage : si la personne dit 'Allô', " +
+        "'Allô ?', 'Oui', 'Oui allô', 'Oui ?' ou toute autre salutation de " +
+        "décrochage après ton introduction, c'est qu'elle vient simplement de " +
+        "décrocher le téléphone. Ne te présente PAS à nouveau. Reprends la " +
+        "conversation naturellement depuis là où elle en est.";
+      const sysPrompt = overrides
+        ? (rawSysPrompt ? rawSysPrompt + OUTBOUND_PICKUP_HINT : OUTBOUND_PICKUP_HINT)
+        : rawSysPrompt;
       base["elevenlabs"] = {
         agent_id: cfg.modelId ?? "",
         ...(firstMsg ? { first_message: firstMsg } : {}),
