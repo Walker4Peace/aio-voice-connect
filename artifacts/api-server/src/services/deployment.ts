@@ -206,14 +206,32 @@ function parseAndStoreCallEvents(extensionId: number, line: string, timestamp: s
       pushEvent({ extensionId, callId, event: "invite", timestamp });
       void (async () => {
         try {
-          await db
+          const updated = await db
             .update(outboundCallsTable)
             .set({ callId, status: "active", updatedAt: new Date() })
             .where(and(
               eq(outboundCallsTable.extensionId, extensionId),
               inArray(outboundCallsTable.status, ["pending", "dialing"]),
-            ));
-          logger.info({ extensionId, callId }, "Outbound bridge registered — callId linked, status → active");
+            ))
+            .returning({ callId: outboundCallsTable.callId });
+
+          if (updated.length > 0) {
+            // Backfill any pre-bridge events (connected_ai fired before bridge
+            // was registered, so their callId was "unknown").  Stamp the real callId.
+            for (const ev of persistedCallEvents) {
+              if (ev.extensionId === extensionId && ev.callId === "unknown") {
+                ev.callId = callId;
+              }
+            }
+            await db
+              .update(callEventsTable)
+              .set({ callId })
+              .where(and(
+                eq(callEventsTable.extensionId, extensionId),
+                eq(callEventsTable.callId, "unknown"),
+              ));
+            logger.info({ extensionId, callId }, "Outbound bridge registered — callId linked, pre-bridge events backfilled");
+          }
         } catch (err) {
           logger.error({ err, extensionId }, "Failed to link outbound bridge callId");
         }

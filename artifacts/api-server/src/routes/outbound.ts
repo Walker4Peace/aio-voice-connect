@@ -223,6 +223,13 @@ router.get("/outbound/calls/:id", async (req, res) => {
   res.json(call);
 });
 
+// ── Delete ALL outbound call records ─────────────────────────────────────────
+
+router.delete("/outbound/calls", async (req, res) => {
+  await db.delete(outboundCallsTable);
+  res.json({ success: true });
+});
+
 // ── Delete an outbound call record ───────────────────────────────────────────
 
 router.delete("/outbound/calls/:id", async (req, res) => {

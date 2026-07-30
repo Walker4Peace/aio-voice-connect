@@ -117,7 +117,7 @@ export default function AgentConfigsList() {
                   <tr className="text-xs text-muted-foreground bg-muted/30 border-b">
                     <th className="text-left font-medium py-3 px-4">{t("agents.thName")}</th>
                     <th className="text-left font-medium py-3 px-4">{t("agents.thProvider")}</th>
-                    <th className="text-left font-medium py-3 px-4">{t("agents.thAgentId")}</th>
+                    <th className="text-left font-medium py-3 px-4">{t("agents.thCallMode")}</th>
                     <th className="text-left font-medium py-3 px-4">{t("agents.thLanguage")}</th>
                     <th className="text-right font-medium py-3 px-4">{t("agents.thAction")}</th>
                   </tr>
@@ -125,8 +125,6 @@ export default function AgentConfigsList() {
                 <tbody>
                   {(configs ?? []).map((config) => {
                     const initial = config.name.charAt(0).toUpperCase();
-                    const agentId = config.modelId || config.voiceId || "";
-                    const agentIdShort = agentId.length > 20 ? agentId.slice(0, 20) + "…" : agentId;
 
                     return (
                       <tr key={config.id} className="border-b last:border-0 hover:bg-muted/20 transition-colors">
@@ -142,13 +140,12 @@ export default function AgentConfigsList() {
                           <ProviderBadge provider={config.provider} />
                         </td>
                         <td className="py-3.5 px-4">
-                          {agentId ? (
-                            <div className="flex items-center gap-1.5">
-                              <span className="font-mono text-xs text-foreground">{agentIdShort}</span>
-                              <CopyButton value={agentId} />
-                            </div>
+                          {config.mode === "inbound" ? (
+                            <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">{t("agents.modeInbound")}</span>
+                          ) : config.mode === "outbound" ? (
+                            <span className="inline-flex items-center rounded-full bg-orange-100 px-2 py-0.5 text-xs font-medium text-orange-700">{t("agents.modeOutbound")}</span>
                           ) : (
-                            <span className="text-muted-foreground italic text-xs">{t("agents.defaults")}</span>
+                            <span className="text-muted-foreground italic text-xs">{t("agents.modeNotSet")}</span>
                           )}
                         </td>
                         <td className="py-3.5 px-4 text-sm text-muted-foreground">

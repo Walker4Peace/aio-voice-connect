@@ -21,7 +21,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { PhoneOutgoing, RefreshCw, Info, Trash2 } from "lucide-react";
+import { PhoneOutgoing, RefreshCw, Info, Trash2, Eraser } from "lucide-react";
 import { useTimezone } from "@/contexts/timezone-context";
 
 const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, "") + "/api";
@@ -58,6 +58,11 @@ async function fetchOutboundCalls(): Promise<OutboundCall[]> {
   const r = await fetch(`${API_BASE}/outbound/calls`);
   if (!r.ok) throw new Error("Failed to fetch outbound calls");
   return r.json() as Promise<OutboundCall[]>;
+}
+
+async function clearAllOutboundCalls(): Promise<void> {
+  const r = await fetch(`${API_BASE}/outbound/calls`, { method: "DELETE" });
+  if (!r.ok) throw new Error("Failed to clear outbound calls");
 }
 
 async function fetchExtensions(): Promise<Extension[]> {
@@ -361,6 +366,9 @@ export default function OutboundPage() {
   const queryClient = useQueryClient();
   const [triggerOpen, setTriggerOpen] = React.useState(false);
   const [deleteTargetId, setDeleteTargetId] = React.useState<number | null>(null);
+  const [clearConfirmOpen, setClearConfirmOpen] = React.useState(false);
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const PAGE_SIZE = 20;
 
   const { data: calls = [], isLoading, refetch } = useQuery({
     queryKey: ["outbound-calls"],
@@ -386,10 +394,27 @@ export default function OutboundPage() {
     },
   });
 
+  const clearAllMutation = useMutation({
+    mutationFn: clearAllOutboundCalls,
+    onSuccess: () => {
+      toast({ title: t("outbound.allCleared") });
+      setClearConfirmOpen(false);
+      setCurrentPage(1);
+      void queryClient.invalidateQueries({ queryKey: ["outbound-calls"] });
+    },
+    onError: (err: Error) => {
+      toast({ variant: "destructive", title: t("outbound.clearFailed"), description: err.message });
+      setClearConfirmOpen(false);
+    },
+  });
+
   const extensionMap = React.useMemo(
     () => Object.fromEntries(extensions.map(e => [e.id, e])),
     [extensions]
   );
+
+  const totalPages = Math.max(1, Math.ceil(calls.length / PAGE_SIZE));
+  const pagedCalls = calls.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -405,6 +430,12 @@ export default function OutboundPage() {
             <RefreshCw className="h-4 w-4 mr-1" />
             {t("outbound.refresh")}
           </Button>
+          {calls.length > 0 && (
+            <Button variant="outline" size="sm" className="text-destructive border-destructive/30 hover:bg-destructive hover:text-destructive-foreground" onClick={() => setClearConfirmOpen(true)}>
+              <Eraser className="h-4 w-4 mr-1" />
+              {t("outbound.clearAll")}
+            </Button>
+          )}
           <Button size="sm" onClick={() => setTriggerOpen(true)}>
             <PhoneOutgoing className="h-4 w-4 mr-1" />
             {t("outbound.triggerCall")}
@@ -447,6 +478,7 @@ export default function OutboundPage() {
               {t("outbound.noCalls")}
             </div>
           ) : (
+            <>
             <Table>
               <TableHeader>
                 <TableRow>
@@ -459,7 +491,7 @@ export default function OutboundPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {calls.map(call => {
+                {pagedCalls.map(call => {
                   const ext = call.extensionId ? extensionMap[call.extensionId] : null;
                   return (
                     <TableRow key={call.id}>
@@ -501,9 +533,50 @@ export default function OutboundPage() {
                 })}
               </TableBody>
             </Table>
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-1 py-3 border-t">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`h-8 w-8 rounded text-sm font-medium transition-colors ${
+                      page === currentPage
+                        ? "bg-primary text-primary-foreground"
+                        : "hover:bg-muted text-muted-foreground"
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+              </div>
+            )}
+            </>
           )}
         </CardContent>
       </Card>
+
+      {/* Clear All confirm */}
+      <AlertDialog open={clearConfirmOpen} onOpenChange={setClearConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("outbound.clearTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("outbound.clearDesc", { count: String(calls.length) })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => clearAllMutation.mutate()}
+              disabled={clearAllMutation.isPending}
+            >
+              {t("outbound.clearAll")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <TriggerDialog
         open={triggerOpen}
