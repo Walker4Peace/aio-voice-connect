@@ -183,7 +183,7 @@ export default function ClientsList() {
               <DialogTitle>{t("clients.dialogTitle")}</DialogTitle>
               <DialogDescription>{t("clients.dialogDescription")}</DialogDescription>
             </DialogHeader>
-            <div className="overflow-y-auto flex-1 px-1">
+            <div className="overflow-y-auto flex-1 pl-1 pr-4">
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                   <FormField control={form.control} name="name" render={({ field }) => (

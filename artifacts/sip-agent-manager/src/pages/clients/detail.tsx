@@ -468,8 +468,7 @@ export default function ClientDetail() {
                 return (
                   <div
                     key={ext.id}
-                    className="flex items-center gap-4 rounded-xl border bg-card p-4 hover:bg-muted/20 cursor-pointer transition-colors"
-                    onClick={() => toggleExt(ext.id)}
+                    className="flex items-center gap-4 rounded-xl border bg-card p-4"
                   >
                     <Checkbox
                       checked={isSelected}
