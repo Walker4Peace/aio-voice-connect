@@ -52,9 +52,10 @@ step "Applying database schema"
 
 sudo -u "${APP_USER}" bash -c "
   set -e
+  set -a && source '${INSTALL_DIR}/.env' && set +a
   cd '${INSTALL_DIR}/lib/db'
   pnpm run push 2>&1
-" || die "Database schema push failed. Check DATABASE_URL is set correctly."
+" || die "Database schema push failed. Check ${INSTALL_DIR}/.env exists and contains DATABASE_URL."
 success "Database schema up to date"
 
 # ── Step 4: Build ─────────────────────────────────────────────────────────────
