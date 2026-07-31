@@ -44,6 +44,9 @@ const manuallyStopped = new Set<number>();
 // Extensions currently running in outbound-call mode (binary places call itself).
 // On exit they are automatically restarted with the normal inbound config.
 const outboundCallModes = new Set<number>();
+// Buffer for connected_ai events that fired before the bridge callId was known.
+// Drained (with the real callId) when "Registered bridge for call:" is detected.
+const pendingConnectedAi = new Map<number, Array<{ timestamp: string; detail: string }>>();
 // Active interval timers pinging the Yeastar server
 const watchdogTimers = new Map<number, ReturnType<typeof setInterval>>();
 const WATCHDOG_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
@@ -205,14 +208,13 @@ function parseAndStoreCallEvents(extensionId: number, line: string, timestamp: s
     if (!alreadyInvited) {
       pushEvent({ extensionId, callId, event: "invite", timestamp });
 
-      // Always backfill in-memory events that fired before the bridge was
-      // registered (e.g. connected_ai whose callId was still "unknown").
-      // This is unconditional so it works even if the DB outbound-call record
-      // was already past "dialing" status (race) or doesn't exist.
-      for (const ev of persistedCallEvents) {
-        if (ev.extensionId === extensionId && ev.callId === "unknown") {
-          ev.callId = callId;
-        }
+      // Drain any buffered connected_ai events that fired before the bridge
+      // callId was known (outbound flow). Push them now with the real callId
+      // so they are written to DB with the correct key — no race condition.
+      const buffered = pendingConnectedAi.get(extensionId) ?? [];
+      pendingConnectedAi.delete(extensionId);
+      for (const ev of buffered) {
+        pushEvent({ extensionId, callId, event: "connected_ai", timestamp: ev.timestamp, detail: ev.detail });
       }
 
       void (async () => {
@@ -391,7 +393,18 @@ function parseAndStoreCallEvents(extensionId: number, line: string, timestamp: s
     const cleaned = body.replace(/^\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2} /, "");
     const agentName = extensionAgentNames.get(extensionId);
     const detail = agentName ? `${cleaned} - ${agentName}` : cleaned;
-    pushEvent({ extensionId, callId: prevInvite?.callId ?? "unknown", event: "connected_ai", timestamp, detail });
+
+    if (prevInvite) {
+      // Inbound: callId is already known — push immediately.
+      pushEvent({ extensionId, callId: prevInvite.callId, event: "connected_ai", timestamp, detail });
+    } else {
+      // Outbound: bridge hasn't fired yet so the callId is unknown.
+      // Buffer the event; it will be pushed with the real callId once
+      // "Registered bridge for call:" is detected (a few ms later).
+      const buf = pendingConnectedAi.get(extensionId) ?? [];
+      buf.push({ timestamp, detail });
+      pendingConnectedAi.set(extensionId, buf);
+    }
     return;
   }
 
@@ -1225,6 +1238,8 @@ export async function stopExtension(extensionId: number): Promise<void> {
   // Mark as intentionally stopped so watchdog doesn't restart it
   manuallyStopped.add(extensionId);
   cancelWatchdog(extensionId);
+  // Discard any buffered connected_ai events waiting for a bridge callId
+  pendingConnectedAi.delete(extensionId);
   // Close any outstanding calls so they don't ghost as "active" after restart
   closeOutstandingCalls(extensionId);
 
