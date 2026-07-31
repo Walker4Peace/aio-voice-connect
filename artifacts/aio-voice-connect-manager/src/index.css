@@ -224,3 +224,18 @@
     @apply bg-background/80 backdrop-blur-md;
   }
 }
+
+/* Global: all interactive elements show pointer cursor */
+@layer base {
+  button,
+  [role="button"],
+  [type="button"],
+  [type="submit"],
+  [type="reset"],
+  a,
+  label[for],
+  select,
+  summary {
+    cursor: pointer;
+  }
+}
