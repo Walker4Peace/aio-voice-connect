@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useLocation } from "wouter";
 import { useTranslation } from "react-i18next";
-import { Server, Users, Phone, Settings, Menu, Activity, FileTerminal, Bot, PhoneCall, PhoneOutgoing, LogOut } from "lucide-react";
+import { Server, Users, Phone, Settings, Menu, Activity, FileTerminal, Bot, PhoneCall, PhoneOutgoing, LogOut, Code2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/auth-context";
@@ -22,6 +22,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     { name: t("nav.callHistory"), href: "/calls",        icon: PhoneCall },
     { name: t("nav.outbound"),    href: "/outbound",     icon: PhoneOutgoing },
     { name: t("nav.logs"),        href: "/logs",         icon: FileTerminal },
+    { name: t("nav.api"),         href: "/api-docs",     icon: Code2 },
   ];
 
   return (

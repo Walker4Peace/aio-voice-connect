@@ -15,6 +15,7 @@ import ExtensionDetail from '@/pages/extensions/detail';
 import AgentConfigsList from '@/pages/agent-configs/index';
 import AgentConfigForm from '@/pages/agent-configs/form';
 import LogsPage from '@/pages/logs/index';
+import ApiDocsPage from '@/pages/api-docs/index';
 import CallsPage from '@/pages/calls/index';
 import OutboundPage from '@/pages/outbound/index';
 import SetupWizard from '@/pages/setup/index';
@@ -81,6 +82,7 @@ function AppRoutes() {
         <Route path="/calls" component={CallsPage} />
         <Route path="/outbound" component={OutboundPage} />
         <Route path="/logs" component={LogsPage} />
+        <Route path="/api-docs" component={ApiDocsPage} />
         <Route component={NotFound} />
       </Switch>
     </AppLayout>
