@@ -21,6 +21,11 @@ DEPLOY_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BRANCH="${BRANCH:-main}"
 PM2_APP_NAME="${PM2_APP_NAME:-api-server}"
 
+# ── Git safe.directory ────────────────────────────────────────────────────────
+# When run as root (sudo bash update.sh) the deploy dir may be owned by another
+# user, causing git to refuse to operate ("dubious ownership").  Mark it safe.
+git config --global --add safe.directory "$DEPLOY_DIR" 2>/dev/null || true
+
 # ── Load .env if present ──────────────────────────────────────────────────────
 ENV_FILE="$DEPLOY_DIR/.env"
 if [[ -f "$ENV_FILE" ]]; then
