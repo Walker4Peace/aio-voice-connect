@@ -65,22 +65,29 @@ function fmtTs(ts: string | null): string {
 }
 
 // ── Style maps ────────────────────────────────────────────────────────────────
+// Using inline styles (not Tailwind classes) so Tailwind's production purger
+// cannot strip dynamic colors that only appear in JS lookup objects.
 
-const EXT_LEVEL_STYLES: Record<string, string> = {
-  INFO:  "text-white bg-green-600",
-  WARN:  "text-black bg-yellow-400",
-  ERROR: "text-white bg-red-600",
-  DEBUG: "text-white bg-blue-600",
+interface BadgeStyle { bg: string; color: string }
+
+const LEVEL_BADGE: Record<string, BadgeStyle> = {
+  INFO:  { bg: "#16a34a", color: "#fff" },   // green-600
+  WARN:  { bg: "#ca8a04", color: "#fff" },   // yellow-600
+  ERROR: { bg: "#dc2626", color: "#fff" },   // red-600
+  DEBUG: { bg: "#2563eb", color: "#fff" },   // blue-600
 };
 
-const CAT_STYLES: Record<string, string> = {
-  DEPLOYMENT: "text-white  bg-blue-600",
-  WATCHDOG:   "text-black  bg-yellow-400",
-  STARTUP:    "text-white  bg-green-600",
-  YEASTAR:    "text-white  bg-purple-600",
-  HTTP:       "text-white  bg-gray-500",
-  OTHER:      "text-white  bg-gray-600",
+const CAT_BADGE: Record<string, BadgeStyle> = {
+  DEPLOYMENT: { bg: "#2563eb", color: "#fff" },  // blue-600
+  WATCHDOG:   { bg: "#ca8a04", color: "#fff" },  // yellow-600
+  STARTUP:    { bg: "#16a34a", color: "#fff" },  // green-600
+  YEASTAR:    { bg: "#9333ea", color: "#fff" },  // purple-600
+  HTTP:       { bg: "#6b7280", color: "#fff" },  // gray-500
+  OTHER:      { bg: "#4b5563", color: "#fff" },  // gray-600
 };
+
+const LEVEL_DEFAULT: BadgeStyle = { bg: "#16a34a", color: "#fff" };
+const CAT_DEFAULT:   BadgeStyle = { bg: "#4b5563", color: "#fff" };
 
 const EXT_ROW_COLOR: Record<string, string> = {
   ERROR: "text-gray-100",
@@ -193,9 +200,10 @@ function TerminalShell({
           </button>
           <button
             onClick={onLiveToggle}
-            className={`inline-flex items-center gap-1.5 h-7 px-2.5 rounded text-xs font-semibold border transition-colors ${isLive
-              ? "bg-blue-600 hover:bg-blue-500 text-white border-blue-500"
-              : "bg-gray-200 hover:bg-gray-300 text-gray-900 border-gray-300"}`}
+            className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded text-xs font-semibold border transition-colors"
+            style={isLive
+              ? { backgroundColor: "#2563eb", color: "#fff", borderColor: "#3b82f6" }
+              : { backgroundColor: "#e5e7eb", color: "#111827", borderColor: "#d1d5db" }}
           >
             <RefreshCw className={`h-3.5 w-3.5 ${isLive ? "animate-spin" : ""}`} />
             {isLive ? t("logs.live") : t("logs.goLive")}
@@ -204,7 +212,7 @@ function TerminalShell({
       </div>
 
       {/* Log body — height driven by caller via bodyClassName */}
-      <div className={`text-gray-200 overflow-y-auto font-mono text-xs [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-[#0d1117] [&::-webkit-scrollbar-thumb]:bg-gray-600 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-500 ${bodyClassName ?? "h-[calc(100vh-260px)]"}`}>
+      <div className={`text-gray-200 overflow-y-auto font-mono text-xs min-h-[280px] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-[#0d1117] [&::-webkit-scrollbar-thumb]:bg-gray-600 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-500 ${bodyClassName ?? "h-[calc(100vh-260px)]"}`}>
         {isEmpty ? (
           <div className="flex flex-col items-center justify-center h-full gap-2 text-gray-500">
             {isLive
@@ -347,26 +355,32 @@ function ExtensionTab() {
             </tr>
           </thead>
           <tbody>
-            {parsed.map((p, i) => (
-              <tr key={i} className="border-b border-gray-800/30 hover:bg-white/[0.03]">
-                <td className="py-1 px-4 text-green-400/70 whitespace-nowrap">
-                  {p.ts ? (
-                    <span className="flex items-center gap-1.5">
-                      <span className="h-1.5 w-1.5 rounded-full bg-green-400/40 shrink-0" />
-                      {fmtTs(p.ts)}
+            {parsed.map((p, i) => {
+              const badge = LEVEL_BADGE[p.level] ?? LEVEL_DEFAULT;
+              return (
+                <tr key={i} className="hover:bg-white/[0.03]" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                  <td className="py-1 px-4 text-green-400/70 whitespace-nowrap">
+                    {p.ts ? (
+                      <span className="flex items-center gap-1.5">
+                        <span className="h-1.5 w-1.5 rounded-full bg-green-400/40 shrink-0" />
+                        {fmtTs(p.ts)}
+                      </span>
+                    ) : <span className="text-gray-700">—</span>}
+                  </td>
+                  <td className="py-1 px-2">
+                    <span
+                      className="text-[10px] font-bold rounded px-1.5 py-0.5"
+                      style={{ backgroundColor: badge.bg, color: badge.color }}
+                    >
+                      {p.level}
                     </span>
-                  ) : <span className="text-gray-700">—</span>}
-                </td>
-                <td className="py-1 px-2">
-                  <span className={`text-[10px] font-bold rounded px-1.5 py-0.5 ${EXT_LEVEL_STYLES[p.level] ?? EXT_LEVEL_STYLES.INFO}`}>
-                    {p.level}
-                  </span>
-                </td>
-                <td className={`py-1 px-3 break-all ${EXT_ROW_COLOR[p.level] ?? "text-gray-200"}`}>
-                  {p.msg}
-                </td>
-              </tr>
-            ))}
+                  </td>
+                  <td className={`py-1 px-3 break-all ${EXT_ROW_COLOR[p.level] ?? "text-gray-200"}`}>
+                    {p.msg}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
         <div ref={endRef} />
@@ -441,26 +455,32 @@ function SystemTab() {
           </tr>
         </thead>
         <tbody>
-          {visible.map((p, i) => (
-            <tr key={i} className="border-b border-gray-800/30 hover:bg-white/[0.03]">
-              <td className="py-1 px-4 text-green-400/70 whitespace-nowrap">
-                {p.ts ? (
-                  <span className="flex items-center gap-1.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-green-400/40 shrink-0" />
-                    {fmtTs(p.ts)}
+          {visible.map((p, i) => {
+            const badge = CAT_BADGE[p.category] ?? CAT_DEFAULT;
+            return (
+              <tr key={i} className="hover:bg-white/[0.03]" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                <td className="py-1 px-4 text-green-400/70 whitespace-nowrap">
+                  {p.ts ? (
+                    <span className="flex items-center gap-1.5">
+                      <span className="h-1.5 w-1.5 rounded-full bg-green-400/40 shrink-0" />
+                      {fmtTs(p.ts)}
+                    </span>
+                  ) : <span className="text-gray-700">—</span>}
+                </td>
+                <td className="py-1 px-2">
+                  <span
+                    className="text-[10px] font-bold rounded px-1.5 py-0.5"
+                    style={{ backgroundColor: badge.bg, color: badge.color }}
+                  >
+                    {p.category}
                   </span>
-                ) : <span className="text-gray-700">—</span>}
-              </td>
-              <td className="py-1 px-2">
-                <span className={`text-[10px] font-bold rounded px-1.5 py-0.5 ${CAT_STYLES[p.category] ?? CAT_STYLES.OTHER}`}>
-                  {p.category}
-                </span>
-              </td>
-              <td className="py-1 px-3 text-gray-200 break-all">
-                {p.msg}
-              </td>
-            </tr>
-          ))}
+                </td>
+                <td className="py-1 px-3 text-gray-200 break-all">
+                  {p.msg}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
       <div ref={endRef} />
