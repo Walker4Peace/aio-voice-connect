@@ -102,7 +102,9 @@ const triggerSchema = z.object({
 });
 
 router.post("/outbound/call", async (req, res) => {
-  if (!(await checkApiKey(req))) {
+  // Allow logged-in admins (in-app trigger) OR a valid API key (external callers)
+  const hasSession = !!req.session?.adminId;
+  if (!hasSession && !(await checkApiKey(req))) {
     res.status(401).json({ error: "Invalid or missing X-Api-Key header" });
     return;
   }
