@@ -1,13 +1,0 @@
-Hello, i told an agent to fix my call history in this app that i made for integration between Yeastar and AI agent  here is my message « i still have the same problem the call in call history appear just after i stopped the extension sip connexion, the call history should be based on the log of call to determine the end and also the duration of call, check the image screenshot. » and this is a message before this when i was explaining my problem « the second thing is that after i hang up the call history didnt show the call until i stopped the connexion sip of extension 1005. that wrong it should show after the call ended after these line [2026-07-25T21:41:35.163Z] 2026/07/25 21:41:35 BYE received for call: 200fd353-cb89-43aa-94fd-1840ba1683d0 [2026-07-25T21:41:35.164Z] 2026/07/25 21:41:35 No active bridge found for call: 200fd353-cb89-43aa-94fd-1840ba1683d0 i have copy them from logs but you can use what ever fonction im just giving you hint and the call history refrech by button or by reload page. »  here is his tinking before he got blocked « stdbuf doesn't work on Go binaries because Go bypasses libc and uses direct syscalls. Let me probe the sip4ai HTTP API (which is running per extension) and also check what the actual BYE log line format looks like in the live logs.
-
-Let me look at the actual extension log content when running to see the exact BYE format, and also add debug logging to trace exactly what parseAndStoreCallEvents sees:
-
-Found the bug. Line 33 of the actual log:
-INVITE received for call: 27f8667e-5b2d-4df2-a6b2-5e73b1e38e34, auto-answering using sipgo.
-
-The INVITE log has , auto-answering using sipgo. after the UUID. The regex \S+ captures the comma as part of the callId → stored as "27f8667e-...,"
-The BYE log has no comma → stored as "27f8667e-..."
-These are different strings. groupEventsByCall puts them in separate groups. Neither group has both invite+ended, so nothing shows — until you stop the extension and closeOutstandingCalls creates a synthetic ended using the comma-suffixed callId, which finally matches the invite.
-One-character fix in normalizeCallId:
-
-Also reverting the stdbuf change since it has no effect on Go binaries (Go bypasses libc and uses direct syscalls): »

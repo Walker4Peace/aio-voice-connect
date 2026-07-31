@@ -1,23 +1,0 @@
-Hello, please can you continue to make these modification i sent to our developer but i think he didnt finish them.  here is the text i sent to him « you didnt resolve our problem!!! Extension 1 is already running. The sip4ai agent binds UDP port 5060 — only one extension can be deployed at a time. Stop extension 1 first, then deploy this one. i want to connect multiple extension.
-the second thing i want to make some modification in dashboard -remove buttons of Manage IPBXs and Add Extension -remove block of IPBXs List and Provider List
-in /ipbxs -remove button of edit in the table leave just delete button -and inside ipbx add remove button in the block of IPBX Details block
--and separate SIP Server:Port in two colom in add IPBX and edit IPBX and make Port always filled with 5060 enless we want to modify the port.
-inside extension -and inside entension add remove button in the block of SIP Credentials block
-inside added AI provider -when i click on edit in the champ of AI Provider i see Select provider but i have already select one, why it does not appear after clicking on edit.
-in ths page /logs -make log stopped as default and when i click on live it start and when i stop it it should stop and if i click on it it should start showing just the new logs »   and also this is a diagnostic of my friend for the port conflict
-
-The deployment architecture currently assumes every SIP4AI instance binds to UDP port 5060. This prevents running multiple deployed agents on the same server because the second instance fails with listen udp :5060: bind: address already in use.
-
-The deployment system should treat each extension as an independent SIP client process with its own allocated resources.
-
-Required changes:
-
-* Make the local SIP listening port configurable (e.g. SIP_LOCAL_PORT).
-* Automatically allocate a unique SIP port for every deployment (5060, 5062, 5064… or any available port).
-* Keep the Yeastar server on 5060; only the local client port changes.
-* Allocate a unique HTTP API port per instance.
-* Store sip_local_port, http_port, pid, service_name, and status in the database.
-* Generate and launch each instance as its own systemd service (e.g. sip4ai-1001.service, sip4ai-1002.service).
-* Ensure the SIP REGISTER Contact header advertises the correct local listening port for each instance.
-
-The goal is to support dozens or hundreds of simultaneously registered SIP extensions on a single server, similar to how Zoiper or Linphone can run multiple SIP accounts. The deployment manager should automatically handle port allocation and process management so users only deploy an extension without worrying about networking.
