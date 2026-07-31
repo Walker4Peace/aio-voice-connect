@@ -332,7 +332,12 @@ function ExtensionTab() {
               : <span className="text-gray-600">{t("logs.noExtSelected")}</span>
             }
             {(selectedStatus || selectedExt?.agentConfig?.mode === "outbound") && (
-              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${isRunning ? "bg-green-600 text-white" : "bg-gray-300 text-gray-800"}`}>
+              <span
+                className="text-[10px] font-bold px-1.5 py-0.5 rounded"
+                style={isRunning
+                  ? { backgroundColor: "#16a34a", color: "#fff" }
+                  : { backgroundColor: "#9ca3af", color: "#111827" }}
+              >
                 {isRunning ? t("deploy.status.registered") : t("logs.notRegistered")}
               </span>
             )}
@@ -344,7 +349,7 @@ function ExtensionTab() {
         copyText={allLines.join("\n")}
         onLiveToggle={() => setIsLive(v => !v)}
         onClear={handleClear}
-        bodyClassName="h-[calc(100vh-340px)]"
+        bodyClassName="h-[450px]"
       >
         <table className="w-full">
           <thead>
@@ -444,7 +449,7 @@ function SystemTab() {
       copyText={visibleRaw.join("\n")}
       onLiveToggle={() => setIsLive(v => !v)}
       onClear={handleClear}
-      bodyClassName="h-[calc(100vh-260px)]"
+      bodyClassName="h-[450px]"
     >
       <table className="w-full">
         <thead>
