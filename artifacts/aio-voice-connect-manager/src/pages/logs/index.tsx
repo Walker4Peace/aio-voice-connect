@@ -2,7 +2,6 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { useAllDeployStatuses, useDeployLogs, useSystemLogs, useClearExtensionLogs, useClearSystemLogs, classifyLogLine } from "@/hooks/use-deploy";
 import { useListExtensions } from "@workspace/api-client-react";
-import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Server, Phone, RefreshCw, Trash2, Copy, Download, Check } from "lucide-react";
@@ -124,9 +123,8 @@ function CopyButton({ text }: { text: string }) {
   const { t } = useTranslation();
   const [state, setState] = React.useState<"idle" | "ok" | "err">("idle");
   return (
-    <Button
-      variant="ghost" size="sm"
-      className="gap-1.5 text-xs text-gray-400 hover:text-white hover:bg-white/10 h-7"
+    <button
+      className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded text-xs text-gray-400 hover:text-white hover:bg-white/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
       disabled={!text}
       onClick={() => {
         copyToClipboard(text)
@@ -136,7 +134,7 @@ function CopyButton({ text }: { text: string }) {
     >
       {state === "ok"  ? <Check className="h-3.5 w-3.5 text-green-400" /> : <Copy className="h-3.5 w-3.5" />}
       {state === "ok"  ? t("logs.copied") : state === "err" ? t("logs.failed") : t("logs.copy")}
-    </Button>
+    </button>
   );
 }
 
@@ -182,33 +180,31 @@ function TerminalShell({
     <div className="rounded-xl overflow-hidden border border-gray-800 bg-[#0d1117] shadow-lg">
       {/* Terminal title bar */}
       <div className="flex items-center justify-between gap-2 px-4 py-2.5 border-b border-gray-800 bg-[#161b22]">
-        <span className="text-xs text-gray-400 flex items-center gap-2">
+        <span className="text-xs text-gray-300 flex items-center gap-2">
           {headerLeft}
         </span>
         <div className="flex items-center gap-1.5">
           {headerRight}
-          <Button
-            variant="ghost" size="sm"
-            className="gap-1.5 text-xs text-destructive/70 hover:text-destructive hover:bg-destructive/10 h-7"
+          <button
+            className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded text-xs text-red-400/80 hover:text-red-400 hover:bg-red-400/10 transition-colors"
             onClick={onClear}
           >
             <Trash2 className="h-3.5 w-3.5" /> {t("logs.clear")}
-          </Button>
-          <Button
-            size="sm"
+          </button>
+          <button
             onClick={onLiveToggle}
-            className={`gap-1.5 h-7 text-xs border ${isLive
-              ? "bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
-              : "bg-gray-100 hover:bg-gray-200 text-black border-gray-200"}`}
+            className={`inline-flex items-center gap-1.5 h-7 px-2.5 rounded text-xs font-medium border transition-colors ${isLive
+              ? "bg-blue-600 hover:bg-blue-500 text-white border-blue-500"
+              : "bg-transparent border-gray-600 text-gray-400 hover:text-gray-200 hover:border-gray-400"}`}
           >
             <RefreshCw className={`h-3.5 w-3.5 ${isLive ? "animate-spin" : ""}`} />
             {isLive ? t("logs.live") : t("logs.goLive")}
-          </Button>
+          </button>
         </div>
       </div>
 
       {/* Log body — height driven by caller via bodyClassName */}
-      <div className={`overflow-y-auto font-mono text-xs [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-[#0d1117] [&::-webkit-scrollbar-thumb]:bg-gray-600 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-500 ${bodyClassName ?? "h-[calc(100vh-260px)]"}`}>
+      <div className={`text-gray-200 overflow-y-auto font-mono text-xs [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-[#0d1117] [&::-webkit-scrollbar-thumb]:bg-gray-600 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-500 ${bodyClassName ?? "h-[calc(100vh-260px)]"}`}>
         {isEmpty ? (
           <div className="flex flex-col items-center justify-center h-full gap-2 text-gray-500">
             {isLive
@@ -224,20 +220,19 @@ function TerminalShell({
         <span className="flex items-center gap-4">
           <span className="flex items-center gap-1.5">
             <span className={`h-2 w-2 rounded-full ${isLive ? "bg-green-500 animate-pulse" : "bg-gray-600"}`} />
-            {isLive ? t("logs.live") : t("logs.paused")}
+            <span className={isLive ? "text-green-400" : "text-gray-500"}>{isLive ? t("logs.live") : t("logs.paused")}</span>
           </span>
-          <span>{t("logs.entries", { count: lines.length })}</span>
+          <span className="text-gray-600">{t("logs.entries", { count: lines.length })}</span>
         </span>
         <div className="flex items-center gap-1">
           <CopyButton text={copyText} />
-          <Button
-            variant="ghost" size="sm"
-            className="gap-1.5 text-xs text-gray-400 hover:text-white hover:bg-white/10 h-7"
+          <button
+            className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded text-xs text-gray-400 hover:text-white hover:bg-white/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             onClick={downloadLogs}
             disabled={lines.length === 0}
           >
             <Download className="h-3.5 w-3.5" /> {t("logs.download")}
-          </Button>
+          </button>
         </div>
       </div>
     </div>
@@ -353,11 +348,11 @@ function ExtensionTab() {
           </thead>
           <tbody>
             {parsed.map((p, i) => (
-              <tr key={i} className="border-b border-gray-800/40 hover:bg-white/[0.03]">
-                <td className="py-1 px-4 text-green-600/70 whitespace-nowrap">
+              <tr key={i} className="border-b border-gray-800/30 hover:bg-white/[0.03]">
+                <td className="py-1 px-4 text-green-400/70 whitespace-nowrap">
                   {p.ts ? (
                     <span className="flex items-center gap-1.5">
-                      <span className="h-1.5 w-1.5 rounded-full bg-green-500/50 shrink-0" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-green-400/40 shrink-0" />
                       {fmtTs(p.ts)}
                     </span>
                   ) : <span className="text-gray-700">—</span>}
@@ -417,12 +412,12 @@ function SystemTab() {
       headerLeft={<><Server className="h-3.5 w-3.5" />{t("logs.system")}</>}
       headerRight={
         <Select value={filterCat} onValueChange={v => setFilterCat(v as SystemCategory)}>
-          <SelectTrigger className="h-7 text-xs w-36 border-gray-700 bg-transparent text-gray-300">
+          <SelectTrigger className="h-7 text-xs w-36 border-gray-700 bg-[#0d1117] text-gray-300 focus:ring-0 focus:ring-offset-0">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-[#161b22] border-gray-700 text-gray-200">
             {ALL_SYSTEM_CATEGORIES.map(cat => (
-              <SelectItem key={cat} value={cat} className="text-xs">
+              <SelectItem key={cat} value={cat} className="text-xs text-gray-200 focus:bg-gray-700/60 focus:text-white">
                 {cat === "ALL" ? t("logs.allCategories") : cat.charAt(0) + cat.slice(1).toLowerCase()}
               </SelectItem>
             ))}
@@ -447,11 +442,11 @@ function SystemTab() {
         </thead>
         <tbody>
           {visible.map((p, i) => (
-            <tr key={i} className="border-b border-gray-800/40 hover:bg-white/[0.03]">
-              <td className="py-1 px-4 text-green-600/70 whitespace-nowrap">
+            <tr key={i} className="border-b border-gray-800/30 hover:bg-white/[0.03]">
+              <td className="py-1 px-4 text-green-400/70 whitespace-nowrap">
                 {p.ts ? (
                   <span className="flex items-center gap-1.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-green-500/50 shrink-0" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-green-400/40 shrink-0" />
                     {fmtTs(p.ts)}
                   </span>
                 ) : <span className="text-gray-700">—</span>}

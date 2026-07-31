@@ -7,13 +7,13 @@
 #   2. Installs / updates pnpm dependencies
 #   3. Rebuilds frontend and API server
 #   4. Applies any new DB migrations (schema push)
-#   5. Restarts the API server via PM2
+#   5. Restarts the systemd service (default: aio-voice-connect)
 #
 # Requirements on the VPS:
 #   - pnpm installed globally  (npm install -g pnpm)
-#   - PM2 installed globally   (npm install -g pm2)
-#   - DATABASE_URL exported in the environment or in /etc/environment
+#   - DATABASE_URL set in /opt/aio-voice-connect/.env
 #   - The git remote "origin" points to the GitHub repo
+#   - A systemd service named "aio-voice-connect" (or set SERVICE_NAME=...)
 
 set -euo pipefail
 
@@ -83,19 +83,22 @@ else
 fi
 
 # ── 5. Restart API server ─────────────────────────────────────────────────────
+SERVICE_NAME="${SERVICE_NAME:-aio-voice-connect}"
 echo ""
-echo "▶ Restarting API server ($PM2_APP_NAME)"
-if pm2 list | grep -q "$PM2_APP_NAME"; then
-  pm2 restart "$PM2_APP_NAME"
+echo "▶ Restarting service ($SERVICE_NAME)"
+if systemctl is-active --quiet "$SERVICE_NAME"; then
+  systemctl restart "$SERVICE_NAME"
+  echo "  ✓ Service restarted"
+elif systemctl list-units --full --all | grep -q "${SERVICE_NAME}.service"; then
+  systemctl start "$SERVICE_NAME"
+  echo "  ✓ Service started"
 else
-  echo "  ℹ  PM2 process '$PM2_APP_NAME' not found — starting it now"
-  pm2 start "$DEPLOY_DIR/deploy/ecosystem.config.cjs" --env production
-  pm2 save
+  echo "  ✗ Service '$SERVICE_NAME' not found in systemd. Start it manually."
+  echo "    sudo systemctl start $SERVICE_NAME"
 fi
-echo "  ✓ API server restarted"
 
 # ── Done ──────────────────────────────────────────────────────────────────────
 echo ""
 echo "✅  Update complete — $(date '+%Y-%m-%d %H:%M:%S')"
 echo "    API:      http://localhost:8080/api/healthz"
-echo "    PM2 log:  pm2 logs $PM2_APP_NAME --lines 50"
+echo "    Logs:     journalctl -u $SERVICE_NAME -f"
