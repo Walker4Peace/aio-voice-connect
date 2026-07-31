@@ -1,4 +1,4 @@
-# SIP Agent Manager
+# AIO Voice Connect
 
 A SIP (Session Initiation Protocol) agent management platform with a React dashboard and Express REST API.
 
