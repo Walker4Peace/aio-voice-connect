@@ -47,7 +47,17 @@ sudo -u "${APP_USER}" bash -c "
 " || die "pnpm install failed."
 success "Dependencies up to date"
 
-# ── Step 3: Build ─────────────────────────────────────────────────────────────
+# ── Step 3: Apply database schema changes ────────────────────────────────────
+step "Applying database schema"
+
+sudo -u "${APP_USER}" bash -c "
+  set -e
+  cd '${INSTALL_DIR}/lib/db'
+  pnpm run push 2>&1
+" || die "Database schema push failed. Check DATABASE_URL is set correctly."
+success "Database schema up to date"
+
+# ── Step 4: Build ─────────────────────────────────────────────────────────────
 step "Building API server"
 
 sudo -u "${APP_USER}" bash -c "
