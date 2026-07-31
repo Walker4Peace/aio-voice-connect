@@ -5,8 +5,8 @@
  * The sip-agent binary calls POST /api/tools/execute with the tool name and arguments.
  * We look up the tool definition, execute it, and return the result.
  */
-import { db, agentToolsTable, extensionsTable } from "@workspace/db";
-import { eq, and } from "drizzle-orm";
+import { db, agentToolsTable, extensionsTable, outboundCallsTable } from "@workspace/db";
+import { eq, and, desc, inArray } from "drizzle-orm";
 import { logger } from "../lib/logger.js";
 
 export interface ToolExecutionRequest {
@@ -73,6 +73,9 @@ async function executeByType(
 
     case "webhook":
       return executeWebhook(config, args, req, timeout);
+
+    case "save_result":
+      return executeSaveResult(config, args, req);
 
     case "hang_up":
       // Signal intent; actual execution is handled by the sip-agent
@@ -159,6 +162,67 @@ async function executeWebhook(
   } finally {
     clearTimeout(timer);
   }
+}
+
+/**
+ * save_result — Built-in tool that writes the AI's collected data to the
+ * outbound call record in the DB so the caller can poll GET /api/outbound/calls/:id.
+ *
+ * If the call record has a webhookUrl, the result is also POSTed there
+ * (fire-and-forget — errors are logged, not thrown).
+ */
+async function executeSaveResult(
+  _config: Record<string, unknown>,
+  args: Record<string, unknown>,
+  req: ToolExecutionRequest,
+): Promise<unknown> {
+  // Find the most recent outbound call for this extension that is still in progress
+  const [call] = await db
+    .select()
+    .from(outboundCallsTable)
+    .where(
+      and(
+        eq(outboundCallsTable.extensionId, req.extensionId),
+        inArray(outboundCallsTable.status, ["dialing", "active", "pending"]),
+      ),
+    )
+    .orderBy(desc(outboundCallsTable.createdAt))
+    .limit(1);
+
+  if (!call) {
+    logger.warn({ extensionId: req.extensionId }, "save_result: no active outbound call found for this extension");
+    return { saved: false, reason: "no active outbound call found" };
+  }
+
+  const resultJson = JSON.stringify(args);
+
+  await db
+    .update(outboundCallsTable)
+    .set({ result: resultJson, status: "completed", updatedAt: new Date() })
+    .where(eq(outboundCallsTable.id, call.id));
+
+  logger.info({ extensionId: req.extensionId, callId: call.id, result: args }, "save_result: outbound call result saved");
+
+  // Fire webhook if configured (non-blocking)
+  if (call.webhookUrl) {
+    const payload = {
+      event: "call_result",
+      outboundCallId: call.id,
+      extensionId: req.extensionId,
+      phoneNumber: call.phoneNumber,
+      result: args,
+      timestamp: new Date().toISOString(),
+    };
+    fetch(call.webhookUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    }).catch((err) => {
+      logger.warn({ err, webhookUrl: call.webhookUrl }, "save_result: webhook delivery failed");
+    });
+  }
+
+  return { saved: true, outboundCallId: call.id, result: args };
 }
 
 function executeCustomJs(
