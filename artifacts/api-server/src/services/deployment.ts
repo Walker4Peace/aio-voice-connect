@@ -274,45 +274,49 @@ function parseAndStoreCallEvents(extensionId: number, line: string, timestamp: s
     if (alreadyInvited) return;
     pushEvent({ extensionId, callId, event: "invite", timestamp });
 
-    // Link this SIP call UUID to any active outbound call for this extension
-    // (outbound flow: ElevenLabs bridge starts before the INVITE arrives, so
-    //  we need to retroactively stamp the real callId onto those earlier events)
-    void (async () => {
-      try {
-        const updated = await db
-          .update(outboundCallsTable)
-          .set({ callId, status: "active", updatedAt: new Date() })
-          .where(
-            and(
-              eq(outboundCallsTable.extensionId, extensionId),
-              inArray(outboundCallsTable.status, ["pending", "dialing"]),
-            ),
-          )
-          .returning({ callId: outboundCallsTable.callId });
-
-        if (updated.length > 0) {
-          // Backfill any in-memory events that fired before the INVITE (callId="unknown")
-          for (const ev of persistedCallEvents) {
-            if (ev.extensionId === extensionId && ev.callId === "unknown") {
-              ev.callId = callId;
-            }
-          }
-          // Persist the backfill to DB as well
-          await db
-            .update(callEventsTable)
-            .set({ callId })
+    // Link this SIP call UUID to any active outbound call for this extension —
+    // but ONLY when the extension is actually in outbound mode.  Running this
+    // for genuine inbound calls risks stamping the inbound callId onto a stale
+    // pending/dialing outbound record, which makes the inbound call appear as
+    // Outbound in Call History.
+    if (outboundCallModes.has(extensionId)) {
+      void (async () => {
+        try {
+          const updated = await db
+            .update(outboundCallsTable)
+            .set({ callId, status: "active", updatedAt: new Date() })
             .where(
               and(
-                eq(callEventsTable.extensionId, extensionId),
-                eq(callEventsTable.callId, "unknown"),
+                eq(outboundCallsTable.extensionId, extensionId),
+                inArray(outboundCallsTable.status, ["pending", "dialing"]),
               ),
-            );
-          logger.info({ extensionId, callId }, "Linked outbound SIP callId; backfilled pre-INVITE events");
+            )
+            .returning({ callId: outboundCallsTable.callId });
+
+          if (updated.length > 0) {
+            // Backfill any in-memory events that fired before the INVITE (callId="unknown")
+            for (const ev of persistedCallEvents) {
+              if (ev.extensionId === extensionId && ev.callId === "unknown") {
+                ev.callId = callId;
+              }
+            }
+            // Persist the backfill to DB as well
+            await db
+              .update(callEventsTable)
+              .set({ callId })
+              .where(
+                and(
+                  eq(callEventsTable.extensionId, extensionId),
+                  eq(callEventsTable.callId, "unknown"),
+                ),
+              );
+            logger.info({ extensionId, callId }, "Linked outbound SIP callId; backfilled pre-INVITE events");
+          }
+        } catch (err) {
+          logger.error({ err, extensionId }, "Failed to link SIP callId to outbound call");
         }
-      } catch (err) {
-        logger.error({ err, extensionId }, "Failed to link SIP callId to outbound call");
-      }
-    })();
+      })();
+    }
 
     return;
   }
