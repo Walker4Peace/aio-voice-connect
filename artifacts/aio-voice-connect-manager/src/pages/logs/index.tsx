@@ -157,7 +157,6 @@ function TerminalShell({
   copyText,
   onLiveToggle,
   onClear,
-  bodyClassName,
 }: {
   headerLeft: React.ReactNode;
   headerRight?: React.ReactNode;
@@ -169,7 +168,6 @@ function TerminalShell({
   copyText: string;
   onLiveToggle: () => void;
   onClear: () => void;
-  bodyClassName?: string;
 }) {
   const { t } = useTranslation();
 
@@ -214,8 +212,11 @@ function TerminalShell({
         </div>
       </div>
 
-      {/* Log body — height driven by caller via bodyClassName */}
-      <div className={`text-gray-200 overflow-y-auto font-mono text-xs min-h-[280px] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-[#0d1117] [&::-webkit-scrollbar-thumb]:bg-gray-600 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-500 ${bodyClassName ?? "h-[calc(100vh-260px)]"}`}>
+      {/* Log body — fixed 450 px, scrolls internally */}
+      <div
+        className="text-gray-200 overflow-y-auto font-mono text-xs [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-[#0d1117] [&::-webkit-scrollbar-thumb]:bg-gray-600 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-500"
+        style={{ height: "450px" }}
+      >
         {isEmpty ? (
           <div className="flex flex-col items-center justify-center h-full gap-2 text-gray-500">
             {isLive
@@ -352,7 +353,6 @@ function ExtensionTab() {
         copyText={allLines.join("\n")}
         onLiveToggle={() => setIsLive(v => !v)}
         onClear={handleClear}
-        bodyClassName="h-[450px]"
       >
         <table className="w-full">
           <thead>
@@ -452,7 +452,6 @@ function SystemTab() {
       copyText={visibleRaw.join("\n")}
       onLiveToggle={() => setIsLive(v => !v)}
       onClear={handleClear}
-      bodyClassName="h-[450px]"
     >
       <table className="w-full">
         <thead>
