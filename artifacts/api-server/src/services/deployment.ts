@@ -1086,6 +1086,27 @@ export async function startExtension(extensionId: number, opts?: {
       // Mirror binary output to stdout so it appears in journalctl
       process.stdout.write(`[ext:${extensionId}] ${entry}\n`);
 
+      // ── Synthetic "AI responded" log line ───────────────────────────────
+      // When the binary logs "Connected to <Provider> Conversational AI",
+      // inject a human-readable summary line so it surfaces clearly in the
+      // Extension log panel without digging through raw binary output.
+      {
+        // Strip the binary's own "YYYY/MM/DD HH:MM:SS " prefix if present
+        const bare = line.replace(/^\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}\s+/, "");
+        const connMatch = bare.match(/^Connected to (.+?)(?:\s*\(agent:[^)]*\))?\s*\.?\s*$/i);
+        if (connMatch) {
+          const provider = connMatch[1].trim();
+          const agentName = extensionAgentNames.get(extensionId);
+          const syntheticMsg = agentName
+            ? `AI responded — ${provider} - ${agentName}`
+            : `AI responded — ${provider}`;
+          const syntheticEntry = `[${timestamp}] ${syntheticMsg}`;
+          info.logs.push(syntheticEntry);
+          if (info.logs.length > MAX_LOG_LINES) info.logs.shift();
+          process.stdout.write(`[ext:${extensionId}] ${syntheticEntry}\n`);
+        }
+      }
+
       // Parse and persist call events so history survives extension stop
       parseAndStoreCallEvents(extensionId, line, timestamp);
 
