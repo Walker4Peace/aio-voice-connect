@@ -468,11 +468,21 @@ function parseRegistration(line: string): "registered" | "reconnecting" | "error
   return null;
 }
 
+/** Substitute {{key}} placeholders from variables in a text string. */
+function applyVariables(text: string | null | undefined, vars: Record<string, unknown> | null | undefined): string | null {
+  if (!text) return text ?? null;
+  if (!vars || Object.keys(vars).length === 0) return text;
+  return text.replace(/\{\{(\w+)\}\}/g, (_match, key: string) => {
+    const val = vars[key];
+    return val !== undefined && val !== null ? String(val) : `{{${key}}}`;
+  });
+}
+
 async function buildConfig(
   ext: Awaited<ReturnType<typeof getExtWithRelations>>,
   extensionId: number,
   ports: { sipLocalPort: number; httpPort: number },
-  overrides?: { firstMessage?: string | null; systemPromptOverride?: string | null },
+  overrides?: { firstMessage?: string | null; systemPromptOverride?: string | null; variables?: Record<string, unknown> | null },
   outboundTarget?: { phoneNumber: string; callerId?: string | null; taskDescription?: string | null },
 ) {
   if (!ext?.agentConfig) return null;
@@ -531,10 +541,11 @@ async function buildConfig(
     } : {}),
   };
   // API keys are NOT embedded in config.json — passed via environment variables only.
+  const vars = overrides?.variables ?? null;
   switch (cfg.provider as AiProviderKey) {
     case "openai": {
-      const firstMsg = overrides?.firstMessage ?? cfg.greeting;
-      const sysPrompt = overrides?.systemPromptOverride ?? cfg.systemPrompt;
+      const firstMsg = applyVariables(overrides?.firstMessage ?? cfg.greeting, vars);
+      const sysPrompt = applyVariables(overrides?.systemPromptOverride ?? cfg.systemPrompt, vars);
       base["openai"] = {
         model: cfg.modelId ?? "gpt-4o-realtime-preview",
         voice: cfg.voiceId ?? "alloy",
@@ -544,8 +555,8 @@ async function buildConfig(
       break;
     }
     case "elevenlabs": {
-      const firstMsg = overrides?.firstMessage ?? cfg.greeting;
-      const rawSysPrompt = overrides?.systemPromptOverride ?? cfg.systemPrompt;
+      const firstMsg = applyVariables(overrides?.firstMessage ?? cfg.greeting, vars);
+      const rawSysPrompt = applyVariables(overrides?.systemPromptOverride ?? cfg.systemPrompt, vars);
       // KEY BEHAVIOUR (confirmed from binary logs):
       //   • first_message PRESENT in config.json → binary uses it directly and
       //     SKIPS context_webhook_url entirely. The greeting plays immediately
@@ -576,8 +587,8 @@ async function buildConfig(
       break;
     }
     case "gemini": {
-      const firstMsg = overrides?.firstMessage ?? cfg.greeting;
-      const sysPrompt = overrides?.systemPromptOverride ?? cfg.systemPrompt;
+      const firstMsg = applyVariables(overrides?.firstMessage ?? cfg.greeting, vars);
+      const sysPrompt = applyVariables(overrides?.systemPromptOverride ?? cfg.systemPrompt, vars);
       base["gemini"] = {
         model: cfg.modelId ?? "gemini-2.0-flash-live-001",
         voice: cfg.voiceId ?? "Puck",
@@ -588,7 +599,7 @@ async function buildConfig(
       break;
     }
     case "deepgram": {
-      const sysPrompt = overrides?.systemPromptOverride ?? cfg.systemPrompt;
+      const sysPrompt = applyVariables(overrides?.systemPromptOverride ?? cfg.systemPrompt, vars);
       base["deepgram"] = {
         model: cfg.modelId ?? "aura-2-thalia-en",
         ...(cfg.voiceId ? { listen_model: cfg.voiceId } : {}),
@@ -598,7 +609,7 @@ async function buildConfig(
       break;
     }
     case "cartesia": {
-      const sysPrompt = overrides?.systemPromptOverride ?? cfg.systemPrompt;
+      const sysPrompt = applyVariables(overrides?.systemPromptOverride ?? cfg.systemPrompt, vars);
       base["cartesia"] = {
         voice_id: cfg.voiceId ?? "",
         model: cfg.modelId ?? "sonic-2",
@@ -739,7 +750,7 @@ export function hasActiveCalls(extensionId: number): boolean {
  */
 export async function applyOutboundConfigAndRestart(
   extensionId: number,
-  overrides: { firstMessage?: string | null; systemPromptOverride?: string | null },
+  overrides: { firstMessage?: string | null; systemPromptOverride?: string | null; variables?: Record<string, unknown> | null },
   outboundTarget?: { phoneNumber: string; callerId?: string | null; taskDescription?: string | null },
 ): Promise<boolean> {
   // 1. Track outbound mode so proc.on("exit") knows to stay stopped after the call.
@@ -979,7 +990,7 @@ async function allocatePorts(extensionId: number): Promise<{ sipLocalPort: numbe
 
 export async function startExtension(extensionId: number, opts?: {
   skipConfigWrite?: boolean;
-  overrides?: { firstMessage?: string | null; systemPromptOverride?: string | null };
+  overrides?: { firstMessage?: string | null; systemPromptOverride?: string | null; variables?: Record<string, unknown> | null };
   outboundTarget?: { phoneNumber: string; callerId?: string | null; taskDescription?: string | null };
 }): Promise<void> {
   addSystemLog(`Starting extension ${extensionId}`, "DEPLOYMENT");

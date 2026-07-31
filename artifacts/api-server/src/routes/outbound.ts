@@ -188,6 +188,7 @@ router.post("/outbound/call", async (req, res) => {
       {
         firstMessage: data.firstMessage ?? null,
         systemPromptOverride: data.systemPromptOverride ?? null,
+        variables: data.variables ?? null,
       },
       {
         phoneNumber: data.phoneNumber,
