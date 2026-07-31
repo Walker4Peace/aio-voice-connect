@@ -1,0 +1,60 @@
+01:30:56
+INFO	2026/07/31 00:30:56 Received 100 Trying
+01:30:56
+INFO	2026/07/31 00:30:56 Call progress: Trying
+01:30:58
+INFO	2026/07/31 00:30:58 Received 183 Session Progress
+01:30:58
+INFO	2026/07/31 00:30:58 Call progress: Session Progress
+01:31:05
+INFO	2026/07/31 00:31:05 Received 200 OK
+01:31:05
+INFO	2026/07/31 00:31:05 Call answered!
+01:31:05
+DEBUG	2026/07/31 00:31:05 Remote RTP address: 192.168.11.90:16662
+01:31:05
+INFO	2026/07/31 00:31:05 ACK sent
+01:31:05
+INFO	2026/07/31 00:31:05 Sending NAT hole-punch packets to 192.168.11.90:16662
+01:31:05
+INFO	2026/07/31 00:31:05 Connecting to ElevenLabs Conversational AI (agent: agent_1301kysqd47dfwtr3cpk7wykdhcj)...
+01:31:06
+INFO	2026/07/31 00:31:06 Connected to ElevenLabs Conversational AI
+01:31:06
+INFO	2026/07/31 00:31:06 Note: first_message/system_prompt in config require 'Allow client overrides' in ElevenLabs dashboard
+01:31:06
+INFO	2026/07/31 00:31:06 If override fails, the agent's default greeting will be used
+01:31:06
+DEBUG	2026/07/31 00:31:06 DEBUG: appConfig=true
+01:31:06
+DEBUG	2026/07/31 00:31:06 DEBUG: ElevenLabs.FirstMessage='Bonjour, je suis Khalid de AIO PROCESS. Je vous appelle pour confirmer votre commande d'une caméra {{product}}. Est-ce que je parle bien à {{client_name}} ?', SystemPrompt='Tu es un agent de confirmation de commande chez AIO PROCESS. Tu appelles {{client_name}} pour confirmer sa commande d'une caméra {{product}}. L'adresse de livraison enregistrée est {{adresse}}. Confirme que l'adresse est correcte, demande s'il a des questions sur la livraison, puis termine l'appel poliment.
+01:31:06
+INFO	IMPORTANT — comportement au décrochage : si la personne dit 'Allô', 'Allô ?', 'Oui', 'Oui allô', 'Oui ?' ou toute autre salutation de décrochage après ton introduction, c'est qu'elle vient simplement de décrocher le téléphone. Ne te présente PAS à nouveau. Reprends la conversation naturellement depuis là où elle en est.', Functions=0
+01:31:06
+INFO	2026/07/31 00:31:06 Overriding first_message: Bonjour, je suis Khalid de AIO PROCESS. Je vous appelle pour confirmer votre commande d'une caméra {{product}}. Est-ce que je parle bien à {{client_name}} ?
+01:31:06
+INFO	2026/07/31 00:31:06 Overriding system prompt
+01:31:06
+INFO	2026/07/31 00:31:06 Sending conversation initiation to ElevenLabs: {"conversation_config_override":{"agent":{"first_message":"Bonjour, je suis Khalid de AIO PROCESS. Je vous appelle pour confirmer votre commande d'une caméra {{product}}. Est-ce que je parle bien à {{client_name}} ?","prompt":{"prompt":"Tu es un agent de confirmation de commande chez AIO PROCESS. Tu appelles {{client_name}} pour confirmer sa commande d'une caméra {{product}}. L'adresse de livraison enregistrée est {{adresse}}. Confirme que l'adresse est correcte, demande s'il a des questions sur la livraison, puis termine l'appel poliment.\n\nIMPORTANT — comportement au décrochage : si la personne dit 'Allô', 'Allô ?', 'Oui', 'Oui allô', 'Oui ?' ou toute autre salutation de décrochage après ton introduction, c'est qu'elle vient simplement de décrocher le téléphone. Ne te présente PAS à nouveau. Reprends la conversation naturellement depuis là où elle en est."}}},"type":"conversation_initiation_client_data"}
+01:31:06
+INFO	2026/07/31 00:31:06 Registered bridge for call: Fyye1OP4v5CogCSt-1785457856833264979
+01:31:06
+INFO	2026/07/31 00:31:06 Outbound call active - AI is now talking to remote party
+01:31:06
+DEBUG	2026/07/31 00:31:06 Starting outbound ElevenLabs to RTP bridge...
+01:31:06
+INFO	2026/07/31 00:31:06 ElevenLabs outbound conversation: conv_0801kyts9xb8fkctwj7d9aj7k4d6
+01:31:06
+DEBUG	2026/07/31 00:31:06 Starting outbound RTP to ElevenLabs bridge...
+01:31:06
+DEBUG	2026/07/31 00:31:06 Outbound RTP packet #1 from 192.168.11.90:16662, size=172
+01:31:06
+INFO	2026/07/31 00:31:06 ElevenLabs WebSocket closed
+01:31:06
+INFO	2026/07/31 00:31:06 Unregistered bridge for call: Fyye1OP4v5CogCSt-1785457856833264979
+01:31:06
+ERROR	2026/07/31 00:31:06 Error sending audio to ElevenLabs: websocket: close sent
+01:31:06
+INFO	2026/07/31 00:31:06 Outbound call completed. Task completed: false
+01:31:06
+INFO	2026/07/31 00:31:06 Outbound call completed.

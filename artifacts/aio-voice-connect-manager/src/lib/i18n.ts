@@ -588,7 +588,7 @@ const en = {
   "api.keySetup":             "How to set your API key",
   "api.keySetupDesc":         "On your Linux server, add this line to your environment:",
   "api.keySetupRestart":      "Then restart the service:",
-  "api.noExtensions":         "No outbound extensions configured. Create an AI agent with mode "Outbound" and assign it to an extension first.",
+  "api.noExtensions":         "No outbound extensions configured. Create an AI agent with mode \"Outbound\" and assign it to an extension first.",
 
   "api.keys":                 "API Keys",
   "api.keysDesc":             "Create named keys to authenticate external systems. Each key is shown only once — copy it immediately.",

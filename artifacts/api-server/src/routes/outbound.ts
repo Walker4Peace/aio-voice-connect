@@ -379,6 +379,22 @@ router.get("/outbound/context/:extensionId", async (req, res) => {
     setTimeout(() => firstMessageServedAt.delete(extensionId), FIRST_MESSAGE_DEDUP_MS);
   }
 
+  // ── Substitute {{key}} placeholders from variables ────────────────────────
+  // The sip-agent binary forwards firstMessage and systemPromptOverride to
+  // ElevenLabs as-is and does not perform template substitution itself.
+  // We resolve all {{key}} tokens here so ElevenLabs receives the final text.
+  function applyVariables(text: string | null | undefined, vars: Record<string, unknown> | null | undefined): string | null {
+    if (!text) return text ?? null;
+    if (!vars || Object.keys(vars).length === 0) return text;
+    return text.replace(/\{\{(\w+)\}\}/g, (_match, key: string) => {
+      const val = vars[key];
+      return val !== undefined && val !== null ? String(val) : `{{${key}}}`;
+    });
+  }
+
+  const resolvedFirstMessage = applyVariables(servedFirstMessage, ctx.variables ?? null);
+  const resolvedSystemPrompt = applyVariables(ctx.systemPromptOverride, ctx.variables ?? null);
+
   // ── Return the context to the binary ──────────────────────────────────────
   const ageMs = Date.now() - ctx.createdAt.getTime();
   logger.info(
@@ -390,10 +406,10 @@ router.get("/outbound/context/:extensionId", async (req, res) => {
       pending: true,
       ageMs,
       isDuplicateSession,
-      hasFirstMessage: !!servedFirstMessage,
-      hasSystemPrompt: !!ctx.systemPromptOverride,
+      hasFirstMessage: !!resolvedFirstMessage,
+      hasSystemPrompt: !!resolvedSystemPrompt,
       hasVariables: !!ctx.variables,
-      firstMessagePreview: servedFirstMessage ? servedFirstMessage.slice(0, 60) : null,
+      firstMessagePreview: resolvedFirstMessage ? resolvedFirstMessage.slice(0, 60) : null,
     },
     isDuplicateSession
       ? "Outbound context: duplicate session — suppressing firstMessage (session 2 starts in listen mode)"
@@ -402,8 +418,8 @@ router.get("/outbound/context/:extensionId", async (req, res) => {
 
   res.json({
     pending: true,
-    firstMessage: servedFirstMessage,
-    systemPromptOverride: ctx.systemPromptOverride ?? null,
+    firstMessage: resolvedFirstMessage,
+    systemPromptOverride: resolvedSystemPrompt,
     variables: ctx.variables ?? null,
     callId: ctx.callId,
   });
