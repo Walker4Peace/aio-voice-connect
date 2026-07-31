@@ -11,6 +11,78 @@ A SIP AI agent management platform — React dashboard + Express REST API + Post
 | Database | `@workspace/db` | Drizzle ORM schema + PostgreSQL client |
 | Shared libs | `api-zod`, `api-spec`, `api-client-react` | Zod schemas, types, React Query hooks |
 
+## Local IP testing (VM-to-VM, Postman)
+
+When testing between VMs (Yeastar PBX on one VM, AIO Voice Connect on another) **without a real domain or SSL**, you have two options:
+
+### Option A — No nginx (Postman / API only)
+
+The API server already listens on all interfaces. Just start it and hit it directly:
+
+```bash
+# On the AIO Voice Connect VM:
+export DATABASE_URL=postgresql://user:pass@localhost:5432/aio_voice_connect
+export SESSION_SECRET=any-secret-for-testing
+export OUTBOUND_API_KEY=test-key        # or leave blank and use dashboard key
+export NODE_ENV=production
+export PORT=8080
+node artifacts/api-server/dist/index.mjs
+```
+
+Then from Postman (or any machine on the same LAN):
+
+```
+POST  http://<aio-vm-ip>:8080/api/outbound/call
+GET   http://<aio-vm-ip>:8080/api/healthz
+
+Headers:
+  X-Api-Key: test-key
+  Content-Type: application/json
+
+Body:
+  { "extensionId": 1, "phoneNumber": "+212661209845", "firstMessage": "Hello!" }
+```
+
+> **Firewall**: open port 8080 — `sudo ufw allow 8080`
+
+### Option B — nginx HTTP (dashboard + API through port 80)
+
+Use `deploy/nginx-local.conf.example` — it serves the frontend and proxies `/api` over plain HTTP with no domain required (matches any IP):
+
+```bash
+# 1. Build everything
+pnpm install --frozen-lockfile && pnpm run build
+cd lib/db && pnpm run push && cd ..
+
+# 2. Install the local nginx config
+sudo cp deploy/nginx-local.conf.example /etc/nginx/sites-available/aio-voice-connect
+# Edit the root path inside the file to match your deploy directory
+sudo ln -s /etc/nginx/sites-available/aio-voice-connect /etc/nginx/sites-enabled/
+sudo nginx -t && sudo systemctl reload nginx
+
+# 3. Start the API with PM2
+pm2 start deploy/ecosystem.config.cjs --env production
+```
+
+Open `http://<aio-vm-ip>/` in your browser and `http://<aio-vm-ip>/api/healthz` to verify.
+
+> **Firewall**: open port 80 — `sudo ufw allow 80` (port 8080 can stay closed)
+
+### Switch to production
+
+When you move from local IP testing to a real domain, swap the nginx config:
+
+```bash
+sudo rm /etc/nginx/sites-enabled/aio-voice-connect
+sudo cp deploy/nginx.conf.example /etc/nginx/sites-available/aio-voice-connect
+# Edit: replace your-domain.com and the root path
+sudo ln -s /etc/nginx/sites-available/aio-voice-connect /etc/nginx/sites-enabled/
+sudo nginx -t && sudo systemctl reload nginx
+sudo certbot --nginx -d your-domain.com
+```
+
+---
+
 ## VPS deployment (primary target)
 
 ### One-time setup
