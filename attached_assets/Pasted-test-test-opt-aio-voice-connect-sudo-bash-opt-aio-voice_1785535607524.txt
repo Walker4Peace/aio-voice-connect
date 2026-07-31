@@ -1,0 +1,76 @@
+test@test:/opt/aio-voice-connect$ sudo bash /opt/aio-voice-connect/update.sh
+[sudo] password for test:
+  ✓ Loaded /opt/aio-voice-connect/.env
+
+▶ Pulling latest changes from GitHub (branch: main)
+remote: Enumerating objects: 32, done.
+remote: Counting objects: 100% (32/32), done.
+remote: Compressing objects: 100% (4/4), done.
+remote: Total 19 (delta 15), reused 19 (delta 15), pack-reused 0 (from 0)
+Unpacking objects: 100% (19/19), 2.94 KiB | 23.00 KiB/s, done.
+From https://github.com/Walker4Peace/ai-agent
+ * branch            main       -> FETCH_HEAD
+   65d41d0..08e4b30  main       -> origin/main
+HEAD is now at 08e4b30 Update agent tool configuration UI and backend route
+Removing artifacts/aio-voice-connect-manager/dist/
+Removing artifacts/aio-voice-connect-manager/tsconfig.tsbuildinfo
+Removing artifacts/api-server/.tsbuildinfo
+Removing artifacts/api-server/dist/
+Removing artifacts/mockup-sandbox/.tsbuildinfo
+Removing lib/api-client-react/dist/
+Removing lib/api-client-react/tsconfig.tsbuildinfo
+Removing lib/api-zod/dist/
+Removing lib/api-zod/tsconfig.tsbuildinfo
+Removing lib/db/dist/
+Removing lib/db/tsconfig.tsbuildinfo
+Removing scripts/tsconfig.tsbuildinfo
+  ✓ Code is up to date with origin/main
+
+▶ Installing dependencies
+Scope: all 9 workspace projects
+Lockfile is up to date, resolution step is skipped
+Already up to date
+. preinstall$ sh -c 'rm -f package-lock.json yarn.lock; case "$npm_config_user_agent" in pnpm/*) ;; *) echo "Use pnpm instead" >&2; exit 1 ;; esac'
+└─ Done in 56ms
+Done in 6.5s using pnpm v10.34.5
+  ✓ Dependencies installed
+
+▶ Building workspace
+
+> workspace@0.0.0 build /opt/aio-voice-connect
+> pnpm run typecheck && pnpm -r --filter '!./artifacts/mockup-sandbox' --if-present run build
+
+
+> workspace@0.0.0 typecheck /opt/aio-voice-connect
+> pnpm run typecheck:libs && pnpm -r --filter "./artifacts/**" --filter "./scripts" --if-present run typecheck
+
+
+> workspace@0.0.0 typecheck:libs /opt/aio-voice-connect
+> tsc --build
+
+Scope: 4 of 9 workspace projects
+artifacts/aio-voice-connect-manager typecheck$ tsc -p tsconfig.json --noEmit
+└─ Running...
+artifacts/api-server typecheck$ tsc -p tsconfig.json --noEmit
+│ src/routes/agentTools.ts(45,58): error TS2769: No overload matches this call.
+│   Overload 1 of 2, '(value: { name: string | SQL<unknown> | Placeholder<string, any>; description: string | SQL<unknown> | Placeholder<string, any>; agentConfigId: number |…
+│     Argument of type '{ agentConfigId: number; name: string; description: string; executionType: "http_request" | "webhook" | "transfer_call" | "hang_up" | "send_dtmf" | "c…
+│       Types of property 'executionType' are incompatible.
+│         Type '"http_request" | "webhook" | "transfer_call" | "hang_up" | "send_dtmf" | "custom_js" | "save_result"' is not assignable to type '"http_request" | "webhook" | …
+│           Type '"save_result"' is not assignable to type '"http_request" | "webhook" | "transfer_call" | "hang_up" | "send_dtmf" | "custom_js" | SQL<unknown> | Placeholder<…
+│   Overload 2 of 2, '(values: { name: string | SQL<unknown> | Placeholder<string, any>; description: string | SQL<unknown> | Placeholder<string, any>; agentConfigId: number …
+│     Argument of type '{ agentConfigId: number; name: string; description: string; executionType: "http_request" | "webhook" | "transfer_call" | "hang_up" | "send_dtmf" | "c…
+│       Type '{ agentConfigId: number; name: string; description: string; executionType: "http_request" | "webhook" | "transfer_call" | "hang_up" | "send_dtmf" | "custom_js" …
+│ src/routes/agentTools.ts(78,10): error TS2345: Argument of type '{ updatedAt: Date; timeout?: number | undefined; name?: string | undefined; description?: string | undefine…
+│   Types of property 'executionType' are incompatible.
+│     Type '"http_request" | "webhook" | "transfer_call" | "hang_up" | "send_dtmf" | "custom_js" | "save_result" | undefined' is not assignable to type '"http_request" | "web…
+│       Type '"save_result"' is not assignable to type '"http_request" | "webhook" | "transfer_call" | "hang_up" | "send_dtmf" | "custom_js" | PgColumn<ColumnBaseConfig<Colum…
+└─ Failed in 16.7s at /opt/aio-voice-connect/artifacts/api-server
+/opt/aio-voice-connect/artifacts/api-server:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @workspace/api-server@0.0.0 typecheck: `tsc -p tsconfig.json --noEmit`
+Exit status 2
+artifacts/mockup-sandbox typecheck$ tsc -p tsconfig.json --noEmit
+└─ Running...
+ ELIFECYCLE  Command failed with exit code 2.
+ ELIFECYCLE  Command failed with exit code 2.
+test@test:/opt/aio-voice-connect$

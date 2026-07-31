@@ -4,6 +4,7 @@ import { agentConfigsTable } from "./agentConfigs";
 export const AGENT_TOOL_EXECUTION_TYPES = [
   "http_request",
   "webhook",
+  "save_result",
   "transfer_call",
   "hang_up",
   "send_dtmf",
