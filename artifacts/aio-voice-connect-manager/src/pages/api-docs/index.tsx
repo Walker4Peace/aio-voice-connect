@@ -19,6 +19,7 @@ import {
 import {
   Copy, Check, Zap, Key, Webhook, Code2, Plus, Trash2,
   ShieldCheck, Eye, EyeOff, PhoneIncoming, Calendar, BarChart3, Package,
+  FileJson, AlertTriangle,
 } from "lucide-react";
 
 const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, "") + "/api";
@@ -916,6 +917,55 @@ If there's an issue (delay, missing item), apologize and offer solutions.`,
             <p className="text-sm text-muted-foreground">
               {t("api.responseDesc")} <code className="bg-muted px-1 py-0.5 rounded text-xs font-mono">dialing</code> (HTTP 202).
             </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* ── Call Object ── */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <FileJson className="h-4 w-4 text-teal-500" />
+            {t("api.callObject")}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">{t("api.callObjectDesc")}</p>
+          <div className="rounded-lg border overflow-hidden">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/50">
+                <tr className="border-b">
+                  <th className="text-left py-2.5 px-3 text-xs font-medium text-muted-foreground">{t("api.fieldName")}</th>
+                  <th className="text-left py-2.5 px-3 text-xs font-medium text-muted-foreground">{t("api.fieldType")}</th>
+                  <th className="text-left py-2.5 px-3 text-xs font-medium text-muted-foreground">{t("api.fieldDesc")}</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {[
+                  { name: "id",                   type: "integer", desc: "Unique call record ID" },
+                  { name: "extensionId",          type: "integer", desc: "ID of the extension that placed the call" },
+                  { name: "phoneNumber",          type: "string",  desc: "The dialled number in E.164 format" },
+                  { name: "callerId",             type: "string?", desc: "Caller ID shown to the recipient (null if not set)" },
+                  { name: "status",               type: "string",  desc: "pending · dialing · active · completed · failed" },
+                  { name: "callId",               type: "string?", desc: "SIP Call-ID assigned once the call is answered (null while dialing)" },
+                  { name: "firstMessage",         type: "string?", desc: "The opening message sent to the AI agent" },
+                  { name: "systemPromptOverride", type: "string?", desc: "System prompt used for this call (null = agent default)" },
+                  { name: "variables",            type: "object?", desc: "Key-value pairs injected into {{placeholders}}" },
+                  { name: "metadata",             type: "object?", desc: "Arbitrary data attached to the call (e.g. CRM deal ID)" },
+                  { name: "webhookUrl",           type: "string?", desc: "URL notified with the call result when the call ends" },
+                  { name: "result",               type: "string?", desc: "Call outcome data from the AI agent (if any)" },
+                  { name: "error",                type: "string?", desc: "Error message if status is failed" },
+                  { name: "createdAt",            type: "string",  desc: "ISO 8601 timestamp when the call was created" },
+                  { name: "updatedAt",            type: "string",  desc: "ISO 8601 timestamp of the last status change" },
+                ].map(f => (
+                  <tr key={f.name} className="border-b last:border-0">
+                    <td className="py-2.5 px-3 font-mono text-xs font-semibold">{f.name}</td>
+                    <td className="py-2.5 px-3"><Badge variant="outline" className="text-[10px] font-mono">{f.type}</Badge></td>
+                    <td className="py-2.5 px-3 text-xs text-muted-foreground">{f.desc}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </CardContent>
       </Card>

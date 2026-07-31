@@ -10,7 +10,7 @@ const en = {
   "nav.callHistory":  "Call History",
   "nav.outbound":     "Outbound",
   "nav.logs":         "Logs",
-  "nav.api":          "API",
+  "nav.api":          "API Documentation",
   "nav.settings":     "Settings",
   "nav.signOut":      "Sign out",
 
@@ -539,9 +539,14 @@ const en = {
   "logs.clickGoLive2":        "to start streaming logs",
   "logs.waitingEntries":      "Waiting for new log entries…",
 
-  // ── API & Integrations ────────────────────────────────────────────────────
-  "api.title":                "API & Integrations",
+  // ── API Documentation ─────────────────────────────────────────────────────
+  "api.title":                "API Documentation",
   "api.description":          "Connect any CRM, web form, or automation tool to trigger AI calls.",
+  "api.callObject":           "The Call Object",
+  "api.callObjectDesc":       "Every call record returned by the API has the following fields.",
+  "api.errors":               "Errors",
+  "api.errorsDesc":           "The API uses standard HTTP status codes. All error responses return a JSON body with an",
+  "api.errorsDesc2":          "field explaining what went wrong.",
   "api.auth":                 "Authentication",
   "api.authDesc":             "Set the",
   "api.authDesc2":            "environment variable on your server. Then pass it as a header in every request. If the variable is not set, the endpoint is open (development mode).",
@@ -678,7 +683,7 @@ const fr: typeof en = {
   "nav.callHistory":  "Historique des appels",
   "nav.outbound":     "Sortant",
   "nav.logs":         "Journaux",
-  "nav.api":          "API",
+  "nav.api":          "Documentation API",
   "nav.settings":     "Paramètres",
   "nav.signOut":      "Déconnexion",
 
@@ -1207,9 +1212,14 @@ const fr: typeof en = {
   "logs.clickGoLive2":        "pour démarrer les journaux",
   "logs.waitingEntries":      "En attente de nouvelles entrées…",
 
-  // ── API & Integrations ────────────────────────────────────────────────────
-  "api.title":                "API & Intégrations",
+  // ── Documentation API ─────────────────────────────────────────────────────
+  "api.title":                "Documentation API",
   "api.description":          "Connectez n'importe quel CRM, formulaire web ou outil d'automatisation pour déclencher des appels IA.",
+  "api.callObject":           "L'objet Call",
+  "api.callObjectDesc":       "Chaque enregistrement d'appel renvoyé par l'API contient les champs suivants.",
+  "api.errors":               "Erreurs",
+  "api.errorsDesc":           "L'API utilise les codes HTTP standard. Toutes les réponses d'erreur retournent un corps JSON avec un champ",
+  "api.errorsDesc2":          "expliquant ce qui s'est passé.",
   "api.auth":                 "Authentification",
   "api.authDesc":             "Définissez la variable",
   "api.authDesc2":            "sur votre serveur. Transmettez-la ensuite dans chaque requête via un header. Si la variable n'est pas définie, le endpoint est ouvert (mode développement).",
