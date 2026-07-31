@@ -1,0 +1,921 @@
+# SIP4AI Documentation
+
+## Installation
+
+Install SIP4AI with a single command. The installer
+                                automatically detects your platform and downloads the
+                                appropriate binary.
+
+After installation, run
+                                        sip4ai --version
+                                        to confirm the binary is installed correctly.
+
+**Parameters:**
+- `macOS`: Intel and Apple Silicon (arm64)
+- `Linux`: x86_64 and arm64
+
+**Terminal:**
+```
+# Install SIP4AI
+curl -sSL https://sip4ai.com/install.sh | bash
+```
+
+```json
+# Install SIP4AI
+curl -sSL https://sip4ai.com/install.sh | bash
+```
+
+## CLI Usage
+
+The
+                                sip4ai
+                                binary is a standalone application that bridges
+                                SIP telephone networks with AI voice providers.
+
+**Parameters:**
+- `inbound`: Listen for incoming SIP calls and
+                                        connect them to AI providers
+- `outbound`: Make outbound calls to target numbers
+                                        with task-based objectives
+
+**Terminal:**
+```
+# Show help
+./sip4ai --help
+
+# Run the client
+./sip4ai
+```
+
+```json
+# Show help
+./sip4ai --help
+
+# Run the client
+./sip4ai
+```
+
+## Environment Variables
+
+Configure the SIP client using environment
+                                variables. SIP credentials are required for
+                                telephony features; at least one AI provider key
+                                is required for voice AI.
+
+## Configuration File
+
+The
+                                config.json
+                                file controls the behavior of the SIP client,
+                                including the AI provider settings, operating
+                                mode, and function definitions.
+
+**Parameters:**
+- `mode`: Operating mode:
+                                        inbound
+                                        (default) or
+                                        outbound
+- `api_port`: HTTP API port. Set to
+                                        0
+                                        to disable the API server.
+- `provider`: AI provider:
+                                        openai,
+                                        elevenlabs,
+                                        gemini,
+                                        deepgram,
+                                        cartesia
+- `functions`: Array of function definitions for AI to
+                                        call during conversations
+
+**config.json — Full example:**
+```
+{
+  "mode": "inbound",              // "inbound" or "outbound"
+  "api_port": 8080,               // HTTP API port (0 to disable)
+  "provider": "openai",           // AI provider to use
+
+  "openai": {
+    "instructions": "You are a helpful assistant...",
+    "voice": "alloy",             // alloy, echo, fable, onyx, nova, shimmer
+    "greeting": "Hello!"          // For outbound calls
+  },
+
+  "elevenlabs": {
+    "agent_id": "your-agent-id",
+    "first_message": "Hello!",
+    "system_prompt": "You are..."
+  },
+
+  "gemini": {
+    "model": "models/gemini-2.0-flash-exp",
+    "voice": "Puck",              // Aoede, Charon, Fenrir, Kore, Puck
+    "greeting": "Hello!"
+  },
+
+  "deepgram": {
+    "model": "aura-2-thalia-en",
+    "listen_model": "nova-3",
+    "think_provider": "open_ai",
+    "think_model": "gpt-4o-mini"
+  },
+
+  "cartesia": {
+    "voice_id": "your-voice-id",
+    "stt_provider": "deepgram",
+    "llm_provider": "openai",
+    "llm_model": "gpt-4o-mini"
+  },
+
+  "outbound": {
+    "target_number": "+1234567890",
+    "caller_id": "+1987654321",
+    "task_description": "Call to confirm appointment...",
+    "result_webhook": "https://example.com/webhook",
+    "hangup_on_task_complete": true
+  },
+
+  "functions": [
+    {
+      "name": "get_customer_info",
+      "description": "Look up customer by phone",
+      "webhook": "https://api.example.com/customer",
+      "method": "POST",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "phone": { "type": "string" }
+        }
+      }
+    }
+  ]
+}
+```
+
+```json
+{
+  "mode": "inbound",              // "inbound" or "outbound"
+  "api_port": 8080,               // HTTP API port (0 to disable)
+  "provider": "openai",           // AI provider to use
+
+  "openai": {
+    "instructions": "You are a helpful assistant...",
+    "voice": "alloy",             // alloy, echo, fable, onyx, nova, shimmer
+    "greeting": "Hello!"          // For outbound calls
+  },
+
+  "elevenlabs": {
+    "agent_id": "your-agent-id",
+    "first_message": "Hello!",
+    "system_prompt": "You are..."
+  },
+
+  "gemini": {
+    "model": "models/gemini-2.0-flash-exp",
+    "voice": "Puck",              // Aoede, Charon, Fenrir, Kore, Puck
+    "greeting": "Hello!"
+  },
+
+  "deepgram": {
+    "model": "aura-2-thalia-en",
+    "listen_model": "nova-3",
+    "think_provider": "open_ai",
+    "think_model": "gpt-4o-mini"
+  },
+
+  "cartesia": {
+    "voice_id": "your-voice-id",
+    "stt_provider": "deepgram",
+    "llm_provider": "openai",
+    "llm_model": "gpt-4o-mini"
+  },
+
+  "outbound": {
+    "target_number": "+1234567890",
+    "caller_id": "+1987654321",
+    "task_description": "Call to confirm appointment...",
+    "result_webhook": "https://example.com/webhook",
+    "hangup_on_task_complete": true
+  },
+
+  "functions": [
+    {
+      "name": "get_customer_info",
+      "description": "Look up customer by phone",
+      "webhook": "https://api.example.com/customer",
+      "method": "POST",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "phone": { "type": "string" }
+        }
+      }
+    }
+  ]
+}
+```
+
+## Examples
+
+Common usage patterns for running the SIP4AI
+                                client.
+
+```
+./sip4ai
+```
+
+```
+SIP_USERNAME=user \
+SIP_PASSWORD=pass \
+SIP_DOMAIN=pbx.example.com \
+SIP_SERVER=pbx.example.com \
+OPENAI_API_KEY=sk-... \
+./sip4ai
+```
+
+```
+CONFIG_FILE=my_config.json ./sip4ai
+```
+
+```
+CONFIG_FILE=outbound_config.json \
+SIP_USERNAME=user \
+SIP_PASSWORD=pass \
+SIP_DOMAIN=pbx.example.com \
+SIP_SERVER=pbx.example.com \
+OPENAI_API_KEY=sk-... \
+./sip4ai
+```
+
+```json
+SIP_USERNAME=user \
+SIP_PASSWORD=pass \
+SIP_DOMAIN=pbx.example.com \
+SIP_SERVER=pbx.example.com \
+OPENAI_API_KEY=sk-... \
+./sip4ai
+```
+
+```json
+CONFIG_FILE=my_config.json ./sip4ai
+```
+
+```json
+CONFIG_FILE=outbound_config.json \
+SIP_USERNAME=user \
+SIP_PASSWORD=pass \
+SIP_DOMAIN=pbx.example.com \
+SIP_SERVER=pbx.example.com \
+OPENAI_API_KEY=sk-... \
+./sip4ai
+```
+
+## Introduction
+
+The SIP4AI HTTP API provides programmatic access
+                                to manage calls, inject prompts, and monitor
+                                system status. The API runs on the same port as
+                                the SIP client (default:
+                                8080).
+
+Configure the port using the
+                                    API_PORT
+                                    environment variable.
+
+## Authentication
+
+The SIP4AI HTTP API does not require
+                                authentication by default. It is designed to run
+                                on localhost and be accessed by local
+                                applications. For production deployments, place
+                                the API behind a reverse proxy with
+                                authentication.
+
+Do not expose the API directly to the
+                                        internet. Use a reverse proxy (nginx,
+                                        Caddy) with authentication for remote
+                                        access.
+
+## Errors
+
+The API uses standard HTTP status codes to
+                                indicate success or failure. Error responses
+                                include a JSON body with details about the
+                                error.
+
+**Parameters:**
+- `200`: Request succeeded
+- `400`: Invalid request parameters or body
+- `404`: Resource (e.g., call ID) not found
+- `500`: Server error — contact support if
+                                        persistent
+
+**Response:**
+```
+{
+  "error": "call not found",
+  "code": "NOT_FOUND"
+}
+```
+
+```json
+{
+  "error": "call not found",
+  "code": "NOT_FOUND"
+}
+```
+
+## Health check
+
+Returns a simple health status. Use this
+                                    endpoint for load balancer health checks or
+                                    uptime monitoring.
+
+**Endpoint:** `GET /health`
+
+**Parameters:**
+- `status`: Always
+                                                ok
+                                                when the server is running
+
+**Request:**
+```
+curl http://localhost:8080/health
+```
+
+**Response:**
+```
+{
+  "status": "ok"
+}
+```
+
+```json
+{
+  "status": "ok"
+}
+```
+
+## Get system status
+
+Returns detailed system status including SIP
+                                    registration state and active call
+                                    information.
+
+**Endpoint:** `GET /status`
+
+**Parameters:**
+- `sip_registered`: Whether SIP client is registered
+                                                with the server
+- `active_calls`: Number of currently active calls
+- `calls`: List of active call objects with
+                                                id, status, and duration
+- `uptime`: Human-readable uptime string
+
+**Request:**
+```
+curl http://localhost:8080/status
+```
+
+**Response:**
+```
+{
+  "sip_registered": true,
+  "active_calls": 1,
+  "calls": [
+    {
+      "id": "abc-123-def",
+      "status": "in_progress",
+      "duration": 45
+    }
+  ],
+  "uptime": "2h15m30s"
+}
+```
+
+```json
+{
+  "sip_registered": true,
+  "active_calls": 1,
+  "calls": [
+    {
+      "id": "abc-123-def",
+      "status": "in_progress",
+      "duration": 45
+    }
+  ],
+  "uptime": "2h15m30s"
+}
+```
+
+## The Call object
+
+A Call represents a voice conversation between
+                                the AI and a phone number. Calls can be inbound
+                                (received) or outbound (initiated via API).
+
+**Parameters:**
+- `id`: Unique identifier for the call (UUID
+                                        format)
+- `status`: Current status:
+                                        initiating,
+                                        ringing,
+                                        in_progress,
+                                        completed,
+                                        failed
+- `direction`: Either
+                                        inbound
+                                        or
+                                        outbound
+- `target`: Phone number in E.164 format (e.g.,
+                                        +61400000000)
+- `provider`: AI provider used:
+                                        openai,
+                                        elevenlabs,
+                                        gemini,
+                                        deepgram,
+                                        cartesia
+- `duration`: Call duration in seconds (null if not
+                                        completed)
+- `transcript`: Full conversation transcript with
+                                        speaker labels
+- `created_at`: ISO 8601 timestamp of when the call was
+                                        created
+
+**The Call object:**
+```
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "status": "in_progress",
+  "direction": "outbound",
+  "target": "+61400000000",
+  "provider": "openai",
+  "duration": null,
+  "transcript": [],
+  "created_at": "2024-01-15T10:30:00Z"
+}
+```
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "status": "in_progress",
+  "direction": "outbound",
+  "target": "+61400000000",
+  "provider": "openai",
+  "duration": null,
+  "transcript": [],
+  "created_at": "2024-01-15T10:30:00Z"
+}
+```
+
+## Create a call
+
+Initiate an outbound call to a phone number. The
+                                AI will attempt to reach the target and complete
+                                the specified task.
+
+**Endpoint:** `POST /api/calls`
+
+**Parameters:**
+- `target` (required): Phone number to call in E.164 format
+- `task` (required): The objective for the AI to accomplish
+                                        during the call
+- `instructions`: Additional behavioral instructions for
+                                        the AI
+- `provider`: AI provider to use. Defaults to config
+                                        setting.
+- `caller_id`: Outbound caller ID to display (must be
+                                        verified)
+- `max_duration_seconds`: Maximum call duration. Default: 300 (5
+                                        minutes)
+- `event_webhook`: URL to receive call events via POST
+- `functions`: Array of function definitions the AI can
+                                        call
+
+**Request:**
+```
+curl -X POST https://your-instance.com/api/calls \
+  -H "Authorization: Bearer sk_live_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "target": "+61400000000",
+    "task": "Confirm the appointment for Tuesday at 2pm",
+    "instructions": "Be friendly and professional",
+    "max_duration_seconds": 300,
+    "event_webhook": "https://your-app.com/webhook"
+  }'
+```
+
+**Response:**
+```
+{
+  "success": true,
+  "call_id": "550e8400-e29b-41d4-a716-446655440000",
+  "status": "initiating",
+  "created_at": "2024-01-15T10:30:00Z"
+}
+```
+
+```json
+{
+  "success": true,
+  "call_id": "550e8400-e29b-41d4-a716-446655440000",
+  "status": "initiating",
+  "created_at": "2024-01-15T10:30:00Z"
+}
+```
+
+## Retrieve a call
+
+Retrieve details of a specific call including
+                                status, duration, and transcript.
+
+**Endpoint:** `GET /api/calls/{call_id}`
+
+**Request:**
+```
+curl https://your-instance.com/api/calls/550e8400... \
+  -H "Authorization: Bearer sk_live_..."
+```
+
+**Response:**
+```
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "status": "completed",
+  "direction": "outbound",
+  "target": "+61400000000",
+  "provider": "openai",
+  "duration": 127,
+  "transcript": [
+    {
+      "speaker": "ai",
+      "text": "Hello, this is calling about your Tuesday appointment...",
+      "timestamp": 0.5
+    },
+    {
+      "speaker": "user",
+      "text": "Yes, that's correct. 2pm works for me.",
+      "timestamp": 5.2
+    }
+  ],
+  "created_at": "2024-01-15T10:30:00Z",
+  "ended_at": "2024-01-15T10:32:07Z"
+}
+```
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "status": "completed",
+  "direction": "outbound",
+  "target": "+61400000000",
+  "provider": "openai",
+  "duration": 127,
+  "transcript": [
+    {
+      "speaker": "ai",
+      "text": "Hello, this is calling about your Tuesday appointment...",
+      "timestamp": 0.5
+    },
+    {
+      "speaker": "user",
+      "text": "Yes, that's correct. 2pm works for me.",
+      "timestamp": 5.2
+    }
+  ],
+  "created_at": "2024-01-15T10:30:00Z",
+  "ended_at": "2024-01-15T10:32:07Z"
+}
+```
+
+## List all calls
+
+Returns a paginated list of calls, sorted by
+                                creation date (newest first).
+
+**Endpoint:** `GET /api/calls`
+
+**Parameters:**
+- `limit`: Number of results per page (1-100).
+                                        Default: 20
+- `offset`: Number of results to skip. Default: 0
+- `status`: Filter by call status
+
+**Request:**
+```
+curl "https://your-instance.com/api/calls?limit=20&status=completed" \
+  -H "Authorization: Bearer sk_live_..."
+```
+
+## Inject context
+
+Inject additional context or instructions into
+                                an active call. The AI will incorporate this
+                                information into the ongoing conversation.
+
+**Endpoint:** `POST /api/calls/{call_id}/inject`
+
+**Parameters:**
+- `message` (required): Context or instruction to inject into
+                                        the conversation
+- `role`: Message role:
+                                        system
+                                        (default) or
+                                        user
+
+**Request:**
+```
+curl -X POST https://your-instance.com/api/calls/550e8400.../inject \
+  -H "Authorization: Bearer sk_live_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "message": "The customer has a VIP status. Offer them a 20% discount.",
+    "role": "system"
+  }'
+```
+
+## End a call
+
+Immediately terminate an active call. The AI
+                                will say a brief goodbye before hanging up.
+
+**Endpoint:** `DELETE /api/calls/{call_id}`
+
+**Request:**
+```
+curl -X DELETE https://your-instance.com/api/calls/550e8400... \
+  -H "Authorization: Bearer sk_live_..."
+```
+
+**Response:**
+```
+{
+  "success": true,
+  "call_id": "550e8400-e29b-41d4-a716-446655440000",
+  "status": "ending"
+}
+```
+
+```json
+{
+  "success": true,
+  "call_id": "550e8400-e29b-41d4-a716-446655440000",
+  "status": "ending"
+}
+```
+
+## Functions
+
+Functions allow the AI to call your webhooks
+                                during a conversation. This enables real-time
+                                actions like booking appointments, checking
+                                order status, or transferring calls.
+
+Functions execute immediately when the AI
+                                    decides to call them. Hold audio plays while
+                                    waiting for your response.
+
+All function calls include a signature
+                                    header for verification. Validate requests
+                                    to ensure they're from SIP4AI.
+
+## Define functions
+
+Define functions when creating a call. Each
+                                function needs a name, description, parameters
+                                schema, and webhook URL.
+
+**Function definition example:**
+```
+{
+  "functions": [
+    {
+      "name": "book_appointment",
+      "description": "Book an appointment for the caller",
+      "webhook": "https://your-app.com/api/book",
+      "hold_audio_url": "https://your-app.com/audio/hold.wav",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "description": "The appointment date (YYYY-MM-DD)"
+          },
+          "time": {
+            "type": "string",
+            "description": "The appointment time (HH:MM)"
+          }
+        },
+        "required": ["date", "time"]
+      }
+    },
+    {
+      "name": "transfer_call",
+      "description": "Transfer the call to a human agent",
+      "type": "transfer",
+      "target": "+61400000001"
+    }
+  ]
+}
+```
+
+```json
+{
+  "functions": [
+    {
+      "name": "book_appointment",
+      "description": "Book an appointment for the caller",
+      "webhook": "https://your-app.com/api/book",
+      "hold_audio_url": "https://your-app.com/audio/hold.wav",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "description": "The appointment date (YYYY-MM-DD)"
+          },
+          "time": {
+            "type": "string",
+            "description": "The appointment time (HH:MM)"
+          }
+        },
+        "required": ["date", "time"]
+      }
+    },
+    {
+      "name": "transfer_call",
+      "description": "Transfer the call to a human agent",
+      "type": "transfer",
+      "target": "+61400000001"
+    }
+  ]
+}
+```
+
+## Webhook events
+
+SIP4AI sends webhook events to your specified URL
+                                for important call lifecycle events.
+
+## Payload format
+
+All webhook payloads follow a consistent format
+                                with event type, call ID, timestamp, and
+                                event-specific data.
+
+**call.completed webhook payload:**
+```
+{
+  "event": "call.completed",
+  "call_id": "550e8400-e29b-41d4-a716-446655440000",
+  "timestamp": "2024-01-15T10:32:07Z",
+  "data": {
+    "duration": 127,
+    "end_reason": "completed",
+    "transcript": [
+      {
+        "speaker": "ai",
+        "text": "Hello, this is calling about your Tuesday appointment...",
+        "timestamp": 0.5
+      }
+    ],
+    "functions_called": [
+      {
+        "name": "book_appointment",
+        "arguments": { "date": "2024-01-16", "time": "14:00" },
+        "result": { "success": true }
+      }
+    ]
+  }
+}
+```
+
+```json
+{
+  "event": "call.completed",
+  "call_id": "550e8400-e29b-41d4-a716-446655440000",
+  "timestamp": "2024-01-15T10:32:07Z",
+  "data": {
+    "duration": 127,
+    "end_reason": "completed",
+    "transcript": [
+      {
+        "speaker": "ai",
+        "text": "Hello, this is calling about your Tuesday appointment...",
+        "timestamp": 0.5
+      }
+    ],
+    "functions_called": [
+      {
+        "name": "book_appointment",
+        "arguments": { "date": "2024-01-16", "time": "14:00" },
+        "result": { "success": true }
+      }
+    ]
+  }
+}
+```
+
+## OpenAI Realtime
+
+GPT-4o powered realtime voice conversations with
+                                advanced reasoning capabilities.
+
+**Parameters:**
+- `voice`: Voice to use: shimmer, alloy, echo,
+                                        fable, onyx, nova
+- `turn_detection`: VAD configuration with threshold and
+                                        silence duration
+- `instructions`: System prompt for the AI assistant
+
+**OpenAI configuration:**
+```
+{
+  "provider": "openai",
+  "openai": {
+    "instructions": "You are a helpful assistant...",
+    "voice": "shimmer",
+    "turn_detection": {
+      "type": "server_vad",
+      "threshold": 0.7,
+      "silence_duration_ms": 1000
+    }
+  }
+}
+```
+
+```json
+{
+  "provider": "openai",
+  "openai": {
+    "instructions": "You are a helpful assistant...",
+    "voice": "shimmer",
+    "turn_detection": {
+      "type": "server_vad",
+      "threshold": 0.7,
+      "silence_duration_ms": 1000
+    }
+  }
+}
+```
+
+## ElevenLabs
+
+Native 8kHz support for the lowest possible
+                                latency. Configure your agent in the ElevenLabs
+                                dashboard.
+
+**ElevenLabs configuration:**
+```
+{
+  "provider": "elevenlabs",
+  "elevenlabs": {
+    "agent_id": "your-agent-id",
+    "first_message": "Hello! How can I help you today?",
+    "system_prompt": "You are a helpful assistant..."
+  }
+}
+```
+
+```json
+{
+  "provider": "elevenlabs",
+  "elevenlabs": {
+    "agent_id": "your-agent-id",
+    "first_message": "Hello! How can I help you today?",
+    "system_prompt": "You are a helpful assistant..."
+  }
+}
+```
+
+## Gemini Live
+
+Google's Gemini 2.0 Flash with five distinct
+                                voices and built-in function calling.
+
+**Gemini configuration:**
+```
+{
+  "provider": "gemini",
+  "gemini": {
+    "model": "models/gemini-2.0-flash-exp",
+    "voice": "Kore",
+    "first_message": "Hello!",
+    "system_prompt": "You are a helpful assistant..."
+  }
+}
+```
+
+```json
+{
+  "provider": "gemini",
+  "gemini": {
+    "model": "models/gemini-2.0-flash-exp",
+    "voice": "Kore",
+    "first_message": "Hello!",
+    "system_prompt": "You are a helpful assistant..."
+  }
+}
+```
+

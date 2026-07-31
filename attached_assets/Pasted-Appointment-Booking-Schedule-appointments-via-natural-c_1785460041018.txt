@@ -1,0 +1,173 @@
+Appointment Booking
+Schedule appointments via natural conversation
+Overview
+
+Let callers book, reschedule, or cancel appointments through natural conversation. Integrates with your calendar system to check real-time availability.
+
+Benefits
+
+Reduce no-shows with automated confirmations
+Book appointments outside business hours
+Handle multiple calendar systems
+Send automatic reminders
+Example Conversation
+
+AI AGENT
+Hello, thank you for calling Downtown Dental. I can help you schedule, reschedule, or check on an appointment. What would you like to do today?
+CALLER
+I need to book a teeth cleaning.
+AI AGENT
+I'd be happy to help you book a cleaning appointment. What date works best for you?
+CALLER
+Do you have anything next Tuesday morning?
+→ check_availability({date: '2024-01-16', appointment_type: 'cleaning', preferred_time: 'morning'})
+AI AGENT
+Yes, I have openings next Tuesday, January 16th at 8:30 AM, 9:00 AM, and 10:30 AM. Which time would you prefer?
+CALLER
+10:30 works great.
+AI AGENT
+Perfect. And may I have your name and phone number for the booking?
+CALLER
+Sarah Williams, 555-234-5678
+→ book_appointment({date: '2024-01-16', time: '10:30', appointment_type: 'cleaning', patient_name: 'Sarah Williams', patient_phone: '+1-555-234-5678'})
+AI AGENT
+Excellent! I've booked your cleaning appointment for Tuesday, January 16th at 10:30 AM. You'll receive a text confirmation shortly. Is there anything else I can help you with?
+1. System Prompt
+Configure your AI agent's personality and behavior.
+
+system_prompt.txt
+Copy
+You are an appointment scheduling assistant for Downtown Dental Clinic. Help callers:
+1. Book new appointments
+2. Reschedule existing appointments
+3. Cancel appointments
+4. Check appointment status
+
+Available appointment types:
+- Cleaning (30 min)
+- Checkup (45 min)
+- Consultation (30 min)
+- Emergency (60 min)
+
+Office hours: Monday-Friday 8am-6pm, Saturday 9am-2pm
+
+Always confirm the date, time, and appointment type before booking. Collect patient name and phone number for new patients.
+2. Tools / Functions
+Define the actions your AI agent can perform.
+
+check_availability()
+Check available appointment slots for a given date and type
+PARAMETERS
+
+{
+            "date": string - Date in YYYY-MM-DD format,
+            "appointment_type": string - Type of appointment (cleaning, checkup, consultation, emergency),
+            "preferred_time": string (optional) - Preferred time of day (morning, afternoon, evening)
+        }
+EXAMPLE CALL
+
+check_availability({"date": "2024-01-15", "appointment_type": "cleaning", "preferred_time": "morning"})
+book_appointment()
+Book an appointment slot
+PARAMETERS
+
+{
+            "date": string - Date in YYYY-MM-DD format,
+            "time": string - Time in HH:MM format,
+            "appointment_type": string - Type of appointment,
+            "patient_name": string - Full name of the patient,
+            "patient_phone": string - Contact phone number,
+            "patient_email": string (optional) - Email for confirmation,
+            "notes": string (optional) - Any special notes or requests
+        }
+EXAMPLE CALL
+
+book_appointment({"date": "2024-01-15", "time": "10:30", "appointment_type": "cleaning", "patient_name": "Jane Doe", "patient_phone": "+1-555-987-6543"})
+lookup_appointment()
+Find existing appointment by patient phone number
+PARAMETERS
+
+{
+            "phone": string - Patient's phone number
+        }
+EXAMPLE CALL
+
+lookup_appointment({"phone": "+1-555-987-6543"})
+cancel_appointment()
+Cancel an existing appointment
+PARAMETERS
+
+{
+            "appointment_id": string - The appointment ID to cancel,
+            "reason": string (optional) - Reason for cancellation
+        }
+EXAMPLE CALL
+
+cancel_appointment({"appointment_id": "APT-2024-0142", "reason": "Patient requested reschedule"})
+3. Webhook Handler
+Handle tool calls from SIP4AI in your backend.
+
+webhook.js
+Copy
+app.post('/webhook/booking', async (req, res) => {
+  const { tool_name, parameters } = req.body;
+  
+  switch (tool_name) {
+    case 'check_availability':
+      // Query Google Calendar / Calendly / custom system
+      const slots = await calendar.getAvailableSlots({
+        date: parameters.date,
+        duration: APPOINTMENT_DURATIONS[parameters.appointment_type],
+        preferredTime: parameters.preferred_time
+      });
+      return res.json({
+        available_slots: slots.map(s => s.time),
+        date: parameters.date
+      });
+      
+    case 'book_appointment':
+      // Create calendar event and database record
+      const appointment = await calendar.createEvent({
+        start: `${parameters.date}T${parameters.time}`,
+        duration: APPOINTMENT_DURATIONS[parameters.appointment_type],
+        title: `${parameters.appointment_type} - ${parameters.patient_name}`,
+        description: parameters.notes
+      });
+      
+      // Store in database
+      await db.appointments.create({
+        ...parameters,
+        calendar_event_id: appointment.id,
+        status: 'confirmed'
+      });
+      
+      // Send confirmation SMS
+      await twilio.messages.create({
+        to: parameters.patient_phone,
+        body: `Confirmed: ${parameters.appointment_type} on ${parameters.date} at ${parameters.time}`
+      });
+      
+      return res.json({
+        success: true,
+        appointment_id: appointment.id,
+        confirmation: `Booked for ${parameters.date} at ${parameters.time}`
+      });
+      
+    case 'lookup_appointment':
+      const existing = await db.appointments.findByPhone(parameters.phone);
+      return res.json({
+        found: existing.length > 0,
+        appointments: existing.map(a => ({
+          id: a.id,
+          date: a.date,
+          time: a.time,
+          type: a.appointment_type
+        }))
+      });
+      
+    case 'cancel_appointment':
+      await calendar.deleteEvent(parameters.appointment_id);
+      await db.appointments.updateStatus(parameters.appointment_id, 'cancelled');
+      return res.json({ success: true, message: 'Appointment cancelled' });
+  }
+});
