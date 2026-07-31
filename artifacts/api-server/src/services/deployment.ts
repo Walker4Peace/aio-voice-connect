@@ -204,6 +204,17 @@ function parseAndStoreCallEvents(extensionId: number, line: string, timestamp: s
     );
     if (!alreadyInvited) {
       pushEvent({ extensionId, callId, event: "invite", timestamp });
+
+      // Always backfill in-memory events that fired before the bridge was
+      // registered (e.g. connected_ai whose callId was still "unknown").
+      // This is unconditional so it works even if the DB outbound-call record
+      // was already past "dialing" status (race) or doesn't exist.
+      for (const ev of persistedCallEvents) {
+        if (ev.extensionId === extensionId && ev.callId === "unknown") {
+          ev.callId = callId;
+        }
+      }
+
       void (async () => {
         try {
           const updated = await db
@@ -215,23 +226,20 @@ function parseAndStoreCallEvents(extensionId: number, line: string, timestamp: s
             ))
             .returning({ callId: outboundCallsTable.callId });
 
-          if (updated.length > 0) {
-            // Backfill any pre-bridge events (connected_ai fired before bridge
-            // was registered, so their callId was "unknown").  Stamp the real callId.
-            for (const ev of persistedCallEvents) {
-              if (ev.extensionId === extensionId && ev.callId === "unknown") {
-                ev.callId = callId;
-              }
-            }
-            await db
-              .update(callEventsTable)
-              .set({ callId })
-              .where(and(
-                eq(callEventsTable.extensionId, extensionId),
-                eq(callEventsTable.callId, "unknown"),
-              ));
-            logger.info({ extensionId, callId }, "Outbound bridge registered — callId linked, pre-bridge events backfilled");
-          }
+          // Persist the DB-side backfill regardless of whether the outbound
+          // call record was updated (covers both the normal path and races).
+          await db
+            .update(callEventsTable)
+            .set({ callId })
+            .where(and(
+              eq(callEventsTable.extensionId, extensionId),
+              eq(callEventsTable.callId, "unknown"),
+            ));
+
+          logger.info(
+            { extensionId, callId, outboundRecordUpdated: updated.length > 0 },
+            "Outbound bridge registered — callId linked, pre-bridge events backfilled",
+          );
         } catch (err) {
           logger.error({ err, extensionId }, "Failed to link outbound bridge callId");
         }
