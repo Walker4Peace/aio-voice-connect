@@ -67,25 +67,25 @@ function fmtTs(ts: string | null): string {
 // ── Style maps ────────────────────────────────────────────────────────────────
 
 const EXT_LEVEL_STYLES: Record<string, string> = {
-  INFO:  "text-green-400 bg-green-400/10 border border-green-400/20",
-  WARN:  "text-yellow-400 bg-yellow-400/10 border border-yellow-400/20",
-  ERROR: "text-red-400 bg-red-400/10 border border-red-400/20",
-  DEBUG: "text-blue-400 bg-blue-400/10 border border-blue-400/20",
+  INFO:  "text-white bg-green-600",
+  WARN:  "text-black bg-yellow-400",
+  ERROR: "text-white bg-red-600",
+  DEBUG: "text-white bg-blue-600",
 };
 
 const CAT_STYLES: Record<string, string> = {
-  DEPLOYMENT: "text-blue-400   bg-blue-400/10   border border-blue-400/20",
-  WATCHDOG:   "text-yellow-400 bg-yellow-400/10 border border-yellow-400/20",
-  STARTUP:    "text-green-400  bg-green-400/10  border border-green-400/20",
-  YEASTAR:    "text-purple-400 bg-purple-400/10 border border-purple-400/20",
-  HTTP:       "text-gray-400   bg-gray-400/10   border border-gray-400/20",
-  OTHER:      "text-gray-500   bg-gray-500/10   border border-gray-500/20",
+  DEPLOYMENT: "text-white  bg-blue-600",
+  WATCHDOG:   "text-black  bg-yellow-400",
+  STARTUP:    "text-white  bg-green-600",
+  YEASTAR:    "text-white  bg-purple-600",
+  HTTP:       "text-white  bg-gray-500",
+  OTHER:      "text-white  bg-gray-600",
 };
 
 const EXT_ROW_COLOR: Record<string, string> = {
-  ERROR: "text-red-300",
-  WARN:  "text-yellow-300",
-  DEBUG: "text-blue-300",
+  ERROR: "text-gray-100",
+  WARN:  "text-gray-100",
+  DEBUG: "text-gray-100",
   INFO:  "text-gray-200",
 };
 
@@ -193,9 +193,9 @@ function TerminalShell({
           </button>
           <button
             onClick={onLiveToggle}
-            className={`inline-flex items-center gap-1.5 h-7 px-2.5 rounded text-xs font-medium border transition-colors ${isLive
+            className={`inline-flex items-center gap-1.5 h-7 px-2.5 rounded text-xs font-semibold border transition-colors ${isLive
               ? "bg-blue-600 hover:bg-blue-500 text-white border-blue-500"
-              : "bg-transparent border-gray-600 text-gray-400 hover:text-gray-200 hover:border-gray-400"}`}
+              : "bg-gray-200 hover:bg-gray-300 text-gray-900 border-gray-300"}`}
           >
             <RefreshCw className={`h-3.5 w-3.5 ${isLive ? "animate-spin" : ""}`} />
             {isLive ? t("logs.live") : t("logs.goLive")}
@@ -324,7 +324,7 @@ function ExtensionTab() {
               : <span className="text-gray-600">{t("logs.noExtSelected")}</span>
             }
             {(selectedStatus || selectedExt?.agentConfig?.mode === "outbound") && (
-              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${isRunning ? "text-green-400 bg-green-400/10 border-green-400/20" : "text-gray-500 bg-gray-500/10 border-gray-500/20"}`}>
+              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${isRunning ? "bg-green-600 text-white" : "bg-gray-300 text-gray-800"}`}>
                 {isRunning ? t("deploy.status.registered") : t("logs.notRegistered")}
               </span>
             )}
@@ -412,12 +412,12 @@ function SystemTab() {
       headerLeft={<><Server className="h-3.5 w-3.5" />{t("logs.system")}</>}
       headerRight={
         <Select value={filterCat} onValueChange={v => setFilterCat(v as SystemCategory)}>
-          <SelectTrigger className="h-7 text-xs w-36 border-gray-700 bg-[#0d1117] text-gray-300 focus:ring-0 focus:ring-offset-0">
+          <SelectTrigger className="h-7 text-xs w-36 border-gray-300 bg-white text-gray-900 focus:ring-0 focus:ring-offset-0">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent className="bg-[#161b22] border-gray-700 text-gray-200">
+          <SelectContent className="bg-white border-gray-200 text-gray-900">
             {ALL_SYSTEM_CATEGORIES.map(cat => (
-              <SelectItem key={cat} value={cat} className="text-xs text-gray-200 focus:bg-gray-700/60 focus:text-white">
+              <SelectItem key={cat} value={cat} className="text-xs text-gray-900 focus:bg-gray-100 focus:text-gray-900">
                 {cat === "ALL" ? t("logs.allCategories") : cat.charAt(0) + cat.slice(1).toLowerCase()}
               </SelectItem>
             ))}
