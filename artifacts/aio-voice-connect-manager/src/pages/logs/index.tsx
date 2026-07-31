@@ -193,7 +193,10 @@ function TerminalShell({
         <div className="flex items-center gap-1.5">
           {headerRight}
           <button
-            className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded text-xs text-red-400/80 hover:text-red-400 hover:bg-red-400/10 transition-colors"
+            className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded text-xs font-medium border transition-colors hover:opacity-90"
+            style={{ color: "#f87171", borderColor: "#f87171", backgroundColor: "transparent" }}
+            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "rgba(248,113,113,0.12)"; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent"; }}
             onClick={onClear}
           >
             <Trash2 className="h-3.5 w-3.5" /> {t("logs.clear")}
