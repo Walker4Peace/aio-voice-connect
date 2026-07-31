@@ -193,9 +193,11 @@ function TerminalShell({
             <Trash2 className="h-3.5 w-3.5" /> {t("logs.clear")}
           </Button>
           <Button
-            variant={isLive ? "default" : "outline"} size="sm"
-            className={`gap-1.5 h-7 text-xs ${isLive ? "" : "border-gray-700 text-gray-300"}`}
+            size="sm"
             onClick={onLiveToggle}
+            className={`gap-1.5 h-7 text-xs border ${isLive
+              ? "bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
+              : "bg-gray-100 hover:bg-gray-200 text-black border-gray-200"}`}
           >
             <RefreshCw className={`h-3.5 w-3.5 ${isLive ? "animate-spin" : ""}`} />
             {isLive ? t("logs.live") : t("logs.goLive")}

@@ -247,7 +247,7 @@ function ApiKeyManager() {
               <AlertDialogDescription>{t("api.keyConfirmRevokeDesc")}</AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>{t("clients.cancelBtn")}</AlertDialogCancel>
+              <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
               <AlertDialogAction
                 onClick={handleRevoke}
                 disabled={revoking}

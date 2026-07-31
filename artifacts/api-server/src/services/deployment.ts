@@ -407,8 +407,7 @@ function closeOutstandingCalls(extensionId: number): void {
   for (const callId of inviteIds) {
     if (!endedIds.has(callId)) {
       hadOpenCalls = true;
-      persistedCallEvents.push({ extensionId, callId, event: "ended", timestamp, detail: "extension stopped" });
-      if (persistedCallEvents.length > MAX_PERSISTED_EVENTS) persistedCallEvents.shift();
+      pushEvent({ extensionId, callId, event: "ended", timestamp, detail: "extension stopped" });
     }
   }
   // Fail any active outbound call — extension going down means the call is lost
@@ -1136,6 +1135,21 @@ export async function startExtension(extensionId: number, opts?: {
     // BYE WARN log line was not detected (e.g. process killed externally).
     if (outboundCallModes.has(extensionId)) {
       outboundCallModes.delete(extensionId);
+      // Store "ended" event for any open invite so Call History shows the call as finished.
+      // This covers crashes/panics that prevent the BYE log line from being emitted.
+      const exitTimestamp = new Date().toISOString();
+      const inviteIds = new Set<string>();
+      const endedIds = new Set<string>();
+      for (const e of persistedCallEvents) {
+        if (e.extensionId !== extensionId) continue;
+        if (e.event === "invite") inviteIds.add(e.callId);
+        if (e.event === "ended") endedIds.add(e.callId);
+      }
+      for (const callId of inviteIds) {
+        if (!endedIds.has(callId)) {
+          pushEvent({ extensionId, callId, event: "ended", timestamp: exitTimestamp });
+        }
+      }
       finalizeOutboundCall(extensionId, "completed");
       logger.info({ extensionId, code, signal }, "Outbound call ended — extension returning to idle (stopped)");
       return; // expected exit — skip watchdog
