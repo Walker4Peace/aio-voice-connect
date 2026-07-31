@@ -10,6 +10,7 @@ import setupRouter from "./setup.js";
 import authRouter from "./auth.js";
 import settingsRouter from "./settings.js";
 import outboundRouter from "./outbound.js";
+import apiKeysRouter from "./apiKeys.js";
 
 const router: IRouter = Router();
 
@@ -24,5 +25,6 @@ router.use(agentToolsRouter);
 router.use(statsRouter);
 router.use(deployRouter);
 router.use(outboundRouter);
+router.use(apiKeysRouter);
 
 export default router;

@@ -10,9 +10,29 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Copy, Check, Zap, Key, Webhook, Code2, FlaskConical } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Copy, Check, Zap, Key, Webhook, Code2, FlaskConical, Plus, Trash2, ShieldCheck, Eye, EyeOff } from "lucide-react";
 
 const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, "") + "/api";
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+interface ApiKeyRow {
+  id: number;
+  name: string;
+  keyPrefix: string;
+  active: boolean;
+  createdAt: string;
+  lastUsedAt: string | null;
+}
 
 // ── Copy button ───────────────────────────────────────────────────────────────
 function CopyBtn({ text }: { text: string }) {
@@ -72,6 +92,201 @@ function FieldRow({ name, type, required, desc }: { name: string; type: string; 
       </td>
       <td className="py-2.5 text-xs text-muted-foreground">{desc}</td>
     </tr>
+  );
+}
+
+// ── Inline copy button (for revealed key) ─────────────────────────────────────
+function InlineCopy({ text }: { text: string }) {
+  const { t } = useTranslation();
+  const [copied, setCopied] = React.useState(false);
+  const copy = () => {
+    navigator.clipboard?.writeText(text).catch(() => {
+      const el = document.createElement("textarea");
+      el.value = text;
+      el.style.cssText = "position:fixed;opacity:0";
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand("copy");
+      document.body.removeChild(el);
+    });
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
+  return (
+    <button onClick={copy} className="ml-2 p-1 rounded hover:bg-muted transition-colors shrink-0" title={t("api.copy")}>
+      {copied ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5 text-muted-foreground" />}
+    </button>
+  );
+}
+
+// ── API Key Manager sub-section ───────────────────────────────────────────────
+function ApiKeyManager() {
+  const { t } = useTranslation();
+  const { toast } = useToast();
+  const [keys, setKeys] = React.useState<ApiKeyRow[]>([]);
+  const [newKeyName, setNewKeyName] = React.useState("");
+  const [creating, setCreating] = React.useState(false);
+  const [revokeTarget, setRevokeTarget] = React.useState<ApiKeyRow | null>(null);
+  const [revoking, setRevoking] = React.useState(false);
+  const [revealedKey, setRevealedKey] = React.useState<{ id: number; plaintext: string } | null>(null);
+  const [showKey, setShowKey] = React.useState(false);
+
+  const fetchKeys = React.useCallback(async () => {
+    try {
+      const r = await fetch(`${API_BASE}/api-keys`);
+      if (r.ok) setKeys(await r.json());
+    } catch { /* ignore */ }
+  }, []);
+
+  React.useEffect(() => { fetchKeys(); }, [fetchKeys]);
+
+  const handleCreate = async () => {
+    if (!newKeyName.trim()) { toast({ variant: "destructive", title: t("api.keyNoName") }); return; }
+    setCreating(true);
+    try {
+      const r = await fetch(`${API_BASE}/api-keys`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newKeyName.trim() }),
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error ?? "Unknown error");
+      setRevealedKey({ id: data.id, plaintext: data.plaintext });
+      setShowKey(true);
+      setNewKeyName("");
+      await fetchKeys();
+    } catch (e) {
+      toast({ variant: "destructive", title: t("api.testerError"), description: (e as Error).message });
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const handleRevoke = async () => {
+    if (!revokeTarget) return;
+    setRevoking(true);
+    try {
+      await fetch(`${API_BASE}/api-keys/${revokeTarget.id}`, { method: "DELETE" });
+      toast({ title: t("api.keyRevoked") });
+      setRevokeTarget(null);
+      if (revealedKey?.id === revokeTarget.id) setRevealedKey(null);
+      await fetchKeys();
+    } catch { /* ignore */ } finally {
+      setRevoking(false);
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base flex items-center gap-2">
+          <ShieldCheck className="h-4 w-4 text-emerald-500" />
+          {t("api.keys")}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-5">
+        <p className="text-sm text-muted-foreground">{t("api.keysDesc")}</p>
+
+        {/* Newly created key banner */}
+        {revealedKey && (
+          <div className="rounded-lg border border-amber-300 bg-amber-50 dark:border-amber-700 dark:bg-amber-950/30 p-4 space-y-2">
+            <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">
+              ⚠️ {t("api.keyCreated")}
+            </p>
+            <p className="text-xs text-amber-700 dark:text-amber-400">{t("api.keyCreatedDesc")}</p>
+            <div className="flex items-center gap-2 bg-white dark:bg-black/20 rounded border border-amber-200 dark:border-amber-800 px-3 py-2">
+              <code className="text-xs font-mono flex-1 break-all select-all">
+                {showKey ? revealedKey.plaintext : revealedKey.plaintext.slice(0, 14) + "•".repeat(24)}
+              </code>
+              <button onClick={() => setShowKey(v => !v)} className="shrink-0 p-1 rounded hover:bg-muted transition-colors text-muted-foreground">
+                {showKey ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+              </button>
+              <InlineCopy text={revealedKey.plaintext} />
+            </div>
+          </div>
+        )}
+
+        {/* Create new key */}
+        <div className="flex gap-2">
+          <Input
+            placeholder={t("api.keyNamePlaceholder")}
+            value={newKeyName}
+            onChange={e => setNewKeyName(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && handleCreate()}
+            className="flex-1"
+          />
+          <Button onClick={handleCreate} disabled={creating}>
+            <Plus className="h-4 w-4 mr-1.5" />
+            {creating ? t("api.keyCreating") : t("api.keyCreate")}
+          </Button>
+        </div>
+
+        {/* Keys list */}
+        {keys.length === 0 ? (
+          <div className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
+            {t("api.keyNoKeys")}
+          </div>
+        ) : (
+          <div className="rounded-lg border overflow-hidden">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/50 border-b">
+                <tr>
+                  <th className="text-left py-2.5 px-3 text-xs font-medium text-muted-foreground">Name</th>
+                  <th className="text-left py-2.5 px-3 text-xs font-medium text-muted-foreground">{t("api.keyPrefix")}</th>
+                  <th className="text-left py-2.5 px-3 text-xs font-medium text-muted-foreground">{t("api.keyLastUsed")}</th>
+                  <th className="text-left py-2.5 px-3 text-xs font-medium text-muted-foreground">{t("api.keyCreatedAt")}</th>
+                  <th className="py-2.5 px-3 w-10" />
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {keys.map(k => (
+                  <tr key={k.id} className="hover:bg-muted/20">
+                    <td className="py-2.5 px-3 font-medium text-sm">{k.name}</td>
+                    <td className="py-2.5 px-3 font-mono text-xs text-muted-foreground">{k.keyPrefix}…</td>
+                    <td className="py-2.5 px-3 text-xs text-muted-foreground">
+                      {k.lastUsedAt ? new Date(k.lastUsedAt).toLocaleString() : t("api.keyNeverUsed")}
+                    </td>
+                    <td className="py-2.5 px-3 text-xs text-muted-foreground">
+                      {new Date(k.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="py-2.5 px-3">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        onClick={() => setRevokeTarget(k)}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* Revoke confirm dialog */}
+        <AlertDialog open={!!revokeTarget} onOpenChange={open => !open && setRevokeTarget(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{t("api.keyConfirmRevoke")}</AlertDialogTitle>
+              <AlertDialogDescription>{t("api.keyConfirmRevokeDesc")}</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>{t("clients.cancelBtn")}</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleRevoke}
+                disabled={revoking}
+                className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+              >
+                {revoking ? t("api.keyRevoking") : t("api.keyConfirmBtn")}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -204,6 +419,9 @@ print("Call status:", call["status"])  # "dialing"`;
         <h1 className="text-3xl font-bold tracking-tight">{t("api.title")}</h1>
         <p className="text-muted-foreground mt-1 text-sm">{t("api.description")}</p>
       </div>
+
+      {/* ── API Key Manager ── */}
+      <ApiKeyManager />
 
       {/* ── Authentication ── */}
       <Card>

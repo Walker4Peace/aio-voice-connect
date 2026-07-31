@@ -10,12 +10,13 @@
 import { Router } from "express";
 import { eq, desc } from "drizzle-orm";
 import { z } from "zod/v4";
-import { db, outboundCallsTable, extensionsTable, deploymentsTable, type Client, type AgentConfig } from "@workspace/db";
+import { db, outboundCallsTable, extensionsTable, deploymentsTable, apiKeysTable, type Client, type AgentConfig } from "@workspace/db";
 import { logger } from "../lib/logger.js";
 import { setPendingContext, consumePendingContext } from "../services/outboundContext.js";
 import { applyOutboundConfigAndRestart } from "../services/deployment.js";
 import { executeTool } from "../services/toolExecutor.js";
 import { getYeastarToken, yeastarPost, evictYeastarToken } from "../services/yeastarAuth.js";
+import { hashKey } from "./apiKeys.js";
 import { waitForCallAnswered } from "../services/yeastarCalls.js";
 
 const router = Router();
@@ -52,12 +53,39 @@ const FIRST_MESSAGE_DEDUP_MS = 30_000;
 
 // ── Auth helpers ─────────────────────────────────────────────────────────────
 
-/** Verify X-Api-Key header against OUTBOUND_API_KEY env var (if configured). */
-function checkApiKey(req: import("express").Request): boolean {
-  const configured = process.env["OUTBOUND_API_KEY"];
-  if (!configured) return true; // No key configured → open (dev mode)
+/** Verify X-Api-Key header against OUTBOUND_API_KEY env var OR a DB-stored key. */
+async function checkApiKey(req: import("express").Request): Promise<boolean> {
   const provided = req.headers["x-api-key"];
-  return provided === configured;
+  if (!provided || typeof provided !== "string") {
+    // No key provided → only allow if neither env var nor any DB key is configured
+    const configured = process.env["OUTBOUND_API_KEY"];
+    if (configured) return false;
+    const dbKeys = await db.select().from(apiKeysTable).limit(1);
+    return dbKeys.length === 0;
+  }
+
+  // 1. Check env var (legacy)
+  const envKey = process.env["OUTBOUND_API_KEY"];
+  if (envKey && provided === envKey) return true;
+
+  // 2. Check DB keys
+  const hashed = hashKey(provided);
+  const [match] = await db
+    .select()
+    .from(apiKeysTable)
+    .where(eq(apiKeysTable.keyHash, hashed))
+    .limit(1);
+
+  if (match?.active) {
+    // Update last used timestamp (fire-and-forget)
+    db.update(apiKeysTable)
+      .set({ lastUsedAt: new Date() })
+      .where(eq(apiKeysTable.id, match.id))
+      .catch(() => {});
+    return true;
+  }
+
+  return false;
 }
 
 // ── Trigger outbound call ────────────────────────────────────────────────────
@@ -74,7 +102,7 @@ const triggerSchema = z.object({
 });
 
 router.post("/outbound/call", async (req, res) => {
-  if (!checkApiKey(req)) {
+  if (!(await checkApiKey(req))) {
     res.status(401).json({ error: "Invalid or missing X-Api-Key header" });
     return;
   }
