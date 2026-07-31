@@ -10,7 +10,7 @@ const createToolSchema = z.object({
   name: z.string().min(1).regex(/^[a-zA-Z_][a-zA-Z0-9_]*$/, "Name must be a valid identifier (letters, numbers, underscores)"),
   description: z.string().min(1),
   parametersSchema: z.string().nullable().optional(),
-  executionType: z.enum(["http_request", "webhook", "transfer_call", "hang_up", "send_dtmf", "custom_js"]),
+  executionType: z.enum(["http_request", "webhook", "save_result", "transfer_call", "hang_up", "send_dtmf", "custom_js"]),
   executionConfig: z.string().nullable().optional(),
   timeout: z.number().int().min(1).max(300).default(10),
   requireConfirmation: z.boolean().default(false),

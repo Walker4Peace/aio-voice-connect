@@ -29,6 +29,7 @@ const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, "") + "/api";
 export type ExecutionType =
   | "http_request"
   | "webhook"
+  | "save_result"
   | "transfer_call"
   | "hang_up"
   | "send_dtmf"
@@ -88,15 +89,20 @@ async function deleteTool(id: number): Promise<void> {
 const EXECUTION_TYPE_LABELS: Record<ExecutionType, string> = {
   http_request:   "HTTP Request",
   webhook:        "Webhook",
+  save_result:    "Save Result",
   transfer_call:  "Transfer Call",
   hang_up:        "Hang Up",
   send_dtmf:      "Send DTMF",
   custom_js:      "Custom JavaScript",
 };
 
+// Types that need no execution config — hide the textarea for these
+const NO_CONFIG_TYPES = new Set<ExecutionType>(["hang_up", "save_result"]);
+
 const EXECUTION_CONFIG_PLACEHOLDERS: Record<ExecutionType, string> = {
   http_request:  '{"url": "https://api.example.com/data", "method": "GET"}',
   webhook:       '{"url": "https://your-server.com/webhook"}',
+  save_result:   "",
   transfer_call: '{"destination": "sip:operator@domain.com"}',
   hang_up:       "{}",
   send_dtmf:     '{"digits": "1234"}',
@@ -279,20 +285,33 @@ function ToolDialog({ open, onOpenChange, agentConfigId, tool, onSaved }: ToolDi
             {schemaError && <p className="text-xs text-destructive">{schemaError}</p>}
           </div>
 
-          <div className="space-y-1">
-            <Label htmlFor="tconfig">
-              Execution Config{" "}
-              <span className="text-muted-foreground text-xs">(JSON — {EXECUTION_TYPE_LABELS[form.executionType]})</span>
-            </Label>
-            <Textarea
-              id="tconfig"
-              placeholder={EXECUTION_CONFIG_PLACEHOLDERS[form.executionType]}
-              className="font-mono text-xs min-h-[80px]"
-              value={form.executionConfig}
-              onChange={e => set("executionConfig", e.target.value)}
-            />
-            {configError && <p className="text-xs text-destructive">{configError}</p>}
-          </div>
+          {form.executionType === "save_result" ? (
+            <div className="rounded-md border border-dashed p-3 text-sm text-muted-foreground space-y-1">
+              <p className="font-medium text-foreground">No configuration needed</p>
+              <p>
+                <strong>Save Result</strong> writes the tool's arguments directly to the outbound call record in the database.
+                When the AI calls this tool the caller can poll{" "}
+                <code className="text-xs bg-muted px-1 rounded">GET /api/outbound/calls/:id</code>{" "}
+                to retrieve the structured result. If a <code className="text-xs bg-muted px-1 rounded">webhookUrl</code> was
+                provided at call time, the result is also POSTed there automatically.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-1">
+              <Label htmlFor="tconfig">
+                Execution Config{" "}
+                <span className="text-muted-foreground text-xs">(JSON — {EXECUTION_TYPE_LABELS[form.executionType]})</span>
+              </Label>
+              <Textarea
+                id="tconfig"
+                placeholder={EXECUTION_CONFIG_PLACEHOLDERS[form.executionType]}
+                className="font-mono text-xs min-h-[80px]"
+                value={form.executionConfig}
+                onChange={e => set("executionConfig", e.target.value)}
+              />
+              {configError && <p className="text-xs text-destructive">{configError}</p>}
+            </div>
+          )}
 
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-1">
