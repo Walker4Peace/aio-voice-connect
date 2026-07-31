@@ -394,16 +394,17 @@ function parseAndStoreCallEvents(extensionId: number, line: string, timestamp: s
     const agentName = extensionAgentNames.get(extensionId);
     const detail = agentName ? `${cleaned} - ${agentName}` : cleaned;
 
-    if (prevInvite) {
-      // Inbound: callId is already known — push immediately.
-      pushEvent({ extensionId, callId: prevInvite.callId, event: "connected_ai", timestamp, detail });
-    } else {
-      // Outbound: bridge hasn't fired yet so the callId is unknown.
-      // Buffer the event; it will be pushed with the real callId once
-      // "Registered bridge for call:" is detected (a few ms later).
+    if (outboundCallModes.has(extensionId)) {
+      // Outbound: the bridge ("Registered bridge for call:") fires a few ms
+      // AFTER "Connected to ...AI", so the invite event doesn't exist yet.
+      // prevInvite would point to the PREVIOUS call's invite — wrong callId.
+      // Buffer the event; drain it with the real callId when the bridge fires.
       const buf = pendingConnectedAi.get(extensionId) ?? [];
       buf.push({ timestamp, detail });
       pendingConnectedAi.set(extensionId, buf);
+    } else if (prevInvite) {
+      // Inbound: callId is already known from the incoming INVITE — push immediately.
+      pushEvent({ extensionId, callId: prevInvite.callId, event: "connected_ai", timestamp, detail });
     }
     return;
   }
