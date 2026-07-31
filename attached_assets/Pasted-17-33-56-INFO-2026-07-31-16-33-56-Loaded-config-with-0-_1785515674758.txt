@@ -1,0 +1,218 @@
+17:33:56
+INFO	2026/07/31 16:33:56 Loaded config with 0 functions
+17:33:56
+INFO	2026/07/31 16:33:56 Starting HTTP API server on :19000
+17:33:56
+INFO	2026/07/31 16:33:56 Starting SIP client with configuration:
+17:33:56
+INFO	2026/07/31 16:33:56 Username: 1004, Domain: 192.168.11.90, Server: 192.168.11.90:5060, Transport: udp
+17:33:56
+INFO	2026/07/31 16:33:56 Auth ID: qjFB7cTE9q (using separate authorization ID)
+17:33:56
+INFO	2026/07/31 16:33:56 No OPENAI_API_KEY set - calls will use fallback audio handling
+17:33:56
+DEBUG	2026/07/31 16:33:56 DEBUG: Determined outbound IP as 192.168.11.107
+17:33:56
+DEBUG	2026/07/31 16:33:56 Local IP determined as: 192.168.11.107
+17:33:56
+DEBUG	2026/07/31 16:33:56 DEBUG: Retrieved external IP as 105.188.3.70
+17:33:56
+DEBUG	2026/07/31 16:33:56 External IP determined as: 105.188.3.70
+17:33:56
+INFO	2026/07/31 16:33:56 === OUTBOUND CALLING MODE ===
+17:33:56
+INFO	2026/07/31 16:33:56 Target: +212661209845
+17:33:56
+INFO	2026/07/31 16:33:56 Task:
+17:33:56
+INFO	2026/07/31 16:33:56 Result webhook:
+17:33:56
+INFO	2026/07/31 16:33:56 Sending REGISTER request via sipgo client.
+17:33:56
+DEBUG	2026/07/31 16:33:56 Auth: digestUsername=qjFB7cTE9q, realm=YSAsterisk, uri=sip:192.168.11.90, password=WQHy0b05PJ
+17:33:56
+DEBUG	2026/07/31 16:33:56 Resending REGISTER with Authorization header (CSeq=2).
+17:33:56
+DEBUG	2026/07/31 16:33:56 Authorization: Digest username="qjFB7cTE9q", realm="YSAsterisk", nonce="1785515636/63911838443d4e59e1505e1ec9e68515", uri="sip:192.168.11.90", response="1049b796bf1575dfffc05f9a17a79871", algorithm=MD5
+17:33:56
+WARN	2026/07/31 16:33:56 WARN SIP request handler not found caller=Server method=NOTIFY
+17:33:56
+DEBUG	2026/07/31 16:33:56 Received REGISTER response: SIP/2.0 200 OK
+17:33:56
+DEBUG	Via: SIP/2.0/UDP 192.168.11.107:52520;rport=52520;received=192.168.11.107;branch=z9hG4bK.vdUHLiAqdRDa3KJQ
+17:33:56
+DEBUG	Call-ID: h9ohGAMpd05hOa9z
+17:33:56
+DEBUG	From: <sip:1004@192.168.11.90>;tag=Gw9zt31v
+17:33:56
+DEBUG	To: <sip:1004@192.168.11.90>;tag=z9hG4bK.vdUHLiAqdRDa3KJQ
+17:33:56
+DEBUG	CSeq: 2 REGISTER
+17:33:56
+INFO	Date: Fri, 31 Jul 2026 16:33:56 GMT
+17:33:56
+DEBUG	Contact: <sip:1004@192.168.11.107:52520>;expires=634
+17:33:56
+DEBUG	Expires: 653
+17:33:56
+DEBUG	Server: Yeastar PSE
+17:33:56
+INFO	Content-Length: 0
+17:33:56
+INFO	2026/07/31 16:33:56 Registration successful!
+17:33:56
+INFO	2026/07/31 16:33:56 Registered with SIP provider
+17:33:56
+INFO	2026/07/31 16:33:56 Initiating outbound call to +212661209845
+17:33:56
+DEBUG	2026/07/31 16:33:56 RTP listener created on 0.0.0.0:48937
+17:33:56
+INFO	2026/07/31 16:33:56 Sending INVITE to sip:+212661209845@192.168.11.90
+17:33:56
+DEBUG	2026/07/31 16:33:56 SDP Offer:
+17:33:56
+INFO	v=0
+17:33:56
+INFO	o=- 9050843554645301388 7918925507538105473 IN IP4 105.188.3.70
+17:33:56
+INFO	s=-
+17:33:56
+INFO	c=IN IP4 105.188.3.70
+17:33:56
+INFO	t=0 0
+17:33:56
+DEBUG	m=audio 48937 RTP/AVP 0 8 18 101
+17:33:56
+DEBUG	a=rtpmap:0 PCMU/8000
+17:33:56
+DEBUG	a=rtpmap:8 PCMA/8000
+17:33:56
+DEBUG	a=rtpmap:18 G729/8000
+17:33:56
+DEBUG	a=rtpmap:101 telephone-event/8000
+17:33:56
+INFO	a=fmtp:101 0-16
+17:33:56
+INFO	a=ptime:20
+17:33:56
+INFO	a=sendrecv
+17:33:56
+INFO	2026/07/31 16:33:56 Received 401 Unauthorized
+17:33:56
+INFO	2026/07/31 16:33:56 First 401 received. Response:
+17:33:56
+INFO	SIP/2.0 401 Unauthorized
+17:33:56
+DEBUG	Via: SIP/2.0/UDP 192.168.11.107:52520;rport=52520;received=192.168.11.107;branch=z9hG4bK.zxRGQIhCrF8XLPs5
+17:33:56
+DEBUG	Call-ID: wohGoSWquiKkT0Cl-1785515636691552113
+17:33:56
+DEBUG	From: "Little Bird Electronics" <sip:1004@192.168.11.90>;tag=VHNUB8gm
+17:33:56
+DEBUG	To: <sip:+212661209845@192.168.11.90>;tag=z9hG4bK.zxRGQIhCrF8XLPs5
+17:33:56
+DEBUG	CSeq: 1 INVITE
+17:33:56
+DEBUG	WWW-Authenticate: Digest realm="YSAsterisk",nonce="1785515636/63911838443d4e59e1505e1ec9e68515",opaque="57a1110f4cc80b3c",algorithm=md5,qop="auth"
+17:33:56
+DEBUG	Server: Yeastar PSE
+17:33:56
+INFO	Content-Length: 0
+17:33:56
+INFO	2026/07/31 16:33:56 Auth URI: sip:+212661209845@192.168.11.90, Realm: YSAsterisk
+17:33:56
+DEBUG	2026/07/31 16:33:56 Auth header: Digest username="qjFB7cTE9q", realm="YSAsterisk", nonce="1785515636/63911838443d4e59e1505e1ec9e68515", uri="sip:+212661209845@192.168.11.90", response="77c4720d8e4f354748a8e2a3d212cf01", algorithm=MD5
+17:33:56
+INFO	2026/07/31 16:33:56 Resending INVITE with authorization...
+17:33:56
+INFO	2026/07/31 16:33:56 Received 100 Trying
+17:33:56
+INFO	2026/07/31 16:33:56 Call progress: Trying
+17:33:58
+INFO	2026/07/31 16:33:58 Received 183 Session Progress
+17:33:58
+INFO	2026/07/31 16:33:58 Call progress: Session Progress
+17:34:09
+INFO	2026/07/31 16:34:09 Received 200 OK
+17:34:09
+INFO	2026/07/31 16:34:09 Call answered!
+17:34:09
+DEBUG	2026/07/31 16:34:09 Remote RTP address: 192.168.11.90:11274
+17:34:09
+INFO	2026/07/31 16:34:09 ACK sent
+17:34:09
+INFO	2026/07/31 16:34:09 Sending NAT hole-punch packets to 192.168.11.90:11274
+17:34:09
+INFO	2026/07/31 16:34:09 Connecting to ElevenLabs Conversational AI (agent: agent_1301kysqd47dfwtr3cpk7wykdhcj)...
+17:34:10
+INFO	2026/07/31 16:34:10 Connected to ElevenLabs Conversational AI
+17:34:10
+INFO	2026/07/31 16:34:10 Note: first_message/system_prompt in config require 'Allow client overrides' in ElevenLabs dashboard
+17:34:10
+INFO	2026/07/31 16:34:10 If override fails, the agent's default greeting will be used
+17:34:10
+DEBUG	2026/07/31 16:34:10 DEBUG: appConfig=true
+17:34:10
+DEBUG	2026/07/31 16:34:10 DEBUG: ElevenLabs.FirstMessage='Bonjour, je suis Hakim de AIO PROCESS. Comment allez-vous?', SystemPrompt='Vous êtes Hakim, consultant IT chez AIO PROCESS. Vous appelez pour programmer un rendez-vous avec le client. Proposez des créneaux disponibles cette semaine. Soyez bref et professionnel. Répondez en français.
+17:34:10
+INFO	IMPORTANT — comportement au décrochage : si la personne dit 'Allô', 'Allô ?', 'Oui', 'Oui allô', 'Oui ?' ou toute autre salutation de décrochage après ton introduction, c'est qu'elle vient simplement de décrocher le téléphone. Ne te présente PAS à nouveau. Reprends la conversation naturellement depuis là où elle en est.', Functions=0
+17:34:10
+INFO	2026/07/31 16:34:10 Overriding first_message: Bonjour, je suis Hakim de AIO PROCESS. Comment allez-vous?
+17:34:10
+INFO	2026/07/31 16:34:10 Overriding system prompt
+17:34:10
+INFO	2026/07/31 16:34:10 Sending conversation initiation to ElevenLabs: {"conversation_config_override":{"agent":{"first_message":"Bonjour, je suis Hakim de AIO PROCESS. Comment allez-vous?","prompt":{"prompt":"Vous êtes Hakim, consultant IT chez AIO PROCESS. Vous appelez pour programmer un rendez-vous avec le client. Proposez des créneaux disponibles cette semaine. Soyez bref et professionnel. Répondez en français.\n\nIMPORTANT — comportement au décrochage : si la personne dit 'Allô', 'Allô ?', 'Oui', 'Oui allô', 'Oui ?' ou toute autre salutation de décrochage après ton introduction, c'est qu'elle vient simplement de décrocher le téléphone. Ne te présente PAS à nouveau. Reprends la conversation naturellement depuis là où elle en est."}}},"type":"conversation_initiation_client_data"}
+17:34:10
+INFO	2026/07/31 16:34:10 Registered bridge for call: wohGoSWquiKkT0Cl-1785515636691552113
+17:34:10
+INFO	2026/07/31 16:34:10 Outbound call active - AI is now talking to remote party
+17:34:10
+DEBUG	2026/07/31 16:34:10 Starting outbound ElevenLabs to RTP bridge...
+17:34:10
+INFO	2026/07/31 16:34:10 ElevenLabs outbound conversation: conv_2701kywgdb3kfrh8hw9hjtqexw7d
+17:34:10
+DEBUG	2026/07/31 16:34:10 Starting outbound RTP to ElevenLabs bridge...
+17:34:10
+DEBUG	2026/07/31 16:34:10 Outbound RTP packet #1 from 192.168.11.90:11274, size=172
+17:34:10
+DEBUG	2026/07/31 16:34:10 Outbound sent 1 RTP packets to 192.168.11.90:11274
+17:34:11
+INFO	2026/07/31 16:34:11 AI: Bonjour, je suis Hakim de AIO PROCESS. Comment allez-vous?
+17:34:11
+DEBUG	2026/07/31 16:34:11 Outbound RTP packet #100 from 192.168.11.90:11274, size=172
+17:34:12
+DEBUG	2026/07/31 16:34:12 Outbound sent 100 RTP packets to 192.168.11.90:11274
+17:34:13
+DEBUG	2026/07/31 16:34:13 Outbound RTP packet #200 from 192.168.11.90:11274, size=172
+17:34:14
+ERROR	panic: concurrent write to websocket connection
+17:34:14
+INFO	goroutine 36 [running]:
+17:34:14
+INFO	github.com/gorilla/websocket.(*messageWriter).flushFrame(0xc00033c240, 0x1, {0x0?, 0x0?, 0x0?})
+17:34:14
+INFO	/Users/admin/go/pkg/mod/github.com/gorilla/websocket@v1.5.3/conn.go:617 +0x4b8
+17:34:14
+INFO	github.com/gorilla/websocket.(*messageWriter).Close(0xc00033c2d0?)
+17:34:14
+INFO	/Users/admin/go/pkg/mod/github.com/gorilla/websocket@v1.5.3/conn.go:731 +0x35
+17:34:14
+INFO	github.com/gorilla/websocket.(*Conn).beginMessage(0xc0001b4000, 0xc00033c2d0, 0x1)
+17:34:14
+INFO	/Users/admin/go/pkg/mod/github.com/gorilla/websocket@v1.5.3/conn.go:480 +0x3a
+17:34:14
+INFO	github.com/gorilla/websocket.(*Conn).NextWriter(0xc0001b4000, 0x1)
+17:34:14
+INFO	/Users/admin/go/pkg/mod/github.com/gorilla/websocket@v1.5.3/conn.go:520 +0x3f
+17:34:14
+INFO	github.com/gorilla/websocket.(*Conn).WriteMessage(0x7b5fa0?, 0xc00033c2a0?, {0xc0000d0780, 0x1c, 0x20})
+17:34:14
+INFO	/Users/admin/go/pkg/mod/github.com/gorilla/websocket@v1.5.3/conn.go:773 +0x137
+17:34:14
+DEBUG	main.(*OutboundBridge).elevenLabsToRTP(0xc000170000)
+17:34:14
+INFO	/Users/admin/code/sip2/outbound.go:501 +0x44b
+17:34:14
+INFO	created by main.(*OutboundBridge).Start in goroutine 1
+17:34:14
+INFO	/Users/admin/code/sip2/outbound.go:129 +0x31
