@@ -58691,32 +58691,34 @@ function parseAndStoreCallEvents(extensionId, line2, timestamp2) {
     );
     if (alreadyInvited) return;
     pushEvent({ extensionId, callId, event: "invite", timestamp: timestamp2 });
-    void (async () => {
-      try {
-        const updated = await db.update(outboundCallsTable).set({ callId, status: "active", updatedAt: /* @__PURE__ */ new Date() }).where(
-          and(
-            eq(outboundCallsTable.extensionId, extensionId),
-            inArray(outboundCallsTable.status, ["pending", "dialing"])
-          )
-        ).returning({ callId: outboundCallsTable.callId });
-        if (updated.length > 0) {
-          for (const ev of persistedCallEvents) {
-            if (ev.extensionId === extensionId && ev.callId === "unknown") {
-              ev.callId = callId;
-            }
-          }
-          await db.update(callEventsTable).set({ callId }).where(
+    if (outboundCallModes.has(extensionId)) {
+      void (async () => {
+        try {
+          const updated = await db.update(outboundCallsTable).set({ callId, status: "active", updatedAt: /* @__PURE__ */ new Date() }).where(
             and(
-              eq(callEventsTable.extensionId, extensionId),
-              eq(callEventsTable.callId, "unknown")
+              eq(outboundCallsTable.extensionId, extensionId),
+              inArray(outboundCallsTable.status, ["pending", "dialing"])
             )
-          );
-          logger.info({ extensionId, callId }, "Linked outbound SIP callId; backfilled pre-INVITE events");
+          ).returning({ callId: outboundCallsTable.callId });
+          if (updated.length > 0) {
+            for (const ev of persistedCallEvents) {
+              if (ev.extensionId === extensionId && ev.callId === "unknown") {
+                ev.callId = callId;
+              }
+            }
+            await db.update(callEventsTable).set({ callId }).where(
+              and(
+                eq(callEventsTable.extensionId, extensionId),
+                eq(callEventsTable.callId, "unknown")
+              )
+            );
+            logger.info({ extensionId, callId }, "Linked outbound SIP callId; backfilled pre-INVITE events");
+          }
+        } catch (err) {
+          logger.error({ err, extensionId }, "Failed to link SIP callId to outbound call");
         }
-      } catch (err) {
-        logger.error({ err, extensionId }, "Failed to link SIP callId to outbound call");
-      }
-    })();
+      })();
+    }
     return;
   }
   const byeMatch = body.match(/(?:Call ended|BYE received for call).*?:\s*(\S+)/i);
