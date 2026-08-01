@@ -242,20 +242,25 @@ router.post("/setup/domain", async (req, res) => {
   const steps: { step: string; success: boolean; error?: string }[] = [];
 
   // ── Step 0: DNS A-record resolution ─────────────────────────────────────
+  // Use public DNS resolvers (8.8.8.8 + 1.1.1.1) to bypass OS/server DNS
+  // cache, which may still hold an old A record for minutes or hours after a
+  // DNS change is made at the registrar.
   let resolvedIps: string[] = [];
   try {
-    resolvedIps = await dns.promises.resolve4(domain);
+    const resolver = new dns.Resolver();
+    resolver.setServers(["8.8.8.8", "1.1.1.1"]);
+    resolvedIps = await resolver.resolve4(domain);
     steps.push({
-      step: `DNS resolved → ${resolvedIps.join(", ")}`,
+      step: `DNS resolved via 8.8.8.8 → ${resolvedIps.join(", ")}`,
       success: true,
     });
   } catch (err) {
     const code = (err as NodeJS.ErrnoException).code;
     steps.push({
-      step: "DNS A record check",
+      step: "DNS A record check (via 8.8.8.8)",
       success: false,
       error: code === "ENOTFOUND"
-        ? `${domain} does not resolve — point an A record to this server's public IP first, then wait for propagation (up to 48h). Tip: run \`dig @8.8.8.8 ${domain} A\` to bypass local caching.`
+        ? `${domain} does not resolve yet. Point an A record to this server's IP, save, then wait a few minutes and try again. DNS changes can take up to 48h but usually propagate within 5–15 min.`
         : `DNS lookup failed: ${code ?? String(err)}`,
     });
     res.json({ ok: false, error: "DNS not configured yet", steps });
