@@ -80,6 +80,8 @@ export interface AgentConfig {
   language?: string | null;
   /** JSON string for provider-specific extra fields */
   extraConfig?: string | null;
+  /** ElevenLabs post-call webhook signing secret (stored per-agent) */
+  webhookSecret?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -120,6 +122,7 @@ export interface CreateAgentConfigInput {
   mode?: AgentConfigMode;
   language?: string | null;
   extraConfig?: string | null;
+  webhookSecret?: string | null;
 }
 
 export type AgentToolExecutionType = typeof AgentToolExecutionType[keyof typeof AgentToolExecutionType];
