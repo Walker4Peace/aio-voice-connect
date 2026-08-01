@@ -10,17 +10,26 @@ import { Label } from "@/components/ui/label";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/auth-context";
-import { CheckCircle2, Globe, Loader2, User, XCircle } from "lucide-react";
+import { CheckCircle2, Download, Globe, Loader2, Terminal, User, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { TimezoneSelect } from "@/components/ui/timezone-select";
 
+interface DomainStep {
+  step: string;
+  success: boolean;
+  error?: string;
+}
+
 interface DomainResult {
   ok: boolean;
   sslOk?: boolean;
-  steps?: { step: string; success: boolean; error?: string }[];
+  domain?: string;
+  steps?: DomainStep[];
   error?: string;
-  manual?: string[];
+  needsManual?: boolean;
+  manualCommands?: string[];
+  /** @deprecated use manualCommands */
   manualSsl?: string[];
 }
 
@@ -45,6 +54,8 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
   const [domain, setDomain] = useState("");
   const [domainLoading, setDomainLoading] = useState(false);
   const [domainResult, setDomainResult] = useState<DomainResult | null>(null);
+
+  const domainLocked = !!(user?.domainConfigured && user?.domain);
 
   useEffect(() => {
     if (user) {
@@ -89,7 +100,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
   };
 
   const handleDomainValidate = async () => {
-    if (!domain.trim()) return;
+    if (!domain.trim() || domainLocked) return;
     setDomainLoading(true);
     setDomainResult(null);
     try {
@@ -109,21 +120,25 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
     }
   };
 
+  const downloadNginxConfig = (domainName: string) => {
+    window.open(`/api/setup/domain/nginx-config?domain=${encodeURIComponent(domainName)}`, "_blank");
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-lg max-h-[85vh] flex flex-col overflow-hidden">
         <DialogHeader>
           <DialogTitle>{t("settings.title")}</DialogTitle>
         </DialogHeader>
 
-        <Tabs defaultValue="account">
-          <TabsList className="w-full">
+        <Tabs defaultValue="account" className="flex flex-col min-h-0 flex-1">
+          <TabsList className="w-full shrink-0">
             <TabsTrigger value="account" className="flex-1 gap-2"><User className="h-4 w-4" /> {t("settings.account")}</TabsTrigger>
             <TabsTrigger value="domain" className="flex-1 gap-2"><Globe className="h-4 w-4" /> {t("settings.domain")}</TabsTrigger>
           </TabsList>
 
           {/* ── Account Tab ── */}
-          <TabsContent value="account" className="space-y-4 pt-4">
+          <TabsContent value="account" className="space-y-4 pt-4 overflow-y-auto">
             <div className="space-y-1.5">
               <Label>{t("settings.newPassword")} <span className="text-muted-foreground text-xs">{t("settings.newPasswordHint")}</span></Label>
               <PasswordInput value={password} onChange={e => setPassword(e.target.value)} placeholder="Min 8 characters" />
@@ -170,13 +185,16 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
           </TabsContent>
 
           {/* ── Domain Tab ── */}
-          <TabsContent value="domain" className="space-y-4 pt-4">
-            {user?.domainConfigured && user.domain ? (
+          <TabsContent value="domain" className="space-y-4 pt-4 overflow-y-auto">
+            {/* Current domain status */}
+            {domainLocked ? (
               <div className="flex items-center gap-3 rounded-md border border-green-300 bg-green-50 dark:bg-green-950/30 px-4 py-3">
                 <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0" />
                 <div>
-                  <p className="text-sm font-medium">{user.domain}</p>
-                  <Badge variant="outline" className="text-green-600 border-green-400 text-xs mt-1">{t("settings.domainConnected")}</Badge>
+                  <p className="text-sm font-medium">{user!.domain}</p>
+                  <Badge variant="outline" className="text-green-600 border-green-400 text-xs mt-1">
+                    {t("settings.domainConnected")}
+                  </Badge>
                 </div>
               </div>
             ) : (
@@ -185,57 +203,203 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
               </div>
             )}
 
-            <div className="rounded-md bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 p-3 text-xs text-blue-800 dark:text-blue-300 space-y-1">
-              <p className="font-medium">{t("settings.domainInstTitle")}</p>
-              <ol className="list-decimal list-inside space-y-0.5">
-                <li>{t("settings.domainStep1")}</li>
-                <li>{t("settings.domainStep2")}</li>
-                <li>{t("settings.domainStep3")}</li>
-              </ol>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label>{t("settings.domainLabel")}</Label>
-              <div className="flex gap-2">
-                <Input
-                  value={domain}
-                  onChange={e => setDomain(e.target.value)}
-                  placeholder={user?.domain ?? "sip.mycompany.com"}
-                  disabled={domainLoading}
-                />
-                <Button onClick={handleDomainValidate} disabled={!domain.trim() || domainLoading} className="gap-2 shrink-0">
-                  {domainLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                  {domainLoading ? t("settings.validating") : t("settings.validate")}
-                </Button>
+            {/* Instructions (only shown when not yet configured) */}
+            {!domainLocked && (
+              <div className="rounded-md bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 p-3 text-xs text-blue-800 dark:text-blue-300 space-y-1">
+                <p className="font-medium">{t("settings.domainInstTitle")}</p>
+                <ol className="list-decimal list-inside space-y-0.5">
+                  <li>{t("settings.domainStep1")}</li>
+                  <li>{t("settings.domainStep2")}</li>
+                  <li>{t("settings.domainStep3")}</li>
+                </ol>
               </div>
-            </div>
+            )}
 
-            {domainResult && (
-              <div className={cn("rounded-md border p-3 space-y-2", domainResult.ok ? "border-green-300 bg-green-50 dark:bg-green-950/30" : "border-red-300 bg-red-50 dark:bg-red-950/30")}>
-                <div className="flex items-center gap-2 text-sm font-medium">
-                  {domainResult.ok ? <CheckCircle2 className="h-4 w-4 text-green-600" /> : <XCircle className="h-4 w-4 text-red-600" />}
-                  {domainResult.ok
-                    ? (domainResult.sslOk ? t("settings.domainConfiguredHttps") : t("settings.domainConfigured"))
-                    : domainResult.error}
+            {/* Input (locked once domain is configured) */}
+            {!domainLocked && (
+              <div className="space-y-1.5">
+                <Label>{t("settings.domainLabel")}</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={domain}
+                    onChange={e => setDomain(e.target.value)}
+                    onKeyDown={e => e.key === "Enter" && handleDomainValidate()}
+                    placeholder={user?.domain ?? "sip.mycompany.com"}
+                    disabled={domainLoading}
+                  />
+                  <Button onClick={handleDomainValidate} disabled={!domain.trim() || domainLoading} className="gap-2 shrink-0">
+                    {domainLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                    {domainLoading ? t("settings.validating") : t("settings.validate")}
+                  </Button>
                 </div>
-                {domainResult.steps && (
-                  <ul className="space-y-0.5 text-xs font-mono">
-                    {domainResult.steps.map((s, i) => (
-                      <li key={i} className="flex items-center gap-1.5">
-                        {s.success ? <CheckCircle2 className="h-3 w-3 text-green-500" /> : <XCircle className="h-3 w-3 text-red-500" />}
-                        {s.step}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-                {(domainResult.manualSsl ?? domainResult.manual)?.map((cmd, i) => (
-                  <code key={i} className="block text-xs bg-black/10 dark:bg-white/10 px-2 py-1 rounded">{cmd}</code>
-                ))}
               </div>
+            )}
+
+            {/* Result */}
+            {domainResult && (
+              <DomainResultPanel result={domainResult} onDownload={downloadNginxConfig} />
             )}
           </TabsContent>
         </Tabs>
       </DialogContent>
     </Dialog>
+  );
+}
+
+// ── Domain result panel ────────────────────────────────────────────────────────
+
+function DomainResultPanel({
+  result,
+  onDownload,
+}: {
+  result: DomainResult;
+  onDownload: (domain: string) => void;
+}) {
+  if (result.ok) {
+    return (
+      <div className="rounded-md border border-green-300 bg-green-50 dark:bg-green-950/30 p-3 space-y-2">
+        <div className="flex items-center gap-2 text-sm font-medium text-green-800 dark:text-green-200">
+          <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
+          {result.sslOk ? "Domain configured with HTTPS ✓" : "Domain configured (HTTP only)"}
+        </div>
+        <StepList steps={result.steps} />
+        {!result.sslOk && result.manualCommands && (
+          <ManualCommands
+            title="Run to enable HTTPS:"
+            commands={result.manualCommands}
+            domain={result.domain}
+            onDownload={onDownload}
+          />
+        )}
+      </div>
+    );
+  }
+
+  if (result.needsManual) {
+    return (
+      <div className="rounded-md border border-amber-300 bg-amber-50 dark:bg-amber-950/30 p-3 space-y-3">
+        <div className="flex items-center gap-2 text-sm font-medium text-amber-800 dark:text-amber-200">
+          <Terminal className="h-4 w-4 shrink-0" />
+          Manual server setup required
+        </div>
+
+        <StepList steps={result.steps} />
+
+        {result.domain && (
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-1.5 text-xs h-7"
+              onClick={() => onDownload(result.domain!)}
+            >
+              <Download className="h-3.5 w-3.5" />
+              Download nginx config
+            </Button>
+            <span className="text-xs text-muted-foreground">save as <code className="font-mono">aio-voice-connect.conf</code></span>
+          </div>
+        )}
+
+        {result.manualCommands && (
+          <ManualCommands
+            title="Run these commands on the server:"
+            commands={result.manualCommands}
+            domain={result.domain}
+            onDownload={onDownload}
+          />
+        )}
+      </div>
+    );
+  }
+
+  // Generic failure (DNS not configured, connection error, etc.)
+  return (
+    <div className="rounded-md border border-red-300 bg-red-50 dark:bg-red-950/30 p-3 space-y-2">
+      <div className="flex items-center gap-2 text-sm font-medium text-red-800 dark:text-red-200">
+        <XCircle className="h-4 w-4 text-red-600 shrink-0" />
+        {result.error ?? "Domain configuration failed"}
+      </div>
+      <StepList steps={result.steps} />
+    </div>
+  );
+}
+
+function StepList({ steps }: { steps?: DomainStep[] }) {
+  if (!steps?.length) return null;
+  return (
+    <ul className="space-y-0.5 text-xs font-mono">
+      {steps.map((s, i) => (
+        <li key={i} className="flex items-start gap-1.5">
+          {s.success
+            ? <CheckCircle2 className="h-3 w-3 text-green-500 mt-0.5 shrink-0" />
+            : <XCircle className="h-3 w-3 text-red-500 mt-0.5 shrink-0" />}
+          <span className={s.success ? "text-foreground" : "text-red-700 dark:text-red-400"}>
+            {s.step}
+            {s.error ? <span className="block text-[10px] text-red-600 dark:text-red-400 font-normal mt-0.5 whitespace-pre-wrap">{s.error}</span> : null}
+          </span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function ManualCommands({
+  title,
+  commands,
+  domain,
+  onDownload,
+}: {
+  title: string;
+  commands: string[];
+  domain?: string;
+  onDownload: (domain: string) => void;
+}) {
+  const [copied, setCopied] = React.useState<number | null>(null);
+  const copy = (text: string, i: number) => {
+    navigator.clipboard?.writeText(text).catch(() => {
+      const el = document.createElement("textarea");
+      el.value = text;
+      el.style.cssText = "position:fixed;opacity:0";
+      document.body.appendChild(el); el.select(); document.execCommand("copy"); document.body.removeChild(el);
+    });
+    setCopied(i);
+    setTimeout(() => setCopied(null), 1500);
+  };
+
+  const filtered = commands.filter(c => !c.startsWith("#"));
+  const comments = commands.filter(c => c.startsWith("#"));
+
+  return (
+    <div className="space-y-1.5">
+      <p className="text-xs font-medium text-amber-800 dark:text-amber-200">{title}</p>
+      {comments.length > 0 && (
+        <p className="text-xs text-muted-foreground">{comments.map(c => c.replace(/^# /, "")).join(" ")}</p>
+      )}
+      <div className="space-y-1">
+        {filtered.map((cmd, i) => (
+          <div key={i} className="flex items-start gap-1.5 group">
+            <pre className="flex-1 text-[10px] font-mono bg-black/10 dark:bg-white/10 px-2 py-1.5 rounded whitespace-pre-wrap break-all leading-relaxed">{cmd}</pre>
+            <button
+              onClick={() => copy(cmd, i)}
+              className="shrink-0 mt-1 p-1 rounded hover:bg-black/10 dark:hover:bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"
+              title="Copy"
+            >
+              {copied === i
+                ? <CheckCircle2 className="h-3 w-3 text-green-500" />
+                : <span className="text-[10px] text-muted-foreground">copy</span>}
+            </button>
+          </div>
+        ))}
+      </div>
+      {domain && (
+        <p className="text-xs text-muted-foreground mt-1">
+          After setup, click{" "}
+          <button className="underline text-primary hover:no-underline" onClick={() => onDownload(domain)}>
+            download the nginx config
+          </button>
+          , copy it to <code className="font-mono">{"/etc/nginx/sites-available/aio-voice-connect.conf"}</code>, then re-validate.
+        </p>
+      )}
+    </div>
   );
 }

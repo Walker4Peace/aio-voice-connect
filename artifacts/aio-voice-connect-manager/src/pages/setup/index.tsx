@@ -7,19 +7,22 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { PasswordInput } from "@/components/ui/password-input";
-import { CheckCircle2, Globe, Loader2, ShieldCheck, User, XCircle } from "lucide-react";
+import { CheckCircle2, Download, Globe, Loader2, ShieldCheck, Terminal, User, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TimezoneSelect } from "@/components/ui/timezone-select";
 
 type Step = "account" | "domain" | "finish";
 
+interface DomainStep { step: string; success: boolean; error?: string; }
 interface DomainResult {
   ok: boolean;
   sslOk?: boolean;
-  steps?: { step: string; success: boolean; error?: string }[];
+  domain?: string;
+  steps?: DomainStep[];
   error?: string;
-  manual?: string[];
-  manualSsl?: string[];
+  needsManual?: boolean;
+  manualCommands?: string[];
+  /** @deprecated */ manualSsl?: string[];
 }
 
 export default function SetupWizard() {
@@ -236,36 +239,10 @@ export default function SetupWizard() {
 
               {/* Result */}
               {domainResult && (
-                <div className={cn("rounded-md border p-4 space-y-3 max-h-96 overflow-y-auto", domainResult.ok ? "border-green-300 bg-green-50 dark:bg-green-950/30" : "border-red-300 bg-red-50 dark:bg-red-950/30")}>
-                  <div className="flex items-center gap-2 font-medium text-sm">
-                    {domainResult.ok ? <CheckCircle2 className="h-4 w-4 text-green-600" /> : <XCircle className="h-4 w-4 text-red-600" />}
-                    {domainResult.ok
-                      ? (domainResult.sslOk ? t("setup.domainConfiguredHttps") : t("setup.domainConfiguredHttp"))
-                      : domainResult.error}
-                  </div>
-                  {domainResult.steps && (
-                    <ul className="space-y-1 text-xs font-mono">
-                      {domainResult.steps.map((s, i) => (
-                        <li key={i} className="flex items-center gap-2">
-                          {s.success ? <CheckCircle2 className="h-3 w-3 text-green-500 shrink-0" /> : <XCircle className="h-3 w-3 text-red-500 shrink-0" />}
-                          {s.step}{s.error ? ` — ${s.error}` : ""}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                  {domainResult.manualSsl && (
-                    <div className="text-xs space-y-1">
-                      <p className="font-medium text-orange-700 dark:text-orange-400">{t("setup.manualHttps")}</p>
-                      {domainResult.manualSsl.map((cmd, i) => <code key={i} className="block bg-black/10 dark:bg-white/10 px-2 py-1 rounded">{cmd}</code>)}
-                    </div>
-                  )}
-                  {domainResult.manual && (
-                    <div className="text-xs space-y-1">
-                      <p className="font-medium text-red-700 dark:text-red-400">{t("setup.manualCommands")}</p>
-                      {domainResult.manual.map((cmd, i) => <code key={i} className="block bg-black/10 dark:bg-white/10 px-2 py-1 rounded whitespace-pre-wrap">{cmd}</code>)}
-                    </div>
-                  )}
-                </div>
+                <SetupDomainResult
+                  result={domainResult}
+                  onDownload={d => window.open(`/api/setup/domain/nginx-config?domain=${encodeURIComponent(d)}`, "_blank")}
+                />
               )}
 
               <div className="flex justify-end pt-2 border-t">
@@ -303,5 +280,97 @@ export default function SetupWizard() {
         )}
       </div>
     </div>
+  );
+}
+
+// ── Domain result component (setup wizard) ────────────────────────────────────
+
+function SetupDomainResult({
+  result,
+  onDownload,
+}: {
+  result: DomainResult;
+  onDownload: (domain: string) => void;
+}) {
+  const [copied, setCopied] = React.useState<number | null>(null);
+  const copy = (text: string, i: number) => {
+    navigator.clipboard?.writeText(text).catch(() => {
+      const el = document.createElement("textarea");
+      el.value = text; el.style.cssText = "position:fixed;opacity:0";
+      document.body.appendChild(el); el.select(); document.execCommand("copy"); document.body.removeChild(el);
+    });
+    setCopied(i); setTimeout(() => setCopied(null), 1500);
+  };
+
+  if (result.ok) {
+    return (
+      <div className="rounded-md border border-green-300 bg-green-50 dark:bg-green-950/30 p-4 space-y-2">
+        <div className="flex items-center gap-2 font-medium text-sm text-green-800 dark:text-green-200">
+          <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
+          {result.sslOk ? "Domain configured with HTTPS ✓" : "Domain configured (HTTP) — click Continue"}
+        </div>
+        <StepList steps={result.steps} />
+      </div>
+    );
+  }
+
+  if (result.needsManual) {
+    const commands = (result.manualCommands ?? []).filter(c => !c.startsWith("#"));
+    return (
+      <div className="rounded-md border border-amber-300 bg-amber-50 dark:bg-amber-950/30 p-4 space-y-3">
+        <div className="flex items-center gap-2 font-medium text-sm text-amber-800 dark:text-amber-200">
+          <Terminal className="h-4 w-4 shrink-0" />
+          Manual server setup required
+        </div>
+        <StepList steps={result.steps} />
+        {result.domain && (
+          <Button size="sm" variant="outline" className="gap-1.5 text-xs h-7" onClick={() => onDownload(result.domain!)}>
+            <Download className="h-3.5 w-3.5" /> Download nginx config
+          </Button>
+        )}
+        {commands.length > 0 && (
+          <div className="space-y-1">
+            <p className="text-xs font-medium text-amber-800 dark:text-amber-200">Run these commands on the server, then click Validate again:</p>
+            {commands.map((cmd, i) => (
+              <div key={i} className="flex items-start gap-1.5 group">
+                <pre className="flex-1 text-[10px] font-mono bg-black/10 dark:bg-white/10 px-2 py-1.5 rounded whitespace-pre-wrap break-all leading-relaxed">{cmd}</pre>
+                <button onClick={() => copy(cmd, i)} className="shrink-0 mt-1 p-1 rounded hover:bg-black/10 dark:hover:bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" title="Copy">
+                  {copied === i ? <CheckCircle2 className="h-3 w-3 text-green-500" /> : <span className="text-[10px] text-muted-foreground">copy</span>}
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-md border border-red-300 bg-red-50 dark:bg-red-950/30 p-4 space-y-2">
+      <div className="flex items-center gap-2 font-medium text-sm text-red-800 dark:text-red-200">
+        <XCircle className="h-4 w-4 text-red-600 shrink-0" />
+        {result.error ?? "Domain configuration failed"}
+      </div>
+      <StepList steps={result.steps} />
+    </div>
+  );
+}
+
+function StepList({ steps }: { steps?: DomainStep[] }) {
+  if (!steps?.length) return null;
+  return (
+    <ul className="space-y-0.5 text-xs font-mono">
+      {steps.map((s, i) => (
+        <li key={i} className="flex items-start gap-1.5">
+          {s.success
+            ? <CheckCircle2 className="h-3 w-3 text-green-500 mt-0.5 shrink-0" />
+            : <XCircle className="h-3 w-3 text-red-500 mt-0.5 shrink-0" />}
+          <span className={s.success ? "text-foreground" : "text-red-700 dark:text-red-400"}>
+            {s.step}
+            {s.error ? <span className="block text-[10px] font-normal mt-0.5 whitespace-pre-wrap">{s.error}</span> : null}
+          </span>
+        </li>
+      ))}
+    </ul>
   );
 }
