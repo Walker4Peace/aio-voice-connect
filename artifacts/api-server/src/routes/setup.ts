@@ -21,6 +21,10 @@ const PENDING_CONF = "/tmp/aio-vc-nginx-pending.conf";
 const PENDING_DOMAIN = "/tmp/aio-vc-nginx-pending-domain.txt";
 const RESULT_FILE = "/tmp/aio-vc-nginx-result.json";
 
+// Stable copy of the nginx config — always written during Validate so the
+// manual `sudo cp` command works even if the helper is not yet installed.
+const CONFIG_COPY = "/tmp/aio-vc-nginx-config.conf";
+
 // ── nginx config builders ────────────────────────────────────────────────────
 
 function nginxLocations(): string {
@@ -111,10 +115,16 @@ async function resolveDomain(domain: string): Promise<string[]> {
  * Write trigger files and wait up to 30 s for the systemd path-unit helper
  * to process them and write nginx-setup-result.json.
  * Returns null if the helper never responds (not installed / not running).
+ *
+ * Always writes CONFIG_COPY (/tmp/aio-vc-nginx-config.conf) so the manual
+ * `sudo cp` command works even if the helper times out.
  */
 async function runHelper(conf: string, domain: string): Promise<{
   ok: boolean; sslOk?: boolean; sslError?: string; step?: string; error?: string;
 } | null> {
+  // Always write a stable copy the user can cp from manually
+  await fs.writeFile(CONFIG_COPY, conf, "utf8").catch(() => {});
+
   // Clear any stale result from a previous run
   await fs.unlink(RESULT_FILE).catch(() => {});
 
@@ -137,7 +147,7 @@ async function runHelper(conf: string, domain: string): Promise<{
     }
   }
 
-  // Timeout — clean up and report
+  // Timeout — clean up trigger files but keep CONFIG_COPY for manual use
   await fs.unlink(PENDING_CONF).catch(() => {});
   await fs.unlink(PENDING_DOMAIN).catch(() => {});
   return null;
@@ -145,8 +155,8 @@ async function runHelper(conf: string, domain: string): Promise<{
 
 function manualSetupCommands(domain: string): string[] {
   return [
-    `# Download the nginx config from the button above, then copy it to the server:`,
-    `sudo cp /tmp/aio-voice-connect.conf ${NGINX_CONF_PATH}`,
+    // CONFIG_COPY is written by the API server at validate time — no SCP needed.
+    `sudo cp ${CONFIG_COPY} ${NGINX_CONF_PATH}`,
     `sudo ln -sf ${NGINX_CONF_PATH} ${NGINX_ENABLED_PATH}`,
     `sudo nginx -t && sudo systemctl reload nginx`,
     `sudo certbot --nginx -d ${domain} --non-interactive --agree-tos --email admin@${domain}`,

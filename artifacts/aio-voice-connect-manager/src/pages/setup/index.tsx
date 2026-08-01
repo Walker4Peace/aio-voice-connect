@@ -323,11 +323,11 @@ function SetupDomainResult({
           Manual server setup required
         </div>
         <StepList steps={result.steps} />
-        {result.domain && (
-          <Button size="sm" variant="outline" className="gap-1.5 text-xs h-7" onClick={() => onDownload(result.domain!)}>
-            <Download className="h-3.5 w-3.5" /> Download nginx config
-          </Button>
-        )}
+        <div className="rounded bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 px-3 py-2 text-xs text-blue-800 dark:text-blue-300">
+          The nginx config was saved on the server at{" "}
+          <code className="font-mono font-semibold">/tmp/aio-vc-nginx-config.conf</code> — run the commands below directly.
+        </div>
+
         {commands.length > 0 && (
           <div className="space-y-1">
             <p className="text-xs font-medium text-amber-800 dark:text-amber-200">Run these commands on the server, then click Validate again:</p>

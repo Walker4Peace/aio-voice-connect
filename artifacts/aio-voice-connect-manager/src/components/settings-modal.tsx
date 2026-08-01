@@ -334,20 +334,10 @@ function DomainResultPanel({
 
         <StepList steps={result.steps} />
 
-        {result.domain && (
-          <div className="flex items-center gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              className="gap-1.5 text-xs h-7"
-              onClick={() => onDownload(result.domain!)}
-            >
-              <Download className="h-3.5 w-3.5" />
-              Download nginx config
-            </Button>
-            <span className="text-xs text-muted-foreground">save as <code className="font-mono">aio-voice-connect.conf</code></span>
-          </div>
-        )}
+        <div className="rounded bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 px-3 py-2 text-xs text-blue-800 dark:text-blue-300">
+          The nginx config was saved on the server at{" "}
+          <code className="font-mono font-semibold">/tmp/aio-vc-nginx-config.conf</code> — run the commands below directly (no file upload needed).
+        </div>
 
         {result.manualCommands && (
           <ManualCommands
@@ -356,6 +346,16 @@ function DomainResultPanel({
             domain={result.domain}
             onDownload={onDownload}
           />
+        )}
+
+        {result.domain && (
+          <p className="text-xs text-muted-foreground">
+            Or{" "}
+            <button className="underline text-primary hover:no-underline" onClick={() => onDownload(result.domain!)}>
+              download the nginx config
+            </button>{" "}
+            if you prefer to review it first.
+          </p>
         )}
 
         {result.cleanupCommands && (
