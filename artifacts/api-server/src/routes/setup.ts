@@ -25,6 +25,10 @@ const RESULT_FILE = "/tmp/aio-vc-nginx-result.json";
 // manual `sudo cp` command works even if the helper is not yet installed.
 const CONFIG_COPY = "/tmp/aio-vc-nginx-config.conf";
 
+// Base (domain-less) config copy — written during domain reset so the
+// manual restore command works without any heredoc or file download.
+const BASE_CONFIG_COPY = "/tmp/aio-vc-nginx-base.conf";
+
 // ── nginx config builders ────────────────────────────────────────────────────
 
 function nginxLocations(): string {
@@ -169,10 +173,17 @@ function certbotCmd(domain: string): string {
   return `sudo certbot --nginx -d ${domain} --non-interactive --agree-tos --no-eff-email --email admin@${domain}`;
 }
 
+/**
+ * Commands to restore nginx to the base (IP-only) config after domain reset.
+ * Replaces the domain conf with the base config rather than deleting it —
+ * deleting leaves a broken symlink that takes down ALL of nginx.
+ * BASE_CONFIG_COPY is written to /tmp by the DELETE handler before returning
+ * these commands, so no heredoc or file download is needed.
+ */
 function cleanupCommands(): string[] {
   return [
-    `sudo rm -f ${NGINX_CONF_PATH}`,
-    `sudo rm -f ${NGINX_ENABLED_PATH}`,
+    `sudo cp ${BASE_CONFIG_COPY} ${NGINX_CONF_PATH}`,
+    `sudo ln -sf ${NGINX_CONF_PATH} ${NGINX_ENABLED_PATH}`,
     `sudo nginx -t && sudo systemctl reload nginx`,
   ];
 }
@@ -228,21 +239,34 @@ router.get("/setup/domain/nginx-config", (req, res) => {
   res.send(conf);
 });
 
-// DELETE /api/setup/domain — reset domain in DB + return cleanup commands
+// DELETE /api/setup/domain — reset domain in DB and restore base nginx config
+//
+// Strategy: replace the nginx conf with the IP-only base config (never delete
+// it) so nginx keeps serving the local IP address after domain reset.
+// 1. Try the privileged helper via the systemd path unit (same mechanism as setup).
+// 2. Fall back to manual commands using BASE_CONFIG_COPY written to /tmp.
 router.delete("/setup/domain", async (_req, res) => {
-  const [confExists, linkExists] = await Promise.all([
-    fileExists(NGINX_CONF_PATH),
-    fileExists(NGINX_ENABLED_PATH),
-  ]);
+  // Always reset DB first regardless of nginx outcome
   await db.update(adminConfigTable).set({ domain: null, domainConfigured: false, updatedAt: new Date() }).catch(() => {});
 
-  if (!confExists && !linkExists) {
-    res.json({ ok: true, message: "No nginx files found — domain reset." }); return;
+  // Build the base (IP-only) config and write it to /tmp for manual fallback
+  const baseConf = buildNginxConf(null);
+  await fs.writeFile(BASE_CONFIG_COPY, baseConf, "utf8").catch(() => {});
+
+  // Try auto-reset via the privileged helper (empty domain = skip certbot)
+  const helperResult = await runHelper(baseConf, "");
+
+  if (helperResult !== null && helperResult.ok) {
+    res.json({ ok: true, message: "Domain reset — nginx restored to IP-only config." });
+    return;
   }
+
+  // Helper not available or failed — return manual restore commands.
+  // BASE_CONFIG_COPY is already written to /tmp above.
   res.json({
     ok: false,
     needsManual: true,
-    message: "Nginx files exist on the server — run these commands to clean up:",
+    message: "Run these commands to restore nginx (restores local access, does not delete nginx config):",
     cleanupCommands: cleanupCommands(),
   });
 });
