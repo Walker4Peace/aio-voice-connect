@@ -159,8 +159,14 @@ function manualSetupCommands(domain: string): string[] {
     `sudo cp ${CONFIG_COPY} ${NGINX_CONF_PATH}`,
     `sudo ln -sf ${NGINX_CONF_PATH} ${NGINX_ENABLED_PATH}`,
     `sudo nginx -t && sudo systemctl reload nginx`,
-    `sudo certbot --nginx -d ${domain} --non-interactive --agree-tos --email admin@${domain}`,
+    certbotCmd(domain),
   ];
+}
+
+function certbotCmd(domain: string): string {
+  // --no-eff-email suppresses the "share email with EFF?" interactive prompt
+  // that certbot shows even with --non-interactive on first run.
+  return `sudo certbot --nginx -d ${domain} --non-interactive --agree-tos --no-eff-email --email admin@${domain}`;
 }
 
 function cleanupCommands(): string[] {
@@ -313,7 +319,7 @@ router.post("/setup/domain", async (req, res) => {
     res.json({
       ok: true, domain, sslOk: helperResult.sslOk, steps,
       ...(helperResult.sslOk ? {} : {
-        manualCommands: [`sudo certbot --nginx -d ${domain} --non-interactive --agree-tos --email admin@${domain}`],
+        manualCommands: [certbotCmd(domain)],
       }),
     });
     return;
@@ -345,7 +351,7 @@ router.post("/setup/domain", async (req, res) => {
       manualCommands: [
         `sudo ln -sf ${NGINX_CONF_PATH} ${NGINX_ENABLED_PATH}`,
         `sudo nginx -t && sudo systemctl reload nginx`,
-        `sudo certbot --nginx -d ${domain} --non-interactive --agree-tos --email admin@${domain}`,
+        certbotCmd(domain),
       ],
       cleanupCommands: cleanupCommands(),
     });
@@ -356,7 +362,7 @@ router.post("/setup/domain", async (req, res) => {
   // HTTP probe — verify nginx is actually serving the domain
   let httpOk = false;
   try {
-    const status = await httpGet(`http://${domain}/api/health`);
+    const status = await httpGet(`http://${domain}/api/healthz`);
     httpOk = status >= 200 && status < 500;
     steps.push({ step: `HTTP probe → ${status}`, success: httpOk, error: httpOk ? undefined : `Unexpected status ${status}` });
   } catch (err) {
@@ -367,7 +373,7 @@ router.post("/setup/domain", async (req, res) => {
       manualCommands: [
         `sudo nginx -t`,
         `sudo systemctl reload nginx`,
-        `sudo certbot --nginx -d ${domain} --non-interactive --agree-tos --email admin@${domain}`,
+        certbotCmd(domain),
       ],
       cleanupCommands: cleanupCommands(),
     });
@@ -377,7 +383,7 @@ router.post("/setup/domain", async (req, res) => {
   // SSL probe
   let sslOk = false;
   try {
-    const status = await httpGet(`https://${domain}/api/health`);
+    const status = await httpGet(`https://${domain}/api/healthz`);
     sslOk = status >= 200 && status < 500;
     steps.push({ step: `HTTPS probe → ${status}`, success: sslOk });
   } catch {
@@ -388,7 +394,7 @@ router.post("/setup/domain", async (req, res) => {
   res.json({
     ok: true, domain, sslOk, steps,
     ...(sslOk ? {} : {
-      manualCommands: [`sudo certbot --nginx -d ${domain} --non-interactive --agree-tos --email admin@${domain}`],
+      manualCommands: [certbotCmd(domain)],
     }),
   });
 });

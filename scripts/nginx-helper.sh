@@ -69,8 +69,10 @@ SSL_OK=false
 SSL_ERROR=""
 
 if [[ -n "$DOMAIN" ]]; then
+  # --no-eff-email suppresses the "share email with EFF?" prompt that blocks
+  # non-interactive runs on first-time certbot installs.
   CERTBOT_OUT=$(certbot --nginx -d "$DOMAIN" \
-    --non-interactive --agree-tos \
+    --non-interactive --agree-tos --no-eff-email \
     --email "admin@${DOMAIN}" 2>&1 || true)
 
   if echo "$CERTBOT_OUT" | grep -q "Congratulations\|Certificate not yet due"; then
