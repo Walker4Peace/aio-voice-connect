@@ -1,0 +1,103 @@
+test@test:/etc/nginx/sites-available$ cat /etc/nginx/sites-available/aio-voice-connect.conf
+# IP access — always reachable regardless of domain
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    server_name _;
+
+    # API backend — proxy to Node.js process
+    location /api/ {
+        proxy_pass         http://127.0.0.1:3101/api/;
+        proxy_http_version 1.1;
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_read_timeout 120s;
+        proxy_send_timeout 120s;
+    }
+
+    # React SPA — serve static files; fall back to index.html
+    root  /opt/aio-voice-connect/artifacts/aio-voice-connect-manager/dist/public;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+
+        # Cache hashed static assets aggressively
+        location ~* \.(?:js|css|woff2?|ttf|eot|svg|png|jpg|jpeg|gif|ico|webp)$ {
+            expires     1y;
+            add_header  Cache-Control "public, immutable";
+            access_log  off;
+        }
+    }
+
+    # Security headers
+    add_header X-Frame-Options        "SAMEORIGIN"    always;
+    add_header X-Content-Type-Options "nosniff"       always;
+    add_header Referrer-Policy        "strict-origin"  always;
+
+    client_max_body_size 16M;
+}
+
+# Domain access
+server {
+    server_name sip.aioprocess.com;
+
+    # API backend — proxy to Node.js process
+    location /api/ {
+        proxy_pass         http://127.0.0.1:3101/api/;
+        proxy_http_version 1.1;
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_read_timeout 120s;
+        proxy_send_timeout 120s;
+    }
+
+    # React SPA — serve static files; fall back to index.html
+    root  /opt/aio-voice-connect/artifacts/aio-voice-connect-manager/dist/public;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+
+        # Cache hashed static assets aggressively
+        location ~* \.(?:js|css|woff2?|ttf|eot|svg|png|jpg|jpeg|gif|ico|webp)$ {
+            expires     1y;
+            add_header  Cache-Control "public, immutable";
+            access_log  off;
+        }
+    }
+
+    # Security headers
+    add_header X-Frame-Options        "SAMEORIGIN"    always;
+    add_header X-Content-Type-Options "nosniff"       always;
+    add_header Referrer-Policy        "strict-origin"  always;
+
+    client_max_body_size 16M;
+
+    listen [::]:443 ssl ipv6only=on; # managed by Certbot
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/sip.aioprocess.com/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/sip.aioprocess.com/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+
+}
+
+server {
+    if ($host = sip.aioprocess.com) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+
+    listen 80;
+    listen [::]:80;
+    server_name sip.aioprocess.com;
+    return 404; # managed by Certbot
+
+
+}test@test:/etc/nginx/sites-available$
