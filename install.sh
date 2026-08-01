@@ -160,7 +160,11 @@ apt-get install -y -qq \
     postgresql \
     postgresql-contrib \
     openssl \
+    certbot \
+    python3-certbot-nginx \
     || die "Failed to install base system packages."
+
+success "certbot $(certbot --version 2>&1 | head -1)"
 
 # Node.js via NodeSource
 if ! command -v node &>/dev/null || [[ "$(node --version | cut -d. -f1 | tr -d 'v')" -lt "${NODE_MAJOR}" ]]; then
