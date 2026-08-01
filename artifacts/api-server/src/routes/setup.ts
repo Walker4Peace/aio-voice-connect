@@ -161,14 +161,27 @@ router.post("/setup/domain", async (req, res) => {
   const steps: { step: string; success: boolean; output?: string; error?: string }[] = [];
 
   // Step 1: Write nginx config
+  // The app user cannot write /etc/nginx directly. Write to /tmp first,
+  // then use `sudo tee` to move it into place (sudoers entry configured
+  // by install.sh grants NOPASSWD for this exact tee command).
   try {
     const conf = buildNginxConf(domain);
-    await fs.writeFile(NGINX_CONF_PATH, conf, "utf8");
+    const tmpPath = `/tmp/nginx-aio-${Date.now()}.conf`;
+    await fs.writeFile(tmpPath, conf, "utf8");
+    try {
+      await execAsync(`sudo tee ${NGINX_CONF_PATH} < ${tmpPath}`);
+    } finally {
+      await fs.unlink(tmpPath).catch(() => {});
+    }
     steps.push({ step: "Write nginx config", success: true });
   } catch (err) {
     const manualConf = buildNginxConf(domain);
-    res.status(500).json({
+    // Return 200 — this is a graceful fallback showing manual steps, not a crash
+    res.status(200).json({
+      ok: false,
+      needsManual: true,
       error: "Could not write nginx config — run manually",
+      hint: "Run: sudo bash /opt/aio-voice-connect/update.sh  then re-try, or apply the steps below manually.",
       steps,
       manual: [
         `Create file ${NGINX_CONF_PATH} with:`,
@@ -183,7 +196,7 @@ router.post("/setup/domain", async (req, res) => {
 
   // Step 2: Create symlink
   try {
-    try { await fs.unlink(NGINX_ENABLED_PATH); } catch { /* ignore if not exists */ }
+    try { await execAsync(`sudo rm -f ${NGINX_ENABLED_PATH}`); } catch { /* ignore */ }
     await execAsync(`sudo ln -s ${NGINX_CONF_PATH} ${NGINX_ENABLED_PATH}`);
     steps.push({ step: "Enable site (symlink)", success: true });
   } catch (err) {
@@ -196,7 +209,9 @@ router.post("/setup/domain", async (req, res) => {
     steps.push({ step: "Reload nginx", success: true });
   } catch (err) {
     steps.push({ step: "Reload nginx", success: false, error: String(err) });
-    res.status(500).json({
+    res.status(200).json({
+      ok: false,
+      needsManual: true,
       error: "nginx reload failed — run manually",
       steps,
       manual: [
