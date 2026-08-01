@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/auth-context";
-import { CheckCircle2, Download, Globe, Loader2, Terminal, User, XCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Download, Globe, Loader2, RefreshCw, Terminal, Trash2, User, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { TimezoneSelect } from "@/components/ui/timezone-select";
@@ -29,8 +29,7 @@ interface DomainResult {
   error?: string;
   needsManual?: boolean;
   manualCommands?: string[];
-  /** @deprecated use manualCommands */
-  manualSsl?: string[];
+  cleanupCommands?: string[];
 }
 
 interface SettingsModalProps {
@@ -54,6 +53,8 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
   const [domain, setDomain] = useState("");
   const [domainLoading, setDomainLoading] = useState(false);
   const [domainResult, setDomainResult] = useState<DomainResult | null>(null);
+  const [resetResult, setResetResult] = useState<{ cleanupCommands?: string[]; message?: string } | null>(null);
+  const [resetLoading, setResetLoading] = useState(false);
 
   const domainLocked = !!(user?.domainConfigured && user?.domain);
 
@@ -117,6 +118,29 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
       setDomainResult({ ok: false, error: t("settings.connectionError") });
     } finally {
       setDomainLoading(false);
+    }
+  };
+
+  const handleDomainReset = async () => {
+    setResetLoading(true);
+    setResetResult(null);
+    setDomainResult(null);
+    try {
+      const res = await fetch("/api/setup/domain", {
+        method: "DELETE",
+        credentials: "include",
+      });
+      const data = await res.json();
+      await refetch();
+      if (data.cleanupCommands?.length) {
+        setResetResult({ cleanupCommands: data.cleanupCommands, message: data.message });
+      } else {
+        toast({ title: data.message ?? "Domain reset." });
+      }
+    } catch {
+      toast({ variant: "destructive", title: t("settings.connectionError") });
+    } finally {
+      setResetLoading(false);
     }
   };
 
@@ -190,16 +214,41 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
             {domainLocked ? (
               <div className="flex items-center gap-3 rounded-md border border-green-300 bg-green-50 dark:bg-green-950/30 px-4 py-3">
                 <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0" />
-                <div>
-                  <p className="text-sm font-medium">{user!.domain}</p>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{user!.domain}</p>
                   <Badge variant="outline" className="text-green-600 border-green-400 text-xs mt-1">
                     {t("settings.domainConnected")}
                   </Badge>
                 </div>
+                <button
+                  onClick={handleDomainReset}
+                  disabled={resetLoading}
+                  title="Reset domain"
+                  className="shrink-0 p-1.5 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-muted-foreground hover:text-red-600 transition-colors"
+                >
+                  {resetLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                </button>
               </div>
             ) : (
               <div className="rounded-md bg-muted/50 border border-dashed p-3 text-sm text-muted-foreground">
                 {t("settings.noDomain")}
+              </div>
+            )}
+
+            {/* Reset result — cleanup commands to run on server */}
+            {resetResult && (
+              <div className="rounded-md border border-amber-300 bg-amber-50 dark:bg-amber-950/30 p-3 space-y-2">
+                <div className="flex items-center gap-2 text-sm font-medium text-amber-800 dark:text-amber-200">
+                  <AlertTriangle className="h-4 w-4 shrink-0" />
+                  {resetResult.message ?? "Run these cleanup commands on the server:"}
+                </div>
+                {resetResult.cleanupCommands && (
+                  <ManualCommands
+                    title=""
+                    commands={resetResult.cleanupCommands}
+                    onDownload={downloadNginxConfig}
+                  />
+                )}
               </div>
             )}
 
@@ -307,6 +356,19 @@ function DomainResultPanel({
             domain={result.domain}
             onDownload={onDownload}
           />
+        )}
+
+        {result.cleanupCommands && (
+          <details className="text-xs">
+            <summary className="cursor-pointer flex items-center gap-1.5 text-muted-foreground hover:text-foreground py-1 select-none">
+              <Trash2 className="h-3 w-3" /> Undo / cleanup files
+            </summary>
+            <ManualCommands
+              title="Run to remove any partially-created nginx files:"
+              commands={result.cleanupCommands}
+              onDownload={onDownload}
+            />
+          </details>
         )}
       </div>
     );

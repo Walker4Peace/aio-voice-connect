@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { PasswordInput } from "@/components/ui/password-input";
-import { CheckCircle2, Download, Globe, Loader2, ShieldCheck, Terminal, User, XCircle } from "lucide-react";
+import { CheckCircle2, Download, Globe, Loader2, ShieldCheck, Terminal, Trash2, User, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TimezoneSelect } from "@/components/ui/timezone-select";
 
@@ -22,7 +22,7 @@ interface DomainResult {
   error?: string;
   needsManual?: boolean;
   manualCommands?: string[];
-  /** @deprecated */ manualSsl?: string[];
+  cleanupCommands?: string[];
 }
 
 export default function SetupWizard() {

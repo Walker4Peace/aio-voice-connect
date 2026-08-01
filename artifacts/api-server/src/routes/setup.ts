@@ -5,6 +5,8 @@ import { exec } from "child_process";
 import { promisify } from "util";
 import fs from "fs/promises";
 import path from "path";
+import http from "http";
+import https from "https";
 import { db, adminConfigTable } from "@workspace/db";
 
 const execAsync = promisify(exec);
@@ -13,19 +15,14 @@ const router = Router();
 const NGINX_CONF_PATH = "/etc/nginx/sites-available/aio-voice-connect.conf";
 const NGINX_ENABLED_PATH = "/etc/nginx/sites-enabled/aio-voice-connect.conf";
 
-/**
- * Build the nginx location blocks for a production server block.
- *
- * - /api/ → proxy to the Node.js API process (port from PORT env, default 3101)
- * - /     → serve the compiled React SPA from the dist directory;
- *           falls back to index.html for client-side routing.
- *
- * process.cwd() on the VPS is /opt/aio-voice-connect, so the static
- * root resolves to /opt/aio-voice-connect/artifacts/aio-voice-connect-manager/dist/public
- */
+// ── nginx config builders ────────────────────────────────────────────────────
+
 function nginxLocations(): string {
   const apiPort = process.env["PORT"] ?? "3101";
-  const staticRoot = path.resolve(process.cwd(), "artifacts/aio-voice-connect-manager/dist/public");
+  const staticRoot = path.resolve(
+    process.cwd(),
+    "artifacts/aio-voice-connect-manager/dist/public",
+  );
 
   return `
     # API backend — proxy to Node.js process
@@ -63,13 +60,6 @@ function nginxLocations(): string {
     client_max_body_size 16M;`;
 }
 
-/**
- * Build the nginx config.
- *
- * - Always includes a catch-all default_server block (reachable by IP).
- * - When a domain is provided, adds a dedicated server block for it
- *   (certbot will later upgrade it to HTTPS).
- */
 function buildNginxConf(domain?: string | null): string {
   const ipBlock = `# IP access — always reachable regardless of domain
 server {
@@ -80,11 +70,10 @@ ${nginxLocations()}
 }
 `;
 
-  if (!domain) {
-    return ipBlock;
-  }
+  if (!domain) return ipBlock;
 
-  const domainBlock = `# Domain access
+  return `${ipBlock}
+# Domain access
 server {
     listen 80;
     listen [::]:80;
@@ -92,10 +81,56 @@ server {
 ${nginxLocations()}
 }
 `;
-
-  return `${ipBlock}
-${domainBlock}`;
 }
+
+// ── helpers ──────────────────────────────────────────────────────────────────
+
+/** Returns true if the file/symlink exists. */
+async function fileExists(p: string): Promise<boolean> {
+  try {
+    await fs.access(p);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Quick HTTP(S) GET — resolves with status code or rejects on network error. */
+function httpGet(url: string, timeoutMs = 6000): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const lib = url.startsWith("https") ? https : http;
+    const req = lib.get(url, { timeout: timeoutMs }, res => {
+      res.resume();
+      resolve(res.statusCode ?? 0);
+    });
+    req.on("timeout", () => { req.destroy(); reject(new Error("timeout")); });
+    req.on("error", reject);
+  });
+}
+
+/**
+ * Build the full set of manual commands needed to configure nginx for a domain.
+ * These are returned when the service cannot run sudo (NoNewPrivileges=true in systemd).
+ */
+function manualSetupCommands(domain: string): string[] {
+  return [
+    `# Download the nginx config from the button above, then copy it to the server:`,
+    `sudo cp /tmp/aio-voice-connect.conf ${NGINX_CONF_PATH}`,
+    `sudo ln -sf ${NGINX_CONF_PATH} ${NGINX_ENABLED_PATH}`,
+    `sudo nginx -t && sudo systemctl reload nginx`,
+    `sudo certbot --nginx -d ${domain} --non-interactive --agree-tos --email admin@${domain}`,
+  ];
+}
+
+function cleanupCommands(): string[] {
+  return [
+    `sudo rm -f ${NGINX_CONF_PATH}`,
+    `sudo rm -f ${NGINX_ENABLED_PATH}`,
+    `sudo nginx -t && sudo systemctl reload nginx`,
+  ];
+}
+
+// ── routes ───────────────────────────────────────────────────────────────────
 
 // GET /api/setup/status
 router.get("/setup/status", async (_req, res) => {
@@ -140,31 +175,22 @@ router.post("/setup", async (req, res) => {
 
   if (existing) {
     await db.update(adminConfigTable).set({
-      username,
-      passwordHash,
-      language,
-      timezone,
-      setupComplete: true,
-      updatedAt: now,
+      username, passwordHash, language, timezone,
+      setupComplete: true, updatedAt: now,
     });
   } else {
     await db.insert(adminConfigTable).values({
-      username,
-      passwordHash,
-      language,
-      timezone,
-      setupComplete: true,
+      username, passwordHash, language, timezone, setupComplete: true,
     });
   }
 
   const config = await db.query.adminConfigTable.findFirst();
   req.session.adminId = config!.id;
   req.session.username = config!.username;
-
   res.json({ ok: true });
 });
 
-// GET /api/setup/domain/nginx-config — download the generated nginx config as a file
+// GET /api/setup/domain/nginx-config — download the generated nginx config
 router.get("/setup/domain/nginx-config", (req, res) => {
   const domain = typeof req.query.domain === "string" ? req.query.domain.trim() : null;
   if (domain && !/^[a-zA-Z0-9][a-zA-Z0-9.-]{1,61}[a-zA-Z0-9]\.[a-zA-Z]{2,}$/.test(domain)) {
@@ -177,8 +203,35 @@ router.get("/setup/domain/nginx-config", (req, res) => {
   res.send(conf);
 });
 
-// POST /api/setup/domain — configure nginx + certbot
-// Works during setup (no auth) OR when authenticated (from settings)
+// DELETE /api/setup/domain — reset domain config (returns cleanup commands since service
+// cannot write /etc/nginx directly under systemd NoNewPrivileges=true)
+router.delete("/setup/domain", async (req, res) => {
+  const confExists = await fileExists(NGINX_CONF_PATH);
+  const linkExists = await fileExists(NGINX_ENABLED_PATH);
+
+  // Reset DB
+  await db.update(adminConfigTable).set({
+    domain: null, domainConfigured: false, updatedAt: new Date(),
+  }).catch(() => {});
+
+  if (!confExists && !linkExists) {
+    res.json({ ok: true, message: "No nginx files found — domain reset." });
+    return;
+  }
+
+  res.json({
+    ok: false,
+    needsManual: true,
+    message: "Nginx files exist — run these commands on the server to clean up:",
+    cleanupCommands: cleanupCommands(),
+  });
+});
+
+// POST /api/setup/domain — configure nginx + SSL
+//
+// The systemd service runs with NoNewPrivileges=true, so sudo is completely
+// blocked. Strategy: check file state, guide user through manual steps, then
+// verify by re-validating (HTTP probe + config presence).
 router.post("/setup/domain", async (req, res) => {
   const { domain } = req.body as { domain: string };
   if (!domain || !/^[a-zA-Z0-9][a-zA-Z0-9.-]{1,61}[a-zA-Z0-9]\.[a-zA-Z]{2,}$/.test(domain)) {
@@ -188,105 +241,110 @@ router.post("/setup/domain", async (req, res) => {
 
   const steps: { step: string; success: boolean; error?: string }[] = [];
 
-  // Step 0: DNS A-record check — fail fast if the domain doesn't resolve at all
+  // ── Step 0: DNS A-record resolution ─────────────────────────────────────
+  let resolvedIps: string[] = [];
   try {
-    const ips = await dns.promises.resolve4(domain);
-    steps.push({ step: `DNS A record resolved (${ips.join(", ")})`, success: true });
+    resolvedIps = await dns.promises.resolve4(domain);
+    steps.push({
+      step: `DNS resolved → ${resolvedIps.join(", ")}`,
+      success: true,
+    });
   } catch (err) {
-    const errMsg = err instanceof Error ? (err as NodeJS.ErrnoException).code ?? err.message : String(err);
+    const code = (err as NodeJS.ErrnoException).code;
     steps.push({
       step: "DNS A record check",
       success: false,
-      error: errMsg === "ENOTFOUND"
-        ? `${domain} does not resolve — point an A record to this server's public IP first`
-        : `DNS lookup failed: ${errMsg}`,
+      error: code === "ENOTFOUND"
+        ? `${domain} does not resolve — point an A record to this server's public IP first, then wait for propagation (up to 48h). Tip: run \`dig @8.8.8.8 ${domain} A\` to bypass local caching.`
+        : `DNS lookup failed: ${code ?? String(err)}`,
     });
-    res.status(200).json({ ok: false, error: "DNS not configured yet", steps });
+    res.json({ ok: false, error: "DNS not configured yet", steps });
     return;
   }
 
-  // Step 1: Write nginx config
-  // The app user cannot write /etc/nginx directly. Write to /tmp first,
-  // then pipe through `sudo tee` (NOPASSWD rule added by install.sh).
-  try {
-    const conf = buildNginxConf(domain);
-    const tmpPath = `/tmp/nginx-aio-${Date.now()}.conf`;
-    await fs.writeFile(tmpPath, conf, "utf8");
-    try {
-      await execAsync(`sudo tee ${NGINX_CONF_PATH} < ${tmpPath}`);
-    } finally {
-      await fs.unlink(tmpPath).catch(() => {});
-    }
-    steps.push({ step: "Write nginx config", success: true });
-  } catch (err) {
-    // Capture the real error (e.g. "sudo: tee: command not allowed") rather than
-    // dumping the config content. The frontend can download the config separately.
-    const errMsg = err instanceof Error ? err.message : String(err);
-    steps.push({ step: "Write nginx config", success: false, error: errMsg });
-    res.status(200).json({
+  // ── Step 1: Check nginx config file ──────────────────────────────────────
+  const confExists = await fileExists(NGINX_CONF_PATH);
+  if (!confExists) {
+    steps.push({ step: "Nginx config file", success: false, error: "File not found — see setup instructions below" });
+    res.json({
       ok: false,
       needsManual: true,
-      error: "Cannot write nginx config — sudo permission not set up",
       domain,
       steps,
-      // Only shell commands here — no raw config content
+      manualCommands: manualSetupCommands(domain),
+      cleanupCommands: cleanupCommands(),
+    });
+    return;
+  }
+  steps.push({ step: "Nginx config file exists", success: true });
+
+  // ── Step 2: Check symlink ─────────────────────────────────────────────────
+  const linkExists = await fileExists(NGINX_ENABLED_PATH);
+  if (!linkExists) {
+    steps.push({ step: "Site enabled symlink", success: false, error: `${NGINX_ENABLED_PATH} not found` });
+    res.json({
+      ok: false,
+      needsManual: true,
+      domain,
+      steps,
       manualCommands: [
-        `# 1. One-time sudoers setup (run as root or with sudo):`,
-        `sudo tee /etc/sudoers.d/aio-voice-connect <<'EOF'\naio-voice-connect ALL=(ALL) NOPASSWD: /usr/bin/tee ${NGINX_CONF_PATH}\naio-voice-connect ALL=(ALL) NOPASSWD: /bin/ln -s ${NGINX_CONF_PATH} ${NGINX_ENABLED_PATH}\naio-voice-connect ALL=(ALL) NOPASSWD: /bin/rm -f ${NGINX_ENABLED_PATH}\naio-voice-connect ALL=(ALL) NOPASSWD: /usr/sbin/nginx -t\naio-voice-connect ALL=(ALL) NOPASSWD: /bin/systemctl reload nginx\naio-voice-connect ALL=(ALL) NOPASSWD: /usr/bin/certbot --nginx *\nEOF\nsudo chmod 440 /etc/sudoers.d/aio-voice-connect`,
-        `# 2. After adding sudoers, click Validate again — OR apply manually:`,
-        `# Download the config file from this UI, then:`,
-        `sudo cp /tmp/aio-voice-connect.conf ${NGINX_CONF_PATH}`,
         `sudo ln -sf ${NGINX_CONF_PATH} ${NGINX_ENABLED_PATH}`,
         `sudo nginx -t && sudo systemctl reload nginx`,
         `sudo certbot --nginx -d ${domain} --non-interactive --agree-tos --email admin@${domain}`,
       ],
+      cleanupCommands: cleanupCommands(),
     });
     return;
   }
+  steps.push({ step: "Site enabled (symlink exists)", success: true });
 
-  // Step 2: Create symlink
+  // ── Step 3: Verify nginx is serving the domain (HTTP probe) ───────────────
+  let httpOk = false;
   try {
-    await execAsync(`sudo rm -f ${NGINX_ENABLED_PATH}`).catch(() => {});
-    await execAsync(`sudo ln -s ${NGINX_CONF_PATH} ${NGINX_ENABLED_PATH}`);
-    steps.push({ step: "Enable site (symlink)", success: true });
+    const status = await httpGet(`http://${domain}/api/health`);
+    httpOk = status >= 200 && status < 500; // 200 or even 401 = nginx is proxying
+    steps.push({
+      step: `HTTP probe → ${status}`,
+      success: httpOk,
+      error: httpOk ? undefined : `Unexpected HTTP status ${status}`,
+    });
   } catch (err) {
     const errMsg = err instanceof Error ? err.message : String(err);
-    steps.push({ step: "Enable site (symlink)", success: false, error: errMsg });
-  }
-
-  // Step 3: Test + reload nginx
-  try {
-    await execAsync("sudo nginx -t && sudo systemctl reload nginx");
-    steps.push({ step: "Reload nginx", success: true });
-  } catch (err) {
-    const errMsg = err instanceof Error ? err.message : String(err);
-    steps.push({ step: "Reload nginx", success: false, error: errMsg });
-    res.status(200).json({
+    steps.push({
+      step: "HTTP probe",
+      success: false,
+      error: `Cannot reach http://${domain} — nginx may not be running or config has errors: ${errMsg}`,
+    });
+    res.json({
       ok: false,
       needsManual: true,
-      error: "nginx test/reload failed",
       domain,
       steps,
       manualCommands: [
-        "sudo nginx -t && sudo systemctl reload nginx",
+        `sudo nginx -t`,
+        `sudo systemctl reload nginx`,
         `sudo certbot --nginx -d ${domain} --non-interactive --agree-tos --email admin@${domain}`,
       ],
+      cleanupCommands: cleanupCommands(),
     });
     return;
   }
 
-  // Step 4: Certbot SSL
+  // ── Step 4: SSL check ─────────────────────────────────────────────────────
   let sslOk = false;
   try {
-    await execAsync(`sudo certbot --nginx -d ${domain} --non-interactive --agree-tos --email admin@${domain}`);
-    steps.push({ step: "SSL certificate (Let's Encrypt)", success: true });
-    sslOk = true;
-  } catch (err) {
-    const errMsg = err instanceof Error ? err.message : String(err);
-    steps.push({ step: "SSL certificate (Let's Encrypt)", success: false, error: errMsg });
+    const status = await httpGet(`https://${domain}/api/health`);
+    sslOk = status >= 200 && status < 500;
+    steps.push({
+      step: `HTTPS probe → ${status}`,
+      success: sslOk,
+      error: sslOk ? undefined : `HTTPS responded with ${status}`,
+    });
+  } catch {
+    steps.push({ step: "HTTPS / SSL certificate", success: false, error: "Not yet configured" });
   }
 
-  // Save domain to DB regardless of SSL result
+  // ── Persist domain to DB ──────────────────────────────────────────────────
   await db.update(adminConfigTable).set({ domain, domainConfigured: true, updatedAt: new Date() });
 
   res.json({
@@ -295,7 +353,9 @@ router.post("/setup/domain", async (req, res) => {
     sslOk,
     steps,
     ...(sslOk ? {} : {
-      manualCommands: [`sudo certbot --nginx -d ${domain}`],
+      manualCommands: [
+        `sudo certbot --nginx -d ${domain} --non-interactive --agree-tos --email admin@${domain}`,
+      ],
     }),
   });
 });
