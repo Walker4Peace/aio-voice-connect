@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { exec } from "child_process";
 import { promisify } from "util";
 import fs from "fs/promises";
+import path from "path";
 import { db, adminConfigTable } from "@workspace/db";
 
 const execAsync = promisify(exec);
@@ -11,38 +12,60 @@ const router = Router();
 const NGINX_CONF_PATH = "/etc/nginx/sites-available/aio-voice-connect.conf";
 const NGINX_ENABLED_PATH = "/etc/nginx/sites-enabled/aio-voice-connect.conf";
 
-/** Shared proxy location blocks used by every server block */
+/**
+ * Build the nginx location blocks for a production server block.
+ *
+ * - /api/ → proxy to the Node.js API process (port from PORT env, default 3101)
+ * - /     → serve the compiled React SPA from the dist directory;
+ *           falls back to index.html for client-side routing.
+ *
+ * process.cwd() on the VPS is /opt/aio-voice-connect, so the static
+ * root resolves to /opt/aio-voice-connect/artifacts/aio-voice-connect-manager/dist/public
+ */
 function nginxLocations(): string {
+  const apiPort = process.env["PORT"] ?? "3101";
+  const staticRoot = path.resolve(process.cwd(), "artifacts/aio-voice-connect-manager/dist/public");
+
   return `
-    # API backend
+    # API backend — proxy to Node.js process
     location /api/ {
-        proxy_pass http://localhost:8080/api/;
+        proxy_pass         http://127.0.0.1:${apiPort}/api/;
         proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_read_timeout 120s;
+        proxy_send_timeout 120s;
     }
 
-    # Frontend app
+    # React SPA — serve static files; fall back to index.html
+    root  ${staticRoot};
+    index index.html;
+
     location / {
-        proxy_pass http://localhost:23208/;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_cache_bypass $http_upgrade;
-    }`;
+        try_files $uri $uri/ /index.html;
+
+        # Cache hashed static assets aggressively
+        location ~* \\.(?:js|css|woff2?|ttf|eot|svg|png|jpg|jpeg|gif|ico|webp)$ {
+            expires     1y;
+            add_header  Cache-Control "public, immutable";
+            access_log  off;
+        }
+    }
+
+    # Security headers
+    add_header X-Frame-Options        "SAMEORIGIN"    always;
+    add_header X-Content-Type-Options "nosniff"       always;
+    add_header Referrer-Policy        "strict-origin"  always;
+
+    client_max_body_size 16M;`;
 }
 
 /**
  * Build the nginx config.
  *
- * - Always includes a catch-all default_server block so the app is
- *   reachable by IP address even when no domain is configured.
+ * - Always includes a catch-all default_server block (reachable by IP).
  * - When a domain is provided, adds a dedicated server block for it
  *   (certbot will later upgrade it to HTTPS).
  */

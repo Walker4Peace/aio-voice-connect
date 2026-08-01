@@ -1,0 +1,176 @@
+20:11:01
+INFO	2026/08/01 19:11:01 Loaded config with 0 functions
+20:11:01
+INFO	2026/08/01 19:11:01 Starting HTTP API server on :19000
+20:11:01
+INFO	2026/08/01 19:11:01 Starting SIP client with configuration:
+20:11:01
+INFO	2026/08/01 19:11:01 Username: 1004, Domain: 192.168.11.90, Server: 192.168.11.90:5060, Transport: udp
+20:11:01
+INFO	2026/08/01 19:11:01 Auth ID: qjFB7cTE9q (using separate authorization ID)
+20:11:01
+INFO	2026/08/01 19:11:01 No OPENAI_API_KEY set - calls will use fallback audio handling
+20:11:01
+DEBUG	2026/08/01 19:11:01 DEBUG: Determined outbound IP as 192.168.11.107
+20:11:01
+DEBUG	2026/08/01 19:11:01 Local IP determined as: 192.168.11.107
+20:11:01
+DEBUG	2026/08/01 19:11:01 DEBUG: Retrieved external IP as 105.188.3.70
+20:11:01
+DEBUG	2026/08/01 19:11:01 External IP determined as: 105.188.3.70
+20:11:01
+INFO	2026/08/01 19:11:01 === OUTBOUND CALLING MODE ===
+20:11:01
+INFO	2026/08/01 19:11:01 Target: +212661209845
+20:11:01
+INFO	2026/08/01 19:11:01 Task:
+20:11:01
+INFO	2026/08/01 19:11:01 Result webhook:
+20:11:01
+INFO	2026/08/01 19:11:01 Sending REGISTER request via sipgo client.
+20:11:01
+DEBUG	2026/08/01 19:11:01 Auth: digestUsername=qjFB7cTE9q, realm=YSAsterisk, uri=sip:192.168.11.90, password=WQHy0b05PJ
+20:11:01
+DEBUG	2026/08/01 19:11:01 Resending REGISTER with Authorization header (CSeq=2).
+20:11:01
+DEBUG	2026/08/01 19:11:01 Authorization: Digest username="qjFB7cTE9q", realm="YSAsterisk", nonce="1785611461/dd75bc081c6ee5a40f6e3ec8dfd8dc25", uri="sip:192.168.11.90", response="5e26362c93b6891d56b12bd50df122cb", algorithm=MD5
+20:11:01
+WARN	2026/08/01 19:11:01 WARN SIP request handler not found caller=Server method=NOTIFY
+20:11:01
+DEBUG	2026/08/01 19:11:01 Received REGISTER response: SIP/2.0 200 OK
+20:11:01
+DEBUG	Via: SIP/2.0/UDP 192.168.11.107:50341;rport=50341;received=192.168.11.107;branch=z9hG4bK.dRdmKbAL4Dl97DRI
+20:11:01
+DEBUG	Call-ID: Lw7CA445tmXdCpRf
+20:11:01
+DEBUG	From: <sip:1004@192.168.11.90>;tag=dsncvDVr
+20:11:01
+DEBUG	To: <sip:1004@192.168.11.90>;tag=z9hG4bK.dRdmKbAL4Dl97DRI
+20:11:01
+DEBUG	CSeq: 2 REGISTER
+20:11:01
+INFO	Date: Sat, 01 Aug 2026 19:11:01 GMT
+20:11:01
+DEBUG	Contact: <sip:1004@192.168.11.107:50341>;expires=628
+20:11:01
+DEBUG	Expires: 621
+20:11:01
+DEBUG	Server: Yeastar PSE
+20:11:01
+INFO	Content-Length: 0
+20:11:01
+INFO	2026/08/01 19:11:01 Registration successful!
+20:11:01
+INFO	2026/08/01 19:11:01 Registered with SIP provider
+20:11:01
+INFO	2026/08/01 19:11:01 Initiating outbound call to +212661209845
+20:11:01
+DEBUG	2026/08/01 19:11:01 RTP listener created on 0.0.0.0:40280
+20:11:01
+INFO	2026/08/01 19:11:01 Sending INVITE to sip:+212661209845@192.168.11.90
+20:11:01
+DEBUG	2026/08/01 19:11:01 SDP Offer:
+20:11:01
+INFO	v=0
+20:11:01
+INFO	o=- 5631705864018469449 3795345239931323017 IN IP4 105.188.3.70
+20:11:01
+INFO	s=-
+20:11:01
+INFO	c=IN IP4 105.188.3.70
+20:11:01
+INFO	t=0 0
+20:11:01
+DEBUG	m=audio 40280 RTP/AVP 0 8 18 101
+20:11:01
+DEBUG	a=rtpmap:0 PCMU/8000
+20:11:01
+DEBUG	a=rtpmap:8 PCMA/8000
+20:11:01
+DEBUG	a=rtpmap:18 G729/8000
+20:11:01
+DEBUG	a=rtpmap:101 telephone-event/8000
+20:11:01
+INFO	a=fmtp:101 0-16
+20:11:01
+INFO	a=ptime:20
+20:11:01
+INFO	a=sendrecv
+20:11:01
+INFO	2026/08/01 19:11:01 Received 401 Unauthorized
+20:11:01
+INFO	2026/08/01 19:11:01 First 401 received. Response:
+20:11:01
+INFO	SIP/2.0 401 Unauthorized
+20:11:01
+DEBUG	Via: SIP/2.0/UDP 192.168.11.107:50341;rport=50341;received=192.168.11.107;branch=z9hG4bK.wl8YI02CQ6lUWJrK
+20:11:01
+DEBUG	Call-ID: 2JfyWibRo5Ldd2su-1785611461669754876
+20:11:01
+DEBUG	From: "Little Bird Electronics" <sip:1004@192.168.11.90>;tag=s9QQk7l9
+20:11:01
+DEBUG	To: <sip:+212661209845@192.168.11.90>;tag=z9hG4bK.wl8YI02CQ6lUWJrK
+20:11:01
+DEBUG	CSeq: 1 INVITE
+20:11:01
+DEBUG	WWW-Authenticate: Digest realm="YSAsterisk",nonce="1785611461/dd75bc081c6ee5a40f6e3ec8dfd8dc25",opaque="369442bb0a8bcfb6",algorithm=md5,qop="auth"
+20:11:01
+DEBUG	Server: Yeastar PSE
+20:11:01
+INFO	Content-Length: 0
+20:11:01
+INFO	2026/08/01 19:11:01 Auth URI: sip:+212661209845@192.168.11.90, Realm: YSAsterisk
+20:11:01
+DEBUG	2026/08/01 19:11:01 Auth header: Digest username="qjFB7cTE9q", realm="YSAsterisk", nonce="1785611461/dd75bc081c6ee5a40f6e3ec8dfd8dc25", uri="sip:+212661209845@192.168.11.90", response="9111e243d6e4256d0a1d4fc54c6af9ad", algorithm=MD5
+20:11:01
+INFO	2026/08/01 19:11:01 Resending INVITE with authorization...
+20:11:01
+INFO	2026/08/01 19:11:01 Received 100 Trying
+20:11:01
+INFO	2026/08/01 19:11:01 Call progress: Trying
+20:11:02
+INFO	2026/08/01 19:11:02 Received 183 Session Progress
+20:11:02
+INFO	2026/08/01 19:11:02 Call progress: Session Progress
+20:11:11
+INFO	2026/08/01 19:11:11 Received 200 OK
+20:11:11
+INFO	2026/08/01 19:11:11 Call answered!
+20:11:11
+DEBUG	2026/08/01 19:11:11 Remote RTP address: 192.168.11.90:17088
+20:11:11
+INFO	2026/08/01 19:11:11 ACK sent
+20:11:11
+INFO	2026/08/01 19:11:11 Sending NAT hole-punch packets to 192.168.11.90:17088
+20:11:11
+INFO	2026/08/01 19:11:11 Connecting to ElevenLabs Conversational AI (agent: agent_8801kyx0x1w8eccvp854nq9y2efg)...
+20:11:11
+INFO	2026/08/01 19:11:11 Connected to ElevenLabs Conversational AI
+20:11:11
+INFO	AI responded — ElevenLabs Conversational AI - Hakim
+20:11:11
+INFO	2026/08/01 19:11:11 Note: first_message/system_prompt in config require 'Allow client overrides' in ElevenLabs dashboard
+20:11:11
+INFO	2026/08/01 19:11:11 If override fails, the agent's default greeting will be used
+20:11:11
+DEBUG	2026/08/01 19:11:11 DEBUG: appConfig=true
+20:11:11
+DEBUG	2026/08/01 19:11:11 DEBUG: ElevenLabs.FirstMessage='', SystemPrompt='Tu es un agent de confirmation de commande chez AIO PROCESS. Tu appelles Yassine pour confirmer sa commande d'une caméra Sony FX3. L'adresse de livraison enregistrée est Boulevard Maghreb Arabi N°8, Alzhar. Attends que le client parle en premier. Confirme que l'adresse est correcte, demande s'il a une note pour la livraison, puis appelle l'outil confirm_order avec address_confirmed (true/false), address (adresse finale), et note (ou null). Termine l'appel poliment.
+20:11:11
+INFO	IMPORTANT — comportement au décrochage : si la personne dit 'Allô', 'Allô ?', 'Oui', 'Oui allô', 'Oui ?' ou toute autre salutation de décrochage après ton introduction, c'est qu'elle vient simplement de décrocher le téléphone. Ne te présente PAS à nouveau. Reprends la conversation naturellement depuis là où elle en est.', Functions=0
+20:11:11
+INFO	2026/08/01 19:11:11 Overriding system prompt
+20:11:11
+INFO	2026/08/01 19:11:11 Sending conversation initiation to ElevenLabs: {"conversation_config_override":{"agent":{"prompt":{"prompt":"Tu es un agent de confirmation de commande chez AIO PROCESS. Tu appelles Yassine pour confirmer sa commande d'une caméra Sony FX3. L'adresse de livraison enregistrée est Boulevard Maghreb Arabi N°8, Alzhar. Attends que le client parle en premier. Confirme que l'adresse est correcte, demande s'il a une note pour la livraison, puis appelle l'outil confirm_order avec address_confirmed (true/false), address (adresse finale), et note (ou null). Termine l'appel poliment.\n\nIMPORTANT — comportement au décrochage : si la personne dit 'Allô', 'Allô ?', 'Oui', 'Oui allô', 'Oui ?' ou toute autre salutation de décrochage après ton introduction, c'est qu'elle vient simplement de décrocher le téléphone. Ne te présente PAS à nouveau. Reprends la conversation naturellement depuis là où elle en est."}}},"type":"conversation_initiation_client_data"}
+20:11:11
+INFO	2026/08/01 19:11:11 Registered bridge for call: 2JfyWibRo5Ldd2su-1785611461669754876
+20:11:11
+INFO	2026/08/01 19:11:11 Outbound call active - AI is now talking to remote party
+20:11:11
+DEBUG	2026/08/01 19:11:11 Starting outbound ElevenLabs to RTP bridge...
+20:11:11
+INFO	2026/08/01 19:11:11 ElevenLabs outbound conversation: conv_0901kyzbsjn9ec5bpv2f12g83anb
+20:11:11
+DEBUG	2026/08/01 19:11:11 Starting outbound RTP to ElevenLabs bridge...
+20:11:43
+WARN	2026/08/01 19:11:43 WARN SIP request handler not found caller=Server method=BYE

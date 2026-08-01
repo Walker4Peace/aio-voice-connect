@@ -236,7 +236,7 @@ export default function SetupWizard() {
 
               {/* Result */}
               {domainResult && (
-                <div className={cn("rounded-md border p-4 space-y-3", domainResult.ok ? "border-green-300 bg-green-50 dark:bg-green-950/30" : "border-red-300 bg-red-50 dark:bg-red-950/30")}>
+                <div className={cn("rounded-md border p-4 space-y-3 max-h-96 overflow-y-auto", domainResult.ok ? "border-green-300 bg-green-50 dark:bg-green-950/30" : "border-red-300 bg-red-50 dark:bg-red-950/30")}>
                   <div className="flex items-center gap-2 font-medium text-sm">
                     {domainResult.ok ? <CheckCircle2 className="h-4 w-4 text-green-600" /> : <XCircle className="h-4 w-4 text-red-600" />}
                     {domainResult.ok
