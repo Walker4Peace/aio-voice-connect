@@ -394,7 +394,8 @@ export const CreateAgentConfigBody = zod.object({
   "greeting": zod.string().nullish(),
   "mode": zod.enum(['inbound', 'outbound']).optional(),
   "language": zod.string().nullish(),
-  "extraConfig": zod.string().nullish()
+  "extraConfig": zod.string().nullish(),
+  "webhookSecret": zod.string().nullish()
 })
 
 export const CreateAgentConfigResponse = zod.object({
@@ -409,6 +410,7 @@ export const CreateAgentConfigResponse = zod.object({
   "mode": zod.enum(['inbound', 'outbound']).optional(),
   "language": zod.string().nullish(),
   "extraConfig": zod.string().nullish().describe('JSON string for provider-specific extra fields'),
+  "webhookSecret": zod.string().nullish(),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })
@@ -455,7 +457,8 @@ export const UpdateAgentConfigBody = zod.object({
   "greeting": zod.string().nullish(),
   "mode": zod.enum(['inbound', 'outbound']).optional(),
   "language": zod.string().nullish(),
-  "extraConfig": zod.string().nullish()
+  "extraConfig": zod.string().nullish(),
+  "webhookSecret": zod.string().nullish()
 })
 
 export const UpdateAgentConfigResponse = zod.object({
@@ -470,6 +473,7 @@ export const UpdateAgentConfigResponse = zod.object({
   "mode": zod.enum(['inbound', 'outbound']).optional(),
   "language": zod.string().nullish(),
   "extraConfig": zod.string().nullish().describe('JSON string for provider-specific extra fields'),
+  "webhookSecret": zod.string().nullish(),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })

@@ -21,6 +21,8 @@ export interface AgentConfig {
   language?: string | null;
   /** JSON string for provider-specific extra fields */
   extraConfig?: string | null;
+  /** ElevenLabs post-call webhook signing secret (stored per-agent) */
+  webhookSecret?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }

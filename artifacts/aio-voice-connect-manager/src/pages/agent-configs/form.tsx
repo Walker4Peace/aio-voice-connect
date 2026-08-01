@@ -35,6 +35,7 @@ const formSchema = z.object({
   greeting: z.string().optional(),
   language: z.string().optional(),
   extraConfig: z.string().optional(),
+  webhookSecret: z.string().optional(),
 });
 
 export default function AgentConfigForm() {
@@ -57,7 +58,7 @@ export default function AgentConfigForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "", provider: "openai", apiKey: "", mode: "inbound",
-      voiceId: "", modelId: "", systemPrompt: "", greeting: "", language: "", extraConfig: "",
+      voiceId: "", modelId: "", systemPrompt: "", greeting: "", language: "", extraConfig: "", webhookSecret: "",
     },
   });
 
@@ -76,6 +77,7 @@ export default function AgentConfigForm() {
         greeting: existingConfig.greeting || "",
         language: existingConfig.language || "",
         extraConfig: existingConfig.extraConfig || "",
+        webhookSecret: existingConfig.webhookSecret || "",
       });
     }
   }, [isEdit, existingConfig, form]);
@@ -216,6 +218,22 @@ export default function AgentConfigForm() {
                     <FormMessage />
                   </FormItem>
                 )} />
+
+                {selectedProvider === "elevenlabs" && (
+                  <FormField control={form.control} name="webhookSecret" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Post-Call Webhook Secret</FormLabel>
+                      <FormControl>
+                        <PasswordInput placeholder="whsec_..." {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        Signing secret from ElevenLabs → Agents → Settings → Post-Call Webhooks.
+                        Used to verify incoming webhooks and store call results automatically.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                )}
 
                 <div className="grid grid-cols-2 gap-6">
                   {showModel && (

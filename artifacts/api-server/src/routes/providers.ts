@@ -219,28 +219,9 @@ router.post("/providers/elevenlabs/post-call", async (req, res) => {
   const rawBodyBuf = (req as import("express").Request & { rawBody?: Buffer }).rawBody;
   const rawBodyStr = rawBodyBuf ? rawBodyBuf.toString("utf8") : JSON.stringify(req.body);
 
-  // ── HMAC verification (skipped in dev if secret not set) ───────────────────
-  const secret = process.env["ELEVENLABS_WEBHOOK_SECRET"];
-  if (secret) {
-    const sigHeader = req.headers["elevenlabs-signature"] as string | undefined;
-    if (!sigHeader) {
-      logger.warn("ElevenLabs webhook: missing signature header");
-      res.status(401).json({ error: "Missing ElevenLabs-Signature header" });
-      return;
-    }
-    const check = verifyElevenLabsSignature(rawBodyStr, sigHeader, secret);
-    if (!check.ok) {
-      logger.warn({ reason: check.reason }, "ElevenLabs webhook: signature verification failed");
-      res.status(401).json({ error: `Signature verification failed: ${check.reason}` });
-      return;
-    }
-  } else {
-    logger.warn("ELEVENLABS_WEBHOOK_SECRET not set — skipping signature verification (configure in production)");
-  }
-
   const payload = req.body as ElevenLabsWebhookPayload;
 
-  // Acknowledge non-transcription event types (audio, call_initiation_failure, etc.)
+  // Acknowledge non-transcription event types early (before DB lookup / signature check)
   if (payload.type !== "post_call_transcription") {
     logger.info({ type: payload.type }, "ElevenLabs webhook: non-transcription event — acknowledged");
     res.json({ received: true });
@@ -251,6 +232,38 @@ router.post("/providers/elevenlabs/post-call", async (req, res) => {
   if (!data?.agent_id) {
     res.status(400).json({ error: "Missing data.agent_id in payload" });
     return;
+  }
+
+  // ── HMAC verification using the secret stored on the agent config ──────────
+  // Look up the agent config by agent_id (modelId) to get its webhookSecret.
+  // This allows each ElevenLabs agent to have its own signing secret.
+  const agentCfg = await db
+    .select({ webhookSecret: agentConfigsTable.webhookSecret })
+    .from(agentConfigsTable)
+    .where(and(
+      eq(agentConfigsTable.provider, "elevenlabs"),
+      eq(agentConfigsTable.modelId, data.agent_id),
+    ))
+    .limit(1)
+    .then(rows => rows[0] ?? null);
+
+  const secret = agentCfg?.webhookSecret ?? process.env["ELEVENLABS_WEBHOOK_SECRET"] ?? null;
+
+  if (secret) {
+    const sigHeader = req.headers["elevenlabs-signature"] as string | undefined;
+    if (!sigHeader) {
+      logger.warn({ agentId: data.agent_id }, "ElevenLabs webhook: missing signature header");
+      res.status(401).json({ error: "Missing ElevenLabs-Signature header" });
+      return;
+    }
+    const check = verifyElevenLabsSignature(rawBodyStr, sigHeader, secret);
+    if (!check.ok) {
+      logger.warn({ agentId: data.agent_id, reason: check.reason }, "ElevenLabs webhook: signature verification failed");
+      res.status(401).json({ error: `Signature verification failed: ${check.reason}` });
+      return;
+    }
+  } else {
+    logger.warn({ agentId: data.agent_id }, "No webhook secret configured for this agent — skipping signature verification");
   }
 
   logger.info(

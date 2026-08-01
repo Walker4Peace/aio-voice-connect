@@ -18,6 +18,8 @@ export const agentConfigsTable = pgTable("agent_configs", {
   // "inbound" = only handle inbound calls, "outbound" = only handle outbound calls
   mode: text("mode").notNull().default("inbound"),
   extraConfig: text("extra_config"),
+  // ElevenLabs post-call webhook signing secret (stored per-agent, not in env)
+  webhookSecret: text("webhook_secret"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
