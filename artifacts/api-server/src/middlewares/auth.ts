@@ -11,6 +11,8 @@ const PUBLIC_PREFIXES = [
   "/api/outbound/context/",
   // Tool execution callback from sip-agent during a call (internal)
   "/api/tools/execute",
+  // AI provider post-call webhooks (signed by provider, no session needed)
+  "/api/providers/",
 ];
 
 export function requireAuth(req: Request, res: Response, next: NextFunction): void {

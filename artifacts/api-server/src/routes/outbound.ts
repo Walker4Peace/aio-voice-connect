@@ -419,11 +419,20 @@ router.get("/outbound/context/:extensionId", async (req, res) => {
       : "Outbound context: returning config to sip-agent (customer answered or fail-open)",
   );
 
+  // Inject outbound_call_id into variables so ElevenLabs receives it as a
+  // dynamic variable and echoes it back in the post-call webhook payload
+  // (data.conversation_initiation_client_data.dynamic_variables.outbound_call_id).
+  // This enables reliable 1-to-1 matching in POST /api/providers/elevenlabs/post-call.
+  const enrichedVariables = {
+    ...(ctx.variables ?? {}),
+    outbound_call_id: String(ctx.callId),
+  };
+
   res.json({
     pending: true,
     firstMessage: resolvedFirstMessage,
     systemPromptOverride: resolvedSystemPrompt,
-    variables: ctx.variables ?? null,
+    variables: enrichedVariables,
     callId: ctx.callId,
   });
 });

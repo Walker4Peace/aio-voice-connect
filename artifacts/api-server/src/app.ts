@@ -73,7 +73,13 @@ app.use(session({
   },
 }));
 
-app.use(express.json());
+// Capture raw body before JSON parsing — required for HMAC webhook signature verification.
+// Stored on req.rawBody (see types/session.d.ts for the augmentation).
+app.use(express.json({
+  verify: (req: import("express").Request & { rawBody?: Buffer }, _res, buf) => {
+    req.rawBody = buf;
+  },
+}));
 app.use(express.urlencoded({ extended: true }));
 
 // Log mutating HTTP requests to the system log buffer (skip polls/healthz)

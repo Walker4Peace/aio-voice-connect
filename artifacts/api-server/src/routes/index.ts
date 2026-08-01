@@ -11,6 +11,7 @@ import authRouter from "./auth.js";
 import settingsRouter from "./settings.js";
 import outboundRouter from "./outbound.js";
 import apiKeysRouter from "./apiKeys.js";
+import providersRouter from "./providers.js";
 
 const router: IRouter = Router();
 
@@ -26,5 +27,6 @@ router.use(statsRouter);
 router.use(deployRouter);
 router.use(outboundRouter);
 router.use(apiKeysRouter);
+router.use(providersRouter);
 
 export default router;
