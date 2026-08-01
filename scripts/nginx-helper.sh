@@ -11,9 +11,9 @@
 set -euo pipefail
 
 INSTALL_DIR="${INSTALL_DIR:-/opt/aio-voice-connect}"
-PENDING_CONF="${INSTALL_DIR}/nginx-pending.conf"
-PENDING_DOMAIN="${INSTALL_DIR}/nginx-pending-domain.txt"
-RESULT_FILE="${INSTALL_DIR}/nginx-setup-result.json"
+PENDING_CONF="/tmp/aio-vc-nginx-pending.conf"
+PENDING_DOMAIN="/tmp/aio-vc-nginx-pending-domain.txt"
+RESULT_FILE="/tmp/aio-vc-nginx-result.json"
 
 CONF_PATH="/etc/nginx/sites-available/aio-voice-connect.conf"
 LINK_PATH="/etc/nginx/sites-enabled/aio-voice-connect.conf"

@@ -95,21 +95,20 @@ if [[ -f "$HELPER_SRC" ]]; then
   chmod 700 "$HELPER_DEST"
   chown root:root "$HELPER_DEST" 2>/dev/null || true   # no-op if already root-owned
 
-  # Install the systemd units if they are missing (first update after upgrade)
-  if ! systemctl list-units --full --all | grep -q "aio-nginx-setup.path"; then
-    cat > /etc/systemd/system/aio-nginx-setup.path <<EOF
+  # Always re-write the systemd units so path/binary changes take effect
+  cat > /etc/systemd/system/aio-nginx-setup.path <<EOF
 [Unit]
 Description=Watch for AIO Voice Connect nginx config request
 After=aio-voice-connect.service
 
 [Path]
-PathExists=${DEPLOY_DIR}/nginx-pending.conf
+PathExists=/tmp/aio-vc-nginx-pending.conf
 Unit=aio-nginx-setup.service
 
 [Install]
 WantedBy=multi-user.target
 EOF
-    cat > /etc/systemd/system/aio-nginx-setup.service <<EOF
+  cat > /etc/systemd/system/aio-nginx-setup.service <<EOF
 [Unit]
 Description=AIO Voice Connect nginx setup helper (runs as root)
 
@@ -122,15 +121,10 @@ StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=aio-nginx-setup
 EOF
-    systemctl daemon-reload
-    systemctl enable aio-nginx-setup.path --quiet
-    systemctl start aio-nginx-setup.path
-    echo "  ✓ nginx helper path unit installed and started"
-  else
-    # Units already exist — just make sure the path unit is running
-    systemctl restart aio-nginx-setup.path 2>/dev/null || true
-    echo "  ✓ nginx helper updated"
-  fi
+  systemctl daemon-reload
+  systemctl enable aio-nginx-setup.path --quiet
+  systemctl restart aio-nginx-setup.path 2>/dev/null || systemctl start aio-nginx-setup.path
+  echo "  ✓ nginx helper updated and path unit restarted"
 fi
 
 # ── 6. Restart API server ─────────────────────────────────────────────────────

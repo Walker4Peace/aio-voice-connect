@@ -419,7 +419,7 @@ Description=Watch for AIO Voice Connect nginx config request
 After=aio-voice-connect.service
 
 [Path]
-PathExists=${INSTALL_DIR}/nginx-pending.conf
+PathExists=/tmp/aio-vc-nginx-pending.conf
 Unit=aio-nginx-setup.service
 
 [Install]

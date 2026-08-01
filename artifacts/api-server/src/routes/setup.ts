@@ -14,9 +14,12 @@ const NGINX_ENABLED_PATH = "/etc/nginx/sites-enabled/aio-voice-connect.conf";
 
 // On the VPS, process.cwd() === /opt/aio-voice-connect
 const INSTALL_DIR = process.cwd();
-const PENDING_CONF = path.join(INSTALL_DIR, "nginx-pending.conf");
-const PENDING_DOMAIN = path.join(INSTALL_DIR, "nginx-pending-domain.txt");
-const RESULT_FILE = path.join(INSTALL_DIR, "nginx-setup-result.json");
+
+// Handoff files use /tmp — guaranteed writable by the unprivileged service user.
+// The systemd path unit watches for PENDING_CONF; the helper reads/writes these.
+const PENDING_CONF = "/tmp/aio-vc-nginx-pending.conf";
+const PENDING_DOMAIN = "/tmp/aio-vc-nginx-pending-domain.txt";
+const RESULT_FILE = "/tmp/aio-vc-nginx-result.json";
 
 // ── nginx config builders ────────────────────────────────────────────────────
 
