@@ -34,7 +34,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { PhoneCall, PhoneIncoming, PhoneOutgoing, PhoneOff, Activity, ChevronDown, ChevronRight, Trash2, Copy, Check, ArrowDownLeft, ArrowUpRight, Info, CheckCircle2, XCircle, HelpCircle } from "lucide-react";
+import { PhoneCall, PhoneIncoming, PhoneOutgoing, PhoneOff, Activity, ChevronDown, ChevronRight, Trash2, Copy, Check, ArrowDownLeft, ArrowUpRight, Info, CheckCircle2, XCircle, HelpCircle, Loader2 } from "lucide-react";
 
 export interface CallEvent {
   extensionId: number;
@@ -208,15 +208,42 @@ function CallDetailDialog({
   const { formatTime } = useTimezone();
   const [detail, setDetail] = React.useState<CallDetailResult | null>(null);
   const [loading, setLoading] = React.useState(false);
+  const [polling, setPolling] = React.useState(false);
   const [showRaw, setShowRaw] = React.useState(false);
 
   React.useEffect(() => {
-    if (!open) { setDetail(null); setShowRaw(false); return; }
-    setLoading(true);
-    fetch(`/api/deploy/call-events/${encodeURIComponent(callId)}/detail`)
-      .then(r => r.ok ? r.json() : null)
-      .then(d => { setDetail(d); setLoading(false); })
-      .catch(() => setLoading(false));
+    if (!open) { setDetail(null); setShowRaw(false); setPolling(false); return; }
+
+    let cancelled = false;
+    let pollCount = 0;
+    const MAX_POLLS = 12; // 5 s × 12 = 60 s max
+
+    const fetchDetail = async () => {
+      if (cancelled) return;
+      if (pollCount === 0) setLoading(true);
+
+      const data: CallDetailResult | null = await fetch(
+        `/api/deploy/call-events/${encodeURIComponent(callId)}/detail`
+      )
+        .then(r => r.ok ? r.json() as Promise<CallDetailResult> : null)
+        .catch(() => null);
+
+      if (cancelled) return;
+      setDetail(data);
+      setLoading(false);
+
+      // If webhook hasn't arrived yet, keep polling up to MAX_POLLS
+      if (!data?.hasResult && pollCount < MAX_POLLS) {
+        pollCount++;
+        setPolling(true);
+        setTimeout(fetchDetail, 5000);
+      } else {
+        setPolling(false);
+      }
+    };
+
+    fetchDetail();
+    return () => { cancelled = true; };
   }, [open, callId]);
 
   // Legs in fixed logical order: ended/error → ai → answered → invite
@@ -301,11 +328,16 @@ function CallDetailDialog({
                 </div>
               ))}
             </div>
+          ) : polling ? (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground py-2">
+              <Loader2 className="h-4 w-4 animate-spin shrink-0" />
+              <span>{t("calls.detailWaiting")}</span>
+            </div>
           ) : transcript.length > 0 ? (
-            <div className="max-h-72 overflow-y-auto rounded-md border bg-muted/10 divide-y">
+            <div className="max-h-96 overflow-y-auto rounded-md border bg-muted/10 divide-y">
               {transcript.map((turn, i) => (
                 <div key={i} className="flex gap-3 px-3 py-2 text-sm">
-                  <span className={`shrink-0 w-14 text-right text-xs font-semibold pt-0.5 ${
+                  <span className={`shrink-0 w-16 text-right text-xs font-semibold pt-0.5 ${
                     turn.role === "agent" ? "text-purple-600 dark:text-purple-400" : "text-muted-foreground"
                   }`}>
                     {turn.role === "agent" ? t("calls.detailAiSpeaker") : t("calls.detailCallerSpeaker")}
