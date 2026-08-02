@@ -1,0 +1,49 @@
+│   dist/pino-worker.mjs.map           256.9kb
+│   dist/pino-file.mjs.map             229.0kb
+│   dist/pino-pretty.mjs.map           203.6kb
+│   dist/thread-stream-worker.mjs.map   12.0kb
+│ ⚡ Done in 1437ms
+└─ Done in 1.7s
+  ✓ Build complete
+
+▶ Applying database schema
+
+> @workspace/db@0.0.0 push /opt/aio-voice-connect/lib/db
+> drizzle-kit push --config ./drizzle.config.ts
+
+Reading config file '/opt/aio-voice-connect/lib/db/drizzle.config.ts'
+Using 'pg' driver for database querying
+[✓] Pulling schema from database...
+[i] No changes detected
+  ✓ Schema up to date
+
+▶ Refreshing nginx helper
+  ✓ nginx helper updated and path unit restarted
+
+▶ Restarting services
+  ✗ aio-voice-connect-api not found — run install.sh to set up services
+  ✗ aio-voice-connect-ui not found — run install.sh to set up services
+
+✅  Update complete — 2026-08-02 14:29:20
+    API (direct):      http://localhost:3100/api/healthz
+    Frontend (direct): http://localhost:8080/
+    Dashboard (nginx): http://localhost/
+    API logs:          journalctl -u aio-voice-connect-api -f
+    UI logs:           journalctl -u aio-voice-connect-ui -f
+test@test:/opt/aio-voice-connect$ systemctl list-unit-files | grep aio
+aio-nginx-setup.path                       enabled         enabled
+aio-nginx-setup.service                    static          -
+aio-voice-connect.service                  enabled         enabled
+test@test:/opt/aio-voice-connect$ systemctl status aio-voice-connect-api
+Unit aio-voice-connect-api.service could not be found.
+test@test:/opt/aio-voice-connect$ systemctl status aio-voice-connect-ui
+Unit aio-voice-connect-ui.service could not be found.
+test@test:/opt/aio-voice-connect$ ss -tlnp
+State                Recv-Q               Send-Q                             Local Address:Port                              Peer Address:Port              Process
+LISTEN               0                    128                                      0.0.0.0:22                                     0.0.0.0:*
+LISTEN               0                    244                                    127.0.0.1:5432                                   0.0.0.0:*
+LISTEN               0                    4096                               127.0.0.53%lo:53                                     0.0.0.0:*
+LISTEN               0                    511                                            *:3101                                         *:*
+LISTEN               0                    128                                         [::]:22                                        [::]:*
+LISTEN               0                    4096                                           *:19001                                        *:*
+test@test:/opt/aio-voice-connect$

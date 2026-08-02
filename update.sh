@@ -136,8 +136,9 @@ NODE_BIN="$(command -v node)"
 PNPM_BIN="$(command -v pnpm)"
 
 NEEDS_MIGRATION=false
-if systemctl list-units --full --all 2>/dev/null | grep -q "aio-voice-connect.service" \
-   && ! systemctl list-units --full --all 2>/dev/null | grep -q "aio-voice-connect-api.service"; then
+# Use list-unit-files (shows ALL installed units, not just loaded/active ones)
+if systemctl list-unit-files --no-pager 2>/dev/null | grep -q "^aio-voice-connect\.service" \
+   && ! systemctl list-unit-files --no-pager 2>/dev/null | grep -q "^aio-voice-connect-api\.service"; then
   NEEDS_MIGRATION=true
 fi
 
@@ -277,11 +278,11 @@ for SVC in aio-voice-connect-api aio-voice-connect-ui; do
   if systemctl is-active --quiet "$SVC"; then
     systemctl restart "$SVC"
     echo "  ✓ $SVC restarted"
-  elif systemctl list-units --full --all 2>/dev/null | grep -q "${SVC}.service"; then
+  elif systemctl list-unit-files --no-pager 2>/dev/null | grep -q "^${SVC}\.service"; then
     systemctl start "$SVC"
     echo "  ✓ $SVC started"
   else
-    echo "  ✗ $SVC not found — run install.sh to set up services"
+    echo "  ✗ $SVC not found — run: sudo bash ${DEPLOY_DIR}/migrate.sh"
   fi
 done
 
