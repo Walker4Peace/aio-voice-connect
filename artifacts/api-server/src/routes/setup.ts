@@ -306,10 +306,11 @@ router.post("/setup", async (req, res) => {
 // GET /api/setup/domain/nginx-config — download the generated nginx config
 router.get("/setup/domain/nginx-config", (req, res) => {
   const domain = typeof req.query.domain === "string" ? req.query.domain.trim() : null;
-  if (domain && !/^[a-zA-Z0-9][a-zA-Z0-9.-]{1,61}[a-zA-Z0-9]\.[a-zA-Z]{2,}$/.test(domain)) {
+  if (!domain) { res.status(400).send("domain query parameter is required"); return; }
+  if (!/^[a-zA-Z0-9][a-zA-Z0-9.-]{1,61}[a-zA-Z0-9]\.[a-zA-Z]{2,}$/.test(domain)) {
     res.status(400).send("Invalid domain"); return;
   }
-  const conf = buildNginxConf(domain ?? undefined);
+  const conf = buildNginxConf(domain);
   res.setHeader("Content-Type", "text/plain; charset=utf-8");
   res.setHeader("Content-Disposition", `attachment; filename="aio-voice-connect.conf"`);
   res.send(conf);
