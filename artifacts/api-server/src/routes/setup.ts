@@ -116,6 +116,50 @@ function httpGet(url: string, timeoutMs = 6000): Promise<number> {
   });
 }
 
+/** Fetch the plain-text body of a URL (used for IP echo services). */
+function httpGetText(url: string, timeoutMs = 5000): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const lib = url.startsWith("https") ? https : http;
+    const req = lib.get(url, { timeout: timeoutMs }, res => {
+      let body = "";
+      res.setEncoding("utf8");
+      res.on("data", (chunk: string) => { body += chunk; });
+      res.on("end", () => resolve(body.trim()));
+    });
+    req.on("timeout", () => { req.destroy(); reject(new Error("timeout")); });
+    req.on("error", reject);
+  });
+}
+
+/**
+ * Detect the server's own public IPv4 address.
+ * Tries three public echo services in order; returns null if all fail.
+ * Result is cached in memory for the process lifetime so repeated Validate
+ * clicks don't hammer external services.
+ */
+let _cachedServerIp: string | null | undefined = undefined; // undefined = not fetched yet
+
+async function getServerPublicIp(): Promise<string | null> {
+  if (_cachedServerIp !== undefined) return _cachedServerIp;
+  const services = [
+    "https://api.ipify.org",
+    "https://checkip.amazonaws.com",
+    "http://ifconfig.me/ip",
+  ];
+  for (const url of services) {
+    try {
+      const ip = await httpGetText(url);
+      // Basic sanity check — must look like an IPv4 address
+      if (/^\d{1,3}(\.\d{1,3}){3}$/.test(ip)) {
+        _cachedServerIp = ip;
+        return ip;
+      }
+    } catch { /* try next */ }
+  }
+  _cachedServerIp = null;
+  return null;
+}
+
 /** Resolve a domain using Google/Cloudflare to bypass OS DNS cache. */
 async function resolveDomain(domain: string): Promise<string[]> {
   const resolver = new dns.promises.Resolver();
@@ -181,12 +225,9 @@ function certbotCmd(domain: string): string {
   return `sudo certbot --nginx -d ${domain} --non-interactive --agree-tos --no-eff-email --email admin@${domain}`;
 }
 
-/** Manual commands to enable SSL: open the firewall port then run certbot. */
+/** Manual commands to enable SSL. */
 function sslManualCommands(domain: string): string[] {
-  return [
-    "sudo ufw allow 443",
-    certbotCmd(domain),
-  ];
+  return [certbotCmd(domain)];
 }
 
 /**
@@ -307,23 +348,45 @@ router.post("/setup/domain", async (req, res) => {
 
   const steps: { step: string; success: boolean; error?: string }[] = [];
 
-  // ── Step 0: DNS check via public resolvers (bypasses OS DNS cache) ────────
+  // ── Step 0: Resolve domain + verify it points to this server ─────────────
+  // Both checks run in parallel to save time.
   let resolvedIps: string[] = [];
+  let serverIp: string | null = null;
+
   try {
-    resolvedIps = await resolveDomain(domain);
-    steps.push({ step: `DNS resolved via 8.8.8.8 → ${resolvedIps.join(", ")}`, success: true });
+    [resolvedIps, serverIp] = await Promise.all([
+      resolveDomain(domain),
+      getServerPublicIp(),
+    ]);
   } catch (err) {
     const code = (err as NodeJS.ErrnoException).code;
     steps.push({
       step: "DNS A record check",
       success: false,
       error: code === "ENOTFOUND"
-        ? `${domain} does not resolve yet — point an A record to this server's IP and wait a few minutes. Propagation usually takes 5–15 min (up to 48h). Run \`dig @8.8.8.8 ${domain} A\` to check without local caching.`
+        ? `${domain} does not resolve — point an A record to this server's IP and wait for propagation (5–15 min, up to 48h). Run \`dig @8.8.8.8 ${domain} A\` to verify.`
         : `DNS lookup failed: ${code ?? String(err)}`,
     });
     res.json({ ok: false, error: "DNS not configured yet", steps });
     return;
   }
+
+  // Check that at least one resolved IP matches this server's public IP
+  if (serverIp && !resolvedIps.includes(serverIp)) {
+    steps.push({
+      step: `DNS A record check — ${domain} → ${resolvedIps.join(", ")}`,
+      success: false,
+      error: `Domain points to ${resolvedIps.join(", ")} but this server's public IP is ${serverIp}. Update your DNS A record to point to ${serverIp} and wait for propagation (5–15 min, up to 48h).`,
+    });
+    res.json({ ok: false, error: "Domain does not point to this server", steps });
+    return;
+  }
+
+  // DNS resolves and points to this server
+  steps.push({
+    step: `DNS resolved via 8.8.8.8 → ${resolvedIps.join(", ")}${serverIp ? ` ✓ matches server IP` : ""}`,
+    success: true,
+  });
 
   // ── Step 1: try the privileged helper (systemd path unit) ────────────────
   const conf = buildNginxConf(domain);
