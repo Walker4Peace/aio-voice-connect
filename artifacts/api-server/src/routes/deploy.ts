@@ -17,6 +17,8 @@ import {
   clearAllCallEvents,
   setWatchdogEnabled,
   getWatchdogState,
+  getCallResult,
+  extractConvId,
 } from "../services/deployment.js";
 
 const router = Router();
@@ -111,6 +113,27 @@ router.get("/deploy/call-events", async (_req, res) => {
 router.delete("/deploy/call-events", async (_req, res) => {
   await clearAllCallEvents();
   res.json({ ok: true });
+});
+
+// GET /api/deploy/call-events/:callId/detail — transcript + analysis for a call
+router.get("/deploy/call-events/:callId/detail", (req, res) => {
+  const callId = req.params["callId"];
+  if (!callId) { res.status(400).json({ error: "Missing callId" }); return; }
+
+  // Find the conversation_id from the in-memory connected_ai event
+  const allEvents = getPersistedCallEvents();
+  const aiEv = allEvents.find(
+    e => e.callId === callId && e.event === "connected_ai" && extractConvId(e.detail) !== null
+  );
+  const convId = extractConvId(aiEv?.detail);
+  const result = getCallResult(callId);
+
+  res.json({
+    callId,
+    conversationId: convId ?? null,
+    hasResult: result !== null,
+    result: result ?? null,
+  });
 });
 
 // DELETE /api/deploy/call-events/:callId — delete a single call's events

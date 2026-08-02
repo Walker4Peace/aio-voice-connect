@@ -139,6 +139,48 @@ const persistedCallEvents: PersistedCallEvent[] = [];
 // Cache of extensionId → agent name, populated when an extension is started
 const extensionAgentNames = new Map<number, string>();
 
+// Tracks calls where the AI agent used the end_call tool (keyed extensionId → Set<callId>)
+// Populated when "ElevenLabs raw message" contains "tool_name":"end_call"
+const aiEndedCallIds = new Map<number, Set<string>>();
+
+// ── Post-call result store ────────────────────────────────────────────────────
+// Populated by the ElevenLabs post-call webhook; keyed by ElevenLabs conversation_id.
+export interface StoredCallResult {
+  conversationId: string;
+  transcript: Array<{ role: "agent" | "user"; message: string; time_in_call_secs?: number }>;
+  analysis: {
+    call_successful?: "success" | "failure" | "unknown" | null;
+    transcript_summary?: string | null;
+    data_collection_results?: Record<string, unknown>;
+    evaluation_criteria_results?: Record<string, boolean>;
+  };
+  storedAt: string;
+}
+const callResults = new Map<string, StoredCallResult>();
+
+/** Called by the providers webhook route to store post-call data. */
+export function storeCallResult(convId: string, data: Omit<StoredCallResult, "conversationId" | "storedAt">): void {
+  callResults.set(convId, { conversationId: convId, ...data, storedAt: new Date().toISOString() });
+  logger.info({ convId }, "Stored ElevenLabs post-call result");
+}
+
+/** Extract the ElevenLabs conversation_id from a connected_ai event detail string. */
+export function extractConvId(detail: string | null | undefined): string | null {
+  if (!detail) return null;
+  const match = detail.match(/\|?(conv_[A-Za-z0-9_]+)/);
+  return match?.[1] ?? null;
+}
+
+/** Returns the stored post-call result for a given SIP callId (looks up conv_id via events). */
+export function getCallResult(callId: string): StoredCallResult | null {
+  const aiEv = persistedCallEvents.find(
+    e => e.callId === callId && e.event === "connected_ai" && extractConvId(e.detail) !== null
+  );
+  const convId = extractConvId(aiEv?.detail);
+  if (!convId) return null;
+  return callResults.get(convId) ?? null;
+}
+
 /**
  * Normalize a raw SIP Call-ID so invite and bye events always share the same key.
  * SIP Call-IDs can appear as:
@@ -265,7 +307,8 @@ function parseAndStoreCallEvents(extensionId: number, line: string, timestamp: s
       e => e.extensionId === extensionId && e.callId === callId && e.event === "ended"
     );
     if (!alreadyEnded) {
-      pushEvent({ extensionId, callId, event: "ended", timestamp });
+      const endedBy = consumeAiEndedFlag(extensionId, callId);
+      pushEvent({ extensionId, callId, event: "ended", timestamp, detail: endedBy });
     }
     finalizeOutboundCall(extensionId, "completed");
     return;
@@ -340,7 +383,8 @@ function parseAndStoreCallEvents(extensionId: number, line: string, timestamp: s
       e => e.extensionId === extensionId && e.callId === callId && e.event === "ended"
     );
     if (!alreadyEnded) {
-      pushEvent({ extensionId, callId, event: "ended", timestamp });
+      const endedBy = consumeAiEndedFlag(extensionId, callId);
+      pushEvent({ extensionId, callId, event: "ended", timestamp, detail: endedBy });
       // Complete any active outbound call for this extension
       finalizeOutboundCall(extensionId, "completed");
     }
@@ -385,6 +429,47 @@ function parseAndStoreCallEvents(extensionId: number, line: string, timestamp: s
     return;
   }
 
+  // ── ElevenLabs end_call tool fired (AI agent decided to hang up) ─────────
+  // The binary logs: "ElevenLabs raw message: {...,"tool_name":"end_call",...}"
+  if (/"tool_name"\s*:\s*"end_call"/i.test(body)) {
+    const lastInvite = [...persistedCallEvents].reverse().find(
+      e => e.extensionId === extensionId && e.event === "invite"
+    );
+    if (lastInvite) {
+      const s = aiEndedCallIds.get(extensionId) ?? new Set<string>();
+      s.add(lastInvite.callId);
+      aiEndedCallIds.set(extensionId, s);
+      logger.info({ extensionId, callId: lastInvite.callId }, "AI end_call tool detected — will tag ended event");
+    }
+    return;
+  }
+
+  // ── ElevenLabs conversation_id — attach to the most recent connected_ai ──
+  // Log line: "ElevenLabs conversation started: conv_XXXXX (audio format: ...)"
+  const convStartMatch = body.match(/ElevenLabs conversation started:\s*(conv_\S+?)(?:\s|$|\()/i);
+  if (convStartMatch) {
+    const convId = convStartMatch[1].replace(/[,;)>]$/, ""); // strip trailing punctuation
+    // Update the most recent connected_ai event for this extension
+    for (let i = persistedCallEvents.length - 1; i >= 0; i--) {
+      const e = persistedCallEvents[i];
+      if (e.extensionId !== extensionId || e.event !== "connected_ai") continue;
+      if (!e.detail?.includes(convId)) {
+        e.detail = e.detail ? `${e.detail}|${convId}` : convId;
+        db.update(callEventsTable)
+          .set({ detail: e.detail })
+          .where(and(
+            eq(callEventsTable.extensionId, extensionId),
+            eq(callEventsTable.callId, e.callId),
+            eq(callEventsTable.event, "connected_ai"),
+          ))
+          .catch(err => logger.error({ err }, "Failed to persist conv_id to DB"));
+      }
+      logger.info({ extensionId, callId: e.callId, convId }, "Linked ElevenLabs conversation_id to call");
+      break;
+    }
+    return;
+  }
+
   // ── AI provider connected ────────────────────────────────────────────────
   const connMatch = body.match(/Connected to .+AI/i);
   if (connMatch) {
@@ -415,6 +500,17 @@ function parseAndStoreCallEvents(extensionId: number, line: string, timestamp: s
     const prevInvite = [...persistedCallEvents].reverse().find(e => e.extensionId === extensionId && e.event === "invite");
     pushEvent({ extensionId, callId: prevInvite?.callId ?? "unknown", event: "connected_ai", timestamp, detail: aiMatch[1] });
   }
+}
+
+/** Returns "AI Agent" if the AI used end_call for this callId, then clears the flag. */
+function consumeAiEndedFlag(extensionId: number, callId: string): string | undefined {
+  const s = aiEndedCallIds.get(extensionId);
+  if (s?.has(callId)) {
+    s.delete(callId);
+    if (s.size === 0) aiEndedCallIds.delete(extensionId);
+    return "AI Agent";
+  }
+  return undefined;
 }
 
 /** On extension stop, synthesize `ended` events for any call that has an invite but no ended,

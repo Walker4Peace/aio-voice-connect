@@ -28,7 +28,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { PhoneCall, PhoneIncoming, PhoneOutgoing, PhoneOff, Activity, ChevronDown, ChevronRight, Trash2, Copy, Check, ArrowDownLeft, ArrowUpRight } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { PhoneCall, PhoneIncoming, PhoneOutgoing, PhoneOff, Activity, ChevronDown, ChevronRight, Trash2, Copy, Check, ArrowDownLeft, ArrowUpRight, Info, CheckCircle2, XCircle, HelpCircle } from "lucide-react";
 
 export interface CallEvent {
   extensionId: number;
@@ -53,7 +59,6 @@ function CopyButton({ value }: { value: string }) {
     const done = () => { setCopied(true); setTimeout(() => setCopied(false), 1500); };
     if (navigator.clipboard?.writeText) {
       navigator.clipboard.writeText(value).then(done).catch(() => {
-        // fallback for iframe / non-https contexts
         const el = document.createElement("textarea");
         el.value = value;
         el.style.position = "fixed"; el.style.opacity = "0";
@@ -100,6 +105,18 @@ const EVENT_ICONS_OUTBOUND: Record<CallEvent["event"], React.ReactNode> = {
   invite: <PhoneOutgoing className="h-3.5 w-3.5 text-blue-500" />,
 };
 
+/** Strip the ElevenLabs conversation_id suffix (|conv_XXX) from a detail string. */
+function stripConvId(detail: string | null | undefined): string | undefined {
+  if (!detail) return undefined;
+  return detail.replace(/\|conv_[A-Za-z0-9_]+$/, "") || undefined;
+}
+
+/** Extract conv_id from detail string. */
+function extractConvId(detail: string | null | undefined): string | null {
+  const m = detail?.match(/\|?(conv_[A-Za-z0-9_]+)/);
+  return m?.[1] ?? null;
+}
+
 function eventLabel(ev: CallEvent, isOutbound: boolean, extLabel: string, t: (key: string, opts?: Record<string, string>) => string): string {
   switch (ev.event) {
     case "invite":
@@ -109,8 +126,9 @@ function eventLabel(ev: CallEvent, isOutbound: boolean, extLabel: string, t: (ke
     case "answered":
       return t("calls.eventAnswered");
     case "connected_ai": {
-      const translatedDetail = ev.detail
-        ? ev.detail.replace(/^Connected to /i, t("calls.connectedTo") + " ")
+      const cleanDetail = stripConvId(ev.detail);
+      const translatedDetail = cleanDetail
+        ? cleanDetail.replace(/^Connected to /i, t("calls.connectedTo") + " ")
         : undefined;
       return translatedDetail ? t("calls.eventAiResponded", { detail: translatedDetail }) : t("calls.eventAiRespondedSimple");
     }
@@ -133,6 +151,210 @@ function callDuration(legs: CallEvent[]): string | null {
   return m > 0 ? `${m}m ${s % 60}s` : `${s}s`;
 }
 
+// ── Call Detail Dialog ──────────────────────────────────────────────────────
+
+interface CallDetailResult {
+  callId: string;
+  conversationId: string | null;
+  hasResult: boolean;
+  result: {
+    conversationId: string;
+    transcript: Array<{ role: "agent" | "user"; message: string; time_in_call_secs?: number }>;
+    analysis: {
+      call_successful?: "success" | "failure" | "unknown" | null;
+      transcript_summary?: string | null;
+      data_collection_results?: Record<string, unknown>;
+      evaluation_criteria_results?: Record<string, boolean>;
+    };
+    storedAt: string;
+  } | null;
+}
+
+function CallDetailDialog({
+  callId,
+  legs,
+  isOutbound,
+  extLabel,
+  open,
+  onClose,
+}: {
+  callId: string;
+  legs: CallEvent[];
+  isOutbound: boolean;
+  extLabel: string;
+  open: boolean;
+  onClose: () => void;
+}) {
+  const { t } = useTranslation();
+  const { formatTime } = useTimezone();
+  const [detail, setDetail] = React.useState<CallDetailResult | null>(null);
+  const [loading, setLoading] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!open) return;
+    setLoading(true);
+    fetch(`/api/deploy/call-events/${encodeURIComponent(callId)}/detail`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { setDetail(d); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, [open, callId]);
+
+  // Legs in fixed logical order: ended/error → ai → answered → invite
+  const LEG_ORDER: Record<string, number> = { ended: 0, error: 1, connected_ai: 2, answered: 3, invite: 4 };
+  const legsDesc = [...legs].sort((a, b) => {
+    const oa = LEG_ORDER[a.event] ?? 5;
+    const ob = LEG_ORDER[b.event] ?? 5;
+    if (oa !== ob) return oa - ob;
+    return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+  });
+
+  const result = detail?.result;
+  const transcript = result?.transcript ?? [];
+  const analysis = result?.analysis;
+
+  const successIcon = analysis?.call_successful === "success"
+    ? <CheckCircle2 className="h-4 w-4 text-green-500" />
+    : analysis?.call_successful === "failure"
+    ? <XCircle className="h-4 w-4 text-red-500" />
+    : <HelpCircle className="h-4 w-4 text-muted-foreground" />;
+
+  const successLabel = analysis?.call_successful === "success"
+    ? t("calls.detailSuccess")
+    : analysis?.call_successful === "failure"
+    ? t("calls.detailFailure")
+    : t("calls.detailUnknown");
+
+  const dataEntries = Object.entries(analysis?.data_collection_results ?? {});
+  const evalEntries = Object.entries(analysis?.evaluation_criteria_results ?? {});
+
+  return (
+    <Dialog open={open} onOpenChange={v => !v && onClose()}>
+      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            {t("calls.detailTitle")}
+            <span className="font-mono text-sm text-muted-foreground font-normal">{callId.slice(0, 8)}…</span>
+          </DialogTitle>
+        </DialogHeader>
+
+        {/* ── Call Legs ── */}
+        <div className="space-y-3">
+          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">{t("calls.detailLegs")}</h3>
+          <div className="divide-y rounded-md border bg-muted/20">
+            {legsDesc.map((leg, i) => {
+              const isAiLeg = leg.event === "connected_ai";
+              const convId = isAiLeg ? extractConvId(leg.detail) : null;
+              return (
+                <div key={i} className="px-4 py-3 space-y-2">
+                  <div className="flex items-center gap-3">
+                    <div className="shrink-0">{(isOutbound ? EVENT_ICONS_OUTBOUND : EVENT_ICONS)[leg.event]}</div>
+                    <div className="flex-1 min-w-0 text-sm">{eventLabel(leg, isOutbound, extLabel, t)}</div>
+                    <time className="text-xs text-muted-foreground shrink-0 tabular-nums">
+                      {formatTime(leg.timestamp)}
+                    </time>
+                  </div>
+
+                  {/* AI leg: show conv_id + transcript */}
+                  {isAiLeg && (
+                    <div className="ml-6 space-y-2">
+                      {convId && (
+                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                          <span className="font-medium">{t("calls.detailConvId")}:</span>
+                          <code className="font-mono bg-muted px-1 py-0.5 rounded text-xs">{convId}</code>
+                          <CopyButton value={convId} />
+                        </div>
+                      )}
+
+                      {loading ? (
+                        <p className="text-xs text-muted-foreground animate-pulse">Loading transcript…</p>
+                      ) : transcript.length > 0 ? (
+                        <div className="space-y-1.5">
+                          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t("calls.detailTranscript")}</p>
+                          <div className="space-y-1 max-h-60 overflow-y-auto pr-1">
+                            {transcript.map((turn, ti) => (
+                              <div key={ti} className={`flex gap-2 text-xs ${turn.role === "agent" ? "text-purple-700 dark:text-purple-400" : "text-foreground"}`}>
+                                <span className="shrink-0 w-12 font-medium capitalize">{turn.role === "agent" ? "AI" : "User"}:</span>
+                                <span className="leading-relaxed">{turn.message}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : !loading && detail && !detail.hasResult ? (
+                        <p className="text-xs text-muted-foreground italic">{t("calls.detailNoResult")}</p>
+                      ) : null}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ── Call Result ── */}
+        {!loading && result && (
+          <div className="space-y-3 pt-2 border-t">
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">{t("calls.detailResult")}</h3>
+
+            <div className="space-y-3">
+              {/* Call outcome */}
+              {analysis?.call_successful && (
+                <div className="flex items-center gap-2 text-sm">
+                  {successIcon}
+                  <span className="font-medium">{t("calls.detailCallSuccess")}:</span>
+                  <span>{successLabel}</span>
+                </div>
+              )}
+
+              {/* Summary */}
+              {analysis?.transcript_summary && (
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t("calls.detailSummary")}</p>
+                  <p className="text-sm leading-relaxed bg-muted/40 rounded-md p-3">{analysis.transcript_summary}</p>
+                </div>
+              )}
+
+              {/* Data collected */}
+              {dataEntries.length > 0 && (
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t("calls.detailDataCollected")}</p>
+                  <div className="rounded-md border divide-y text-sm">
+                    {dataEntries.map(([key, value]) => (
+                      <div key={key} className="flex items-start gap-3 px-3 py-2">
+                        <span className="font-mono text-xs text-muted-foreground shrink-0 w-36 truncate">{key}</span>
+                        <span className="break-words min-w-0">{String(value)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Evaluation */}
+              {evalEntries.length > 0 && (
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t("calls.detailEvaluation")}</p>
+                  <div className="rounded-md border divide-y text-sm">
+                    {evalEntries.map(([key, passed]) => (
+                      <div key={key} className="flex items-center gap-3 px-3 py-2">
+                        {passed
+                          ? <CheckCircle2 className="h-3.5 w-3.5 text-green-500 shrink-0" />
+                          : <XCircle     className="h-3.5 w-3.5 text-red-500 shrink-0" />}
+                        <span className="font-mono text-xs text-muted-foreground truncate">{key}</span>
+                        <span className={`ml-auto text-xs ${passed ? "text-green-600" : "text-red-600"}`}>
+                          {passed ? t("calls.detailSuccess") : t("calls.detailFailure")}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 // ── single row ─────────────────────────────────────────────────────────────
 
 interface CallRowProps {
@@ -150,6 +372,8 @@ interface CallRowProps {
 function CallTableRow({ callId, legs, extNumber, isOutbound = false, outboundPhoneNumber, isOpen, onToggle, onDelete }: CallRowProps) {
   const { formatDateTime, formatTime } = useTimezone();
   const { t } = useTranslation();
+  const [detailOpen, setDetailOpen] = React.useState(false);
+
   const hasEnded = legs.some(l => l.event === "ended");
   const hasAI    = legs.some(l => l.event === "connected_ai");
   const hasError = legs.some(l => l.event === "error");
@@ -161,13 +385,9 @@ function CallTableRow({ callId, legs, extNumber, isOutbound = false, outboundPho
   const inboundNumber    = inviteLeg?.detail ?? null;
   const extLabel         = extNumber ? `Ext ${extNumber}` : "—";
 
-  // For outbound: prefer the real destination from outbound_calls (the number Yeastar dialled),
-  // falling back to the invite detail if for some reason it's set and isn't "unknown".
   const outboundDest = outboundPhoneNumber
     ?? (inboundNumber && inboundNumber !== "unknown" ? inboundNumber : null);
 
-  // Outbound: Ext called the phone number — show Ext as Caller, destination as Called
-  // Inbound:  external number called the Ext — show number as Caller, Ext as Called
   const caller = isOutbound ? extLabel                  : (inboundNumber ?? "—");
   const called = isOutbound ? (outboundDest ?? "—")    : extLabel;
 
@@ -189,104 +409,138 @@ function CallTableRow({ callId, legs, extNumber, isOutbound = false, outboundPho
     return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
   });
 
-  return (
-    <Collapsible open={isOpen} onOpenChange={onToggle} asChild>
-      <>
-        <TableRow className="hover:bg-muted/40 select-none group/row">
-            {/* Call ID — only the arrow box toggles the detail row */}
-            <TableCell className="font-mono text-xs text-muted-foreground">
-              <div className="flex items-center gap-1.5">
-                <CollapsibleTrigger asChild>
-                  <button className="flex h-5 w-5 cursor-pointer items-center justify-center rounded border border-border bg-muted/50 hover:bg-muted transition-colors shrink-0">
-                    {isOpen
-                      ? <ChevronDown  className="h-3 w-3 shrink-0" />
-                      : <ChevronRight className="h-3 w-3 shrink-0" />}
-                  </button>
-                </CollapsibleTrigger>
-                <span>{callId.slice(0, 8)}…</span>
-                <CopyButton value={callId} />
-              </div>
-            </TableCell>
-            {/* Direction */}
-            <TableCell>
-              {isOutbound ? (
-                <span className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded px-1.5 py-0.5">
-                  <ArrowUpRight className="h-3 w-3" />
-                  {t("calls.dirOutbound")}
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-1 text-xs font-medium text-green-600 bg-green-50 border border-green-200 rounded px-1.5 py-0.5">
-                  <ArrowDownLeft className="h-3 w-3" />
-                  {t("calls.dirInbound")}
-                </span>
-              )}
-            </TableCell>
-            {/* Caller */}
-            <TableCell className="font-mono text-sm">{caller}</TableCell>
-            {/* Called */}
-            <TableCell className="font-mono text-sm">{called}</TableCell>
-            {/* Date */}
-            <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-              {formatDateTime(firstLeg.timestamp)}
-            </TableCell>
-            {/* Duration */}
-            <TableCell className="text-xs text-muted-foreground tabular-nums">
-              {duration ?? "—"}
-            </TableCell>
-            {/* Action */}
-            {onDelete && (
-              <TableCell className="text-center">
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <button
-                      className="inline-flex items-center justify-center h-7 w-7 rounded border border-border text-muted-foreground hover:text-destructive hover:border-destructive/50 hover:bg-destructive/10 transition-colors cursor-pointer"
-                      title="Delete call"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>{t("calls.deleteCallTitle")}</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        {t("calls.deleteCallDesc", { callId: callId.slice(0, 8) + "…" })}
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
-                      <AlertDialogAction
-                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                        onClick={() => onDelete(callId)}
-                      >
-                        {t("common.delete")}
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </TableCell>
-            )}
-          </TableRow>
+  // Show delete only for completed calls; show detail for any call with an AI leg
+  const showDelete = hasEnded && !!onDelete;
+  const showDetail = hasAI || hasEnded;
 
-        {/* Accordion legs — newest first */}
-        <CollapsibleContent asChild>
-          <TableRow className="hover:bg-transparent">
-            <TableCell colSpan={onDelete ? 7 : 6} className="p-0 border-t-0">
-              <div className="bg-muted/20 divide-y border-b">
-                {legsDesc.map((leg, i) => (
-                  <div key={i} className="flex items-center gap-3 px-10 py-2.5">
-                    <div className="shrink-0">{(isOutbound ? EVENT_ICONS_OUTBOUND : EVENT_ICONS)[leg.event]}</div>
-                    <div className="flex-1 min-w-0 text-sm">{eventLabel(leg, isOutbound, extLabel, t)}</div>
-                    <time className="text-xs text-muted-foreground shrink-0 tabular-nums">
-                      {formatTime(leg.timestamp)}
-                    </time>
+  return (
+    <>
+      <Collapsible open={isOpen} onOpenChange={onToggle} asChild>
+        <>
+          <TableRow className="hover:bg-muted/40 select-none group/row">
+              {/* Call ID */}
+              <TableCell className="font-mono text-xs text-muted-foreground">
+                <div className="flex items-center gap-1.5">
+                  <CollapsibleTrigger asChild>
+                    <button className="flex h-5 w-5 cursor-pointer items-center justify-center rounded border border-border bg-muted/50 hover:bg-muted transition-colors shrink-0">
+                      {isOpen
+                        ? <ChevronDown  className="h-3 w-3 shrink-0" />
+                        : <ChevronRight className="h-3 w-3 shrink-0" />}
+                    </button>
+                  </CollapsibleTrigger>
+                  <span>{callId.slice(0, 8)}…</span>
+                  <CopyButton value={callId} />
+                </div>
+              </TableCell>
+              {/* Direction */}
+              <TableCell>
+                {isOutbound ? (
+                  <span className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded px-1.5 py-0.5">
+                    <ArrowUpRight className="h-3 w-3" />
+                    {t("calls.dirOutbound")}
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 text-xs font-medium text-green-600 bg-green-50 border border-green-200 rounded px-1.5 py-0.5">
+                    <ArrowDownLeft className="h-3 w-3" />
+                    {t("calls.dirInbound")}
+                  </span>
+                )}
+              </TableCell>
+              {/* Caller */}
+              <TableCell className="font-mono text-sm">{caller}</TableCell>
+              {/* Called */}
+              <TableCell className="font-mono text-sm">{called}</TableCell>
+              {/* Date */}
+              <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                {formatDateTime(firstLeg.timestamp)}
+              </TableCell>
+              {/* Duration */}
+              <TableCell className="text-xs text-muted-foreground tabular-nums">
+                {duration ?? "—"}
+              </TableCell>
+              {/* Action */}
+              {onDelete && (
+                <TableCell className="text-center">
+                  <div className="flex items-center justify-center gap-1">
+                    {/* Detail button — always shown for completed/AI calls */}
+                    {showDetail && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setDetailOpen(true); }}
+                        className="inline-flex items-center justify-center h-7 w-7 rounded border border-border text-muted-foreground hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-colors cursor-pointer"
+                        title="View call detail"
+                      >
+                        <Info className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+
+                    {/* Delete button — only for completed calls */}
+                    {showDelete && (
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <button
+                            className="inline-flex items-center justify-center h-7 w-7 rounded border border-border text-muted-foreground hover:text-destructive hover:border-destructive/50 hover:bg-destructive/10 transition-colors cursor-pointer"
+                            title="Delete call"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>{t("calls.deleteCallTitle")}</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              {t("calls.deleteCallDesc", { callId: callId.slice(0, 8) + "…" })}
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+                            <AlertDialogAction
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              onClick={() => onDelete(callId)}
+                            >
+                              {t("common.delete")}
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    )}
                   </div>
-                ))}
-              </div>
-            </TableCell>
-          </TableRow>
-        </CollapsibleContent>
-      </>
-    </Collapsible>
+                </TableCell>
+              )}
+            </TableRow>
+
+          {/* Accordion legs */}
+          <CollapsibleContent asChild>
+            <TableRow className="hover:bg-transparent">
+              <TableCell colSpan={onDelete ? 7 : 6} className="p-0 border-t-0">
+                <div className="bg-muted/20 divide-y border-b">
+                  {legsDesc.map((leg, i) => (
+                    <div key={i} className="flex items-center gap-3 px-10 py-2.5">
+                      <div className="shrink-0">{(isOutbound ? EVENT_ICONS_OUTBOUND : EVENT_ICONS)[leg.event]}</div>
+                      <div className="flex-1 min-w-0 text-sm">{eventLabel(leg, isOutbound, extLabel, t)}</div>
+                      <time className="text-xs text-muted-foreground shrink-0 tabular-nums">
+                        {formatTime(leg.timestamp)}
+                      </time>
+                    </div>
+                  ))}
+                </div>
+              </TableCell>
+            </TableRow>
+          </CollapsibleContent>
+        </>
+      </Collapsible>
+
+      {/* Detail dialog — rendered outside Collapsible so it doesn't interfere */}
+      {showDetail && (
+        <CallDetailDialog
+          callId={callId}
+          legs={legs}
+          isOutbound={isOutbound}
+          extLabel={extLabel}
+          open={detailOpen}
+          onClose={() => setDetailOpen(false)}
+        />
+      )}
+    </>
   );
 }
 
@@ -330,7 +584,6 @@ export function CallHistoryTable({
 
   const visible = limit ? callGroups.slice(0, limit) : callGroups;
 
-  // Build a map callId → phoneNumber from outboundCalls; fall back to legacy outboundCallIds
   const outboundMap = React.useMemo(() => {
     const m = new Map<string, string | null>();
     if (outboundCalls) {
@@ -364,7 +617,7 @@ export function CallHistoryTable({
             <TableHead>{t("calls.thCalled")}</TableHead>
             <TableHead>{t("calls.thDate")}</TableHead>
             <TableHead>{t("calls.thDuration")}</TableHead>
-            {onDeleteCall && <TableHead className="w-16 text-center">{t("calls.thAction")}</TableHead>}
+            {onDeleteCall && <TableHead className="w-20 text-center">{t("calls.thAction")}</TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -407,12 +660,9 @@ export function groupEventsByCall(events: CallEvent[]): Map<string, CallEvent[]>
     if (!map.has(ev.callId)) map.set(ev.callId, []);
     map.get(ev.callId)!.push(ev);
   }
-  // Sort each group oldest-first so duration/date calculations are correct
   for (const [callId, legs] of map.entries()) {
     legs.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
 
-    // Deduplicate: remove events where (type, detail) is identical to an earlier one.
-    // This handles the backend occasionally emitting duplicate invite/connected_ai events.
     const seen = new Set<string>();
     map.set(callId, legs.filter(leg => {
       const key = `${leg.event}::${leg.detail ?? ""}`;

@@ -1,0 +1,236 @@
+[2026-08-02T15:47:38.058Z] 2026/08/02 15:47:38 INVITE received for call: b7ddafea-4d45-45e5-81ce-fdcd06ca49d8, auto-answering using sipgo.
+[2026-08-02T15:47:38.061Z] 2026/08/02 15:47:38 RTP listener created on 0.0.0.0:43826
+[2026-08-02T15:47:38.061Z] 2026/08/02 15:47:38 200 OK with SDP sent to caller.
+[2026-08-02T15:47:38.061Z] 2026/08/02 15:47:38 Stored remote Contact for dialog: sip:0661209845@192.168.11.90:5060
+[2026-08-02T15:47:38.062Z] 2026/08/02 15:47:38 Registered dialog for call: b7ddafea-4d45-45e5-81ce-fdcd06ca49d8
+[2026-08-02T15:47:38.062Z] 2026/08/02 15:47:38 Parsed remote audio port: 10150
+[2026-08-02T15:47:38.062Z] 2026/08/02 15:47:38 Remote RTP destination: 192.168.11.90:10150
+[2026-08-02T15:47:38.062Z] 2026/08/02 15:47:38 Routing call to ElevenLabs Conversational AI
+[2026-08-02T15:47:38.062Z] 2026/08/02 15:47:38 Using AI provider: elevenlabs
+[2026-08-02T15:47:38.062Z] 2026/08/02 15:47:38 Sending NAT hole-punch packets to 192.168.11.90:10150
+[2026-08-02T15:47:38.088Z] 2026/08/02 15:47:38 WARN SIP request handler not found caller=Server method=ACK
+[2026-08-02T15:47:38.178Z] 2026/08/02 15:47:38 Connecting to ElevenLabs Conversational AI (agent: agent_8801kyx0x1w8eccvp854nq9y2efg)...
+[2026-08-02T15:47:38.753Z] 2026/08/02 15:47:38 Connected to ElevenLabs Conversational AI
+[2026-08-02T15:47:38.753Z] AI responded — ElevenLabs Conversational AI - Hamza
+[2026-08-02T15:47:38.808Z] 2026/08/02 15:47:38 DEBUG: appConfig=true
+[2026-08-02T15:47:38.809Z] 2026/08/02 15:47:38 DEBUG: ElevenLabs.FirstMessage='Bonjour, vous êtes bien chez AIO PROCESS. Je suis Hamza, comment puis-je vous aider aujourd'hui ?', SystemPrompt='Vous êtes Hamza, consultant IT chez AIO PROCESS. Vous répondez aux appels entrants de clients et prospects. Répondez en français. Écoutez le besoin du client, présentez brièvement vos services IT, et proposez un rendez-vous si approprié. Soyez professionnel et concis.', Functions=0
+[2026-08-02T15:47:38.809Z] 2026/08/02 15:47:38 Overriding first_message: Bonjour, vous êtes bien chez AIO PROCESS. Je suis Hamza, comment puis-je vous aider aujourd'hui ?
+[2026-08-02T15:47:38.809Z] 2026/08/02 15:47:38 Overriding system prompt
+[2026-08-02T15:47:38.810Z] 2026/08/02 15:47:38 Sending conversation initiation to ElevenLabs: {"conversation_config_override":{"agent":{"first_message":"Bonjour, vous êtes bien chez AIO PROCESS. Je suis Hamza, comment puis-je vous aider aujourd'hui ?","prompt":{"prompt":"Vous êtes Hamza, consultant IT chez AIO PROCESS. Vous répondez aux appels entrants de clients et prospects. Répondez en français. Écoutez le besoin du client, présentez brièvement vos services IT, et proposez un rendez-vous si approprié. Soyez professionnel et concis."}}},"type":"conversation_initiation_client_data"}
+[2026-08-02T15:47:38.819Z] 2026/08/02 15:47:38 Registered bridge for call: b7ddafea-4d45-45e5-81ce-fdcd06ca49d8
+[2026-08-02T15:47:38.819Z] 2026/08/02 15:47:38 Starting RTP to ElevenLabs bridge (native μ-law 8kHz)...
+[2026-08-02T15:47:38.819Z] 2026/08/02 15:47:38 Starting ElevenLabs to RTP bridge (native μ-law 8kHz)...
+[2026-08-02T15:47:38.819Z] 2026/08/02 15:47:38 ElevenLabs raw message: {"conversation_initiation_metadata_event":{"conversation_id":"conv_2901kz1jhjxmfhk8dwq9trqw1ncy","agent_output_audio_format":"ulaw_8000","user_input_audio_format":"ulaw_8000","persistent_session_token...
+[2026-08-02T15:47:38.821Z] 2026/08/02 15:47:38 ElevenLabs conversation started: conv_2901kz1jhjxmfhk8dwq9trqw1ncy (audio format: ulaw_8000)
+[2026-08-02T15:47:39.192Z] 2026/08/02 15:47:39 ElevenLabs raw message: {"audio_event":{"audio_base_64":"ZWFtZmdnamRpZ2dpZWhnZ2lrZ2toa2pobGpqbWpqcWtvbmxybXNwcXNzd3Z8dHt2fnt8eX18ev16/Hn7eP/+fP1+/P/8//d9/P5+93z+/P9+/X59+v7+/P/8/P39/f79/Hz+fH5+en7/fH39fP3//v3+/P79/f39/P78/37...
+[2026-08-02T15:47:39.192Z] 2026/08/02 15:47:39 ElevenLabs audio chunk #1 received (4488 bytes)
+[2026-08-02T15:47:39.209Z] 2026/08/02 15:47:39 Sent 1 RTP packets to 192.168.11.90:10150
+[2026-08-02T15:47:39.255Z] 2026/08/02 15:47:39 RTP packet #1 received from 192.168.11.90:10150, size=172 bytes
+[2026-08-02T15:47:39.342Z] 2026/08/02 15:47:39 ElevenLabs raw message: {"audio_event":{"audio_base_64":"8PH09/j49/f3+f7+/vz5/nt3d3z69fT6enJub3N4fnx6d3Z4dnVvb3J1ff59eXNycnR3eHl5e3t6enJvbW54/fP1/np1eH77/H59e/759/j9fHt++vXx9fn8//r28/H09vb28/Dy9ff5+PPw7+/z9/b28/H19/v9+fb08/X...
+[2026-08-02T15:47:39.469Z] 2026/08/02 15:47:39 ElevenLabs raw message: {"audio_event":{"audio_base_64":"8+nh29bRz83KycfGxcPBv729vb29vL7AxMrS3vVjU0tHQ0A+PT09PT0+P0BBREZISkxPU1hdY2l37+bf29bSz83LysnIx8XEwsC/wL+/v8DEx83U3fBrWU5JRkNAPz4+Pj4/QENGRktOVFln/dlkT8flXtfVy+DOyse7vry...
+[2026-08-02T15:47:39.814Z] 2026/08/02 15:47:39 ElevenLabs raw message: {"audio_event":{"audio_base_64":"LScqJCwsJjMtNDQ0SkNDbedk0uHBzdK+ysDGu8G5uLGsvaasrqW2ore4r+28PEhDLiwtLCkpJTAoKTEuNjA4TENB5+zz19m728e/yL7NuMK6t7CtvaSvraW5obi3ru+7PkxCMC4sLicrJS4qJjMqNS81RTlSRtn9X8TewtH...
+[2026-08-02T15:47:40.425Z] 2026/08/02 15:47:40 ElevenLabs raw message: {"audio_event":{"audio_base_64":"9vb29vb29vb29vb29fX19fX19fX19fX19fX19fX19fX19fb29vb29/f39/f39/j4+Pj4+Pj5+fn6+vr7+/v7+vr6+/v7/Pz9/f39/v5+fn5+fn5+fn19fX19fXx8fHx8e3t8e3t7enp6enp6eXl5eXl5eHl5eHl5eHh4eHh...
+[2026-08-02T15:47:40.456Z] 2026/08/02 15:47:40 ElevenLabs raw message: {"audio_event":{"audio_base_64":"Sldq3MrDwruwrKajn52bmp6cn6WmqrbR3TksKycgICIeHiAeHiUmKS41MzxGRVbr+vnX3tzT0czHwru6tK2oo6CenpyaoKCgqa2vvUpKMiQmJR4fJB8fIyIhKywsNj48TvBW3tD96dPv+Nf57tHRybu3sKiin56dnJqdop+...
+[2026-08-02T15:47:40.457Z] 2026/08/02 15:47:40 ElevenLabs raw message: {"agent_response_event":{"agent_response":"Bonjour, vous êtes bien chez AIO PROCESS. Je suis Hamza, comment puis-je vous aider aujourd'hui ?","event_id":1,"response_id":"7c16ea52-dc3e-4ee7-b862-adde8...
+[2026-08-02T15:47:40.457Z] 2026/08/02 15:47:40 AI: Bonjour, vous êtes bien chez AIO PROCESS. Je suis Hamza, comment puis-je vous aider aujourd'hui ?
+[2026-08-02T15:47:40.670Z] 2026/08/02 15:47:40 ElevenLabs raw message: {"ping_event":{"event_id":2,"ping_ms":null},"type":"ping"}
+[2026-08-02T15:47:40.790Z] 2026/08/02 15:47:40 ElevenLabs raw message: {"audio_event":{"audio_base_64":"5+DPycC6t7aysK+vrq6trq+vrauwtbq1uL/LWExHSzouKyssKispKCwyNjQ1Oj9KUUlCR1VaTkxLUGPpdWB93NPRysfFv7y6uba2tbSzsrKzs7GvrrS6u7i7xM9cTEpLOy8tLi4tLisrLzY4NDc7QUxORT9LW1tPT1Jd6dv...
+[2026-08-02T15:47:41.190Z] 2026/08/02 15:47:41 Sent 100 RTP packets to 192.168.11.90:10150
+[2026-08-02T15:47:41.235Z] 2026/08/02 15:47:41 RTP packet #100 received from 192.168.11.90:10150, size=172 bytes
+[2026-08-02T15:47:42.368Z] 2026/08/02 15:47:42 ElevenLabs raw message: {"ping_event":{"event_id":3,"ping_ms":153},"type":"ping"}
+[2026-08-02T15:47:43.237Z] 2026/08/02 15:47:43 RTP packet #200 received from 192.168.11.90:10150, size=172 bytes
+[2026-08-02T15:47:43.270Z] 2026/08/02 15:47:43 Sent 200 RTP packets to 192.168.11.90:10150
+[2026-08-02T15:47:44.070Z] 2026/08/02 15:47:44 ElevenLabs raw message: {"ping_event":{"event_id":4,"ping_ms":153},"type":"ping"}
+[2026-08-02T15:47:45.238Z] 2026/08/02 15:47:45 RTP packet #300 received from 192.168.11.90:10150, size=172 bytes
+[2026-08-02T15:47:45.770Z] 2026/08/02 15:47:45 ElevenLabs raw message: {"ping_event":{"event_id":5,"ping_ms":153},"type":"ping"}
+[2026-08-02T15:47:47.235Z] 2026/08/02 15:47:47 RTP packet #400 received from 192.168.11.90:10150, size=172 bytes
+[2026-08-02T15:47:47.472Z] 2026/08/02 15:47:47 ElevenLabs raw message: {"ping_event":{"event_id":6,"ping_ms":151},"type":"ping"}
+[2026-08-02T15:47:49.172Z] 2026/08/02 15:47:49 ElevenLabs raw message: {"ping_event":{"event_id":7,"ping_ms":151},"type":"ping"}
+[2026-08-02T15:47:49.235Z] 2026/08/02 15:47:49 RTP packet #500 received from 192.168.11.90:10150, size=172 bytes
+[2026-08-02T15:47:49.829Z] 2026/08/02 15:47:49 ElevenLabs raw message: {"user_transcription_event":{"user_transcript":"Bonjour.","event_id":44},"type":"user_transcript"}
+[2026-08-02T15:47:49.829Z] 2026/08/02 15:47:49 Caller: Bonjour.
+[2026-08-02T15:47:49.833Z] 2026/08/02 15:47:49 ElevenLabs raw message: {"audio_event":{"audio_base_64":"///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////...
+[2026-08-02T15:47:50.004Z] 2026/08/02 15:47:50 ElevenLabs raw message: {"audio_event":{"audio_base_64":"Y21w7ubm5nBrYl3+bvN1WV1e/ejnfmlZT1VUZndma1hVZW/p6nJjW11ddPduX1RWWWd2d31eX1tdcmn+cHbyd+5vb/1o93doZVdgavPe4OtwZl9x6unc6231Z3vqcvX/aW94d+br+/BmZHNu5OLw+W5jaPt65PdjcGd06un...
+[2026-08-02T15:47:50.193Z] 2026/08/02 15:47:50 ElevenLabs raw message: {"audio_event":{"audio_base_64":"Ly8vLy8wMjY6Oz5DSFJhe+fi2NLTz9PWz83Iw8HAv7y6uLKvrq6vsrW2ubzBzu9YRz47ODU0NDQ1Nzk8P0BER0pNUldbY2hrcXBv/u7s5+De3trX1c3KxsLAv76+vr/BxMrP3PlhVk5KRkRBPz4+PT4/QEFDREZHSkxPVFd...
+[2026-08-02T15:47:50.193Z] 2026/08/02 15:47:50 ElevenLabs raw message: {"agent_response_event":{"agent_response":"Bonjour. Comment puis-je vous aider ?","event_id":44,"response_id":"91f63ee4-4bf8-4860-b24f-653fd1f5d46e","in_response_to_ids":["a28fd7c0-e0b2-4845-a184-82d0...
+[2026-08-02T15:47:50.194Z] 2026/08/02 15:47:50 AI: Bonjour. Comment puis-je vous aider ?
+[2026-08-02T15:47:50.390Z] 2026/08/02 15:47:50 Sent 300 RTP packets to 192.168.11.90:10150
+[2026-08-02T15:47:50.873Z] 2026/08/02 15:47:50 ElevenLabs raw message: {"ping_event":{"event_id":8,"ping_ms":150},"type":"ping"}
+[2026-08-02T15:47:51.235Z] 2026/08/02 15:47:51 RTP packet #600 received from 192.168.11.90:10150, size=172 bytes
+[2026-08-02T15:47:52.574Z] 2026/08/02 15:47:52 ElevenLabs raw message: {"ping_event":{"event_id":9,"ping_ms":151},"type":"ping"}
+[2026-08-02T15:47:53.238Z] 2026/08/02 15:47:53 RTP packet #700 received from 192.168.11.90:10150, size=172 bytes
+[2026-08-02T15:47:54.274Z] 2026/08/02 15:47:54 ElevenLabs raw message: {"ping_event":{"event_id":10,"ping_ms":150},"type":"ping"}
+[2026-08-02T15:47:55.236Z] 2026/08/02 15:47:55 RTP packet #800 received from 192.168.11.90:10150, size=172 bytes
+[2026-08-02T15:47:55.975Z] 2026/08/02 15:47:55 ElevenLabs raw message: {"ping_event":{"event_id":11,"ping_ms":150},"type":"ping"}
+[2026-08-02T15:47:57.236Z] 2026/08/02 15:47:57 RTP packet #900 received from 192.168.11.90:10150, size=172 bytes
+[2026-08-02T15:47:57.311Z] 2026/08/02 15:47:57 ElevenLabs raw message: {"user_transcription_event":{"user_transcript":"Je veux l'adresse de votre société.","event_id":102},"type":"user_transcript"}
+[2026-08-02T15:47:57.312Z] 2026/08/02 15:47:57 Caller: Je veux l'adresse de votre société.
+[2026-08-02T15:47:57.315Z] 2026/08/02 15:47:57 ElevenLabs raw message: {"audio_event":{"audio_base_64":"//////////7////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////...
+[2026-08-02T15:47:57.449Z] 2026/08/02 15:47:57 ElevenLabs raw message: {"audio_event":{"audio_base_64":"cmBRUVR5387Q3vtXXHDRxr6+yM7w9ejVyMS/xcjO1tXPysjEycrMz8jLx8rNzdXNzcvNz9Xe2t7b1d3Z9t7U+MztaXZWY1/e6N3Wb3taWlZh6GrZ+WdhV1tc4mnm9VppWGBffe5S7VlO4FxmamFNYW5Q6fNWamRPZmdoYeZ...
+[2026-08-02T15:47:57.625Z] 2026/08/02 15:47:57 ElevenLabs raw message: {"audio_event":{"audio_base_64":"L8ankJedsh8YFBMQGhsxta+sw0w/Uz43RDLwvaSelpSQjo6PlLgaFAgOFicoybagjJCQqukcKx0cHhgnSp6lmbtjPikkGxgSHiA1SUZOx7C1qL7MyMOvq52elZOQj5GYOzATEhYbGBonIp+dk5iaq6ikVu8dGhUlHzUyJjs...
+[2026-08-02T15:47:57.676Z] 2026/08/02 15:47:57 ElevenLabs raw message: {"ping_event":{"event_id":12,"ping_ms":150},"type":"ping"}
+[2026-08-02T15:47:57.789Z] 2026/08/02 15:47:57 Sent 400 RTP packets to 192.168.11.90:10150
+[2026-08-02T15:47:57.962Z] 2026/08/02 15:47:57 ElevenLabs raw message: {"audio_event":{"audio_base_64":"QzE1MTE0LTQvPj5TalDmS+xOWUU4Ny0wLC0rKisrLjM0OjpERU5bXmxy5m7c4NTUzM++xLzEvby4tru3vbS3rrawuLGwsK6zrrWvtbK2uru/wsLP0Onn+XNrWWRTdVRrVWFeYFlXXU1USE9KSUdGR0dESUhSUE9PTmFUdFV...
+[2026-08-02T15:47:57.995Z] 2026/08/02 15:47:57 ElevenLabs raw message: {"audio_event":{"audio_base_64":"a3X77+rl4d/d29nX1NLPzMrHxMG/vby6ube2tLOysrKys7W3uby/xczX62dVS0Q/PDk3NjU0NDQ0NDU1Njc4Ojs9P0FDREdJS0xNTk9QUlVXW19ocX7w6N7X0M3LyMXDwcDAv7++vb28uri3uLy6trO1wsrcTkc5Ly0rKyo...
+[2026-08-02T15:47:58.830Z] 2026/08/02 15:47:58 ElevenLabs raw message: {"audio_event":{"audio_base_64":"e1VHQD48PTw8Ozs6Ozw9Pj4/Pz8/QEFFSU5XX2p76dvSzMjFwr+9u7m3trW2uLm7vb7DydTtYFFKRD88OTc2NjY2NjY3ODo8PkFFSE1UYH3l29bRzsrHxMG/vby6uLa1tba4ur3Axs7eblZLRUA+PDo5ODg4ODk6Ojw9P0F...
+[2026-08-02T15:47:59.026Z] 2026/08/02 15:47:59 ElevenLabs raw message: {"audio_event":{"audio_base_64":"Pzw4NTQ+RD5GRzz2XnVcXeTJyM7Mwr23vse4t7O1tMazqrOxrLatpLCzr7C1tcVm6kpVSDQzNjgyNi83OTdDOztBOzxAOTpAPDlBQj9GPEtDTXBGWHtw3dtYy8TMzLrA4Lq4wbfKua3Gs6vAs6avsbaurrq1u2jaxktGOTc...
+[2026-08-02T15:47:59.235Z] 2026/08/02 15:47:59 RTP packet #1000 received from 192.168.11.90:10150, size=172 bytes
+[2026-08-02T15:47:59.376Z] 2026/08/02 15:47:59 ElevenLabs raw message: {"ping_event":{"event_id":13,"ping_ms":150},"type":"ping"}
+[2026-08-02T15:47:59.691Z] 2026/08/02 15:47:59 ElevenLabs raw message: {"audio_event":{"audio_base_64":"3snJz3l40Lu2utVOQk3iyMXTckxPatLKzupg/dPIydR6VU9k1s3cW0pJXd3M0X5YVPzPx8jWdFtaceXa5nRjZO3PxsTK0NLSyMG9v8PFwby0sLCxtbS1sK+wsbe5vb7AzdxmUkxIR0E9OTY1Nzk9Pj4/P0dOZ+vc0cnAurS...
+[2026-08-02T15:47:59.790Z] 2026/08/02 15:47:59 Sent 500 RTP packets to 192.168.11.90:10150
+[2026-08-02T15:48:00.207Z] 2026/08/02 15:48:00 ElevenLabs raw message: {"audio_event":{"audio_base_64":"ODY0MzIzODxCSEtLTlRXe3j2dXZvb+5sdF9ZVlVUUFNRVVhaW2Vu8Ofd29XPzsjHxMO+vry6uLa0srKvrq6vsba5u8DL5V1GQD07ODYzMzU4Oz0/PkBCR0tPUVBSV1xkZF5XVFFPTk1JSUdJS05SUVtbbnju7uHZ19DNycr...
+[2026-08-02T15:48:00.955Z] 2026/08/02 15:48:00 ElevenLabs raw message: {"audio_event":{"audio_base_64":"r6Gjo6CbmJuemqclQy4hGBsxKK/3s5+Vndyt4GwmHhslPSYpaLS73VdPUD4hHygtJio8T8/Juqyinp6dmZaanKEsPDYeFxgtJL1wtZ6YmrmoxtcpHhoeKx8jN77Lw/Lf0U0pIiwqKSo3Q8azsKSbmZmXlpmYpyQ6KxwTGCY...
+[2026-08-02T15:48:01.085Z] 2026/08/02 15:48:01 ElevenLabs raw message: {"ping_event":{"event_id":14,"ping_ms":150},"type":"ping"}
+[2026-08-02T15:48:01.235Z] 2026/08/02 15:48:01 RTP packet #1100 received from 192.168.11.90:10150, size=172 bytes
+[2026-08-02T15:48:01.442Z] 2026/08/02 15:48:01 ElevenLabs raw message: {"audio_event":{"audio_base_64":"rjrXHRQnEhkTFSEdLCJnuUmtva6rXMNtPikgJRsbGRofICYxzcOrnZqOkpiLjpSSnZekar0pNiYUHhocGhwpJ0I8Sba3r7y6rsfeRTk5LSgmJykpKS00OkVM4cXBu7WurK6uq6urrq+ws7a6v8fL0uNufGZsZlpeWVpVT0l...
+[2026-08-02T15:48:01.792Z] 2026/08/02 15:48:01 Sent 600 RTP packets to 192.168.11.90:10150
+[2026-08-02T15:48:02.185Z] 2026/08/02 15:48:02 ElevenLabs raw message: {"audio_event":{"audio_base_64":"Ly8xLi8xMTo+R/zVwLSvpqGnnJ6fnaOfpauyssjjTjxKMDIyNDExNTo7NT49OTg2NzQtLi8sLS0xODlG89S+sKygoaOZnp2eoZ6prba2fFY+NjwqLy8vLzI5PD45SD86OTc0LywtLCkqLC4xN0Fp2cCvrKGfopqdnZ6in6q...
+[2026-08-02T15:48:02.777Z] 2026/08/02 15:48:02 ElevenLabs raw message: {"audio_event":{"audio_base_64":"WHpXaGBZYWf4VFphbl5nXWhZZWJid1VlYVplZV5eXHVablpYV2X7XF9QXmhbXl9ZXGNaVVxVV1pdVVtWTl1bW1BOVGRWWFtPWVRWVFliWFBWY1NdV1JSWl5XWk1fU1lbU1ZUX1pbWV1aWFxdVlpeZ1pWT1VwXVhgZVRlXWZ...
+[2026-08-02T15:48:02.778Z] 2026/08/02 15:48:02 ElevenLabs raw message: {"agent_response_event":{"agent_response":"D'accord. Notre adresse est au 123 Boulevard de la Liberté, à Casablanca. Est-ce que je peux vous aider avec autre chose ?The user is asking for the compan...
+[2026-08-02T15:48:02.778Z] 2026/08/02 15:48:02 AI: D'accord. Notre adresse est au 123 Boulevard de la Liberté, à Casablanca. Est-ce que je peux vous aider avec autre chose ?The user is asking for the company's address. I should provide the address and then ask if they need anything else to keep the conversation going and identify their main need.Notre adresse est au 123 Boulevard de la Liberté, à Casablanca.
+[2026-08-02T15:48:02.785Z] 2026/08/02 15:48:02 ElevenLabs raw message: {"ping_event":{"event_id":15,"ping_ms":151},"type":"ping"}
+[2026-08-02T15:48:03.179Z] 2026/08/02 15:48:03 ElevenLabs raw message: {"audio_event":{"audio_base_64":"I/Chr6uclJ+vrsQ9HRcUFRANExocHjTRtKiblZGQj42Lj6GbnF4fJigVFRMbICMmXaKuqZuUn66rvzkdGRQUDw4UGhwePcmuo5mSkI6Oi4yZnJixJyErGRMSFx4fJDeoqqmdlJmpqLNPIhoUEw8NDxcaGy7bsKOZkY6NjIq...
+[2026-08-02T15:48:03.236Z] 2026/08/02 15:48:03 RTP packet #1200 received from 192.168.11.90:10150, size=172 bytes
+[2026-08-02T15:48:03.830Z] 2026/08/02 15:48:03 Sent 700 RTP packets to 192.168.11.90:10150
+[2026-08-02T15:48:04.480Z] 2026/08/02 15:48:04 ElevenLabs raw message: {"ping_event":{"event_id":16,"ping_ms":155},"type":"ping"}
+[2026-08-02T15:48:05.236Z] 2026/08/02 15:48:05 RTP packet #1300 received from 192.168.11.90:10150, size=172 bytes
+[2026-08-02T15:48:05.830Z] 2026/08/02 15:48:05 Sent 800 RTP packets to 192.168.11.90:10150
+[2026-08-02T15:48:06.180Z] 2026/08/02 15:48:06 ElevenLabs raw message: {"ping_event":{"event_id":17,"ping_ms":155},"type":"ping"}
+[2026-08-02T15:48:06.463Z] 2026/08/02 15:48:06 ElevenLabs raw message: {"interruption_event":{"event_id":165},"type":"interruption"}
+[2026-08-02T15:48:06.463Z] 2026/08/02 15:48:06 ElevenLabs: Caller interrupted AI
+[2026-08-02T15:48:06.464Z] 2026/08/02 15:48:06 ElevenLabs raw message: {"agent_response_correction_event":{"original_agent_response":"D'accord. Notre adresse est au 123 Boulevard de la Liberté, à Casablanca. Est-ce que je peux vous aider avec autre chose ?The user is a...
+[2026-08-02T15:48:06.464Z] 2026/08/02 15:48:06 ElevenLabs event: agent_response_correction
+[2026-08-02T15:48:07.236Z] 2026/08/02 15:48:07 RTP packet #1400 received from 192.168.11.90:10150, size=172 bytes
+[2026-08-02T15:48:07.881Z] 2026/08/02 15:48:07 ElevenLabs raw message: {"ping_event":{"event_id":18,"ping_ms":150},"type":"ping"}
+[2026-08-02T15:48:08.549Z] 2026/08/02 15:48:08 ElevenLabs raw message: {"user_transcription_event":{"user_transcript":"Non, non, non, c'est bon.","event_id":169},"type":"user_transcript"}
+[2026-08-02T15:48:08.549Z] 2026/08/02 15:48:08 Caller: Non, non, non, c'est bon.
+[2026-08-02T15:48:08.552Z] 2026/08/02 15:48:08 ElevenLabs raw message: {"audio_event":{"audio_base_64":"///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////...
+[2026-08-02T15:48:08.721Z] 2026/08/02 15:48:08 ElevenLabs raw message: {"audio_event":{"audio_base_64":"VFNRUFBQUFJUVFRVWFtfZGlqa3B6//35/n378+/u8Px8ff37fndwdXz69PT7enp4en7+fHNvb3JzdHV4/vTr493b2dbU0c/NzMzLy8vKy8zNz9LS1Nrd4ev4fG5nX1hTVVBJR0hFQUJAPj9BQkRISkxTXGFsffzv5d7c2dn...
+[2026-08-02T15:48:09.011Z] 2026/08/02 15:48:09 ElevenLabs raw message: {"audio_event":{"audio_base_64":"QktISUs/PD0/QUhQTUZGQ0VPXmRy+/7y3NDYyMPEw8HAw728vLu9vL22r7u9zftz5sLa1/lGRUVeT1plRkE9Pzs6PTY1Njg7O0dEQEdGUVV83OHOzszQ0tTf1M7JysjI0c/LxL+8ub2+vcTCxcLCy8PXz8rAw+vgSUpNZmo...
+[2026-08-02T15:48:09.236Z] 2026/08/02 15:48:09 RTP packet #1500 received from 192.168.11.90:10150, size=172 bytes
+[2026-08-02T15:48:09.451Z] 2026/08/02 15:48:09 ElevenLabs raw message: {"audio_event":{"audio_base_64":"RSQyIiAiIB8eIiIpIisxLz84VNHlz7y3urO+sLHGsL22tsCvsq+vqqikp66fsKyuUK82OTcjLx4gICEeHyMiKyItNjFFPHbH3si3t7a1u62zvrO3tLe6sKyxrqaooKurnbqptk+vLTkyIi0bIR8fHhwpHyclKT8uQknrxtO...
+[2026-08-02T15:48:09.472Z] 2026/08/02 15:48:09 ElevenLabs raw message: {"audio_event":{"audio_base_64":"fHx9fX19fX19fX19fX19fX1+fn5+/////v7+/v7//35+fn5+fX19fHx7e3t7e3t7e3t7e3t7fHx9fn7//317e3l4dnRua2tpaWtrb3V5/Xx+fv18fv36fn58/vf08e/q5ePh3NvV1tXY0c7CwtLRzL69xcW/wry7vbq6uLi...
+[2026-08-02T15:48:09.582Z] 2026/08/02 15:48:09 ElevenLabs raw message: {"ping_event":{"event_id":19,"ping_ms":150},"type":"ping"}
+[2026-08-02T15:48:09.890Z] 2026/08/02 15:48:09 ElevenLabs raw message: {"audio_event":{"audio_base_64":"ubi3tLGwrqypqKalpaWmpaaqrLC7x9xjPzIuKygoKCckJCYlKCkpKiouMjc/RVBk5MzIv729uri0srCurayrqqmqqqqqq62vtr3H2mdLPjgxLy0tLCsqKikqKiwsLS4vNDg9Rkxd89rMyMG+vLm2s7Cvrayrq6urrKytrq+...
+[2026-08-02T15:48:09.890Z] 2026/08/02 15:48:09 ElevenLabs raw message: {"agent_response_event":{"agent_response":"Très bien. Merci d'avoir appelé AIO PROCESS. Passez une bonne journée !","event_id":169,"response_id":"fc7ad905-3524-48a2-b94a-1d1c91b14523","in_response_...
+[2026-08-02T15:48:09.891Z] 2026/08/02 15:48:09 AI: Très bien. Merci d'avoir appelé AIO PROCESS. Passez une bonne journée !
+[2026-08-02T15:48:11.236Z] 2026/08/02 15:48:11 RTP packet #1600 received from 192.168.11.90:10150, size=172 bytes
+[2026-08-02T15:48:11.249Z] 2026/08/02 15:48:11 Sent 900 RTP packets to 192.168.11.90:10150
+[2026-08-02T15:48:11.283Z] 2026/08/02 15:48:11 ElevenLabs raw message: {"ping_event":{"event_id":20,"ping_ms":150},"type":"ping"}
+[2026-08-02T15:48:12.984Z] 2026/08/02 15:48:12 ElevenLabs raw message: {"ping_event":{"event_id":21,"ping_ms":150},"type":"ping"}
+[2026-08-02T15:48:13.042Z] 2026/08/02 15:48:13 ElevenLabs raw message: {"agent_tool_response":{"tool_name":"end_call","tool_call_id":"end_call_adc23d7ea9d14ccfbf2604d30b6d75bd","tool_type":"system","is_error":false,"is_blocked":false,"event_id":169,"is_called":true},"typ...
+[2026-08-02T15:48:13.043Z] 2026/08/02 15:48:13 ElevenLabs event: agent_tool_response
+[2026-08-02T15:48:13.046Z] 2026/08/02 15:48:13 ElevenLabs WebSocket closed normally
+[2026-08-02T15:48:13.056Z] 2026/08/02 15:48:13 Error sending audio to ElevenLabs: websocket: close sent
+[2026-08-02T15:48:13.056Z] 2026/08/02 15:48:13 RTP to ElevenLabs bridge stopping...
+[2026-08-02T15:48:13.118Z] 2026/08/02 15:48:13 Unregistered bridge for call: b7ddafea-4d45-45e5-81ce-fdcd06ca49d8
+[2026-08-02T15:48:20.075Z] 2026/08/02 15:48:20 BYE received for call: b7ddafea-4d45-45e5-81ce-fdcd06ca49d8
+[2026-08-02T15:48:20.079Z] 2026/08/02 15:48:20 No active bridge found for call: b7ddafea-4d45-45e5-81ce-fdcd06ca49d8
+[2026-08-02T15:48:43.213Z] 2026/08/02 15:48:43 INVITE received for call: 408508a0-9e6e-4799-b82e-e4904ebd90ac, auto-answering using sipgo.
+[2026-08-02T15:48:43.215Z] 2026/08/02 15:48:43 RTP listener created on 0.0.0.0:41894
+[2026-08-02T15:48:43.216Z] 2026/08/02 15:48:43 200 OK with SDP sent to caller.
+[2026-08-02T15:48:43.217Z] 2026/08/02 15:48:43 Stored remote Contact for dialog: sip:0661209845@192.168.11.90:5060
+[2026-08-02T15:48:43.219Z] 2026/08/02 15:48:43 Registered dialog for call: 408508a0-9e6e-4799-b82e-e4904ebd90ac
+[2026-08-02T15:48:43.219Z] 2026/08/02 15:48:43 Parsed remote audio port: 13702
+[2026-08-02T15:48:43.220Z] 2026/08/02 15:48:43 Remote RTP destination: 192.168.11.90:13702
+[2026-08-02T15:48:43.220Z] 2026/08/02 15:48:43 Routing call to ElevenLabs Conversational AI
+[2026-08-02T15:48:43.220Z] 2026/08/02 15:48:43 Using AI provider: elevenlabs
+[2026-08-02T15:48:43.220Z] 2026/08/02 15:48:43 Sending NAT hole-punch packets to 192.168.11.90:13702
+[2026-08-02T15:48:43.220Z] 2026/08/02 15:48:43 WARN SIP request handler not found caller=Server method=ACK
+[2026-08-02T15:48:43.321Z] 2026/08/02 15:48:43 Connecting to ElevenLabs Conversational AI (agent: agent_8801kyx0x1w8eccvp854nq9y2efg)...
+[2026-08-02T15:48:43.725Z] 2026/08/02 15:48:43 Connected to ElevenLabs Conversational AI
+[2026-08-02T15:48:43.725Z] AI responded — ElevenLabs Conversational AI - Hamza
+[2026-08-02T15:48:43.726Z] 2026/08/02 15:48:43 DEBUG: appConfig=true
+[2026-08-02T15:48:43.726Z] 2026/08/02 15:48:43 DEBUG: ElevenLabs.FirstMessage='Bonjour, vous êtes bien chez AIO PROCESS. Je suis Hamza, comment puis-je vous aider aujourd'hui ?', SystemPrompt='Vous êtes Hamza, consultant IT chez AIO PROCESS. Vous répondez aux appels entrants de clients et prospects. Répondez en français. Écoutez le besoin du client, présentez brièvement vos services IT, et proposez un rendez-vous si approprié. Soyez professionnel et concis.', Functions=0
+[2026-08-02T15:48:43.726Z] 2026/08/02 15:48:43 Overriding first_message: Bonjour, vous êtes bien chez AIO PROCESS. Je suis Hamza, comment puis-je vous aider aujourd'hui ?
+[2026-08-02T15:48:43.726Z] 2026/08/02 15:48:43 Overriding system prompt
+[2026-08-02T15:48:43.726Z] 2026/08/02 15:48:43 Sending conversation initiation to ElevenLabs: {"conversation_config_override":{"agent":{"first_message":"Bonjour, vous êtes bien chez AIO PROCESS. Je suis Hamza, comment puis-je vous aider aujourd'hui ?","prompt":{"prompt":"Vous êtes Hamza, consultant IT chez AIO PROCESS. Vous répondez aux appels entrants de clients et prospects. Répondez en français. Écoutez le besoin du client, présentez brièvement vos services IT, et proposez un rendez-vous si approprié. Soyez professionnel et concis."}}},"type":"conversation_initiation_client_data"}
+[2026-08-02T15:48:43.727Z] 2026/08/02 15:48:43 Registered bridge for call: 408508a0-9e6e-4799-b82e-e4904ebd90ac
+[2026-08-02T15:48:43.727Z] 2026/08/02 15:48:43 Starting RTP to ElevenLabs bridge (native μ-law 8kHz)...
+[2026-08-02T15:48:43.727Z] 2026/08/02 15:48:43 Starting ElevenLabs to RTP bridge (native μ-law 8kHz)...
+[2026-08-02T15:48:43.727Z] 2026/08/02 15:48:43 RTP packet #1 received from 192.168.11.90:13702, size=172 bytes
+[2026-08-02T15:48:43.727Z] 2026/08/02 15:48:43 ElevenLabs raw message: {"conversation_initiation_metadata_event":{"conversation_id":"conv_3901kz1jkjcfe0d929yjd00pkkxv","agent_output_audio_format":"ulaw_8000","user_input_audio_format":"ulaw_8000","persistent_session_token...
+[2026-08-02T15:48:43.727Z] 2026/08/02 15:48:43 ElevenLabs conversation started: conv_3901kz1jkjcfe0d929yjd00pkkxv (audio format: ulaw_8000)
+[2026-08-02T15:48:44.116Z] 2026/08/02 15:48:44 ElevenLabs raw message: {"audio_event":{"audio_base_64":"///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////...
+[2026-08-02T15:48:44.117Z] 2026/08/02 15:48:44 ElevenLabs audio chunk #1 received (4488 bytes)
+[2026-08-02T15:48:44.127Z] 2026/08/02 15:48:44 Sent 1 RTP packets to 192.168.11.90:13702
+[2026-08-02T15:48:44.297Z] 2026/08/02 15:48:44 ElevenLabs raw message: {"audio_event":{"audio_base_64":"trW0sbKvrKqnpqist+pALicmJCguNkvvzsHDytxTPzcvLi8zO0lp2MnEwsDAv727trGuqqenqK2+8TssKSYoLTNFadzM1vhbSEE+PT4/QkdNUVt07t3V1c/Lxr24sq6rqKmrr8DlQzIvLCwyNkFUZODobV5LSEQ/Qj9ARUV...
+[2026-08-02T15:48:44.439Z] 2026/08/02 15:48:44 ElevenLabs raw message: {"audio_event":{"audio_base_64":"XtxL1T28O+TMQMhL1e1FxFZcw0PKTcVCx2L00ES3OLlBxE19vTm5Q8dR2tVFvkz300vCSMlqVsRa1VzOU8lP02rYb9ROwkHI0TetMLZFznZc0fRj6udd8uJk9dlMzEK9O71Bzk33xzKxOtJ+XdI+uDfEaFPEObIwtURawjq...
+[2026-08-02T15:48:44.674Z] 2026/08/02 15:48:44 ElevenLabs raw message: {"audio_event":{"audio_base_64":"XFxgVFlVVlZXWFRbV1xZYFxfZGFmZWducGpnafbx8Pfq8ezw5ebs4u3i5uPm6+vr5ez3/O/r7evx+/b27vHs9XLt+m95dnR3bGJfZWdpYF9nX2xiYW5pZGhwa290bG5xend1cnt4cXJu+m14bf5pbXn+/mz5dvFr+vfv/Xz...
+[2026-08-02T15:48:45.087Z] 2026/08/02 15:48:45 ElevenLabs raw message: {"audio_event":{"audio_base_64":"OlA1MD40PjYsLSstMSkqLy05MTYzOUU/OkBNQk1FU1nr9N/Qvby5sbitrqyrpqijoKOcoZqblp2qmLOhtON5LEY0IR8qIy0oKiguSj81MUQ/Sj00LC86LionKiopLSgnLTMvMTlCP0tbb2K80by3ta23p6mhp6CcoJqYlpS...
+[2026-08-02T15:48:45.106Z] 2026/08/02 15:48:45 ElevenLabs raw message: {"audio_event":{"audio_base_64":"kpqdkKmYl7inwL/hJyshKhwZHxokGRssICorLT4/OE/Kz7S0oZmul5WgkKCdk62ns8XHKy8iKSAYIRkjHRgqJCcsKz9IP0fRxcOuq5qipo+fl5WmkqCsp8m6NjInIioWJBwaKBciJiMsKjw2S0BLyvq1tqOar5qSpZGcn5K...
+[2026-08-02T15:48:45.107Z] 2026/08/02 15:48:45 ElevenLabs raw message: {"agent_response_event":{"agent_response":"Bonjour, vous êtes bien chez AIO PROCESS. Je suis Hamza, comment puis-je vous aider aujourd'hui ?","event_id":1,"response_id":"2eee6fff-7041-4776-8601-bf9cb...
+[2026-08-02T15:48:45.108Z] 2026/08/02 15:48:45 AI: Bonjour, vous êtes bien chez AIO PROCESS. Je suis Hamza, comment puis-je vous aider aujourd'hui ?
+[2026-08-02T15:48:45.297Z] 2026/08/02 15:48:45 RTP packet #100 received from 192.168.11.90:13702, size=172 bytes
+[2026-08-02T15:48:45.476Z] 2026/08/02 15:48:45 ElevenLabs raw message: {"audio_event":{"audio_base_64":"Gyk6uMvGnJmcqKKpvdAoHRocFQ8TFBwiKjDAn5yYko2KhYyVkpCa/kkfGx4PCwscGBIdLL6unKKajZCcrKPAMx8RDxASDAwUGics5rubjpKPi4aEipiYlqAqHxcPGA0JCh8iFS3bnZqSmZaKjqDKrVIeFAsLDQ4KDBofNUy...
+[2026-08-02T15:48:45.582Z] 2026/08/02 15:48:45 ElevenLabs raw message: {"ping_event":{"event_id":2,"ping_ms":null},"type":"ping"}
+[2026-08-02T15:48:46.128Z] 2026/08/02 15:48:46 Sent 100 RTP packets to 192.168.11.90:13702
+[2026-08-02T15:48:47.282Z] 2026/08/02 15:48:47 ElevenLabs raw message: {"ping_event":{"event_id":3,"ping_ms":150},"type":"ping"}
+[2026-08-02T15:48:47.297Z] 2026/08/02 15:48:47 RTP packet #200 received from 192.168.11.90:13702, size=172 bytes
+[2026-08-02T15:48:48.127Z] 2026/08/02 15:48:48 Sent 200 RTP packets to 192.168.11.90:13702
+[2026-08-02T15:48:48.983Z] 2026/08/02 15:48:48 ElevenLabs raw message: {"ping_event":{"event_id":4,"ping_ms":150},"type":"ping"}
+[2026-08-02T15:48:49.297Z] 2026/08/02 15:48:49 RTP packet #300 received from 192.168.11.90:13702, size=172 bytes
+[2026-08-02T15:48:50.684Z] 2026/08/02 15:48:50 ElevenLabs raw message: {"ping_event":{"event_id":5,"ping_ms":150},"type":"ping"}
+[2026-08-02T15:48:51.297Z] 2026/08/02 15:48:51 RTP packet #400 received from 192.168.11.90:13702, size=172 bytes
+[2026-08-02T15:48:52.386Z] 2026/08/02 15:48:52 ElevenLabs raw message: {"ping_event":{"event_id":6,"ping_ms":150},"type":"ping"}
+[2026-08-02T15:48:53.297Z] 2026/08/02 15:48:53 RTP packet #500 received from 192.168.11.90:13702, size=172 bytes
+[2026-08-02T15:48:54.086Z] 2026/08/02 15:48:54 ElevenLabs raw message: {"ping_event":{"event_id":7,"ping_ms":150},"type":"ping"}
+[2026-08-02T15:48:55.175Z] 2026/08/02 15:48:55 ElevenLabs raw message: {"user_transcription_event":{"user_transcript":"Bonjour, je veux installer un système de saturation.","event_id":55},"type":"user_transcript"}
+[2026-08-02T15:48:55.176Z] 2026/08/02 15:48:55 Caller: Bonjour, je veux installer un système de saturation.
+[2026-08-02T15:48:55.234Z] 2026/08/02 15:48:55 ElevenLabs raw message: {"audio_event":{"audio_base_64":"///////+/v/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////...
+[2026-08-02T15:48:55.297Z] 2026/08/02 15:48:55 RTP packet #600 received from 192.168.11.90:13702, size=172 bytes
+[2026-08-02T15:48:55.310Z] 2026/08/02 15:48:55 ElevenLabs raw message: {"audio_event":{"audio_base_64":"mqXAKh4fLdu2paWdlo2IjpQ2EQoIEiemm5adram/rsgsFwwKDiBpn5yuYh4dIzywpZ2fmZaMi5GcHxAIChg8nZmUprHATbZBLBgNDREmzJ6fr0EcHiNmp5yYmpiUjpOWvxsQCRAdvpyXma63O1RWMioXEhIbNbWjrconHSA...
+[2026-08-02T15:48:55.465Z] 2026/08/02 15:48:55 ElevenLabs raw message: {"audio_event":{"audio_base_64":"o6GajImEh6imGdZZQDoeZyqPxqglHsVoriArF8GtrNEcHiI1JB4RFR4qNycjIky+rKKllpCIiYKTpdkcqybeFzYorZVDqBbTT7MuHSAgpbS0JB8dNy8aFg8bIysnIiIvvr+kp5uUjIiGhJ2dIHLtPS8bRiOTvassJN5fvho...
+[2026-08-02T15:48:55.714Z] 2026/08/02 15:48:55 ElevenLabs raw message: {"audio_event":{"audio_base_64":"Vc5VP8A/WMtNRM3KOMvDOcbdRe7KXT+8SU/DO87IPsVTb/Bj00DA4DvIXUbFSlLV1ltPzGxJ0F5Tz99AY7w+WL9F+cdRXdbBPNDCQODP51jP6Wbx/VfzbHX9dnlt+mDw1U1uy1TYy0/svGD2y9Du9Ml03s/cb93KYefPV+D...
+[2026-08-02T15:48:55.787Z] 2026/08/02 15:48:55 ElevenLabs raw message: {"ping_event":{"event_id":8,"ping_ms":150},"type":"ping"}
+[2026-08-02T15:48:55.867Z] 2026/08/02 15:48:55 ElevenLabs raw message: {"audio_event":{"audio_base_64":"HiAXNFAqQ0ntqq+1Syk9KB8mFBAaFBofGSYqMrn3vKOlm5iYkI2KiZuZlKmbrColHSMpExwYFbm+Pq7IqJieozomMxsZFgsKDxIWGR4jNbmoqJ6Uko6KioeDlZqTzLa0HBMOGCAQIiQXrJelmpybmJqcLhkeEQ0NCAgLEBg...
+[2026-08-02T15:48:56.148Z] 2026/08/02 15:48:56 Sent 300 RTP packets to 192.168.11.90:13702
+[2026-08-02T15:48:56.720Z] 2026/08/02 15:48:56 ElevenLabs raw message: {"audio_event":{"audio_base_64":"///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////...
+[2026-08-02T15:48:57.203Z] 2026/08/02 15:48:57 ElevenLabs raw message: {"audio_event":{"audio_base_64":"IjysqaSepq++x0MgGRINDQ4ODg8VGyI6zK+mnJSOioeJlpaeqa86NRUSGBUcGyAhJ8empZ2eoqepqUEjGREODg0MDA4TGCEsUcSpnJeOi4iIkpWZp6ZDPRkRGRgbGh4dI0WppaKen56jo74sHhgTDw0MCgsPEhccKT7LpJq...
+[2026-08-02T15:48:57.298Z] 2026/08/02 15:48:57 RTP packet #700 received from 192.168.11.90:13702, size=172 bytes
+[2026-08-02T15:48:57.487Z] 2026/08/02 15:48:57 ElevenLabs raw message: {"ping_event":{"event_id":9,"ping_ms":150},"type":"ping"}
+[2026-08-02T15:48:57.723Z] 2026/08/02 15:48:57 ElevenLabs raw message: {"audio_event":{"audio_base_64":"eXl5eXl5eHh5eXl5eXl5eXl5eXl5eXl4eHl4eHh4d3d3d3Z2d3d3d3h4eHh3eHh3d3Z2dXV0c3FxcHFwcHBwcXJycnNyc3Nxb3JubnJub3FycnRzc3R2dnV0dXV0c3J0cXRwcW1vbm1ubW9ucG9wb29vcW9ycXZxdnB1cHR...
+[2026-08-02T15:48:58.147Z] 2026/08/02 15:48:58 Sent 400 RTP packets to 192.168.11.90:13702
+[2026-08-02T15:48:58.370Z] 2026/08/02 15:48:58 ElevenLabs raw message: {"audio_event":{"audio_base_64":"Qjk4PDY1OTQ3OzQ2Pjo5RkRCU0pHWu5K8N3zytbSy8HLvri7tLO1sq+0tbC2ubm+wsbH1dne+vVlZV5uYFJYXFJPUkdRRkVIQUJAQT1DPj9HQUZJTEJNSkpaTU5RXU5eZFxy7mDk1/Ltz93cydvSysfeys3OxsnRx8fay9T...
+[2026-08-02T15:48:58.941Z] 2026/08/02 15:48:58 ElevenLabs raw message: {"audio_event":{"audio_base_64":"PTpIOl5+yL63281vYVhDOSouJy0uLCosLzA3QC5HPT9BPU8z8ztoV8nGtrCrp5+ipp6rnamcsKy19bxG8C4+MzZUP0ZDQVBJzkpPTz5JSUM7Nzg5O1A4Qzk9Oko8OT4yOjQ7Nzs5QT1hTtfMvrquraShrJ+unqmdq7Cv2bn...
+[2026-08-02T15:48:59.131Z] 2026/08/02 15:48:59 ElevenLabs raw message: {"audio_event":{"audio_base_64":"ucDiyLW93a+1yq64urm3sc/Cst7R0fJmP1dBNDw2LzMwMy0tNjIzOT1RUem/vbOvqaaimZ2hmJaao56XpK+rq7hIaFsxNS8rJy0tIycxLiYqMC0qKjAwLTUzPk5Py7y0q6eamKWZkZSdp5GXtrCpqD8oUTslHyMsIyAoKCs...
+[2026-08-02T15:48:59.132Z] 2026/08/02 15:48:59 ElevenLabs raw message: {"agent_response_event":{"agent_response":"D'accord. Un système de saturation, je vois. Chez AIO PROCESS, on propose justement des solutions IT sur mesure, que ce soit pour l'installation, la mainten...
+[2026-08-02T15:48:59.132Z] 2026/08/02 15:48:59 AI: D'accord. Un système de saturation, je vois. Chez AIO PROCESS, on propose justement des solutions IT sur mesure, que ce soit pour l'installation, la maintenance ou l'optimisation de vos systèmes.
+[2026-08-02T15:48:59.132Z] Pour bien comprendre votre besoin et vous proposer la meilleure solution, je vous suggère qu'on prenne un rendez-vous. Ça vous irait ?
+[2026-08-02T15:48:59.187Z] 2026/08/02 15:48:59 ElevenLabs raw message: {"ping_event":{"event_id":10,"ping_ms":150},"type":"ping"}
+[2026-08-02T15:48:59.298Z] 2026/08/02 15:48:59 RTP packet #800 received from 192.168.11.90:13702, size=172 bytes
+[2026-08-02T15:48:59.878Z] 2026/08/02 15:48:59 ElevenLabs raw message: {"audio_event":{"audio_base_64":"IB0cHBwdICYyXbOhmZCMiYqMjpmozjorISMhJCstOEJOa15HOC8rJygoJyckISAfHyMnLkDNr6GXkY2Mj5GZpLHKeD48NTA3NDtMTVtXPjIuLSotLiwsKignJycnKiotOVTLr6OemJicm5+kpKWkqaqutbfDxMPafk42Lis...
+[2026-08-02T15:49:00.187Z] 2026/08/02 15:49:00 Sent 500 RTP packets to 192.168.11.90:13702
+[2026-08-02T15:49:00.888Z] 2026/08/02 15:49:00 ElevenLabs raw message: {"ping_event":{"event_id":11,"ping_ms":150},"type":"ping"}
+[2026-08-02T15:49:00.985Z] 2026/08/02 15:49:00 Re-registering with SIP provider...
+[2026-08-02T15:49:00.985Z] 2026/08/02 15:49:00 Sending REGISTER request via sipgo client.
+[2026-08-02T15:49:00.987Z] 2026/08/02 15:49:00 WARN SIP request handler not found caller=Server method=OPTIONS
+[2026-08-02T15:49:00.987Z] 2026/08/02 15:49:00 Auth: digestUsername=TjoCu4uhmD, realm=YSAsterisk, uri=sip:192.168.11.90, password=EmkWA6lT7y
+[2026-08-02T15:49:00.988Z] 2026/08/02 15:49:00 Resending REGISTER with Authorization header (CSeq=2).
+[2026-08-02T15:49:00.988Z] 2026/08/02 15:49:00 Authorization: Digest username="TjoCu4uhmD", realm="YSAsterisk", nonce="1785685740/7e87a1e18e933ea9d4718f32590a3dbb", uri="sip:192.168.11.90", response="d1126447a5b22445e6d9bb389ae4ca94", algorithm=MD5
+[2026-08-02T15:49:00.993Z] 2026/08/02 15:49:00 Received REGISTER response: SIP/2.0 200 OK
+[2026-08-02T15:49:00.993Z] Via: SIP/2.0/UDP 192.168.11.107:43916;rport=43916;received=192.168.11.107;branch=z9hG4bK.ly5JG6s2IjIi8syT
+[2026-08-02T15:49:00.993Z] Call-ID: dGjI9bmDHRBKNmli
+[2026-08-02T15:49:00.993Z] From: <sip:1005@192.168.11.90>;tag=oFQjFcq0
+[2026-08-02T15:49:00.993Z] To: <sip:1005@192.168.11.90>;tag=z9hG4bK.ly5JG6s2IjIi8syT
+[2026-08-02T15:49:00.993Z] CSeq: 2 REGISTER
+[2026-08-02T15:49:00.993Z] Date: Sun, 02 Aug 2026 15:49:00 GMT
+[2026-08-02T15:49:00.993Z] Contact: <sip:1005@192.168.11.107:43916>;expires=646
+[2026-08-02T15:49:00.993Z] Expires: 604
+[2026-08-02T15:49:00.993Z] Server: Yeastar PSE
+[2026-08-02T15:49:00.993Z] Content-Length: 0
+[2026-08-02T15:49:00.993Z] 2026/08/02 15:49:00 Registration successful!
+[2026-08-02T15:49:00.993Z] 2026/08/02 15:49:00 Re-registration successful.
+[2026-08-02T15:49:01.024Z] 2026/08/02 15:49:01 WARN SIP request handler not found caller=Server method=NOTIFY
+[2026-08-02T15:49:01.297Z] 2026/08/02 15:49:01 RTP packet #900 received from 192.168.11.90:13702, size=172 bytes
+[2026-08-02T15:49:02.187Z] 2026/08/02 15:49:02 Sent 600 RTP packets to 192.168.11.90:13702
+[2026-08-02T15:49:02.589Z] 2026/08/02 15:49:02 ElevenLabs raw message: {"ping_event":{"event_id":12,"ping_ms":151},"type":"ping"}
+[2026-08-02T15:49:03.298Z] 2026/08/02 15:49:03 RTP packet #1000 received from 192.168.11.90:13702, size=172 bytes
+[2026-08-02T15:49:04.187Z] 2026/08/02 15:49:04 Sent 700 RTP packets to 192.168.11.90:13702
+[2026-08-02T15:49:04.289Z] 2026/08/02 15:49:04 ElevenLabs raw message: {"ping_event":{"event_id":13,"ping_ms":150},"type":"ping"}
+[2026-08-02T15:49:04.358Z] 2026/08/02 15:49:04 BYE received for call: 408508a0-9e6e-4799-b82e-e4904ebd90ac
+[2026-08-02T15:49:04.362Z] 2026/08/02 15:49:04 Call ended (BYE received): 408508a0-9e6e-4799-b82e-e4904ebd90ac
+[2026-08-02T15:49:04.421Z] 2026/08/02 15:49:04 RTP to ElevenLabs bridge stopping...
+[2026-08-02T15:49:05.990Z] 2026/08/02 15:49:05 ElevenLabs raw message: {"ping_event":{"event_id":14,"ping_ms":150},"type":"ping"}
+[2026-08-02T15:49:05.990Z] 2026/08/02 15:49:05 ElevenLabs to RTP bridge stopping...
+[2026-08-02T15:49:05.990Z] 2026/08/02 15:49:05 Unregistered bridge for call: 408508a0-9e6e-4799-b82e-e4904ebd90ac

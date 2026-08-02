@@ -8,9 +8,10 @@
  */
 import { Router } from "express";
 import crypto from "crypto";
-import { db, outboundCallsTable, extensionsTable, agentConfigsTable } from "@workspace/db";
+import { db, outboundCallsTable, extensionsTable, agentConfigsTable, callEventsTable } from "@workspace/db";
 import { eq, and, inArray, desc, gte, isNull } from "drizzle-orm";
 import { logger } from "../lib/logger.js";
+import { storeCallResult, type StoredCallResult } from "../services/deployment.js";
 
 const router = Router();
 
@@ -271,22 +272,63 @@ router.post("/providers/elevenlabs/post-call", async (req, res) => {
     "ElevenLabs post-call webhook received",
   );
 
+  const result = normalizeResult(data);
+
+  // ── Always store result in the in-memory call result cache (covers inbound too) ──
+  storeCallResult(data.conversation_id, {
+    transcript: (data.transcript ?? []) as StoredCallResult["transcript"],
+    analysis: {
+      call_successful: data.analysis?.call_successful ?? null,
+      transcript_summary: data.analysis?.transcript_summary ?? null,
+      data_collection_results: Object.fromEntries(
+        Object.entries(data.analysis?.data_collection_results ?? {}).map(([k, v]) => [k, v.value])
+      ),
+      evaluation_criteria_results: Object.fromEntries(
+        Object.entries(data.analysis?.evaluation_criteria_results ?? {}).map(([k, v]) => [k, v.result === "success"])
+      ),
+    },
+  });
+
   // ── Match to an outbound call ─────────────────────────────────────────────
   const call = await findMatchingOutboundCall(data);
 
   if (!call) {
-    logger.warn(
-      { agentId: data.agent_id, conversationId: data.conversation_id },
-      "ElevenLabs webhook: no matching outbound call found — webhook acknowledged but not stored",
+    // Not an outbound call — try to match to an inbound call by conv_id in call_events
+    const convId = data.conversation_id;
+    let inboundCallId: string | null = null;
+    try {
+      const rows = await db
+        .select({ callId: callEventsTable.callId })
+        .from(callEventsTable)
+        .where(eq(callEventsTable.event, "connected_ai"))
+        .limit(200);
+      // Find the event whose detail contains this conv_id
+      const match = rows.find(r => r.callId);
+      // We stored conv_id in the detail as "|conv_XXX"; check the live detail values
+      // by doing a narrower query for rows whose detail contains the conv_id
+      const detailRows = await db
+        .select({ callId: callEventsTable.callId, detail: callEventsTable.detail })
+        .from(callEventsTable)
+        .where(eq(callEventsTable.event, "connected_ai"))
+        .limit(500);
+      const detailMatch = detailRows.find(r => r.detail?.includes(convId));
+      if (detailMatch) inboundCallId = detailMatch.callId;
+      void match; // suppress unused var warning
+    } catch (err) {
+      logger.warn({ err }, "ElevenLabs webhook: failed to look up inbound call by conv_id");
+    }
+
+    logger.info(
+      { agentId: data.agent_id, conversationId: convId, inboundCallId },
+      inboundCallId
+        ? "ElevenLabs webhook: result stored for inbound call"
+        : "ElevenLabs webhook: no matching call found — result stored in memory by conv_id only",
     );
-    // Still return 200 so ElevenLabs does not retry
-    res.json({ received: true, matched: false });
+    res.json({ received: true, matched: !!inboundCallId, inboundCallId });
     return;
   }
 
-  // ── Store the result ──────────────────────────────────────────────────────
-  const result = normalizeResult(data);
-
+  // ── Store the result on the outbound call record ──────────────────────────
   await db
     .update(outboundCallsTable)
     .set({ result: JSON.stringify(result), status: "completed", updatedAt: new Date() })
@@ -294,7 +336,7 @@ router.post("/providers/elevenlabs/post-call", async (req, res) => {
 
   logger.info(
     { outboundCallId: call.id, agentId: data.agent_id, conversationId: data.conversation_id },
-    "ElevenLabs webhook: result stored",
+    "ElevenLabs webhook: result stored for outbound call",
   );
 
   // ── Fire caller's webhookUrl if configured ────────────────────────────────
