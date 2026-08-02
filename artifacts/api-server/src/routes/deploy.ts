@@ -142,6 +142,20 @@ router.get("/deploy/call-events/:callId/detail", async (req, res) => {
     convId = extractConvId(aiEv?.detail);
   }
 
+  // ── Step 1b: fallback — look up call_results by SIP callId ─────────────
+  // For outbound calls the conv_id is not stored in call events; instead the
+  // webhook handler back-fills call_results.callId when it matches an outbound.
+  if (!convId) {
+    try {
+      const [row] = await db
+        .select({ conversationId: callResultsTable.conversationId })
+        .from(callResultsTable)
+        .where(eq(callResultsTable.callId, callId))
+        .limit(1);
+      if (row) convId = row.conversationId;
+    } catch { /* DB unavailable */ }
+  }
+
   // ── Step 2: Load result from DB (call_results table) ────────────────────
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let result: Record<string, any> | null = null;

@@ -1,0 +1,172 @@
+août 02 23:37:41 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:37:41.866Z] 2026/08/02 23:37:41 Received 200 OK
+août 02 23:37:41 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:37:41.866Z] 2026/08/02 23:37:41 Call answered!
+août 02 23:37:41 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:37:41.866Z] 2026/08/02 23:37:41 Remote RTP address: 192.168.11.90:14028
+août 02 23:37:41 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:37:41.866Z] 2026/08/02 23:37:41 ACK sent
+août 02 23:37:41 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:37:41.866Z] 2026/08/02 23:37:41 Sending NAT hole-punch packets to 192.168.11.90:14028
+août 02 23:37:41 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:37:41.997Z] 2026/08/02 23:37:41 Connecting to ElevenLabs Conversational AI (agent: agent_1901kz2cfe00fjhsnb08p99fynma)...
+août 02 23:37:42 test aio-voice-connect-api[175471]: {"level":30,"time":1785713862230,"pid":175471,"hostname":"test","req":{"id":103,"method":"GET","url":"/api/deploy/2/logs"},"res":{"statusCode":200},"responseTime":2,"msg":"request completed"}
+août 02 23:37:42 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:37:42.394Z] 2026/08/02 23:37:42 Connected to ElevenLabs Conversational AI
+août 02 23:37:42 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:37:42.394Z] AI responded — ElevenLabs Conversational AI - Hakim
+août 02 23:37:42 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:37:42.394Z] 2026/08/02 23:37:42 Note: first_message/system_prompt in config require 'Allow client overrides' in ElevenLabs dashboard
+août 02 23:37:42 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:37:42.394Z] 2026/08/02 23:37:42 If override fails, the agent's default greeting will be used
+août 02 23:37:42 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:37:42.394Z] 2026/08/02 23:37:42 DEBUG: appConfig=true
+août 02 23:37:42 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:37:42.394Z] 2026/08/02 23:37:42 DEBUG: ElevenLabs.FirstMessage='', SystemPrompt='Tu es un agent de confirmation de commande chez AIO PROCESS. Tu appelles Yassine pour confirmer sa commande d'une caméra Sony FX3. L'adresse de livraison enregistrée est Boulevard Maghreb Arabi N°8, Alzhar. Attends que le client parle en premier. Confirme que l'adresse est correcte, demande s'il a une note pour la livraison, puis appelle l'outil confirm_order avec address_confirmed (true/false), address (adresse finale), et note (ou null). Termine l'appel poliment.
+août 02 23:37:42 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:37:42.394Z] IMPORTANT — comportement au décrochage : si la personne dit 'Allô', 'Allô ?', 'Oui', 'Oui allô', 'Oui ?' ou toute autre salutation de décrochage après ton introduction, c'est qu'elle vient simplement de décrocher le téléphone. Ne te présente PAS à nouveau. Reprends la conversation naturellement depuis là où elle en est.', Functions=0
+août 02 23:37:42 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:37:42.395Z] 2026/08/02 23:37:42 Overriding system prompt
+août 02 23:37:42 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:37:42.395Z] 2026/08/02 23:37:42 Sending conversation initiation to ElevenLabs: {"conversation_config_override":{"agent":{"prompt":{"prompt":"Tu es un agent de confirmation de commande chez AIO PROCESS. Tu appelles Yassine pour confirmer sa commande d'une caméra Sony FX3. L'adresse de livraison enregistrée est Boulevard Maghreb Arabi N°8, Alzhar. Attends que le client parle en premier. Confirme que l'adresse est correcte, demande s'il a une note pour la livraison, puis appelle l'outil confirm_order avec address_confirmed (true/false), address (adresse finale), et note (ou null). Termine l'appel poliment.\n\nIMPORTANT — comportement au décrochage : si la personne dit 'Allô', 'Allô ?', 'Oui', 'Oui allô', 'Oui ?' ou toute autre salutation de décrochage après ton introduction, c'est qu'elle vient simplement de décrocher le téléphone. Ne te présente PAS à nouveau. Reprends la conversation naturellement depuis là où elle en est."}}},"type":"conversation_initiation_client_data"}
+août 02 23:37:42 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:37:42.397Z] 2026/08/02 23:37:42 Registered bridge for call: U4Wjl9J4G3VKvkUT-1785713838039077947
+août 02 23:37:42 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:37:42.398Z] 2026/08/02 23:37:42 Outbound call active - AI is now talking to remote party
+août 02 23:37:42 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:37:42.398Z] 2026/08/02 23:37:42 Starting outbound ElevenLabs to RTP bridge...
+août 02 23:37:42 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:37:42.398Z] 2026/08/02 23:37:42 ElevenLabs outbound conversation: conv_6401kz2de9jqf77azc9kre8v9b83
+août 02 23:37:42 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:37:42.398Z] 2026/08/02 23:37:42 Starting outbound RTP to ElevenLabs bridge...
+août 02 23:37:42 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:37:42.398Z] 2026/08/02 23:37:42 Outbound RTP packet #1 from 192.168.11.90:14028, size=172
+août 02 23:37:42 test aio-voice-connect-api[175471]: {"level":30,"time":1785713862600,"pid":175471,"hostname":"test","extensionId":2,"callId":"U4Wjl9J4G3VKvkUT-1785713838039077947","outboundRecordUpdated":true,"msg":"Outbound bridge registered — callId linked, pre-bridge events backfilled"}
+août 02 23:37:43 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:37:43.969Z] 2026/08/02 23:37:43 Outbound RTP packet #100 from 192.168.11.90:14028, size=172
+août 02 23:37:44 test aio-voice-connect-api[175471]: {"level":30,"time":1785713864353,"pid":175471,"hostname":"test","req":{"id":104,"method":"GET","url":"/api/deploy/2/logs"},"res":{"statusCode":200},"responseTime":32,"msg":"request completed"}
+août 02 23:37:45 test aio-voice-connect-api[175471]: {"level":30,"time":1785713865920,"pid":175471,"hostname":"test","req":{"id":105,"method":"GET","url":"/api/deploy/all"},"res":{"statusCode":200},"responseTime":26,"msg":"request completed"}
+août 02 23:37:45 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:37:45.969Z] 2026/08/02 23:37:45 Outbound RTP packet #200 from 192.168.11.90:14028, size=172
+août 02 23:37:46 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:37:46.074Z] 2026/08/02 23:37:46 Remote: Hello?
+août 02 23:37:46 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:37:46.096Z] 2026/08/02 23:37:46 Outbound sent 1 RTP packets to 192.168.11.90:14028
+août 02 23:37:46 test aio-voice-connect-api[175471]: {"level":30,"time":1785713866490,"pid":175471,"hostname":"test","req":{"id":106,"method":"GET","url":"/api/deploy/2/logs"},"res":{"statusCode":200},"responseTime":11,"msg":"request completed"}
+août 02 23:37:47 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:37:47.969Z] 2026/08/02 23:37:47 Outbound RTP packet #300 from 192.168.11.90:14028, size=172
+août 02 23:37:48 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:37:48.196Z] 2026/08/02 23:37:48 Outbound sent 100 RTP packets to 192.168.11.90:14028
+août 02 23:37:48 test aio-voice-connect-api[175471]: {"level":30,"time":1785713868565,"pid":175471,"hostname":"test","req":{"id":107,"method":"GET","url":"/api/deploy/2/logs"},"res":{"statusCode":200},"responseTime":2,"msg":"request completed"}
+août 02 23:37:48 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:37:48.616Z] 2026/08/02 23:37:48 AI: Bonjour, je suis de AIO PROCESS. J'appelle pour confirmer votre commande d'une caméra Sony FX3. L'adresse de livraison enregistrée est Boulevard Maghreb Arabi numéro huit, Alzhar. Est-ce que c'est bien ça ?
+août 02 23:37:49 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:37:49.969Z] 2026/08/02 23:37:49 Outbound RTP packet #400 from 192.168.11.90:14028, size=172
+août 02 23:37:50 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:37:50.197Z] 2026/08/02 23:37:50 Outbound sent 200 RTP packets to 192.168.11.90:14028
+août 02 23:37:50 test aio-voice-connect-api[175471]: {"level":30,"time":1785713870618,"pid":175471,"hostname":"test","req":{"id":108,"method":"GET","url":"/api/deploy/2/logs"},"res":{"statusCode":200},"responseTime":5,"msg":"request completed"}
+août 02 23:37:50 test aio-voice-connect-api[175471]: {"level":30,"time":1785713870962,"pid":175471,"hostname":"test","req":{"id":109,"method":"GET","url":"/api/deploy/all"},"res":{"statusCode":200},"responseTime":3,"msg":"request completed"}
+août 02 23:37:51 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:37:51.969Z] 2026/08/02 23:37:51 Outbound RTP packet #500 from 192.168.11.90:14028, size=172
+août 02 23:37:52 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:37:52.196Z] 2026/08/02 23:37:52 Outbound sent 300 RTP packets to 192.168.11.90:14028
+août 02 23:37:52 test aio-voice-connect-api[175471]: {"level":30,"time":1785713872712,"pid":175471,"hostname":"test","req":{"id":110,"method":"GET","url":"/api/deploy/2/logs"},"res":{"statusCode":200},"responseTime":2,"msg":"request completed"}
+août 02 23:37:53 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:37:53.970Z] 2026/08/02 23:37:53 Outbound RTP packet #600 from 192.168.11.90:14028, size=172
+août 02 23:37:54 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:37:54.257Z] 2026/08/02 23:37:54 Outbound sent 400 RTP packets to 192.168.11.90:14028
+août 02 23:37:54 test aio-voice-connect-api[175471]: {"level":30,"time":1785713874810,"pid":175471,"hostname":"test","req":{"id":111,"method":"GET","url":"/api/deploy/2/logs"},"res":{"statusCode":200},"responseTime":3,"msg":"request completed"}
+août 02 23:37:55 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:37:55.969Z] 2026/08/02 23:37:55 Outbound RTP packet #700 from 192.168.11.90:14028, size=172
+août 02 23:37:55 test aio-voice-connect-api[175471]: {"level":30,"time":1785713875990,"pid":175471,"hostname":"test","req":{"id":112,"method":"GET","url":"/api/deploy/all"},"res":{"statusCode":200},"responseTime":4,"msg":"request completed"}
+août 02 23:37:56 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:37:56.297Z] 2026/08/02 23:37:56 Outbound sent 500 RTP packets to 192.168.11.90:14028
+août 02 23:37:56 test aio-voice-connect-api[175471]: {"level":30,"time":1785713876913,"pid":175471,"hostname":"test","req":{"id":113,"method":"GET","url":"/api/deploy/2/logs"},"res":{"statusCode":200},"responseTime":8,"msg":"request completed"}
+août 02 23:37:57 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:37:57.969Z] 2026/08/02 23:37:57 Outbound RTP packet #800 from 192.168.11.90:14028, size=172
+août 02 23:37:58 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:37:58.297Z] 2026/08/02 23:37:58 Outbound sent 600 RTP packets to 192.168.11.90:14028
+août 02 23:37:59 test aio-voice-connect-api[175471]: {"level":30,"time":1785713879003,"pid":175471,"hostname":"test","req":{"id":114,"method":"GET","url":"/api/deploy/2/logs"},"res":{"statusCode":200},"responseTime":3,"msg":"request completed"}
+août 02 23:37:59 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:37:59.969Z] 2026/08/02 23:37:59 Outbound RTP packet #900 from 192.168.11.90:14028, size=172
+août 02 23:38:01 test aio-voice-connect-api[175471]: {"level":30,"time":1785713881106,"pid":175471,"hostname":"test","req":{"id":115,"method":"GET","url":"/api/deploy/2/logs"},"res":{"statusCode":200},"responseTime":4,"msg":"request completed"}
+août 02 23:38:01 test aio-voice-connect-api[175471]: {"level":30,"time":1785713881109,"pid":175471,"hostname":"test","req":{"id":116,"method":"GET","url":"/api/deploy/all"},"res":{"statusCode":200},"responseTime":5,"msg":"request completed"}
+août 02 23:38:01 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:38:01.970Z] 2026/08/02 23:38:01 Outbound RTP packet #1000 from 192.168.11.90:14028, size=172
+août 02 23:38:02 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:38:02.560Z] 2026/08/02 23:38:02 Remote: Oui, c'est correct.
+août 02 23:38:03 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:38:03.139Z] 2026/08/02 23:38:03 AI: D'accord, super. Et est-ce que vous avez une note particulière pour la livraison ?
+août 02 23:38:03 test aio-voice-connect-api[175471]: {"level":30,"time":1785713883205,"pid":175471,"hostname":"test","req":{"id":117,"method":"GET","url":"/api/deploy/2/logs"},"res":{"statusCode":200},"responseTime":11,"msg":"request completed"}
+août 02 23:38:03 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:38:03.970Z] 2026/08/02 23:38:03 Outbound RTP packet #1100 from 192.168.11.90:14028, size=172
+août 02 23:38:04 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:38:04.236Z] 2026/08/02 23:38:04 Outbound sent 700 RTP packets to 192.168.11.90:14028
+août 02 23:38:05 test aio-voice-connect-api[175471]: {"level":30,"time":1785713885300,"pid":175471,"hostname":"test","req":{"id":118,"method":"GET","url":"/api/deploy/2/logs"},"res":{"statusCode":200},"responseTime":3,"msg":"request completed"}
+août 02 23:38:05 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:38:05.969Z] 2026/08/02 23:38:05 Outbound RTP packet #1200 from 192.168.11.90:14028, size=172
+août 02 23:38:06 test aio-voice-connect-api[175471]: {"level":30,"time":1785713886140,"pid":175471,"hostname":"test","req":{"id":119,"method":"GET","url":"/api/deploy/all"},"res":{"statusCode":200},"responseTime":2,"msg":"request completed"}
+août 02 23:38:06 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:38:06.256Z] 2026/08/02 23:38:06 Outbound sent 800 RTP packets to 192.168.11.90:14028
+août 02 23:38:07 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:38:07.970Z] 2026/08/02 23:38:07 Outbound RTP packet #1300 from 192.168.11.90:14028, size=172
+août 02 23:38:08 test aio-voice-connect-api[175471]: {"level":30,"time":1785713888438,"pid":175471,"hostname":"test","req":{"id":120,"method":"GET","url":"/api/deploy/2/logs"},"res":{"statusCode":200},"responseTime":1,"msg":"request completed"}
+août 02 23:38:09 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:38:09.970Z] 2026/08/02 23:38:09 Outbound RTP packet #1400 from 192.168.11.90:14028, size=172
+août 02 23:38:10 test aio-voice-connect-api[175471]: {"level":30,"time":1785713890541,"pid":175471,"hostname":"test","req":{"id":121,"method":"GET","url":"/api/deploy/2/logs"},"res":{"statusCode":200},"responseTime":3,"msg":"request completed"}
+août 02 23:38:11 test aio-voice-connect-api[175471]: {"level":30,"time":1785713891169,"pid":175471,"hostname":"test","req":{"id":122,"method":"GET","url":"/api/deploy/all"},"res":{"statusCode":200},"responseTime":3,"msg":"request completed"}
+août 02 23:38:11 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:38:11.969Z] 2026/08/02 23:38:11 Outbound RTP packet #1500 from 192.168.11.90:14028, size=172
+août 02 23:38:12 test aio-voice-connect-api[175471]: {"level":30,"time":1785713892633,"pid":175471,"hostname":"test","req":{"id":123,"method":"GET","url":"/api/deploy/2/logs"},"res":{"statusCode":200},"responseTime":1,"msg":"request completed"}
+août 02 23:38:13 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:38:13.763Z] 2026/08/02 23:38:13 Remote: You will know when we will bring the camera after 10 o'clock.
+août 02 23:38:13 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:38:13.970Z] 2026/08/02 23:38:13 Outbound RTP packet #1600 from 192.168.11.90:14028, size=172
+août 02 23:38:14 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:38:14.754Z] 2026/08/02 23:38:14 AI: Got it. I'll note that the delivery should be after ten o'clock. Anything else I can help you with?
+août 02 23:38:14 test aio-voice-connect-api[175471]: {"level":30,"time":1785713894755,"pid":175471,"hostname":"test","req":{"id":124,"method":"GET","url":"/api/deploy/2/logs"},"res":{"statusCode":200},"responseTime":2,"msg":"request completed"}
+août 02 23:38:15 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:38:15.556Z] 2026/08/02 23:38:15 Outbound sent 900 RTP packets to 192.168.11.90:14028
+août 02 23:38:15 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:38:15.970Z] 2026/08/02 23:38:15 Outbound RTP packet #1700 from 192.168.11.90:14028, size=172
+août 02 23:38:16 test aio-voice-connect-api[175471]: {"level":30,"time":1785713896208,"pid":175471,"hostname":"test","req":{"id":125,"method":"GET","url":"/api/deploy/all"},"res":{"statusCode":200},"responseTime":4,"msg":"request completed"}
+août 02 23:38:16 test aio-voice-connect-api[175471]: {"level":30,"time":1785713896826,"pid":175471,"hostname":"test","req":{"id":126,"method":"GET","url":"/api/deploy/2/logs"},"res":{"statusCode":200},"responseTime":1,"msg":"request completed"}
+août 02 23:38:17 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:38:17.556Z] 2026/08/02 23:38:17 Outbound sent 1000 RTP packets to 192.168.11.90:14028
+août 02 23:38:17 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:38:17.970Z] 2026/08/02 23:38:17 Outbound RTP packet #1800 from 192.168.11.90:14028, size=172
+août 02 23:38:18 test aio-voice-connect-api[175471]: {"level":30,"time":1785713898924,"pid":175471,"hostname":"test","req":{"id":127,"method":"GET","url":"/api/deploy/2/logs"},"res":{"statusCode":200},"responseTime":2,"msg":"request completed"}
+août 02 23:38:19 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:38:19.971Z] 2026/08/02 23:38:19 Outbound RTP packet #1900 from 192.168.11.90:14028, size=172
+août 02 23:38:21 test aio-voice-connect-api[175471]: {"level":30,"time":1785713901023,"pid":175471,"hostname":"test","req":{"id":128,"method":"GET","url":"/api/deploy/2/logs"},"res":{"statusCode":200},"responseTime":4,"msg":"request completed"}
+août 02 23:38:21 test aio-voice-connect-api[175471]: {"level":30,"time":1785713901321,"pid":175471,"hostname":"test","req":{"id":129,"method":"GET","url":"/api/deploy/all"},"res":{"statusCode":200},"responseTime":3,"msg":"request completed"}
+août 02 23:38:21 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:38:21.970Z] 2026/08/02 23:38:21 Outbound RTP packet #2000 from 192.168.11.90:14028, size=172
+août 02 23:38:23 test aio-voice-connect-api[175471]: {"level":30,"time":1785713903120,"pid":175471,"hostname":"test","req":{"id":130,"method":"GET","url":"/api/deploy/2/logs"},"res":{"statusCode":200},"responseTime":3,"msg":"request completed"}
+août 02 23:38:23 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:38:23.237Z] 2026/08/02 23:38:23 Remote: No, no, that's all.
+août 02 23:38:23 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:38:23.736Z] 2026/08/02 23:38:23 Outbound sent 1100 RTP packets to 192.168.11.90:14028
+août 02 23:38:23 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:38:23.970Z] 2026/08/02 23:38:23 Outbound RTP packet #2100 from 192.168.11.90:14028, size=172
+août 02 23:38:24 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:38:24.635Z] 2026/08/02 23:38:24 AI: Okay, parfait. Merci beaucoup pour votre temps. Votre commande est bien confirmée. Passez une excellente journée !
+août 02 23:38:25 test aio-voice-connect-api[175471]: {"level":30,"time":1785713905219,"pid":175471,"hostname":"test","req":{"id":131,"method":"GET","url":"/api/deploy/2/logs"},"res":{"statusCode":200},"responseTime":4,"msg":"request completed"}
+août 02 23:38:25 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:38:25.735Z] 2026/08/02 23:38:25 Outbound sent 1200 RTP packets to 192.168.11.90:14028
+août 02 23:38:25 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:38:25.970Z] 2026/08/02 23:38:25 Outbound RTP packet #2200 from 192.168.11.90:14028, size=172
+août 02 23:38:26 test aio-voice-connect-api[175471]: {"level":30,"time":1785713906346,"pid":175471,"hostname":"test","req":{"id":132,"method":"GET","url":"/api/deploy/all"},"res":{"statusCode":200},"responseTime":2,"msg":"request completed"}
+août 02 23:38:27 test aio-voice-connect-api[175471]: {"level":30,"time":1785713907312,"pid":175471,"hostname":"test","req":{"id":133,"method":"GET","url":"/api/deploy/2/logs"},"res":{"statusCode":200},"responseTime":1,"msg":"request completed"}
+août 02 23:38:27 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:38:27.777Z] 2026/08/02 23:38:27 Outbound sent 1300 RTP packets to 192.168.11.90:14028
+août 02 23:38:27 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:38:27.970Z] 2026/08/02 23:38:27 Outbound RTP packet #2300 from 192.168.11.90:14028, size=172
+août 02 23:38:29 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:38:29.335Z] 2026/08/02 23:38:29 ElevenLabs WebSocket closed
+août 02 23:38:29 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:38:29.335Z] 2026/08/02 23:38:29 Unregistered bridge for call: U4Wjl9J4G3VKvkUT-1785713838039077947
+août 02 23:38:29 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:38:29.350Z] 2026/08/02 23:38:29 Error sending audio to ElevenLabs: websocket: close sent
+août 02 23:38:29 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:38:29.350Z] 2026/08/02 23:38:29 Outbound call completed. Task completed: false
+août 02 23:38:29 test aio-voice-connect-api[175471]: [ext:2] [2026-08-02T23:38:29.351Z] 2026/08/02 23:38:29 Outbound call completed.
+août 02 23:38:29 test aio-voice-connect-api[175471]: {"level":30,"time":1785713909353,"pid":175471,"hostname":"test","extensionId":2,"code":0,"signal":null,"msg":"sip-agent process exited"}
+août 02 23:38:29 test aio-voice-connect-api[175471]: {"level":30,"time":1785713909354,"pid":175471,"hostname":"test","extensionId":2,"code":0,"signal":null,"msg":"Outbound call ended — extension returning to idle (stopped)"}
+août 02 23:38:29 test aio-voice-connect-api[175471]: {"level":30,"time":1785713909432,"pid":175471,"hostname":"test","req":{"id":134,"method":"GET","url":"/api/deploy/2/logs"},"res":{"statusCode":200},"responseTime":3,"msg":"request completed"}
+août 02 23:38:29 test aio-voice-connect-api[175471]: {"level":30,"time":1785713909450,"pid":175471,"hostname":"test","extensionId":2,"callId":39,"status":"completed","msg":"Outbound call finalized (no webhook configured)"}
+août 02 23:38:29 test aio-voice-connect-api[175471]: {"level":30,"time":1785713909461,"pid":175471,"hostname":"test","extensionId":2,"msg":"Outbound config override cleared — base config restored"}
+août 02 23:38:31 test aio-voice-connect-api[175471]: {"level":30,"time":1785713911378,"pid":175471,"hostname":"test","req":{"id":135,"method":"GET","url":"/api/deploy/all"},"res":{"statusCode":200},"responseTime":5,"msg":"request completed"}
+août 02 23:38:31 test aio-voice-connect-api[175471]: {"level":30,"time":1785713911509,"pid":175471,"hostname":"test","req":{"id":136,"method":"GET","url":"/api/deploy/2/logs"},"res":{"statusCode":304},"responseTime":3,"msg":"request completed"}
+août 02 23:38:33 test aio-voice-connect-api[175471]: {"level":30,"time":1785713913607,"pid":175471,"hostname":"test","req":{"id":137,"method":"GET","url":"/api/deploy/2/logs"},"res":{"statusCode":304},"responseTime":1,"msg":"request completed"}
+août 02 23:38:35 test aio-voice-connect-api[175471]: {"level":30,"time":1785713915704,"pid":175471,"hostname":"test","req":{"id":138,"method":"GET","url":"/api/deploy/2/logs"},"res":{"statusCode":304},"responseTime":1,"msg":"request completed"}
+août 02 23:38:36 test aio-voice-connect-api[175471]: {"level":30,"time":1785713916422,"pid":175471,"hostname":"test","req":{"id":139,"method":"GET","url":"/api/deploy/all"},"res":{"statusCode":200},"responseTime":19,"msg":"request completed"}
+août 02 23:38:37 test aio-voice-connect-api[175471]: {"level":30,"time":1785713917371,"pid":175471,"hostname":"test","agentId":"agent_1901kz2cfe00fjhsnb08p99fynma","conversationId":"conv_6401kz2de9jqf77azc9kre8v9b83","status":"done","msg":"ElevenLabs post-call webhook received"}
+août 02 23:38:37 test aio-voice-connect-api[175471]: {"level":30,"time":1785713917372,"pid":175471,"hostname":"test","convId":"conv_6401kz2de9jqf77azc9kre8v9b83","msg":"Stored ElevenLabs post-call result"}
+août 02 23:38:37 test aio-voice-connect-api[175471]: {"level":30,"time":1785713917579,"pid":175471,"hostname":"test","conversationId":"conv_6401kz2de9jqf77azc9kre8v9b83","callId":null,"msg":"ElevenLabs webhook: persisted to call_results DB"}
+août 02 23:38:37 test aio-voice-connect-api[175471]: {"level":30,"time":1785713917655,"pid":175471,"hostname":"test","outboundCallId":39,"agentId":"agent_1901kz2cfe00fjhsnb08p99fynma","strategy":"time_proximity","msg":"Matched outbound call via time proximity"}
+août 02 23:38:37 test aio-voice-connect-api[175471]: {"level":30,"time":1785713917658,"pid":175471,"hostname":"test","outboundCallId":39,"agentId":"agent_1901kz2cfe00fjhsnb08p99fynma","conversationId":"conv_6401kz2de9jqf77azc9kre8v9b83","msg":"ElevenLabs webhook: result stored for outbound call"}
+août 02 23:38:37 test aio-voice-connect-api[175471]: {"level":30,"time":1785713917659,"pid":175471,"hostname":"test","req":{"id":140,"method":"POST","url":"/api/providers/elevenlabs/post-call"},"res":{"statusCode":200},"responseTime":300,"msg":"request completed"}
+août 02 23:38:37 test aio-voice-connect-api[175471]: {"level":30,"time":1785713917798,"pid":175471,"hostname":"test","req":{"id":141,"method":"GET","url":"/api/deploy/2/logs"},"res":{"statusCode":304},"responseTime":2,"msg":"request completed"}
+août 02 23:38:47 test aio-voice-connect-api[175471]: [ext:1] [2026-08-02T23:38:47.501Z] 2026/08/02 23:38:47 WARN SIP request handler not found caller=Server method=OPTIONS
+août 02 23:38:47 test aio-voice-connect-api[175471]: [ext:1] [2026-08-02T23:38:47.501Z] 2026/08/02 23:38:47 Re-registering with SIP provider...
+août 02 23:38:47 test aio-voice-connect-api[175471]: [ext:1] [2026-08-02T23:38:47.502Z] 2026/08/02 23:38:47 Sending REGISTER request via sipgo client.
+août 02 23:38:47 test aio-voice-connect-api[175471]: [ext:1] [2026-08-02T23:38:47.503Z] 2026/08/02 23:38:47 Auth: digestUsername=TjoCu4uhmD, realm=YSAsterisk, uri=sip:192.168.11.90, password=EmkWA6lT7y
+août 02 23:38:47 test aio-voice-connect-api[175471]: [ext:1] [2026-08-02T23:38:47.504Z] 2026/08/02 23:38:47 Resending REGISTER with Authorization header (CSeq=2).
+août 02 23:38:47 test aio-voice-connect-api[175471]: [ext:1] [2026-08-02T23:38:47.504Z] 2026/08/02 23:38:47 Authorization: Digest username="TjoCu4uhmD", realm="YSAsterisk", nonce="1785713927/7a637f2e3a6c8af9bbb743ec0ec3a533", uri="sip:192.168.11.90", response="991d27826205ad176244008463a79ecc", algorithm=MD5
+août 02 23:38:47 test aio-voice-connect-api[175471]: [ext:1] [2026-08-02T23:38:47.519Z] 2026/08/02 23:38:47 Received REGISTER response: SIP/2.0 200 OK
+août 02 23:38:47 test aio-voice-connect-api[175471]: [ext:1] [2026-08-02T23:38:47.519Z] Via: SIP/2.0/UDP 192.168.11.107:43336;rport=43336;received=192.168.11.107;branch=z9hG4bK.lqdFq2P2URGyZvmC
+août 02 23:38:47 test aio-voice-connect-api[175471]: [ext:1] [2026-08-02T23:38:47.520Z] Call-ID: 2gJClBtrmgCanx6x
+août 02 23:38:47 test aio-voice-connect-api[175471]: [ext:1] [2026-08-02T23:38:47.521Z] From: <sip:1005@192.168.11.90>;tag=6nd4cVyw
+août 02 23:38:47 test aio-voice-connect-api[175471]: [ext:1] [2026-08-02T23:38:47.521Z] To: <sip:1005@192.168.11.90>;tag=z9hG4bK.lqdFq2P2URGyZvmC
+août 02 23:38:47 test aio-voice-connect-api[175471]: [ext:1] [2026-08-02T23:38:47.521Z] CSeq: 2 REGISTER
+août 02 23:38:47 test aio-voice-connect-api[175471]: [ext:1] [2026-08-02T23:38:47.521Z] Date: Sun, 02 Aug 2026 23:38:47 GMT
+août 02 23:38:47 test aio-voice-connect-api[175471]: [ext:1] [2026-08-02T23:38:47.521Z] Contact: <sip:1005@192.168.11.107:43336>;expires=651
+août 02 23:38:47 test aio-voice-connect-api[175471]: [ext:1] [2026-08-02T23:38:47.521Z] Expires: 607
+août 02 23:38:47 test aio-voice-connect-api[175471]: [ext:1] [2026-08-02T23:38:47.521Z] Server: Yeastar PSE
+août 02 23:38:47 test aio-voice-connect-api[175471]: [ext:1] [2026-08-02T23:38:47.521Z] Content-Length: 0
+août 02 23:38:47 test aio-voice-connect-api[175471]: [ext:1] [2026-08-02T23:38:47.521Z] 2026/08/02 23:38:47 Registration successful!
+août 02 23:38:47 test aio-voice-connect-api[175471]: [ext:1] [2026-08-02T23:38:47.521Z] 2026/08/02 23:38:47 Re-registration successful.
+août 02 23:38:47 test aio-voice-connect-api[175471]: [ext:1] [2026-08-02T23:38:47.543Z] 2026/08/02 23:38:47 WARN SIP request handler not found caller=Server method=NOTIFY
+août 02 23:38:53 test aio-voice-connect-api[175471]: {"level":30,"time":1785713933856,"pid":175471,"hostname":"test","req":{"id":142,"method":"GET","url":"/api/deploy/2/logs"},"res":{"statusCode":304},"responseTime":2,"msg":"request completed"}
+août 02 23:38:55 test aio-voice-connect-api[175471]: {"level":30,"time":1785713935901,"pid":175471,"hostname":"test","req":{"id":143,"method":"GET","url":"/api/deploy/2/logs"},"res":{"statusCode":304},"responseTime":1,"msg":"request completed"}
+août 02 23:40:07 test aio-voice-connect-api[175471]: {"level":30,"time":1785714007594,"pid":175471,"hostname":"test","req":{"id":144,"method":"GET","url":"/api/deploy/2/logs"},"res":{"statusCode":304},"responseTime":2,"msg":"request completed"}
+août 02 23:40:07 test aio-voice-connect-api[175471]: {"level":30,"time":1785714007651,"pid":175471,"hostname":"test","req":{"id":145,"method":"GET","url":"/api/deploy/all"},"res":{"statusCode":200},"responseTime":20,"msg":"request completed"}
+août 02 23:40:09 test aio-voice-connect-api[175471]: {"level":30,"time":1785714009636,"pid":175471,"hostname":"test","req":{"id":146,"method":"GET","url":"/api/deploy/2/logs"},"res":{"statusCode":304},"responseTime":1,"msg":"request completed"}
+août 02 23:40:10 test aio-voice-connect-api[175471]: {"level":30,"time":1785714010925,"pid":175471,"hostname":"test","req":{"id":147,"method":"GET","url":"/api/extensions"},"res":{"statusCode":304},"responseTime":8,"msg":"request completed"}
+août 02 23:40:10 test aio-voice-connect-api[175471]: {"level":30,"time":1785714010959,"pid":175471,"hostname":"test","req":{"id":148,"method":"GET","url":"/api/deploy/call-events"},"res":{"statusCode":200},"responseTime":16,"msg":"request completed"}
+août 02 23:40:12 test aio-voice-connect-api[175471]: {"level":30,"time":1785714012442,"pid":175471,"hostname":"test","req":{"id":149,"method":"GET","url":"/api/deploy/call-events/U4Wjl9J4G3VKvkUT-1785713838039077947/detail"},"res":{"statusCode":200},"responseTime":5,"msg":"request completed"}
+août 02 23:40:47 test aio-voice-connect-api[175471]: [ext:1] [2026-08-02T23:40:47.526Z] 2026/08/02 23:40:47 WARN SIP request handler not found caller=Server method=OPTIONS
+août 02 23:40:47 test aio-voice-connect-api[175471]: [ext:1] [2026-08-02T23:40:47.527Z] 2026/08/02 23:40:47 Re-registering with SIP provider...
+août 02 23:40:47 test aio-voice-connect-api[175471]: [ext:1] [2026-08-02T23:40:47.527Z] 2026/08/02 23:40:47 Sending REGISTER request via sipgo client.
+août 02 23:40:47 test aio-voice-connect-api[175471]: [ext:1] [2026-08-02T23:40:47.542Z] 2026/08/02 23:40:47 Auth: digestUsername=TjoCu4uhmD, realm=YSAsterisk, uri=sip:192.168.11.90, password=EmkWA6lT7y
+août 02 23:40:47 test aio-voice-connect-api[175471]: [ext:1] [2026-08-02T23:40:47.543Z] 2026/08/02 23:40:47 Resending REGISTER with Authorization header (CSeq=2).
+août 02 23:40:47 test aio-voice-connect-api[175471]: [ext:1] [2026-08-02T23:40:47.543Z] 2026/08/02 23:40:47 Authorization: Digest username="TjoCu4uhmD", realm="YSAsterisk", nonce="1785714047/dd897162d7ca0112a41d89baa3645208", uri="sip:192.168.11.90", response="267cc2de38eff3994359acf64216ce07", algorithm=MD5
+août 02 23:40:47 test aio-voice-connect-api[175471]: [ext:1] [2026-08-02T23:40:47.560Z] 2026/08/02 23:40:47 Received REGISTER response: SIP/2.0 200 OK
+août 02 23:40:47 test aio-voice-connect-api[175471]: [ext:1] [2026-08-02T23:40:47.560Z] Via: SIP/2.0/UDP 192.168.11.107:43336;rport=43336;received=192.168.11.107;branch=z9hG4bK.ahHMBz5gVwqRJDcP
+août 02 23:40:47 test aio-voice-connect-api[175471]: [ext:1] [2026-08-02T23:40:47.560Z] Call-ID: eG5sYEJHSVmvs0HK
+août 02 23:40:47 test aio-voice-connect-api[175471]: [ext:1] [2026-08-02T23:40:47.560Z] From: <sip:1005@192.168.11.90>;tag=4Dslm6s0
+août 02 23:40:47 test aio-voice-connect-api[175471]: [ext:1] [2026-08-02T23:40:47.561Z] To: <sip:1005@192.168.11.90>;tag=z9hG4bK.ahHMBz5gVwqRJDcP
+août 02 23:40:47 test aio-voice-connect-api[175471]: [ext:1] [2026-08-02T23:40:47.561Z] CSeq: 2 REGISTER
+août 02 23:40:47 test aio-voice-connect-api[175471]: [ext:1] [2026-08-02T23:40:47.561Z] Date: Sun, 02 Aug 2026 23:40:47 GMT
+août 02 23:40:47 test aio-voice-connect-api[175471]: [ext:1] [2026-08-02T23:40:47.561Z] Contact: <sip:1005@192.168.11.107:43336>;expires=613
+août 02 23:40:47 test aio-voice-connect-api[175471]: [ext:1] [2026-08-02T23:40:47.561Z] Expires: 641
+août 02 23:40:47 test aio-voice-connect-api[175471]: [ext:1] [2026-08-02T23:40:47.561Z] Server: Yeastar PSE
+août 02 23:40:47 test aio-voice-connect-api[175471]: [ext:1] [2026-08-02T23:40:47.561Z] Content-Length: 0
+août 02 23:40:47 test aio-voice-connect-api[175471]: [ext:1] [2026-08-02T23:40:47.561Z] 2026/08/02 23:40:47 Registration successful!
+août 02 23:40:47 test aio-voice-connect-api[175471]: [ext:1] [2026-08-02T23:40:47.580Z] 2026/08/02 23:40:47 Re-registration successful.
+août 02 23:40:47 test aio-voice-connect-api[175471]: [ext:1] [2026-08-02T23:40:47.607Z] 2026/08/02 23:40:47 WARN SIP request handler not found caller=Server method=NOTIFY
+^C
+test@test:/opt/aio-voice-connect$
+
+what do you think about this log et resultat d'appel et transcription

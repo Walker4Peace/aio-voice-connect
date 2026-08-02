@@ -381,6 +381,21 @@ router.post("/providers/elevenlabs/post-call", async (req, res) => {
     .set({ result: JSON.stringify(result), status: "completed", updatedAt: new Date() })
     .where(eq(outboundCallsTable.id, call.id));
 
+  // ── Back-fill callId on call_results so the detail endpoint can find it ───
+  // For outbound calls the SIP callId is known here; patch the DB row so the
+  // detail endpoint can resolve conv_id → result via callId as a fallback.
+  if (call.callId) {
+    try {
+      await db
+        .update(callResultsTable)
+        .set({ callId: call.callId })
+        .where(eq(callResultsTable.conversationId, data.conversation_id));
+      logger.info({ conversationId: data.conversation_id, callId: call.callId }, "ElevenLabs webhook: back-filled callId on call_results");
+    } catch (err) {
+      logger.warn({ err }, "ElevenLabs webhook: failed to back-fill callId on call_results");
+    }
+  }
+
   logger.info(
     { outboundCallId: call.id, agentId: data.agent_id, conversationId: data.conversation_id },
     "ElevenLabs webhook: result stored for outbound call",
