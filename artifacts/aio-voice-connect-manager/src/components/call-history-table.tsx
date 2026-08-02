@@ -231,8 +231,8 @@ function CallDetailDialog({
   const result = detail?.result;
   const transcript = result?.transcript ?? [];
   const analysis = result?.analysis;
-  const evalEntries = Object.entries(analysis?.evaluation_criteria_results ?? {});
-  const dataEntries = Object.entries(result?.dataCollectionResults ?? {});
+  const evalEntries = Object.entries(analysis?.evaluation_criteria_results ?? {}) as [string, EvalCriterion][];
+  const dataEntries = Object.entries(result?.dataCollectionResults ?? {}) as [string, DataField][];
 
   const successIcon = analysis?.call_successful === "success"
     ? <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
@@ -247,7 +247,7 @@ function CallDetailDialog({
     : t("calls.detailUnknown");
 
   const hasResultSection = !loading && result &&
-    (evalEntries.length > 0 || dataEntries.length > 0 || analysis?.call_successful || result.summary || result.rawPayload);
+    (evalEntries.length > 0 || dataEntries.length > 0 || analysis?.call_successful || result.summary || result.rawPayload != null);
 
   return (
     <Dialog open={open} onOpenChange={v => !v && onClose()}>
@@ -381,7 +381,7 @@ function CallDetailDialog({
             )}
 
             {/* Raw webhook payload — collapsible */}
-            {result!.rawPayload && (
+            {result!.rawPayload != null && (
               <div className="space-y-1">
                 <button
                   onClick={() => setShowRaw(v => !v)}
