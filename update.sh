@@ -182,10 +182,11 @@ CapabilityBoundingSet=CAP_NET_BIND_SERVICE
 WantedBy=multi-user.target
 EOF
 
-  # Create UI service
+  # Create UI service (plain Node.js static server — no vite at runtime)
+  STATIC_SERVER="${DEPLOY_DIR}/artifacts/aio-voice-connect-manager/serve-static.mjs"
   cat > /etc/systemd/system/aio-voice-connect-ui.service <<EOF
 [Unit]
-Description=AIO Voice Connect Frontend (Vite preview)
+Description=AIO Voice Connect Frontend (static file server)
 Documentation=https://github.com/Walker4Peace/ai-agent
 After=network.target
 
@@ -195,9 +196,9 @@ User=${APP_USER}
 WorkingDirectory=${DEPLOY_DIR}
 Environment=NODE_ENV=production
 Environment=PORT=${UI_PORT}
-Environment=BASE_PATH=/
+Environment=HOST=0.0.0.0
 
-ExecStart=${PNPM_BIN} --filter @workspace/aio-voice-connect-manager run serve
+ExecStart=${NODE_BIN} ${STATIC_SERVER}
 
 Restart=on-failure
 RestartSec=5

@@ -127,11 +127,17 @@ EOF
 success "aio-voice-connect-api.service written"
 
 # ── Step 5: Create aio-voice-connect-ui.service ───────────────────────────────
-step "Creating aio-voice-connect-ui.service (Vite preview on port ${UI_PORT})"
+step "Creating aio-voice-connect-ui.service (static server on port ${UI_PORT})"
+
+STATIC_SERVER="${DEPLOY_DIR}/artifacts/aio-voice-connect-manager/serve-static.mjs"
+
+if [[ ! -f "$STATIC_SERVER" ]]; then
+  die "Static server script not found at ${STATIC_SERVER}.\n  Make sure you have pulled the latest code: sudo bash ${DEPLOY_DIR}/update.sh"
+fi
 
 cat > /etc/systemd/system/aio-voice-connect-ui.service <<EOF
 [Unit]
-Description=AIO Voice Connect Frontend (Vite preview)
+Description=AIO Voice Connect Frontend (static file server)
 Documentation=https://github.com/Walker4Peace/ai-agent
 After=network.target
 
@@ -139,12 +145,12 @@ After=network.target
 Type=simple
 User=${APP_USER}
 WorkingDirectory=${DEPLOY_DIR}
-# Explicit env — do NOT inherit PORT from .env (that's the API port)
+# Explicit env — does NOT inherit from .env (PORT there is for the API)
 Environment=NODE_ENV=production
 Environment=PORT=${UI_PORT}
-Environment=BASE_PATH=/
+Environment=HOST=0.0.0.0
 
-ExecStart=${PNPM_BIN} --filter @workspace/aio-voice-connect-manager run serve
+ExecStart=${NODE_BIN} ${STATIC_SERVER}
 
 Restart=on-failure
 RestartSec=5
@@ -158,7 +164,7 @@ SyslogIdentifier=aio-voice-connect-ui
 [Install]
 WantedBy=multi-user.target
 EOF
-success "aio-voice-connect-ui.service written"
+success "aio-voice-connect-ui.service written (uses node serve-static.mjs — no vite at runtime)"
 
 # ── Step 6: Update nginx to pure reverse proxy ────────────────────────────────
 step "Updating nginx config (proxy-only, port 80)"

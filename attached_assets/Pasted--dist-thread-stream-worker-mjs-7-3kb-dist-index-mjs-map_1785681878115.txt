@@ -1,0 +1,143 @@
+│   dist/thread-stream-worker.mjs        7.3kb
+│   dist/index.mjs.map                   4.2mb
+│   dist/pino-worker.mjs.map           256.9kb
+│   dist/pino-file.mjs.map             229.0kb
+│   dist/pino-pretty.mjs.map           203.6kb
+│   dist/thread-stream-worker.mjs.map   12.0kb
+│ ⚡ Done in 1240ms
+└─ Done in 1.5s
+  ✓ Build complete
+
+▶ Applying database schema
+
+> @workspace/db@0.0.0 push /opt/aio-voice-connect/lib/db
+> drizzle-kit push --config ./drizzle.config.ts
+
+Reading config file '/opt/aio-voice-connect/lib/db/drizzle.config.ts'
+Using 'pg' driver for database querying
+[✓] Pulling schema from database...
+[i] No changes detected
+  ✓ Schema up to date
+
+▶ Refreshing nginx helper
+  ✓ nginx helper updated and path unit restarted
+
+▶ Restarting services
+  ✗ aio-voice-connect-api not found — run install.sh to set up services
+  ✗ aio-voice-connect-ui not found — run install.sh to set up services
+
+✅  Update complete — 2026-08-02 14:38:58
+    API (direct):      http://localhost:3100/api/healthz
+    Frontend (direct): http://localhost:8080/
+    Dashboard (nginx): http://localhost/
+    API logs:          journalctl -u aio-voice-connect-api -f
+    UI logs:           journalctl -u aio-voice-connect-ui -f
+test@test:/opt/aio-voice-connect$ sudo bash /opt/aio-voice-connect/migrate.sh
+
+AIO Voice Connect — Architecture Migration
+Deploy dir: /opt/aio-voice-connect
+API port:   3100  (was 3101)
+UI port:    8080
+
+
+▶ Patching .env (PORT 3101 → 3100)
+[✓]    PORT set to 3100 in .env
+[✓]    UI_PORT=8080 added to .env
+
+▶ Stopping old aio-voice-connect service
+[INFO]  aio-voice-connect.service not found — skipping
+
+▶ Detecting service user
+[✓]    Service user: aio-voice-connect
+
+▶ Creating aio-voice-connect-api.service (API on port 3100)
+[✓]    aio-voice-connect-api.service written
+
+▶ Creating aio-voice-connect-ui.service (Vite preview on port 8080)
+[✓]    aio-voice-connect-ui.service written
+
+▶ Updating nginx config (proxy-only, port 80)
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+[✓]    nginx updated and reloaded (port 80, proxy-only)
+
+▶ Reloading systemd and enabling new services
+[✓]    aio-voice-connect-api enabled
+[✓]    aio-voice-connect-ui enabled
+
+▶ Starting aio-voice-connect-api
+[✓]    aio-voice-connect-api started
+
+▶ Starting aio-voice-connect-ui
+[✓]    aio-voice-connect-ui started
+
+▶ Verifying — waiting 5 s for processes to bind ports
+
+Service status:
+active
+  [✓] aio-voice-connect-api — active
+activating
+  [✗] aio-voice-connect-ui  — NOT active
+
+Listening ports:
+LISTEN 0      511          0.0.0.0:80         0.0.0.0:*    users:(("nginx",pid=167680,fd=11),("nginx",pid=167679,fd=11),("nginx",pid=156706,fd=11))
+LISTEN 0      511                *:3100             *:*    users:(("node",pid=167793,fd=18))
+LISTEN 0      511             [::]:80            [::]:*    users:(("nginx",pid=167680,fd=12),("nginx",pid=167679,fd=12),("nginx",pid=156706,fd=12))
+State     Recv-Q    Send-Q         Local Address:Port          Peer Address:Port    Process
+LISTEN    0         128                  0.0.0.0:22                 0.0.0.0:*        users:(("sshd",pid=156741,fd=3))
+LISTEN    0         511                  0.0.0.0:80                 0.0.0.0:*        users:(("nginx",pid=167680,fd=11),("nginx",pid=167679,fd=11),("nginx",pid=156706,fd=11))
+LISTEN    0         244                127.0.0.1:5432               0.0.0.0:*        users:(("postgres",pid=156740,fd=5))
+LISTEN    0         4096           127.0.0.53%lo:53                 0.0.0.0:*        users:(("systemd-resolve",pid=156766,fd=14))
+LISTEN    0         511                        *:3101                     *:*        users:(("node",pid=165852,fd=18))
+LISTEN    0         511                        *:3100                     *:*        users:(("node",pid=167793,fd=18))
+LISTEN    0         128                     [::]:22                    [::]:*        users:(("sshd",pid=156741,fd=4))
+LISTEN    0         511                     [::]:80                    [::]:*        users:(("nginx",pid=167680,fd=12),("nginx",pid=167679,fd=12),("nginx",pid=156706,fd=12))
+LISTEN    0         4096                       *:19001                    *:*        users:(("sip-agent",pid=165866,fd=6))
+
+[✓]    API   direct (port 3100): HTTP 200
+[WARN]  UI    direct (port 8080):  HTTP 000000   ← check journalctl -u aio-voice-connect-ui
+[WARN]  nginx via   (port 80):    HTTP 502  ← check journalctl -u nginx
+
+╔══════════════════════════════════════════════════════════════╗
+║           Migration complete                                  ║
+╠══════════════════════════════════════════════════════════════╣
+║  Dashboard  (nginx): http://192.168.11.107                       ║
+║  Frontend   (direct):http://192.168.11.107:8080              ║
+║  API        (direct):http://192.168.11.107:3100             ║
+╚══════════════════════════════════════════════════════════════╝
+
+Useful commands:
+  journalctl -u aio-voice-connect-api -f   # API logs
+  journalctl -u aio-voice-connect-ui  -f   # Frontend logs
+  systemctl restart aio-voice-connect-api  # restart API
+  systemctl restart aio-voice-connect-ui   # restart frontend
+
+test@test:/opt/aio-voice-connect$  systemctl restart aio-voice-connect-ui
+==== AUTHENTICATING FOR org.freedesktop.systemd1.manage-units ===
+Authentication is required to restart 'aio-voice-connect-ui.service'.
+Authenticating as: test
+Password:
+==== AUTHENTICATION COMPLETE ===
+Job for aio-voice-connect-ui.service failed because the control process exited with error code.
+See "systemctl status aio-voice-connect-ui.service" and "journalctl -xeu aio-voice-connect-ui.service" for details.
+test@test:/opt/aio-voice-connect$ sudo systemctl stop aio-voice-connect
+test@test:/opt/aio-voice-connect$ sudo systemctl disable aio-voice-connect
+Removed /etc/systemd/system/multi-user.target.wants/aio-voice-connect.service.
+test@test:/opt/aio-voice-connect$ sudo ss -tlnp | grep 3101
+test@test:/opt/aio-voice-connect$ sudo systemctl status aio-voice-connect-ui --no-pager -l
+× aio-voice-connect-ui.service - AIO Voice Connect Frontend (Vite preview)
+     Loaded: loaded (/etc/systemd/system/aio-voice-connect-ui.service; enabled; vendor preset: enabled)
+     Active: failed (Result: exit-code) since Sun 2026-08-02 14:39:41 UTC; 1min 48s ago
+       Docs: https://github.com/Walker4Peace/ai-agent
+   Main PID: 167961 (code=exited, status=1/FAILURE)
+        CPU: 1.617s
+
+août 02 14:39:41 test systemd[1]: aio-voice-connect-ui.service: Scheduled restart job, restart counter is at 5.
+août 02 14:39:41 test systemd[1]: Stopped AIO Voice Connect Frontend (Vite preview).
+août 02 14:39:41 test systemd[1]: aio-voice-connect-ui.service: Consumed 1.617s CPU time.
+août 02 14:39:41 test systemd[1]: aio-voice-connect-ui.service: Start request repeated too quickly.
+août 02 14:39:41 test systemd[1]: aio-voice-connect-ui.service: Failed with result 'exit-code'.
+août 02 14:39:41 test systemd[1]: Failed to start AIO Voice Connect Frontend (Vite preview).
+août 02 14:40:01 test systemd[1]: aio-voice-connect-ui.service: Start request repeated too quickly.
+août 02 14:40:01 test systemd[1]: aio-voice-connect-ui.service: Failed with result 'exit-code'.
+août 02 14:40:01 test systemd[1]: Failed to start AIO Voice Connect Frontend (Vite preview).
