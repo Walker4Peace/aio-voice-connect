@@ -127,7 +127,149 @@ EOF
   echo "  ✓ nginx helper updated and path unit restarted"
 fi
 
-# ── 6. Restart services ───────────────────────────────────────────────────────
+# ── 6. Migrate services (old single-service → new split architecture) ─────────
+# If the old monolithic aio-voice-connect.service exists but the new split
+# services do not, create them now so a fresh install.sh is not required.
+API_PORT=3100
+UI_PORT=8080
+NODE_BIN="$(command -v node)"
+PNPM_BIN="$(command -v pnpm)"
+
+NEEDS_MIGRATION=false
+if systemctl list-units --full --all 2>/dev/null | grep -q "aio-voice-connect.service" \
+   && ! systemctl list-units --full --all 2>/dev/null | grep -q "aio-voice-connect-api.service"; then
+  NEEDS_MIGRATION=true
+fi
+
+if [[ "$NEEDS_MIGRATION" == true ]]; then
+  echo ""
+  echo "▶ Migrating from single-service to split-service architecture"
+
+  # Load .env to get APP_USER (set in install.sh; default to aio-voice-connect)
+  APP_USER="$(systemctl show aio-voice-connect --property=User 2>/dev/null | cut -d= -f2)"
+  [[ -z "$APP_USER" ]] && APP_USER="aio-voice-connect"
+
+  # Create API service
+  cat > /etc/systemd/system/aio-voice-connect-api.service <<EOF
+[Unit]
+Description=AIO Voice Connect API Server
+Documentation=https://github.com/Walker4Peace/ai-agent
+After=network.target postgresql.service
+Requires=postgresql.service
+
+[Service]
+Type=simple
+User=${APP_USER}
+WorkingDirectory=${DEPLOY_DIR}
+EnvironmentFile=${DEPLOY_DIR}/.env
+
+ExecStart=${NODE_BIN} --enable-source-maps ${DEPLOY_DIR}/artifacts/api-server/dist/index.mjs
+
+Restart=on-failure
+RestartSec=5
+StartLimitInterval=60
+StartLimitBurst=5
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=aio-voice-connect-api
+
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+  # Create UI service
+  cat > /etc/systemd/system/aio-voice-connect-ui.service <<EOF
+[Unit]
+Description=AIO Voice Connect Frontend (Vite preview)
+Documentation=https://github.com/Walker4Peace/ai-agent
+After=network.target
+
+[Service]
+Type=simple
+User=${APP_USER}
+WorkingDirectory=${DEPLOY_DIR}
+Environment=NODE_ENV=production
+Environment=PORT=${UI_PORT}
+Environment=BASE_PATH=/
+
+ExecStart=${PNPM_BIN} --filter @workspace/aio-voice-connect-manager run serve
+
+Restart=on-failure
+RestartSec=5
+StartLimitInterval=60
+StartLimitBurst=5
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=aio-voice-connect-ui
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+  # Update nginx to pure reverse proxy (port 80, no static files)
+  if [[ -f /etc/nginx/sites-available/aio-voice-connect ]]; then
+    cat > /etc/nginx/sites-available/aio-voice-connect <<'NGINXEOF'
+# aio-voice-connect — updated by update.sh (split-service architecture)
+# nginx is a pure reverse proxy; it never serves static files directly.
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    server_name _;
+
+    location /api/ {
+        proxy_pass         http://127.0.0.1:3100/api/;
+        proxy_http_version 1.1;
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_read_timeout 120s;
+        proxy_send_timeout 120s;
+    }
+
+    location / {
+        proxy_pass         http://127.0.0.1:8080/;
+        proxy_http_version 1.1;
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_set_header   Upgrade           $http_upgrade;
+        proxy_set_header   Connection        "upgrade";
+        proxy_read_timeout 60s;
+        proxy_send_timeout 60s;
+    }
+
+    add_header X-Frame-Options        "SAMEORIGIN"   always;
+    add_header X-Content-Type-Options "nosniff"      always;
+    add_header Referrer-Policy        "strict-origin" always;
+    client_max_body_size 16M;
+}
+NGINXEOF
+    # Ensure enabled and reload
+    ln -sf /etc/nginx/sites-available/aio-voice-connect /etc/nginx/sites-enabled/aio-voice-connect
+    rm -f /etc/nginx/sites-enabled/default
+    nginx -t && systemctl reload nginx && echo "  ✓ nginx updated to proxy-only mode"
+  fi
+
+  # Stop and disable old service
+  systemctl stop aio-voice-connect 2>/dev/null || true
+  systemctl disable aio-voice-connect 2>/dev/null || true
+  echo "  ✓ Old aio-voice-connect service stopped and disabled"
+
+  # Enable new services
+  systemctl daemon-reload
+  systemctl enable aio-voice-connect-api --quiet
+  systemctl enable aio-voice-connect-ui --quiet
+  echo "  ✓ New split services created and enabled"
+fi
+
+# ── 7. Restart services ───────────────────────────────────────────────────────
 echo ""
 echo "▶ Restarting services"
 
@@ -139,7 +281,7 @@ for SVC in aio-voice-connect-api aio-voice-connect-ui; do
     systemctl start "$SVC"
     echo "  ✓ $SVC started"
   else
-    echo "  ⚠  $SVC not found in systemd — skipping (run install.sh to create it)"
+    echo "  ✗ $SVC not found — run install.sh to set up services"
   fi
 done
 
