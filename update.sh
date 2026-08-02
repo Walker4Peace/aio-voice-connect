@@ -213,51 +213,17 @@ SyslogIdentifier=aio-voice-connect-ui
 WantedBy=multi-user.target
 EOF
 
-  # Update nginx to pure reverse proxy (port 80, no static files)
-  if [[ -f /etc/nginx/sites-available/aio-voice-connect ]]; then
-    cat > /etc/nginx/sites-available/aio-voice-connect <<'NGINXEOF'
-# aio-voice-connect — updated by update.sh (split-service architecture)
-# nginx is a pure reverse proxy; it never serves static files directly.
-server {
-    listen 80 default_server;
-    listen [::]:80 default_server;
-    server_name _;
-
-    location /api/ {
-        proxy_pass         http://127.0.0.1:3100/api/;
-        proxy_http_version 1.1;
-        proxy_set_header   Host              $host;
-        proxy_set_header   X-Real-IP         $remote_addr;
-        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
-        proxy_set_header   X-Forwarded-Proto $scheme;
-        proxy_read_timeout 120s;
-        proxy_send_timeout 120s;
-    }
-
-    location / {
-        proxy_pass         http://127.0.0.1:8080/;
-        proxy_http_version 1.1;
-        proxy_set_header   Host              $host;
-        proxy_set_header   X-Real-IP         $remote_addr;
-        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
-        proxy_set_header   X-Forwarded-Proto $scheme;
-        proxy_set_header   Upgrade           $http_upgrade;
-        proxy_set_header   Connection        "upgrade";
-        proxy_read_timeout 60s;
-        proxy_send_timeout 60s;
-    }
-
-    add_header X-Frame-Options        "SAMEORIGIN"   always;
-    add_header X-Content-Type-Options "nosniff"      always;
-    add_header Referrer-Policy        "strict-origin" always;
-    client_max_body_size 16M;
-}
-NGINXEOF
-    # Ensure enabled and reload
-    ln -sf /etc/nginx/sites-available/aio-voice-connect /etc/nginx/sites-enabled/aio-voice-connect
-    rm -f /etc/nginx/sites-enabled/default
-    nginx -t && systemctl reload nginx && echo "  ✓ nginx updated to proxy-only mode"
-  fi
+  # Remove stale installer-created nginx sites (no .conf extension).
+  # The app-managed aio-voice-connect.conf (with .conf) is left untouched.
+  for STALE in \
+      /etc/nginx/sites-enabled/aio-voice-connect \
+      /etc/nginx/sites-available/aio-voice-connect; do
+    if [[ -e "$STALE" || -L "$STALE" ]]; then
+      rm -f "$STALE"
+      echo "  ✓ Removed stale nginx site: ${STALE}"
+    fi
+  done
+  nginx -t &>/dev/null && systemctl reload nginx 2>/dev/null || true
 
   # Stop and disable old service
   systemctl stop aio-voice-connect 2>/dev/null || true

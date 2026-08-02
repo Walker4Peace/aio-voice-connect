@@ -1,0 +1,129 @@
+Domain configuration failed
+DNS resolved via 8.8.8.8 → 105.188.3.70 ✓ matches server IP
+nginx-test
+nginx: [emerg] a duplicate default server for 0.0.0.0:80 in /etc/nginx/sites-enabled/aio-voice-connect.conf:3 nginx: configuration file /etc/nginx/nginx.conf test failed 
+
+i dont want in the installation to create conf file, it should just install nginx only, and after in account creation i can connect domaine or later in setting
+
+│   dist/thread-stream-worker.mjs        7.3kb
+│   dist/index.mjs.map                   4.2mb
+│   dist/pino-worker.mjs.map           256.9kb
+│   dist/pino-file.mjs.map             229.0kb
+│   dist/pino-pretty.mjs.map           203.6kb
+│   dist/thread-stream-worker.mjs.map   12.0kb
+│ ⚡ Done in 1132ms
+└─ Done in 1.4s
+  ✓ Build complete
+
+▶ Applying database schema
+
+> @workspace/db@0.0.0 push /opt/aio-voice-connect/lib/db
+> drizzle-kit push --config ./drizzle.config.ts
+
+Reading config file '/opt/aio-voice-connect/lib/db/drizzle.config.ts'
+Using 'pg' driver for database querying
+[✓] Pulling schema from database...
+[i] No changes detected
+  ✓ Schema up to date
+
+▶ Refreshing nginx helper
+  ✓ nginx helper updated and path unit restarted
+
+▶ Restarting services
+  ✓ aio-voice-connect-api restarted
+  ✗ aio-voice-connect-ui not found — run: sudo bash /opt/aio-voice-connect/migrate.sh
+
+✅  Update complete — 2026-08-02 14:48:48
+    API (direct):      http://localhost:3100/api/healthz
+    Frontend (direct): http://localhost:8080/
+    Dashboard (nginx): http://localhost/
+    API logs:          journalctl -u aio-voice-connect-api -f
+    UI logs:           journalctl -u aio-voice-connect-ui -f
+test@test:/opt/aio-voice-connect$ sudo bash /opt/aio-voice-connect/migrate.sh
+
+AIO Voice Connect — Architecture Migration
+Deploy dir: /opt/aio-voice-connect
+API port:   3100  (was 3101)
+UI port:    8080
+
+▶ Patching .env (PORT 3101 → 3100)
+[✓]    PORT set to 3100 in .env
+[✓]    UI_PORT set to 8080 in .env
+
+▶ Stopping old aio-voice-connect service
+[INFO]  aio-voice-connect.service not found — skipping
+
+▶ Detecting service user
+[✓]    Service user: aio-voice-connect
+
+▶ Creating aio-voice-connect-api.service (API on port 3100)
+[✓]    aio-voice-connect-api.service written
+
+▶ Creating aio-voice-connect-ui.service (static server on port 8080)
+[✓]    aio-voice-connect-ui.service written (uses node serve-static.mjs — no vite at runtime)
+
+▶ Updating nginx config (proxy-only, port 80)
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+[✓]    nginx updated and reloaded (port 80, proxy-only)
+
+▶ Reloading systemd and enabling new services
+[✓]    aio-voice-connect-api enabled
+[✓]    aio-voice-connect-ui enabled
+
+▶ Starting aio-voice-connect-api
+[✓]    aio-voice-connect-api started
+
+▶ Starting aio-voice-connect-ui
+[✓]    aio-voice-connect-ui started
+
+▶ Verifying — waiting 5 s for processes to bind ports
+
+Service status:
+active
+  [✓] aio-voice-connect-api — active
+active
+  [✓] aio-voice-connect-ui  — active
+
+Listening ports:
+LISTEN 0      511          0.0.0.0:80         0.0.0.0:*    users:(("nginx",pid=168463,fd=11),("nginx",pid=168462,fd=11),("nginx",pid=156706,fd=11))
+LISTEN 0      511          0.0.0.0:8080       0.0.0.0:*    users:(("node",pid=168580,fd=18))
+LISTEN 0      511                *:3100             *:*    users:(("node",pid=168577,fd=18))
+LISTEN 0      511             [::]:80            [::]:*    users:(("nginx",pid=168463,fd=12),("nginx",pid=168462,fd=12),("nginx",pid=156706,fd=12))
+State     Recv-Q    Send-Q         Local Address:Port          Peer Address:Port    Process
+LISTEN    0         128                  0.0.0.0:22                 0.0.0.0:*        users:(("sshd",pid=156741,fd=3))
+LISTEN    0         511                  0.0.0.0:80                 0.0.0.0:*        users:(("nginx",pid=168463,fd=11),("nginx",pid=168462,fd=11),("nginx",pid=156706,fd=11))
+LISTEN    0         244                127.0.0.1:5432               0.0.0.0:*        users:(("postgres",pid=156740,fd=5))
+LISTEN    0         511                  0.0.0.0:8080               0.0.0.0:*        users:(("node",pid=168580,fd=18))
+LISTEN    0         4096           127.0.0.53%lo:53                 0.0.0.0:*        users:(("systemd-resolve",pid=156766,fd=14))
+LISTEN    0         511                        *:3100                     *:*        users:(("node",pid=168577,fd=18))
+LISTEN    0         128                     [::]:22                    [::]:*        users:(("sshd",pid=156741,fd=4))
+LISTEN    0         511                     [::]:80                    [::]:*        users:(("nginx",pid=168463,fd=12),("nginx",pid=168462,fd=12),("nginx",pid=156706,fd=12))
+LISTEN    0         4096                       *:19001                    *:*        users:(("sip-agent",pid=168604,fd=6))
+
+[✓]    API   direct (port 3100): HTTP 200
+[✓]    UI    direct (port 8080):  HTTP 200
+[✓]    nginx via   (port 80):    HTTP 200
+
+╔══════════════════════════════════════════════════════════════╗
+║           Migration complete                                  ║
+╠══════════════════════════════════════════════════════════════╣
+║  Dashboard  (nginx): http://192.168.11.107                       ║
+║  Frontend   (direct):http://192.168.11.107:8080              ║
+║  API        (direct):http://192.168.11.107:3100             ║
+╚══════════════════════════════════════════════════════════════╝
+
+Useful commands:
+  journalctl -u aio-voice-connect-api -f   # API logs
+  journalctl -u aio-voice-connect-ui  -f   # Frontend logs
+  systemctl restart aio-voice-connect-api  # restart API
+  systemctl restart aio-voice-connect-ui   # restart frontend
+
+test@test:/opt/aio-voice-connect$ ls -l /etc/nginx/sites-enabled/
+total 0
+lrwxrwxrwx 1 root root 44 août   2 14:49 aio-voice-connect -> /etc/nginx/sites-available/aio-voice-connect
+test@test:/opt/aio-voice-connect$ ls -l /etc/nginx/sites-available/
+total 8
+-rw-r--r-- 1 root root 1702 août   2 14:49 aio-voice-connect
+-rw-r--r-- 1 root root 2412 mai   30  2023 default
+test@test:/opt/aio-voice-connect$

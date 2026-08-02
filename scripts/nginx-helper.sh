@@ -37,6 +37,18 @@ fi
 DOMAIN=""
 [[ -f "$PENDING_DOMAIN" ]] && DOMAIN=$(cat "$PENDING_DOMAIN" | tr -d '[:space:]')
 
+# ── DELETE MODE: empty config file = remove the nginx site ───────────────────
+# Triggered by the DELETE /api/setup/domain endpoint writing an empty
+# PENDING_CONF.  Remove the conf + symlink and reload nginx so the Debian
+# default site resumes ownership of port 80.
+CONF_SIZE=$(wc -c < "$PENDING_CONF" || echo 0)
+if [[ "$CONF_SIZE" -eq 0 ]]; then
+  rm -f "$CONF_PATH" "$LINK_PATH"
+  systemctl reload nginx 2>/dev/null || true
+  write_result '{"ok":true,"deleted":true}'
+  exit 0
+fi
+
 # ── Step 1: copy nginx config ─────────────────────────────────────────────────
 if ! cp "$PENDING_CONF" "$CONF_PATH" 2>&1; then
   write_result "{\"ok\":false,\"step\":\"copy-config\",\"error\":\"cp to ${CONF_PATH} failed\"}"
