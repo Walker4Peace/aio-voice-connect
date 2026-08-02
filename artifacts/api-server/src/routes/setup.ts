@@ -181,6 +181,14 @@ function certbotCmd(domain: string): string {
   return `sudo certbot --nginx -d ${domain} --non-interactive --agree-tos --no-eff-email --email admin@${domain}`;
 }
 
+/** Manual commands to enable SSL: open the firewall port then run certbot. */
+function sslManualCommands(domain: string): string[] {
+  return [
+    "sudo ufw allow 443",
+    certbotCmd(domain),
+  ];
+}
+
 /**
  * Commands to restore nginx to the base (IP-only) config after domain reset.
  * Replaces the domain conf with the base config rather than deleting it —
@@ -351,7 +359,7 @@ router.post("/setup/domain", async (req, res) => {
     res.json({
       ok: true, domain, sslOk: helperResult.sslOk, steps,
       ...(helperResult.sslOk ? {} : {
-        manualCommands: [certbotCmd(domain)],
+        manualCommands: sslManualCommands(domain),
       }),
     });
     return;
@@ -383,7 +391,7 @@ router.post("/setup/domain", async (req, res) => {
       manualCommands: [
         `sudo ln -sf ${NGINX_CONF_PATH} ${NGINX_ENABLED_PATH}`,
         `sudo nginx -t && sudo systemctl reload nginx`,
-        certbotCmd(domain),
+        ...sslManualCommands(domain),
       ],
       cleanupCommands: cleanupCommands(),
     });
@@ -405,7 +413,7 @@ router.post("/setup/domain", async (req, res) => {
       manualCommands: [
         `sudo nginx -t`,
         `sudo systemctl reload nginx`,
-        certbotCmd(domain),
+        ...sslManualCommands(domain),
       ],
       cleanupCommands: cleanupCommands(),
     });
@@ -426,7 +434,7 @@ router.post("/setup/domain", async (req, res) => {
   res.json({
     ok: true, domain, sslOk, steps,
     ...(sslOk ? {} : {
-      manualCommands: [certbotCmd(domain)],
+      manualCommands: sslManualCommands(domain),
     }),
   });
 });

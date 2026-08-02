@@ -144,10 +144,6 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
     }
   };
 
-  const downloadNginxConfig = (domainName: string) => {
-    window.open(`/api/setup/domain/nginx-config?domain=${encodeURIComponent(domainName)}`, "_blank");
-  };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg max-h-[85vh] flex flex-col overflow-hidden">
@@ -246,7 +242,6 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                   <ManualCommands
                     title=""
                     commands={resetResult.cleanupCommands}
-                    onDownload={downloadNginxConfig}
                   />
                 )}
               </div>
@@ -286,7 +281,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
 
             {/* Result */}
             {domainResult && (
-              <DomainResultPanel result={domainResult} onDownload={downloadNginxConfig} />
+              <DomainResultPanel result={domainResult} />
             )}
           </TabsContent>
         </Tabs>
@@ -297,13 +292,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
 
 // ── Domain result panel ────────────────────────────────────────────────────────
 
-function DomainResultPanel({
-  result,
-  onDownload,
-}: {
-  result: DomainResult;
-  onDownload: (domain: string) => void;
-}) {
+function DomainResultPanel({ result }: { result: DomainResult }) {
   if (result.ok) {
     return (
       <div className="rounded-md border border-green-300 bg-green-50 dark:bg-green-950/30 p-3 space-y-2">
@@ -316,8 +305,6 @@ function DomainResultPanel({
           <ManualCommands
             title="Run to enable HTTPS:"
             commands={result.manualCommands}
-            domain={result.domain}
-            onDownload={onDownload}
           />
         )}
       </div>
@@ -343,19 +330,7 @@ function DomainResultPanel({
           <ManualCommands
             title="Run these commands on the server:"
             commands={result.manualCommands}
-            domain={result.domain}
-            onDownload={onDownload}
           />
-        )}
-
-        {result.domain && (
-          <p className="text-xs text-muted-foreground">
-            Or{" "}
-            <button className="underline text-primary hover:no-underline" onClick={() => onDownload(result.domain!)}>
-              download the nginx config
-            </button>{" "}
-            if you prefer to review it first.
-          </p>
         )}
 
         {result.cleanupCommands && (
@@ -366,7 +341,6 @@ function DomainResultPanel({
             <ManualCommands
               title="Run to remove any partially-created nginx files:"
               commands={result.cleanupCommands}
-              onDownload={onDownload}
             />
           </details>
         )}
@@ -408,13 +382,9 @@ function StepList({ steps }: { steps?: DomainStep[] }) {
 function ManualCommands({
   title,
   commands,
-  domain,
-  onDownload,
 }: {
   title: string;
   commands: string[];
-  domain?: string;
-  onDownload: (domain: string) => void;
 }) {
   const [copied, setCopied] = React.useState<number | null>(null);
   const copy = (text: string, i: number) => {
@@ -453,15 +423,6 @@ function ManualCommands({
           </div>
         ))}
       </div>
-      {domain && (
-        <p className="text-xs text-muted-foreground mt-1">
-          After setup, click{" "}
-          <button className="underline text-primary hover:no-underline" onClick={() => onDownload(domain)}>
-            download the nginx config
-          </button>
-          , copy it to <code className="font-mono">{"/etc/nginx/sites-available/aio-voice-connect.conf"}</code>, then re-validate.
-        </p>
-      )}
     </div>
   );
 }
