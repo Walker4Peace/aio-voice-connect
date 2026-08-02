@@ -211,6 +211,14 @@ function CallDetailDialog({
   const [polling, setPolling] = React.useState(false);
   const [showRaw, setShowRaw] = React.useState(false);
 
+  // Only auto-poll for calls whose last event happened within 15 minutes.
+  // Older calls will never receive a new ElevenLabs webhook.
+  const isRecentCall = React.useMemo(() => {
+    if (legs.length === 0) return false;
+    const latestMs = Math.max(...legs.map(l => new Date(l.timestamp).getTime()));
+    return Date.now() - latestMs < 15 * 60 * 1000;
+  }, [legs]);
+
   React.useEffect(() => {
     if (!open) { setDetail(null); setShowRaw(false); setPolling(false); return; }
 
@@ -232,8 +240,8 @@ function CallDetailDialog({
       setDetail(data);
       setLoading(false);
 
-      // If webhook hasn't arrived yet, keep polling up to MAX_POLLS
-      if (!data?.hasResult && pollCount < MAX_POLLS) {
+      // Only keep polling for recent calls that don't have a result yet
+      if (!data?.hasResult && pollCount < MAX_POLLS && isRecentCall) {
         pollCount++;
         setPolling(true);
         setTimeout(fetchDetail, 5000);
@@ -244,7 +252,7 @@ function CallDetailDialog({
 
     fetchDetail();
     return () => { cancelled = true; };
-  }, [open, callId]);
+  }, [open, callId, isRecentCall]);
 
   // Legs in fixed logical order: ended/error → ai → answered → invite
   const LEG_ORDER: Record<string, number> = { ended: 0, error: 1, connected_ai: 2, answered: 3, invite: 4 };
