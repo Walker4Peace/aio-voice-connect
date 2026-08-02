@@ -3,6 +3,7 @@ export * from "./extensions";
 export * from "./agentConfigs";
 export * from "./deployments";
 export * from "./callEvents";
+export * from "./callResults";
 export * from "./adminConfig";
 export * from "./agentTools";
 export * from "./outboundCalls";

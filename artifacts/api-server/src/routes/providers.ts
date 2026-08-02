@@ -8,7 +8,7 @@
  */
 import { Router } from "express";
 import crypto from "crypto";
-import { db, outboundCallsTable, extensionsTable, agentConfigsTable, callEventsTable } from "@workspace/db";
+import { db, outboundCallsTable, extensionsTable, agentConfigsTable, callEventsTable, callResultsTable } from "@workspace/db";
 import { eq, and, inArray, desc, gte, isNull } from "drizzle-orm";
 import { logger } from "../lib/logger.js";
 import { storeCallResult, type StoredCallResult } from "../services/deployment.js";
@@ -274,20 +274,67 @@ router.post("/providers/elevenlabs/post-call", async (req, res) => {
 
   const result = normalizeResult(data);
 
-  // ── Always store result in the in-memory call result cache (covers inbound too) ──
+  // ── Store result in memory cache (full fidelity — not flattened) ────────────
   storeCallResult(data.conversation_id, {
     transcript: (data.transcript ?? []) as StoredCallResult["transcript"],
     analysis: {
       call_successful: data.analysis?.call_successful ?? null,
       transcript_summary: data.analysis?.transcript_summary ?? null,
-      data_collection_results: Object.fromEntries(
-        Object.entries(data.analysis?.data_collection_results ?? {}).map(([k, v]) => [k, v.value])
-      ),
-      evaluation_criteria_results: Object.fromEntries(
-        Object.entries(data.analysis?.evaluation_criteria_results ?? {}).map(([k, v]) => [k, v.result === "success"])
-      ),
+      evaluation_criteria_results: (data.analysis?.evaluation_criteria_results ?? {}) as StoredCallResult["analysis"]["evaluation_criteria_results"],
+      data_collection_results: (data.analysis?.data_collection_results ?? {}) as StoredCallResult["analysis"]["data_collection_results"],
     },
+    summary: data.analysis?.transcript_summary ?? null,
+    rawPayload: payload,
   });
+
+  // ── Persist to DB (call_results table) ───────────────────────────────────
+  // Try to link to a SIP callId by looking up the conv_id in call_events.detail.
+  let resolvedCallId: string | null = null;
+  try {
+    const detailRows = await db
+      .select({ callId: callEventsTable.callId, detail: callEventsTable.detail })
+      .from(callEventsTable)
+      .where(eq(callEventsTable.event, "connected_ai"))
+      .limit(500);
+    const match = detailRows.find(r => r.detail?.includes(data.conversation_id));
+    if (match) resolvedCallId = match.callId;
+  } catch (err) {
+    logger.warn({ err }, "ElevenLabs webhook: failed to look up SIP callId for DB upsert");
+  }
+
+  const analysisForDb = {
+    call_successful: data.analysis?.call_successful ?? null,
+    transcript_summary: data.analysis?.transcript_summary ?? null,
+    evaluation_criteria_results: data.analysis?.evaluation_criteria_results ?? {},
+  };
+
+  try {
+    const dbRow = {
+      conversationId: data.conversation_id,
+      callId: resolvedCallId,
+      transcriptJson: JSON.stringify(data.transcript ?? []),
+      analysisJson: JSON.stringify(analysisForDb),
+      dataCollectionJson: JSON.stringify(data.analysis?.data_collection_results ?? {}),
+      summary: data.analysis?.transcript_summary ?? null,
+      rawPayloadJson: rawBodyStr,
+    };
+    await db.insert(callResultsTable)
+      .values(dbRow)
+      .onConflictDoUpdate({
+        target: callResultsTable.conversationId,
+        set: {
+          callId: resolvedCallId,
+          transcriptJson: dbRow.transcriptJson,
+          analysisJson: dbRow.analysisJson,
+          dataCollectionJson: dbRow.dataCollectionJson,
+          summary: dbRow.summary,
+          rawPayloadJson: dbRow.rawPayloadJson,
+        },
+      });
+    logger.info({ conversationId: data.conversation_id, callId: resolvedCallId }, "ElevenLabs webhook: persisted to call_results DB");
+  } catch (err) {
+    logger.error({ err, conversationId: data.conversation_id }, "ElevenLabs webhook: failed to persist to DB");
+  }
 
   // ── Match to an outbound call ─────────────────────────────────────────────
   const call = await findMatchingOutboundCall(data);

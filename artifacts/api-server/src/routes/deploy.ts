@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { db, outboundCallsTable, callEventsTable } from "@workspace/db";
-import { inArray, desc } from "drizzle-orm";
+import { db, outboundCallsTable, callEventsTable, callResultsTable } from "@workspace/db";
+import { inArray, desc, eq, and } from "drizzle-orm";
 import {
   startExtension,
   stopExtension,
@@ -116,23 +116,90 @@ router.delete("/deploy/call-events", async (_req, res) => {
 });
 
 // GET /api/deploy/call-events/:callId/detail — transcript + analysis for a call
-router.get("/deploy/call-events/:callId/detail", (req, res) => {
+router.get("/deploy/call-events/:callId/detail", async (req, res) => {
   const callId = req.params["callId"];
   if (!callId) { res.status(400).json({ error: "Missing callId" }); return; }
 
-  // Find the conversation_id from the in-memory connected_ai event
-  const allEvents = getPersistedCallEvents();
-  const aiEv = allEvents.find(
-    e => e.callId === callId && e.event === "connected_ai" && extractConvId(e.detail) !== null
-  );
-  const convId = extractConvId(aiEv?.detail);
-  const result = getCallResult(callId);
+  // ── Step 1: Resolve conversation_id ────────────────────────────────────
+  // Try DB first (survives server restarts), fall back to in-memory cache.
+  let convId: string | null = null;
+  try {
+    const rows = await db
+      .select({ detail: callEventsTable.detail })
+      .from(callEventsTable)
+      .where(and(eq(callEventsTable.callId, callId), eq(callEventsTable.event, "connected_ai")))
+      .limit(5);
+    for (const r of rows) {
+      const cid = extractConvId(r.detail);
+      if (cid) { convId = cid; break; }
+    }
+  } catch { /* DB unavailable */ }
+
+  if (!convId) {
+    const aiEv = getPersistedCallEvents().find(
+      e => e.callId === callId && e.event === "connected_ai" && extractConvId(e.detail) !== null
+    );
+    convId = extractConvId(aiEv?.detail);
+  }
+
+  // ── Step 2: Load result from DB (call_results table) ────────────────────
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let result: Record<string, any> | null = null;
+
+  const safeJson = (s: string | null | undefined, fb: unknown): unknown => {
+    if (!s) return fb;
+    try { return JSON.parse(s); } catch { return fb; }
+  };
+
+  if (convId) {
+    try {
+      const [row] = await db
+        .select()
+        .from(callResultsTable)
+        .where(eq(callResultsTable.conversationId, convId))
+        .limit(1);
+      if (row) {
+        const analysis = safeJson(row.analysisJson, {}) as Record<string, unknown>;
+        result = {
+          conversationId: row.conversationId,
+          transcript: safeJson(row.transcriptJson, []),
+          analysis: {
+            call_successful: analysis["call_successful"] ?? null,
+            transcript_summary: analysis["transcript_summary"] ?? null,
+            evaluation_criteria_results: analysis["evaluation_criteria_results"] ?? {},
+          },
+          dataCollectionResults: safeJson(row.dataCollectionJson, {}),
+          summary: row.summary,
+          rawPayload: safeJson(row.rawPayloadJson, null),
+        };
+      }
+    } catch { /* DB unavailable */ }
+  }
+
+  // ── Step 3: Fall back to in-memory cache ────────────────────────────────
+  if (!result && convId) {
+    const mem = getCallResult(callId);
+    if (mem) {
+      result = {
+        conversationId: mem.conversationId,
+        transcript: mem.transcript,
+        analysis: {
+          call_successful: mem.analysis.call_successful,
+          transcript_summary: mem.analysis.transcript_summary,
+          evaluation_criteria_results: mem.analysis.evaluation_criteria_results ?? {},
+        },
+        dataCollectionResults: mem.analysis.data_collection_results ?? {},
+        summary: mem.summary ?? null,
+        rawPayload: mem.rawPayload ?? null,
+      };
+    }
+  }
 
   res.json({
     callId,
     conversationId: convId ?? null,
     hasResult: result !== null,
-    result: result ?? null,
+    result,
   });
 });
 

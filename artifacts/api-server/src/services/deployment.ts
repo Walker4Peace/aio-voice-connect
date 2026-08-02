@@ -148,15 +148,21 @@ const aiEndedCallIds = new Map<number, Set<string>>();
 
 // ── Post-call result store ────────────────────────────────────────────────────
 // Populated by the ElevenLabs post-call webhook; keyed by ElevenLabs conversation_id.
+// Stored at full fidelity (not pre-flattened) so the UI can render rationale text,
+// and future providers can use the same interface without changes.
 export interface StoredCallResult {
   conversationId: string;
   transcript: Array<{ role: "agent" | "user"; message: string; time_in_call_secs?: number }>;
   analysis: {
     call_successful?: "success" | "failure" | "unknown" | null;
     transcript_summary?: string | null;
-    data_collection_results?: Record<string, unknown>;
-    evaluation_criteria_results?: Record<string, boolean>;
+    /** Full ElevenLabs structure: key → { result, rationale? } */
+    evaluation_criteria_results?: Record<string, { result: "success" | "failure"; rationale?: string }>;
+    /** Full ElevenLabs structure: key → { value, rationale? } */
+    data_collection_results?: Record<string, { value: unknown; rationale?: string }>;
   };
+  summary?: string | null;
+  rawPayload?: unknown;
   storedAt: string;
 }
 const callResults = new Map<string, StoredCallResult>();

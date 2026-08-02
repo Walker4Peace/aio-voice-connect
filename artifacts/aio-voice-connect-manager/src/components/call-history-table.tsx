@@ -153,6 +153,16 @@ function callDuration(legs: CallEvent[]): string | null {
 
 // ── Call Detail Dialog ──────────────────────────────────────────────────────
 
+interface EvalCriterion {
+  result: "success" | "failure";
+  rationale?: string;
+}
+
+interface DataField {
+  value: unknown;
+  rationale?: string;
+}
+
 interface CallDetailResult {
   callId: string;
   conversationId: string | null;
@@ -163,11 +173,20 @@ interface CallDetailResult {
     analysis: {
       call_successful?: "success" | "failure" | "unknown" | null;
       transcript_summary?: string | null;
-      data_collection_results?: Record<string, unknown>;
-      evaluation_criteria_results?: Record<string, boolean>;
+      evaluation_criteria_results?: Record<string, EvalCriterion>;
     };
-    storedAt: string;
+    dataCollectionResults?: Record<string, DataField>;
+    summary?: string | null;
+    rawPayload?: unknown;
   } | null;
+}
+
+/** Convert snake_case / camelCase DB keys into readable Title Case labels. */
+function prettyKey(key: string): string {
+  return key
+    .replace(/_/g, " ")
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/\b\w/g, c => c.toUpperCase());
 }
 
 function CallDetailDialog({
@@ -189,9 +208,10 @@ function CallDetailDialog({
   const { formatTime } = useTimezone();
   const [detail, setDetail] = React.useState<CallDetailResult | null>(null);
   const [loading, setLoading] = React.useState(false);
+  const [showRaw, setShowRaw] = React.useState(false);
 
   React.useEffect(() => {
-    if (!open) return;
+    if (!open) { setDetail(null); setShowRaw(false); return; }
     setLoading(true);
     fetch(`/api/deploy/call-events/${encodeURIComponent(callId)}/detail`)
       .then(r => r.ok ? r.json() : null)
@@ -211,12 +231,14 @@ function CallDetailDialog({
   const result = detail?.result;
   const transcript = result?.transcript ?? [];
   const analysis = result?.analysis;
+  const evalEntries = Object.entries(analysis?.evaluation_criteria_results ?? {});
+  const dataEntries = Object.entries(result?.dataCollectionResults ?? {});
 
   const successIcon = analysis?.call_successful === "success"
-    ? <CheckCircle2 className="h-4 w-4 text-green-500" />
+    ? <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
     : analysis?.call_successful === "failure"
-    ? <XCircle className="h-4 w-4 text-red-500" />
-    : <HelpCircle className="h-4 w-4 text-muted-foreground" />;
+    ? <XCircle className="h-4 w-4 text-red-500 shrink-0" />
+    : <HelpCircle className="h-4 w-4 text-muted-foreground shrink-0" />;
 
   const successLabel = analysis?.call_successful === "success"
     ? t("calls.detailSuccess")
@@ -224,64 +246,41 @@ function CallDetailDialog({
     ? t("calls.detailFailure")
     : t("calls.detailUnknown");
 
-  const dataEntries = Object.entries(analysis?.data_collection_results ?? {});
-  const evalEntries = Object.entries(analysis?.evaluation_criteria_results ?? {});
+  const hasResultSection = !loading && result &&
+    (evalEntries.length > 0 || dataEntries.length > 0 || analysis?.call_successful || result.summary || result.rawPayload);
 
   return (
     <Dialog open={open} onOpenChange={v => !v && onClose()}>
-      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-start gap-2 flex-wrap">
             {t("calls.detailTitle")}
-            <span className="font-mono text-xs text-muted-foreground font-normal break-all">{callId}</span>
+            <div className="flex items-center gap-1 min-w-0">
+              <span className="font-mono text-xs text-muted-foreground font-normal break-all">{callId}</span>
+              <CopyButton value={callId} />
+            </div>
           </DialogTitle>
         </DialogHeader>
 
-        {/* ── Call Legs ── */}
-        <div className="space-y-3">
-          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">{t("calls.detailLegs")}</h3>
+        {/* ── Section 1: Call Legs ── */}
+        <div className="space-y-2">
+          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t("calls.detailLegs")}</h3>
           <div className="divide-y rounded-md border bg-muted/20">
             {legsDesc.map((leg, i) => {
               const isAiLeg = leg.event === "connected_ai";
               const convId = isAiLeg ? extractConvId(leg.detail) : null;
               return (
-                <div key={i} className="px-4 py-3 space-y-2">
+                <div key={i} className="px-4 py-2.5 space-y-1.5">
                   <div className="flex items-center gap-3">
                     <div className="shrink-0">{(isOutbound ? EVENT_ICONS_OUTBOUND : EVENT_ICONS)[leg.event]}</div>
                     <div className="flex-1 min-w-0 text-sm">{eventLabel(leg, isOutbound, extLabel, t)}</div>
-                    <time className="text-xs text-muted-foreground shrink-0 tabular-nums">
-                      {formatTime(leg.timestamp)}
-                    </time>
+                    <time className="text-xs text-muted-foreground shrink-0 tabular-nums">{formatTime(leg.timestamp)}</time>
                   </div>
-
-                  {/* AI leg: show conv_id + transcript */}
-                  {isAiLeg && (
-                    <div className="ml-6 space-y-2">
-                      {convId && (
-                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                          <span className="font-medium">{t("calls.detailConvId")}:</span>
-                          <code className="font-mono bg-muted px-1 py-0.5 rounded text-xs">{convId}</code>
-                          <CopyButton value={convId} />
-                        </div>
-                      )}
-
-                      {loading ? (
-                        <p className="text-xs text-muted-foreground animate-pulse">Loading transcript…</p>
-                      ) : transcript.length > 0 ? (
-                        <div className="space-y-1.5">
-                          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t("calls.detailTranscript")}</p>
-                          <div className="space-y-1 max-h-60 overflow-y-auto pr-1">
-                            {transcript.map((turn, ti) => (
-                              <div key={ti} className={`flex gap-2 text-xs ${turn.role === "agent" ? "text-purple-700 dark:text-purple-400" : "text-foreground"}`}>
-                                <span className="shrink-0 w-12 font-medium capitalize">{turn.role === "agent" ? "AI" : "User"}:</span>
-                                <span className="leading-relaxed">{turn.message}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      ) : !loading && detail && !detail.hasResult ? (
-                        <p className="text-xs text-muted-foreground italic">{t("calls.detailNoResult")}</p>
-                      ) : null}
+                  {isAiLeg && convId && (
+                    <div className="ml-7 flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <span className="font-medium">{t("calls.detailConvId")}:</span>
+                      <code className="font-mono bg-muted px-1 py-0.5 rounded">{convId}</code>
+                      <CopyButton value={convId} />
                     </div>
                   )}
                 </div>
@@ -290,64 +289,114 @@ function CallDetailDialog({
           </div>
         </div>
 
-        {/* ── Call Result ── */}
-        {!loading && result && (
-          <div className="space-y-3 pt-2 border-t">
-            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">{t("calls.detailResult")}</h3>
-
-            <div className="space-y-3">
-              {/* Call outcome */}
-              {analysis?.call_successful && (
-                <div className="flex items-center gap-2 text-sm">
-                  {successIcon}
-                  <span className="font-medium">{t("calls.detailCallSuccess")}:</span>
-                  <span>{successLabel}</span>
+        {/* ── Section 2: Conversation ── */}
+        <div className="space-y-2 pt-2 border-t">
+          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t("calls.detailConversation")}</h3>
+          {loading ? (
+            <div className="space-y-2 animate-pulse py-1">
+              {[42, 65, 50].map((w, i) => (
+                <div key={i} className="flex gap-3">
+                  <div className="h-3 w-12 bg-muted rounded shrink-0" />
+                  <div className="h-3 bg-muted rounded" style={{ width: `${w}%` }} />
                 </div>
-              )}
-
-              {/* Summary */}
-              {analysis?.transcript_summary && (
-                <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t("calls.detailSummary")}</p>
-                  <p className="text-sm leading-relaxed bg-muted/40 rounded-md p-3">{analysis.transcript_summary}</p>
-                </div>
-              )}
-
-              {/* Data collected */}
-              {dataEntries.length > 0 && (
-                <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t("calls.detailDataCollected")}</p>
-                  <div className="rounded-md border divide-y text-sm">
-                    {dataEntries.map(([key, value]) => (
-                      <div key={key} className="flex items-start gap-3 px-3 py-2">
-                        <span className="font-mono text-xs text-muted-foreground shrink-0 w-36 truncate">{key}</span>
-                        <span className="break-words min-w-0">{String(value)}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Evaluation */}
-              {evalEntries.length > 0 && (
-                <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t("calls.detailEvaluation")}</p>
-                  <div className="rounded-md border divide-y text-sm">
-                    {evalEntries.map(([key, passed]) => (
-                      <div key={key} className="flex items-center gap-3 px-3 py-2">
-                        {passed
-                          ? <CheckCircle2 className="h-3.5 w-3.5 text-green-500 shrink-0" />
-                          : <XCircle     className="h-3.5 w-3.5 text-red-500 shrink-0" />}
-                        <span className="font-mono text-xs text-muted-foreground truncate">{key}</span>
-                        <span className={`ml-auto text-xs ${passed ? "text-green-600" : "text-red-600"}`}>
-                          {passed ? t("calls.detailSuccess") : t("calls.detailFailure")}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+              ))}
             </div>
+          ) : transcript.length > 0 ? (
+            <div className="max-h-72 overflow-y-auto rounded-md border bg-muted/10 divide-y">
+              {transcript.map((turn, i) => (
+                <div key={i} className="flex gap-3 px-3 py-2 text-sm">
+                  <span className={`shrink-0 w-14 text-right text-xs font-semibold pt-0.5 ${
+                    turn.role === "agent" ? "text-purple-600 dark:text-purple-400" : "text-muted-foreground"
+                  }`}>
+                    {turn.role === "agent" ? t("calls.detailAiSpeaker") : t("calls.detailCallerSpeaker")}
+                  </span>
+                  <span className="leading-relaxed flex-1 min-w-0">{turn.message}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground italic py-1">{t("calls.detailNoConversation")}</p>
+          )}
+        </div>
+
+        {/* ── Section 3: Call Result ── */}
+        {hasResultSection && (
+          <div className="space-y-4 pt-2 border-t">
+            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t("calls.detailResult")}</h3>
+
+            {/* Outcome + summary */}
+            {(analysis?.call_successful || result!.summary) && (
+              <div className="space-y-2">
+                {analysis?.call_successful && (
+                  <div className="flex items-center gap-2 text-sm">
+                    {successIcon}
+                    <span className="font-medium">{t("calls.detailCallSuccess")}:</span>
+                    <span>{successLabel}</span>
+                  </div>
+                )}
+                {result!.summary && (
+                  <p className="text-sm leading-relaxed bg-muted/40 rounded-md px-3 py-2">{result!.summary}</p>
+                )}
+              </div>
+            )}
+
+            {/* Evaluation criteria — with rationale */}
+            {evalEntries.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t("calls.detailEvaluation")}</p>
+                <div className="space-y-2.5">
+                  {evalEntries.map(([key, criterion]) => (
+                    <div key={key} className="space-y-0.5">
+                      <div className="flex items-center gap-2">
+                        {criterion.result === "success"
+                          ? <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
+                          : <XCircle className="h-4 w-4 text-red-500 shrink-0" />}
+                        <span className="text-sm font-medium">{prettyKey(key)}</span>
+                      </div>
+                      {criterion.rationale && (
+                        <p className="text-xs text-muted-foreground ml-6 leading-relaxed">{criterion.rationale}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Extracted information */}
+            {dataEntries.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t("calls.detailExtractedInfo")}</p>
+                <div className="rounded-md border divide-y text-sm">
+                  {dataEntries.map(([key, field]) => (
+                    <div key={key} className="px-3 py-2 space-y-0.5">
+                      <div className="text-xs font-medium text-muted-foreground">{prettyKey(key)}</div>
+                      <div className="font-medium">{String(field.value ?? "—")}</div>
+                      {field.rationale && (
+                        <div className="text-xs text-muted-foreground italic">{field.rationale}</div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Raw webhook payload — collapsible */}
+            {result!.rawPayload && (
+              <div className="space-y-1">
+                <button
+                  onClick={() => setShowRaw(v => !v)}
+                  className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <ChevronRight className={`h-3.5 w-3.5 transition-transform duration-150 ${showRaw ? "rotate-90" : ""}`} />
+                  {t("calls.detailWebhookPayload")}
+                </button>
+                {showRaw && (
+                  <pre className="text-xs bg-muted rounded-md p-3 overflow-auto max-h-80 font-mono leading-relaxed whitespace-pre-wrap break-all">
+                    {JSON.stringify(result!.rawPayload, null, 2)}
+                  </pre>
+                )}
+              </div>
+            )}
           </div>
         )}
       </DialogContent>
