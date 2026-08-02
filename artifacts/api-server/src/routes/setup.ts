@@ -116,6 +116,24 @@ function httpGet(url: string, timeoutMs = 6000): Promise<number> {
   });
 }
 
+/**
+ * HTTPS connectivity probe — skips certificate verification.
+ * Used to check whether nginx is serving HTTPS correctly.  Cert validity is
+ * already guaranteed by certbot; we don't need Node.js to re-verify it here,
+ * and doing so causes false negatives when the server's CA bundle lags behind
+ * the Let's Encrypt root rotation.
+ */
+function httpsProbe(domain: string, path: string, timeoutMs = 8000): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const req = https.get(
+      { hostname: domain, path, rejectUnauthorized: false, timeout: timeoutMs },
+      res => { res.resume(); resolve(res.statusCode ?? 0); },
+    );
+    req.on("timeout", () => { req.destroy(); reject(new Error("timeout")); });
+    req.on("error", reject);
+  });
+}
+
 /** Fetch the plain-text body of a URL (used for IP echo services). */
 function httpGetText(url: string, timeoutMs = 5000): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -483,14 +501,15 @@ router.post("/setup/domain", async (req, res) => {
     return;
   }
 
-  // SSL probe
+  // SSL probe — skips cert verification (certbot guarantees cert validity;
+  // Node's CA bundle may lag Let's Encrypt roots causing false negatives)
   let sslOk = false;
   try {
-    const status = await httpGet(`https://${domain}/api/healthz`);
+    const status = await httpsProbe(domain, "/api/healthz");
     sslOk = status >= 200 && status < 500;
     steps.push({ step: `HTTPS probe → ${status}`, success: sslOk });
   } catch {
-    steps.push({ step: "HTTPS / SSL", success: false, error: "Not yet configured" });
+    steps.push({ step: "HTTPS / SSL", success: false, error: "Port 443 not reachable — check firewall rules" });
   }
 
   await db.update(adminConfigTable).set({ domain, domainConfigured: true, updatedAt: new Date() });

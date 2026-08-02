@@ -75,7 +75,7 @@ if [[ -n "$DOMAIN" ]]; then
     --non-interactive --agree-tos --no-eff-email \
     --email "admin@${DOMAIN}" 2>&1 || true)
 
-  if echo "$CERTBOT_OUT" | grep -q "Congratulations\|Certificate not yet due"; then
+  if echo "$CERTBOT_OUT" | grep -qiE "Congratulations|Certificate not yet due|Successfully deployed|Successfully received"; then
     SSL_OK=true
   else
     # Trim the output to a short error message
