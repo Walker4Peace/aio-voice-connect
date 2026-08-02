@@ -15,20 +15,11 @@ export default defineConfig(async ({ command }) => {
   const rawPort = process.env.PORT;
   const rawBasePath = process.env.BASE_PATH;
 
-  if (!isBuild) {
-    if (!rawPort) {
-      throw new Error(
-        'PORT environment variable is required but was not provided.',
-      );
-    }
-    if (!rawBasePath) {
-      throw new Error(
-        'BASE_PATH environment variable is required but was not provided.',
-      );
-    }
-  }
-
-  const port = rawPort ? Number(rawPort) : 3000;
+  // PORT and BASE_PATH are optional — defaults to 8080 / '/' so that
+  // `vite preview` works in production without extra env setup.
+  // When running inside the Replit workspace the artifact config injects
+  // PORT automatically, so the default is never used there.
+  const port = rawPort ? Number(rawPort) : 8080;
   const basePath = rawBasePath ?? '/';
 
   if (!isBuild && (Number.isNaN(port) || port <= 0)) {
@@ -83,7 +74,7 @@ export default defineConfig(async ({ command }) => {
       // Proxy /api requests to the API server so session cookies stay same-origin
       proxy: {
         '/api': {
-          target: 'http://localhost:8080',
+          target: 'http://localhost:3100',
           changeOrigin: false,
         },
       },

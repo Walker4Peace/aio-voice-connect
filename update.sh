@@ -99,7 +99,7 @@ if [[ -f "$HELPER_SRC" ]]; then
   cat > /etc/systemd/system/aio-nginx-setup.path <<EOF
 [Unit]
 Description=Watch for AIO Voice Connect nginx config request
-After=aio-voice-connect.service
+After=aio-voice-connect-api.service
 
 [Path]
 PathExists=/tmp/aio-vc-nginx-pending.conf
@@ -127,23 +127,27 @@ EOF
   echo "  ✓ nginx helper updated and path unit restarted"
 fi
 
-# ── 6. Restart API server ─────────────────────────────────────────────────────
-SERVICE_NAME="${SERVICE_NAME:-aio-voice-connect}"
+# ── 6. Restart services ───────────────────────────────────────────────────────
 echo ""
-echo "▶ Restarting service ($SERVICE_NAME)"
-if systemctl is-active --quiet "$SERVICE_NAME"; then
-  systemctl restart "$SERVICE_NAME"
-  echo "  ✓ Service restarted"
-elif systemctl list-units --full --all | grep -q "${SERVICE_NAME}.service"; then
-  systemctl start "$SERVICE_NAME"
-  echo "  ✓ Service started"
-else
-  echo "  ✗ Service '$SERVICE_NAME' not found in systemd. Start it manually."
-  echo "    sudo systemctl start $SERVICE_NAME"
-fi
+echo "▶ Restarting services"
+
+for SVC in aio-voice-connect-api aio-voice-connect-ui; do
+  if systemctl is-active --quiet "$SVC"; then
+    systemctl restart "$SVC"
+    echo "  ✓ $SVC restarted"
+  elif systemctl list-units --full --all 2>/dev/null | grep -q "${SVC}.service"; then
+    systemctl start "$SVC"
+    echo "  ✓ $SVC started"
+  else
+    echo "  ⚠  $SVC not found in systemd — skipping (run install.sh to create it)"
+  fi
+done
 
 # ── Done ──────────────────────────────────────────────────────────────────────
 echo ""
 echo "✅  Update complete — $(date '+%Y-%m-%d %H:%M:%S')"
-echo "    API:      http://localhost:8080/api/healthz"
-echo "    Logs:     journalctl -u $SERVICE_NAME -f"
+echo "    API (direct):      http://localhost:3100/api/healthz"
+echo "    Frontend (direct): http://localhost:8080/"
+echo "    Dashboard (nginx): http://localhost/"
+echo "    API logs:          journalctl -u aio-voice-connect-api -f"
+echo "    UI logs:           journalctl -u aio-voice-connect-ui -f"

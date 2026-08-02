@@ -32,13 +32,10 @@ const BASE_CONFIG_COPY = "/tmp/aio-vc-nginx-base.conf";
 // ── nginx config builders ────────────────────────────────────────────────────
 
 function nginxLocations(): string {
-  const apiPort = process.env["PORT"] ?? "3101";
-  const staticRoot = path.resolve(INSTALL_DIR, "artifacts/aio-voice-connect-manager/dist/public");
-
   return `
-    # API backend — proxy to Node.js process
+    # API backend — proxy to Node.js API process (port 3100)
     location /api/ {
-        proxy_pass         http://127.0.0.1:${apiPort}/api/;
+        proxy_pass         http://127.0.0.1:3100/api/;
         proxy_http_version 1.1;
         proxy_set_header   Host              $host;
         proxy_set_header   X-Real-IP         $remote_addr;
@@ -48,19 +45,18 @@ function nginxLocations(): string {
         proxy_send_timeout 120s;
     }
 
-    # React SPA — serve static files; fall back to index.html
-    root  ${staticRoot};
-    index index.html;
-
+    # Frontend — proxy to Vite preview process (port 8080)
     location / {
-        try_files $uri $uri/ /index.html;
-
-        # Cache hashed static assets aggressively
-        location ~* \\.(?:js|css|woff2?|ttf|eot|svg|png|jpg|jpeg|gif|ico|webp)$ {
-            expires     1y;
-            add_header  Cache-Control "public, immutable";
-            access_log  off;
-        }
+        proxy_pass         http://127.0.0.1:8080/;
+        proxy_http_version 1.1;
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_set_header   Upgrade           $http_upgrade;
+        proxy_set_header   Connection        "upgrade";
+        proxy_read_timeout 60s;
+        proxy_send_timeout 60s;
     }
 
     # Security headers

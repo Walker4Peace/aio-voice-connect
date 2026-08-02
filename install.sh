@@ -49,8 +49,9 @@ REPO_URL="${AIO_VOICE_CONNECT_REPO_URL:-https://github.com/Walker4Peace/ai-agent
 APP_USER="aio-voice-connect"
 INSTALL_DIR="/opt/aio-voice-connect"
 NODE_MAJOR="20"          # Match the Node.js version used in development
-API_PORT=3101            # Internal port for the Node.js API server
-DASHBOARD_PORT=3100      # Public-facing port served by nginx
+API_PORT=3100            # Port for the Express API server (direct: http://SERVER_IP:3100)
+UI_PORT=8080             # Port for the Vite frontend preview (direct: http://SERVER_IP:8080)
+# nginx listens on ports 80/443 and proxies to the above two processes
 
 DB_NAME="aio_voice_connect"
 DB_USER="aio_voice_connect"
@@ -107,7 +108,7 @@ if ! curl -fsSL --max-time 10 https://registry.npmjs.org/ >/dev/null 2>&1; then
 fi
 
 # 6. Required ports must be free
-for PORT_CHECK in "${API_PORT}" "${DASHBOARD_PORT}"; do
+for PORT_CHECK in "${API_PORT}" "${UI_PORT}" 80; do
     if ss -tlnp 2>/dev/null | grep -q ":${PORT_CHECK} " || \
        netstat -tlnp 2>/dev/null | grep -q ":${PORT_CHECK} "; then
         die "Port ${PORT_CHECK} is already in use. Free the port or change the configuration at the top of this script."
@@ -136,7 +137,9 @@ echo ""
 echo -e "${BOLD}AIO Voice Connect Installer${NC}"
 echo -e "Server IP  : ${SERVER_IP}"
 echo -e "Install dir: ${INSTALL_DIR}"
-echo -e "Dashboard  : http://${SERVER_IP}:${DASHBOARD_PORT}"
+echo -e "Frontend   : http://${SERVER_IP}:${UI_PORT}  (direct)"
+echo -e "API        : http://${SERVER_IP}:${API_PORT}  (direct)"
+echo -e "Dashboard  : http://${SERVER_IP}  (via nginx on port 80)"
 echo -e "OS         : ${PRETTY_NAME}"
 echo -e "Arch       : ${ARCH}"
 echo -e "RAM        : ${TOTAL_RAM_MB} MB"
@@ -280,6 +283,7 @@ cat > "${INSTALL_DIR}/.env" <<EOF
 
 NODE_ENV=production
 PORT=${API_PORT}
+UI_PORT=${UI_PORT}
 DATABASE_URL=${DATABASE_URL}
 SESSION_SECRET=${SESSION_SECRET}
 SIP_AGENT_BIN=${SIP_AGENT_BIN}
@@ -332,8 +336,8 @@ step "Building production artifacts"
 sudo -u "${APP_USER}" bash -c "
     set -e
     cd '${INSTALL_DIR}'
-    # BASE_PATH=/ because nginx serves the SPA from the root of port 3100.
-    # NODE_ENV=production suppresses dev-only Vite plugins.
+    # NODE_ENV=production suppresses dev-only Vite plugins (cartographer, dev-banner).
+    # BASE_PATH=/ — the frontend is served from the root path via nginx or directly.
     echo '[INFO]  Building API server...'
     NODE_ENV=production pnpm --filter @workspace/api-server run build 2>&1
     echo '[INFO]  Building dashboard frontend...'
@@ -351,12 +355,14 @@ sudo -u "${APP_USER}" bash -c "
 " || die "Database migration (drizzle push) failed."
 success "Database schema applied"
 
-# ── Step 10: systemd service ─────────────────────────────────────────────────
-step "Creating systemd service"
+# ── Step 10: systemd services ────────────────────────────────────────────────
+step "Creating systemd services"
 
 NODE_BIN="$(command -v node)"
+PNPM_BIN="$(command -v pnpm)"
 
-cat > /etc/systemd/system/aio-voice-connect.service <<EOF
+# ── API service (Express, port 3100) ─────────────────────────────────────────
+cat > /etc/systemd/system/aio-voice-connect-api.service <<EOF
 [Unit]
 Description=AIO Voice Connect API Server
 Documentation=https://github.com/Walker4Peace/ai-agent
@@ -378,7 +384,7 @@ StartLimitBurst=5
 
 StandardOutput=journal
 StandardError=journal
-SyslogIdentifier=aio-voice-connect
+SyslogIdentifier=aio-voice-connect-api
 
 # Allow the sip-agent child processes to bind privileged SIP ports
 AmbientCapabilities=CAP_NET_BIND_SERVICE
@@ -388,10 +394,43 @@ CapabilityBoundingSet=CAP_NET_BIND_SERVICE
 WantedBy=multi-user.target
 EOF
 
+# ── Frontend service (Vite preview, port 8080) ───────────────────────────────
+cat > /etc/systemd/system/aio-voice-connect-ui.service <<EOF
+[Unit]
+Description=AIO Voice Connect Frontend (Vite preview)
+Documentation=https://github.com/Walker4Peace/ai-agent
+After=network.target
+
+[Service]
+Type=simple
+User=${APP_USER}
+WorkingDirectory=${INSTALL_DIR}
+Environment=NODE_ENV=production
+Environment=PORT=${UI_PORT}
+Environment=BASE_PATH=/
+
+ExecStart=${PNPM_BIN} --filter @workspace/aio-voice-connect-manager run serve
+
+Restart=on-failure
+RestartSec=5
+StartLimitInterval=60
+StartLimitBurst=5
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=aio-voice-connect-ui
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
 systemctl daemon-reload
-systemctl enable aio-voice-connect --quiet
-systemctl restart aio-voice-connect || die "Failed to start sip-agent service. Check: journalctl -u aio-voice-connect -n 50"
-success "aio-voice-connect systemd service enabled and started"
+systemctl enable aio-voice-connect-api --quiet
+systemctl enable aio-voice-connect-ui --quiet
+systemctl restart aio-voice-connect-api || die "Failed to start API service. Check: journalctl -u aio-voice-connect-api -n 50"
+systemctl restart aio-voice-connect-ui  || die "Failed to start UI service. Check: journalctl -u aio-voice-connect-ui -n 50"
+success "aio-voice-connect-api service enabled and started (port ${API_PORT})"
+success "aio-voice-connect-ui  service enabled and started (port ${UI_PORT})"
 
 # ── Step 10b: privileged nginx helper (systemd path unit) ────────────────────
 #
@@ -420,7 +459,7 @@ chown root:root "$HELPER_DEST"
 cat > /etc/systemd/system/aio-nginx-setup.path <<EOF
 [Unit]
 Description=Watch for AIO Voice Connect nginx config request
-After=aio-voice-connect.service
+After=aio-voice-connect-api.service
 
 [Path]
 PathExists=/tmp/aio-vc-nginx-pending.conf
@@ -452,17 +491,23 @@ success "nginx helper installed — path unit is active (${HELPER_DEST})"
 # ── Step 11: nginx reverse proxy ─────────────────────────────────────────────
 step "Configuring nginx"
 
-STATIC_ROOT="${INSTALL_DIR}/artifacts/aio-voice-connect-manager/dist/public"
-
 cat > /etc/nginx/sites-available/aio-voice-connect <<EOF
 # aio-voice-connect — generated by install.sh
+# nginx is a pure reverse proxy; it never serves static files directly.
+#   Frontend (Vite preview) → http://127.0.0.1:${UI_PORT}
+#   API (Express)           → http://127.0.0.1:${API_PORT}
+#
+# Both services are also reachable directly without nginx:
+#   http://SERVER_IP:${UI_PORT}   — frontend
+#   http://SERVER_IP:${API_PORT}  — API
 server {
-    listen ${DASHBOARD_PORT};
+    listen 80 default_server;
+    listen [::]:80 default_server;
     server_name _;
 
-    # ── API requests → Node.js ────────────────────────────────────────────
+    # ── API requests → Express (port ${API_PORT}) ─────────────────────────
     location /api/ {
-        proxy_pass         http://127.0.0.1:${API_PORT};
+        proxy_pass         http://127.0.0.1:${API_PORT}/api/;
         proxy_http_version 1.1;
         proxy_set_header   Host              \$host;
         proxy_set_header   X-Real-IP         \$remote_addr;
@@ -472,19 +517,18 @@ server {
         proxy_send_timeout 120s;
     }
 
-    # ── React SPA — serve static files; fall back to index.html ──────────
-    root  ${STATIC_ROOT};
-    index index.html;
-
+    # ── All other requests → Vite preview (port ${UI_PORT}) ──────────────
     location / {
-        try_files \$uri \$uri/ /index.html;
-
-        # Cache static assets aggressively; bust on deploy (hashed filenames)
-        location ~* \\.(?:js|css|woff2?|ttf|eot|svg|png|jpg|jpeg|gif|ico|webp)\$ {
-            expires     1y;
-            add_header  Cache-Control "public, immutable";
-            access_log  off;
-        }
+        proxy_pass         http://127.0.0.1:${UI_PORT}/;
+        proxy_http_version 1.1;
+        proxy_set_header   Host              \$host;
+        proxy_set_header   X-Real-IP         \$remote_addr;
+        proxy_set_header   X-Forwarded-For   \$proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto \$scheme;
+        proxy_set_header   Upgrade           \$http_upgrade;
+        proxy_set_header   Connection        "upgrade";
+        proxy_read_timeout 60s;
+        proxy_send_timeout 60s;
     }
 
     # Security headers
@@ -492,7 +536,6 @@ server {
     add_header X-Content-Type-Options "nosniff"      always;
     add_header Referrer-Policy        "strict-origin" always;
 
-    # Increase body size limit for config uploads
     client_max_body_size 16M;
 }
 EOF
@@ -509,30 +552,39 @@ success "nginx configured and restarted"
 # ── Step 12: Health verification ─────────────────────────────────────────────
 step "Verifying installation"
 
-# Give the Node.js process a moment to fully start
-sleep 4
+# Give the services a moment to fully start
+sleep 5
 
 ALL_OK=true
 
-# 1. API server health check
+# 1. API server direct health check
 API_HTTP_CODE="$(curl -s -o /dev/null -w "%{http_code}" "http://127.0.0.1:${API_PORT}/api/healthz" 2>/dev/null || echo "000")"
 if [[ "${API_HTTP_CODE}" == "200" ]]; then
-    success "API server is healthy (/api/healthz → HTTP 200)"
+    success "API server is healthy — direct port ${API_PORT} (/api/healthz → HTTP 200)"
 else
-    warn "API server returned HTTP ${API_HTTP_CODE}. Check: journalctl -u aio-voice-connect -n 50"
+    warn "API server returned HTTP ${API_HTTP_CODE} on port ${API_PORT}. Check: journalctl -u aio-voice-connect-api -n 50"
     ALL_OK=false
 fi
 
-# 2. Dashboard via nginx
-DASH_HTTP_CODE="$(curl -s -o /dev/null -w "%{http_code}" "http://127.0.0.1:${DASHBOARD_PORT}/" 2>/dev/null || echo "000")"
+# 2. Frontend direct check (Vite preview)
+UI_HTTP_CODE="$(curl -s -o /dev/null -w "%{http_code}" "http://127.0.0.1:${UI_PORT}/" 2>/dev/null || echo "000")"
+if [[ "${UI_HTTP_CODE}" == "200" ]]; then
+    success "Frontend is reachable — direct port ${UI_PORT} (HTTP ${UI_HTTP_CODE})"
+else
+    warn "Frontend returned HTTP ${UI_HTTP_CODE} on port ${UI_PORT}. Check: journalctl -u aio-voice-connect-ui -n 50"
+    ALL_OK=false
+fi
+
+# 3. Dashboard via nginx (port 80)
+DASH_HTTP_CODE="$(curl -s -o /dev/null -w "%{http_code}" "http://127.0.0.1:80/" 2>/dev/null || echo "000")"
 if [[ "${DASH_HTTP_CODE}" == "200" ]]; then
-    success "Dashboard is reachable via nginx (HTTP ${DASH_HTTP_CODE})"
+    success "Dashboard is reachable via nginx port 80 (HTTP ${DASH_HTTP_CODE})"
 else
-    warn "Dashboard returned HTTP ${DASH_HTTP_CODE}. Check: systemctl status nginx"
+    warn "nginx returned HTTP ${DASH_HTTP_CODE} on port 80. Check: systemctl status nginx"
     ALL_OK=false
 fi
 
-# 3. PostgreSQL
+# 4. PostgreSQL
 if sudo -u postgres psql -c '\q' &>/dev/null; then
     success "PostgreSQL is running"
 else
@@ -545,21 +597,26 @@ echo ""
 echo -e "${GREEN}${BOLD}╔══════════════════════════════════════════════════════════════╗${NC}"
 echo -e "${GREEN}${BOLD}║           Installation completed successfully                 ║${NC}"
 echo -e "${GREEN}${BOLD}╠══════════════════════════════════════════════════════════════╣${NC}"
-echo -e "${GREEN}${BOLD}║  Dashboard: http://${SERVER_IP}:${DASHBOARD_PORT}                              ║${NC}"
+echo -e "${GREEN}${BOLD}║  Dashboard  (via nginx): http://${SERVER_IP}                       ║${NC}"
+echo -e "${GREEN}${BOLD}║  Frontend   (direct):    http://${SERVER_IP}:${UI_PORT}              ║${NC}"
+echo -e "${GREEN}${BOLD}║  API        (direct):    http://${SERVER_IP}:${API_PORT}             ║${NC}"
 echo -e "${GREEN}${BOLD}╚══════════════════════════════════════════════════════════════╝${NC}"
 
 if [[ "${ALL_OK}" == false ]]; then
     echo ""
     echo -e "${YELLOW}One or more health checks did not pass. Useful diagnostic commands:${NC}"
-    echo "  journalctl -u aio-voice-connect -n 80 --no-pager   # API server logs"
-    echo "  journalctl -u nginx  -n 30 --no-pager   # nginx logs"
-    echo "  systemctl status aio-voice-connect                 # service status"
+    echo "  journalctl -u aio-voice-connect-api -n 80 --no-pager   # API server logs"
+    echo "  journalctl -u aio-voice-connect-ui  -n 80 --no-pager   # Frontend logs"
+    echo "  journalctl -u nginx -n 30 --no-pager                   # nginx logs"
+    echo "  systemctl status aio-voice-connect-api                 # API status"
+    echo "  systemctl status aio-voice-connect-ui                  # Frontend status"
 fi
 
 echo ""
 echo "Useful commands:"
-echo "  journalctl -u aio-voice-connect -f      # stream API server logs"
-echo "  systemctl restart aio-voice-connect     # restart the API server"
-echo "  systemctl status aio-voice-connect      # service health"
-echo "  cat ${INSTALL_DIR}/.env      # view configuration (root only)"
+echo "  journalctl -u aio-voice-connect-api -f      # stream API server logs"
+echo "  journalctl -u aio-voice-connect-ui  -f      # stream frontend logs"
+echo "  systemctl restart aio-voice-connect-api     # restart API server"
+echo "  systemctl restart aio-voice-connect-ui      # restart frontend"
+echo "  cat ${INSTALL_DIR}/.env                      # view configuration (root only)"
 echo ""
