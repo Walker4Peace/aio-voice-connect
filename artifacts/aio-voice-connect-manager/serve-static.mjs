@@ -2,12 +2,15 @@
 /**
  * AIO Voice Connect — Production static file server
  *
- * Serves the pre-built Vite output from dist/public.
+ * Serves the pre-built Vite output from dist/public AND proxies /api/ requests
+ * to the API service on port 3100.  This makes port 8080 a fully self-contained
+ * access point — no nginx needed for direct-IP access.
+ *
  * Uses only Node.js built-in modules — no vite, no pnpm, no node_modules
  * write access required at runtime.
  *
- * SPA routing: any path that doesn't match a real file falls back to index.html.
- * Hashed assets (*.js, *.css, etc.) get a 1-year immutable cache header.
+ * SPA routing: any non-API path that doesn't match a real file falls back to
+ * index.html.  Hashed assets get a 1-year immutable cache header.
  *
  * Usage:
  *   PORT=8080 node artifacts/aio-voice-connect-manager/serve-static.mjs
@@ -22,6 +25,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT      = path.join(__dirname, "dist", "public");
 const PORT      = Number(process.env.PORT ?? 8080);
 const HOST      = process.env.HOST ?? "0.0.0.0";
+const API_PORT  = Number(process.env.API_PORT ?? 3100);
+const API_HOST  = process.env.API_HOST ?? "127.0.0.1";
 
 // ── MIME types ────────────────────────────────────────────────────────────────
 const MIME = {
@@ -46,8 +51,7 @@ const MIME = {
   ".map"  : "application/json",
 };
 
-// Hashed filenames (content-hash in name) can be cached for 1 year.
-// index.html must never be cached so users always get the latest shell.
+// Hashed filenames can be cached for 1 year; index.html must never be cached.
 const HASHED_EXT = new Set([".js", ".mjs", ".css", ".woff", ".woff2", ".ttf", ".eot", ".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg"]);
 const HASH_RE    = /[.\-][0-9a-f]{8,}\./i; // e.g. main.3f2a1b4c.js
 
@@ -56,15 +60,44 @@ function cacheHeader(filePath) {
   const base = path.basename(filePath);
   if (base === "index.html") return "no-cache, no-store, must-revalidate";
   if (HASHED_EXT.has(ext) && HASH_RE.test(base)) return "public, max-age=31536000, immutable";
-  return "public, max-age=3600"; // 1 hour for everything else
+  return "public, max-age=3600";
 }
 
-// ── Request handler ───────────────────────────────────────────────────────────
-function handler(req, res) {
-  // Strip query string and decode
+// ── API proxy ─────────────────────────────────────────────────────────────────
+function proxyToApi(req, res) {
+  const options = {
+    hostname: API_HOST,
+    port    : API_PORT,
+    path    : req.url,
+    method  : req.method,
+    headers : {
+      ...req.headers,
+      host: `${API_HOST}:${API_PORT}`,
+      "x-forwarded-for"   : req.socket.remoteAddress ?? "",
+      "x-forwarded-proto" : "http",
+    },
+  };
+
+  const proxy = http.request(options, (apiRes) => {
+    res.writeHead(apiRes.statusCode ?? 502, apiRes.headers);
+    apiRes.pipe(res, { end: true });
+  });
+
+  proxy.on("error", (err) => {
+    console.error("[serve-static] API proxy error:", err.message);
+    if (!res.headersSent) {
+      res.writeHead(502, { "Content-Type": "text/plain" });
+      res.end("API unavailable");
+    }
+  });
+
+  req.pipe(proxy, { end: true });
+}
+
+// ── Static file handler ───────────────────────────────────────────────────────
+function serveStatic(req, res) {
   let urlPath = decodeURIComponent(req.url.split("?")[0]);
 
-  // Map "/" to "/index.html"
   if (urlPath.endsWith("/")) urlPath += "index.html";
 
   let filePath = path.join(ROOT, urlPath);
@@ -76,7 +109,7 @@ function handler(req, res) {
     return;
   }
 
-  // If the exact file doesn't exist → SPA fallback to index.html
+  // Non-existent path or directory → SPA fallback
   if (!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
     filePath = path.join(ROOT, "index.html");
   }
@@ -92,12 +125,21 @@ function handler(req, res) {
       return;
     }
     res.writeHead(200, {
-      "Content-Type"  : contentType,
-      "Cache-Control" : cacheCtrl,
+      "Content-Type"          : contentType,
+      "Cache-Control"         : cacheCtrl,
       "X-Content-Type-Options": "nosniff",
     });
     res.end(data);
   });
+}
+
+// ── Main request handler ──────────────────────────────────────────────────────
+function handler(req, res) {
+  if (req.url.startsWith("/api/")) {
+    proxyToApi(req, res);
+  } else {
+    serveStatic(req, res);
+  }
 }
 
 // ── Start server ──────────────────────────────────────────────────────────────
@@ -111,6 +153,7 @@ const server = http.createServer(handler);
 
 server.listen(PORT, HOST, () => {
   console.log(`[serve-static] Serving ${ROOT}`);
+  console.log(`[serve-static] API proxy → http://${API_HOST}:${API_PORT}`);
   console.log(`[serve-static] Listening on http://${HOST}:${PORT}`);
 });
 
