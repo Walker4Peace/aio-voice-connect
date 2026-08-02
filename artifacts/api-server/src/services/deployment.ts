@@ -138,6 +138,9 @@ interface PersistedCallEvent {
 const persistedCallEvents: PersistedCallEvent[] = [];
 // Cache of extensionId → agent name, populated when an extension is started
 const extensionAgentNames = new Map<number, string>();
+// Cache of extensionId → binary HTTP port, populated when an extension is started
+// Used to call the binary's /bye endpoint when the AI requests a hangup.
+const extensionHttpPorts = new Map<number, number>();
 
 // Tracks calls where the AI agent used the end_call tool (keyed extensionId → Set<callId>)
 // Populated when "ElevenLabs raw message" contains "tool_name":"end_call"
@@ -307,7 +310,7 @@ function parseAndStoreCallEvents(extensionId: number, line: string, timestamp: s
       e => e.extensionId === extensionId && e.callId === callId && e.event === "ended"
     );
     if (!alreadyEnded) {
-      const endedBy = consumeAiEndedFlag(extensionId, callId);
+      const endedBy = consumeAiEndedFlag(extensionId, callId) ?? "Caller";
       pushEvent({ extensionId, callId, event: "ended", timestamp, detail: endedBy });
     }
     finalizeOutboundCall(extensionId, "completed");
@@ -383,7 +386,8 @@ function parseAndStoreCallEvents(extensionId: number, line: string, timestamp: s
       e => e.extensionId === extensionId && e.callId === callId && e.event === "ended"
     );
     if (!alreadyEnded) {
-      const endedBy = consumeAiEndedFlag(extensionId, callId);
+      // AI flag → "AI Agent"; no flag → "Caller" (human hung up via SIP BYE)
+      const endedBy = consumeAiEndedFlag(extensionId, callId) ?? "Caller";
       pushEvent({ extensionId, callId, event: "ended", timestamp, detail: endedBy });
       // Complete any active outbound call for this extension
       finalizeOutboundCall(extensionId, "completed");
@@ -399,9 +403,21 @@ function parseAndStoreCallEvents(extensionId: number, line: string, timestamp: s
   const unregMatch = body.match(/Unregistered bridge for call:\s*(\S+)/i);
   if (unregMatch) {
     const callId = normalizeCallId(unregMatch[1]);
-    const callEnded = persistedCallEvents.some(
+    let callEnded = persistedCallEvents.some(
       e => e.extensionId === extensionId && e.callId === callId && e.event === "ended"
     );
+
+    // ── AI-ended fallback ────────────────────────────────────────────────
+    // If the AI used end_call the binary closes its WS without sending SIP BYE.
+    // When the bridge unregisters and we still have no ended event, synthesize
+    // one now so the call doesn't remain "active" in Call History.
+    if (!callEnded && aiEndedCallIds.get(extensionId)?.has(callId)) {
+      const endedBy = consumeAiEndedFlag(extensionId, callId);
+      pushEvent({ extensionId, callId, event: "ended", timestamp, detail: endedBy });
+      logger.info({ extensionId, callId }, "Synthesized ended event after AI end_call (no SIP BYE received)");
+      callEnded = true;
+    }
+
     if (callEnded && !orphanCleanupTimers.has(extensionId)) {
       const t = setTimeout(async () => {
         orphanCleanupTimers.delete(extensionId);
@@ -440,6 +456,9 @@ function parseAndStoreCallEvents(extensionId: number, line: string, timestamp: s
       s.add(lastInvite.callId);
       aiEndedCallIds.set(extensionId, s);
       logger.info({ extensionId, callId: lastInvite.callId }, "AI end_call tool detected — will tag ended event");
+      // Send SIP BYE via binary HTTP API so the caller hears hang-up immediately.
+      // The binary closes the ElevenLabs WS but does NOT send SIP BYE on its own.
+      sendSipHangup(extensionId, lastInvite.callId).catch(() => {});
     }
     return;
   }
@@ -511,6 +530,31 @@ function consumeAiEndedFlag(extensionId: number, callId: string): string | undef
     return "AI Agent";
   }
   return undefined;
+}
+
+/**
+ * Call the Go binary's HTTP /bye endpoint so it sends a SIP BYE to the caller.
+ * Used when ElevenLabs fires the end_call tool — the binary closes the WS but
+ * does NOT send SIP BYE on its own, leaving the SIP leg open.
+ * Fire-and-forget; failures are logged as warnings only.
+ */
+async function sendSipHangup(extensionId: number, callId: string): Promise<void> {
+  const httpPort = extensionHttpPorts.get(extensionId);
+  if (!httpPort) {
+    logger.warn({ extensionId, callId }, "Cannot send SIP hangup — httpPort not tracked for this extension");
+    return;
+  }
+  try {
+    const r = await fetch(`http://127.0.0.1:${httpPort}/bye`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ call_id: callId }),
+      signal: AbortSignal.timeout(3000),
+    });
+    logger.info({ extensionId, callId, status: r.status }, "SIP BYE sent via binary HTTP API");
+  } catch (err) {
+    logger.warn({ err, extensionId, callId }, "Failed to send SIP BYE to binary — caller may need to hang up manually");
+  }
 }
 
 /** On extension stop, synthesize `ended` events for any call that has an invite but no ended,
@@ -1140,6 +1184,7 @@ export async function startExtension(extensionId: number, opts?: {
   await fs.mkdir(configDir, { recursive: true });
   const configPath = path.join(configDir, "config.json");
   const { sipLocalPort, httpPort } = await allocatePorts(extensionId);
+  extensionHttpPorts.set(extensionId, httpPort);
   const serviceName = serviceNameFor(ext);
   if (!opts?.skipConfigWrite) {
     const config = await buildConfig(
@@ -1265,6 +1310,7 @@ export async function startExtension(extensionId: number, opts?: {
     const dying = processes.get(extensionId);
     if (dying) exitedLogs.set(extensionId, [...dying.logs]);
     processes.delete(extensionId);
+    extensionHttpPorts.delete(extensionId);
     const wasKilled = signal === "SIGTERM" || signal === "SIGKILL";
     const status = wasKilled ? "stopped" : code === 0 ? "stopped" : "error";
     const lastError = (!wasKilled && code !== 0) ? `Process exited with code ${code}` : null;

@@ -233,7 +233,7 @@ function CallDetailDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             {t("calls.detailTitle")}
-            <span className="font-mono text-sm text-muted-foreground font-normal">{callId.slice(0, 8)}…</span>
+            <span className="font-mono text-xs text-muted-foreground font-normal break-all">{callId}</span>
           </DialogTitle>
         </DialogHeader>
 
