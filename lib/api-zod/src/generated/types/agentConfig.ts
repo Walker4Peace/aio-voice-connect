@@ -23,6 +23,8 @@ export interface AgentConfig {
   extraConfig?: string | null;
   /** ElevenLabs post-call webhook signing secret (stored per-agent) */
   webhookSecret?: string | null;
+  /** URL to forward structured call results to after each call */
+  resultWebhookUrl?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }

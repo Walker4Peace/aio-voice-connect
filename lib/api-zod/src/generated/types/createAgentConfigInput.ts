@@ -19,4 +19,6 @@ export interface CreateAgentConfigInput {
   mode?: AgentConfigMode;
   language?: string | null;
   extraConfig?: string | null;
+  webhookSecret?: string | null;
+  resultWebhookUrl?: string | null;
 }
