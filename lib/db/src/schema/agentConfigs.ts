@@ -20,6 +20,8 @@ export const agentConfigsTable = pgTable("agent_configs", {
   extraConfig: text("extra_config"),
   // ElevenLabs post-call webhook signing secret (stored per-agent, not in env)
   webhookSecret: text("webhook_secret"),
+  // URL to forward structured call results to after every call (inbound + outbound)
+  resultWebhookUrl: text("result_webhook_url"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

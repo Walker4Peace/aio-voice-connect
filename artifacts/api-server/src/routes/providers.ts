@@ -181,28 +181,20 @@ async function findMatchingOutboundCall(data: ElevenLabsCallData) {
 }
 
 /**
- * Normalize the ElevenLabs analysis into a clean result object:
- *   - data_collection_results  → flat key/value  (drops rationale and IDs)
- *   - evaluation_criteria_results → { key: true/false }
- *   - evaluation sub-object (only if at least one criterion was returned)
- *   - _meta: conversation_id, call_successful, transcript_summary
+ * Normalize the ElevenLabs analysis into a flat result object (used for
+ * storing in outbound_calls.result for backward-compat).
  */
 function normalizeResult(data: ElevenLabsCallData): Record<string, unknown> {
   const analysis = data.analysis ?? {};
-
-  // Flatten data collection: { field: { value, rationale } } → { field: value }
   const collected: Record<string, unknown> = {};
   for (const [key, entry] of Object.entries(analysis.data_collection_results ?? {})) {
     collected[key] = entry.value;
   }
-
-  // Flatten evaluation: { criterion: { result: "success"|"failure" } } → { criterion: bool }
   const evalEntries = Object.entries(analysis.evaluation_criteria_results ?? {});
   const evaluation: Record<string, boolean> = {};
   for (const [key, entry] of evalEntries) {
     evaluation[key] = entry.result === "success";
   }
-
   return {
     ...collected,
     ...(evalEntries.length > 0 ? { evaluation } : {}),
@@ -212,6 +204,61 @@ function normalizeResult(data: ElevenLabsCallData): Record<string, unknown> {
       transcript_summary: analysis.transcript_summary ?? null,
     },
   };
+}
+
+/**
+ * Build a rich, structured webhook payload for forwarding to the client platform.
+ * Includes:
+ *   - collectedData: flat key→value map from data_collection_results
+ *   - evaluation: flat key→bool map from evaluation_criteria_results
+ *   - variables: the original variables passed at trigger time (for order correlation)
+ *   - callSuccessful, summary, conversationId, phoneNumber
+ */
+function buildResultWebhookPayload(
+  data: ElevenLabsCallData,
+  opts: {
+    outboundCallId?: number;
+    sipCallId?: string | null;
+    phoneNumber?: string | null;
+    extensionId?: number | null;
+    variables?: Record<string, unknown> | null;
+  } = {},
+): Record<string, unknown> {
+  const analysis = data.analysis ?? {};
+
+  const collectedData: Record<string, unknown> = {};
+  for (const [key, entry] of Object.entries(analysis.data_collection_results ?? {})) {
+    collectedData[key] = entry.value;
+  }
+
+  const evaluation: Record<string, boolean> = {};
+  for (const [key, entry] of Object.entries(analysis.evaluation_criteria_results ?? {})) {
+    evaluation[key] = entry.result === "success";
+  }
+
+  return {
+    event: "call_result",
+    conversationId: data.conversation_id,
+    callSuccessful: analysis.call_successful ?? null,
+    summary: analysis.transcript_summary ?? null,
+    collectedData,
+    evaluation,
+    ...(opts.variables ? { variables: opts.variables } : {}),
+    ...(opts.phoneNumber ? { phoneNumber: opts.phoneNumber } : {}),
+    ...(opts.sipCallId ? { callId: opts.sipCallId } : {}),
+    ...(opts.outboundCallId != null ? { outboundCallId: opts.outboundCallId } : {}),
+    ...(opts.extensionId != null ? { extensionId: opts.extensionId } : {}),
+    timestamp: new Date().toISOString(),
+  };
+}
+
+/** Fire a webhook URL without blocking, logging on failure. */
+function fireWebhook(url: string, payload: Record<string, unknown>, label: string): void {
+  fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  }).catch((err: Error) => logger.warn({ err, url }, `ElevenLabs webhook: ${label} delivery failed`));
 }
 
 // ── ElevenLabs Post-Call Webhook ──────────────────────────────────────────────
@@ -239,7 +286,7 @@ router.post("/providers/elevenlabs/post-call", async (req, res) => {
   // Look up the agent config by agent_id (modelId) to get its webhookSecret.
   // This allows each ElevenLabs agent to have its own signing secret.
   const agentCfg = await db
-    .select({ webhookSecret: agentConfigsTable.webhookSecret })
+    .select({ webhookSecret: agentConfigsTable.webhookSecret, resultWebhookUrl: agentConfigsTable.resultWebhookUrl })
     .from(agentConfigsTable)
     .where(and(
       eq(agentConfigsTable.provider, "elevenlabs"),
@@ -371,6 +418,15 @@ router.post("/providers/elevenlabs/post-call", async (req, res) => {
         ? "ElevenLabs webhook: result stored for inbound call"
         : "ElevenLabs webhook: no matching call found — result stored in memory by conv_id only",
     );
+
+    // ── Fire agent-level resultWebhookUrl for inbound calls ────────────────
+    if (agentCfg?.resultWebhookUrl) {
+      const inboundPayload = buildResultWebhookPayload(data, {
+        sipCallId: inboundCallId,
+      });
+      fireWebhook(agentCfg.resultWebhookUrl, inboundPayload, "agent resultWebhookUrl (inbound)");
+    }
+
     res.json({ received: true, matched: !!inboundCallId, inboundCallId });
     return;
   }
@@ -401,23 +457,28 @@ router.post("/providers/elevenlabs/post-call", async (req, res) => {
     "ElevenLabs webhook: result stored for outbound call",
   );
 
-  // ── Fire caller's webhookUrl if configured ────────────────────────────────
+  // ── Build rich structured payload for forwarding ─────────────────────────
+  let variables: Record<string, unknown> | null = null;
+  try {
+    if (call.variables) variables = JSON.parse(call.variables) as Record<string, unknown>;
+  } catch { /* ignore bad JSON */ }
+
+  const richPayload = buildResultWebhookPayload(data, {
+    outboundCallId: call.id,
+    sipCallId: call.callId,
+    phoneNumber: call.phoneNumber,
+    extensionId: call.extensionId ?? undefined,
+    variables,
+  });
+
+  // ── Fire per-call webhookUrl if configured ────────────────────────────────
   if (call.webhookUrl) {
-    const webhookPayload = {
-      event: "call_result",
-      outboundCallId: call.id,
-      extensionId: call.extensionId,
-      phoneNumber: call.phoneNumber,
-      result,
-      timestamp: new Date().toISOString(),
-    };
-    fetch(call.webhookUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(webhookPayload),
-    }).catch((err: Error) =>
-      logger.warn({ err, webhookUrl: call.webhookUrl }, "ElevenLabs webhook: caller webhookUrl delivery failed"),
-    );
+    fireWebhook(call.webhookUrl, richPayload, "per-call webhookUrl");
+  }
+
+  // ── Fire agent-level resultWebhookUrl if configured ───────────────────────
+  if (agentCfg?.resultWebhookUrl) {
+    fireWebhook(agentCfg.resultWebhookUrl, richPayload, "agent resultWebhookUrl");
   }
 
   res.json({ received: true, matched: true, outboundCallId: call.id });

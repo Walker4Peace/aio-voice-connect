@@ -36,6 +36,7 @@ const formSchema = z.object({
   language: z.string().optional(),
   extraConfig: z.string().optional(),
   webhookSecret: z.string().optional(),
+  resultWebhookUrl: z.string().optional(),
 });
 
 export default function AgentConfigForm() {
@@ -58,7 +59,7 @@ export default function AgentConfigForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "", provider: "openai", apiKey: "", mode: "inbound",
-      voiceId: "", modelId: "", systemPrompt: "", greeting: "", language: "", extraConfig: "", webhookSecret: "",
+      voiceId: "", modelId: "", systemPrompt: "", greeting: "", language: "", extraConfig: "", webhookSecret: "", resultWebhookUrl: "",
     },
   });
 
@@ -78,6 +79,7 @@ export default function AgentConfigForm() {
         language: existingConfig.language || "",
         extraConfig: existingConfig.extraConfig || "",
         webhookSecret: existingConfig.webhookSecret || "",
+        resultWebhookUrl: (existingConfig as typeof existingConfig & { resultWebhookUrl?: string | null }).resultWebhookUrl || "",
       });
     }
   }, [isEdit, existingConfig, form]);
@@ -234,6 +236,19 @@ export default function AgentConfigForm() {
                     </FormItem>
                   )} />
                 )}
+
+                <FormField control={form.control} name="resultWebhookUrl" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Result Webhook URL <span className="text-muted-foreground font-normal">(optional)</span></FormLabel>
+                    <FormControl>
+                      <Input placeholder="https://your-platform.com/webhook/call-result" {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      After every call (inbound and outbound), we'll POST the structured result here — collected data, evaluation, summary, and the variables you passed at call time.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )} />
 
                 <div className="grid grid-cols-2 gap-6">
                   {showModel && (
