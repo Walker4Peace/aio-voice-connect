@@ -1,55 +1,64 @@
 /**
- * SIP FQDN Proxy — iptables-DNAT + rport-aware UDP relay for the sip-agent binary.
+ * SIP FQDN Proxy — DNS-interception + UDP relay for the sip-agent binary.
  *
  * Root cause
  * ----------
  * The binary uses sipgo's RFC 3263 transport routing: it resolves the Request-URI
  * host (the SIP domain, e.g. "aioprocess-demo.ras.yeastar.com") via DNS and sends
  * packets directly to that IP.  The "server" field in our config is NOT used for
- * packet routing — it only affects Contact/Via header construction.  So redirecting
- * "server" to "127.0.0.1:17062" makes the binary log the proxy address but still
- * sends packets straight to Yeastar (bypassing the proxy entirely).
+ * packet routing — it only affects Contact/Via header construction.
  *
- * Fix — two-layer interception
- * ----------------------------
- * Layer 1 – iptables DNAT (kernel, transparent):
- *   When the proxy starts, add an OUTPUT rule that redirects all UDP from this
- *   machine destined for yeastarIp:yeastarPort to 127.0.0.1:proxyLocalPort.
- *   The proxy's OWN extSock is bound to proxyExtPort and excluded from the rule
- *   (! --sport proxyExtPort) so extSock → Yeastar traffic goes through unmodified.
+ * Previous approach: iptables DNAT
+ * ---------------------------------
+ * We tried intercepting outbound UDP to Yeastar with an iptables OUTPUT DNAT rule
+ * that redirected packets to a local socket.  This failed silently: the iptables
+ * rule accumulated 0 packet hits across multiple attempts, even with
+ * route_localnet=1 set.  The exact kernel/Docker interaction that prevents the
+ * rule from firing is unclear, but the result is definitive — iptables DNAT is
+ * not a reliable approach on this VPS.
  *
- * Layer 2 – UDP relay (Node.js, in-process):
- *   localSock  bound to 127.0.0.1:proxyLocalPort — receives the DNAT-redirected
- *              binary packets.
- *   extSock    bound to 0.0.0.0:proxyExtPort — sends to Yeastar and receives
- *              responses/requests.
+ * Current approach: DNS interception via /etc/hosts
+ * --------------------------------------------------
+ * When the proxy starts for extension N:
+ *   1. Resolve the real Yeastar IP (for use by extSock).
+ *   2. Assign a unique loopback IP: 127.1.0.N
+ *   3. Add "/etc/hosts" entry: "127.1.0.N  <yeastarFQDN>  # sip-proxy:<fqdn>"
+ *   4. Bind localSock to 127.1.0.N:yeastarPort (e.g. 127.1.0.1:5060).
+ *      The binary resolves the FQDN → 127.1.0.N via /etc/hosts and sends
+ *      its REGISTER straight to the proxy socket.  No iptables needed.
+ *   5. extSock is bound to 0.0.0.0:proxyExtPort and forwards to the real
+ *      Yeastar IP:port.
  *
- *   Outbound requests (binary → Yeastar):  add ";rport" to the first Via so
- *     Yeastar responds to the actual NAT-mapped source port.
- *   Inbound responses (Yeastar → binary):  forward to binarySrcPort (the exact
- *     source port of the binary's last packet — may be ephemeral).
- *   Inbound requests (INVITE/NOTIFY from Yeastar):  prepend a proxy Via so the
- *     binary's 200 OK comes back through localSock; deliver to binaryListenPort.
- *   Outbound responses (binary 200 OK → Yeastar):  strip proxy Via, forward.
+ * When the proxy stops:
+ *   1. Remove the /etc/hosts entry.
+ *   2. Close both sockets.
  *
  * Port scheme
  * -----------
- *   proxyLocalPort = sipLocalPort + 10000   (e.g. 7062 → 17062)
- *   proxyExtPort   = sipLocalPort + 20000   (e.g. 7062 → 27062)
+ *   proxyExtPort = sipLocalPort + 20000   (e.g. 7060 → 27060)
+ *   localSock listens on 127.1.0.<extensionId>:<yeastarPort>
  *
- * iptables rule added per extension (removed on stop):
- *   iptables -t nat -A OUTPUT -p udp -d <yeastarIp> --dport <yeastarPort>
- *            ! --sport <proxyExtPort>
- *            -j DNAT --to-destination 127.0.0.1:<proxyLocalPort>
+ * Relay logic
+ * -----------
+ *   Outbound requests (binary → Yeastar):
+ *     add ";rport" to first Via so Yeastar replies to extSock's actual port.
+ *
+ *   Inbound responses (Yeastar → binary):
+ *     forward to 127.1.0.<id>:binarySrcPort (the source port of the binary's
+ *     last SIP packet, which is its sipLocalPort / listen port).
+ *
+ *   Inbound requests (INVITE/NOTIFY from Yeastar):
+ *     prepend a proxy Via so binary's response comes back through localSock;
+ *     deliver to 127.1.0.<id>:binaryListenPort.
+ *
+ *   Outbound responses (binary 200 OK → Yeastar):
+ *     strip proxy Via, forward via extSock.
  */
 
 import dgram from "dgram";
 import dns from "dns/promises";
-import { exec } from "child_process";
-import { promisify } from "util";
+import fs from "node:fs/promises";
 import { logger } from "../lib/logger.js";
-
-const execAsync = promisify(exec);
 
 // ── Public IP (cached) ────────────────────────────────────────────────────────
 let cachedPublicIp: string | null = null;
@@ -84,62 +93,50 @@ export function needsSipProxy(sipServer: string): boolean {
   return /[a-zA-Z]/.test(host); // any FQDN
 }
 
-export function proxyLocalPortFor(sipLocalPort: number): number {
-  return sipLocalPort + 10000;
+export function proxyLocalPortFor(_sipLocalPort: number): number {
+  // With DNS interception the localSock binds on the real Yeastar port (5060),
+  // not a derived port.  This export is kept for call-site compatibility but
+  // the value is no longer used as a socket port inside the proxy.
+  return _sipLocalPort + 10000;
 }
 export function proxyExtPortFor(sipLocalPort: number): number {
   return sipLocalPort + 20000;
 }
 
-// ── iptables helpers ──────────────────────────────────────────────────────────
-
-/**
- * Return the iptables chain rule (everything after "-A"/"-D") for the DNAT redirect.
- * Excludes source port proxyExtPort so the proxy's own extSock is never redirected.
- *
- * Full command example:
- *   iptables -t nat -A OUTPUT -p udp -d 52.47.94.244 --dport 5060
- *            ! --sport 27062 -j DNAT --to-destination 127.0.0.1:17062
- */
-function iptablesChainRule(
-  yeastarIp: string, yeastarPort: number,
-  proxyExtPort: number, proxyLocalPort: number,
-): string {
-  return `OUTPUT -p udp -d ${yeastarIp} --dport ${yeastarPort} ! --sport ${proxyExtPort} -j DNAT --to-destination 127.0.0.1:${proxyLocalPort}`;
+/** Unique loopback IP for this extension: 127.1.0.<id> */
+export function proxyLoopbackIp(extensionId: number): string {
+  return `127.1.0.${extensionId}`;
 }
 
-async function runIptables(verb: "-A" | "-D", chainRule: string, extensionId: number): Promise<void> {
-  const fullCmd = `iptables -t nat ${verb} ${chainRule}`;
+// ── /etc/hosts helpers ────────────────────────────────────────────────────────
+
+const HOSTS_FILE = "/etc/hosts";
+const HOSTS_MARKER_PREFIX = "# sip-proxy:";
+
+async function addHostsEntry(loopbackIp: string, host: string): Promise<void> {
+  const marker = `${HOSTS_MARKER_PREFIX}${host}`;
+  let content: string;
   try {
-    await execAsync(fullCmd);
-    logger.info({ extensionId, cmd: fullCmd },
-      `SIP proxy: iptables rule ${verb === "-A" ? "added" : "removed"}`);
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : String(err);
-    if (verb === "-D" && /No chain\/target\/match|does not exist/i.test(msg)) return; // already gone
-    logger.warn({ extensionId, cmd: fullCmd, err },
-      `SIP proxy: iptables ${verb === "-A" ? "add" : "remove"} failed — ${msg.trim()}` +
-      (verb === "-A" ? ". Binary will bypass proxy. Run the service as root or grant CAP_NET_ADMIN." : ""));
+    content = await fs.readFile(HOSTS_FILE, "utf8");
+  } catch {
+    content = "";
   }
+  // Remove any existing proxy entry for this host (idempotent)
+  const lines = content.split("\n").filter(l => !l.includes(marker));
+  lines.push(`${loopbackIp} ${host}  ${marker}`);
+  await fs.writeFile(HOSTS_FILE, lines.join("\n") + "\n", "utf8");
+  logger.info({ loopbackIp, host }, "SIP proxy: /etc/hosts entry added");
 }
 
-/**
- * Enable loopback routing so OUTPUT-chain iptables DNAT to 127.0.0.1 works.
- *
- * By default net.ipv4.conf.lo.route_localnet=0, which means the kernel silently
- * drops packets whose destination was rewritten to 127.x.x.x by DNAT in the
- * OUTPUT chain (they originated on a non-loopback interface so the kernel won't
- * route them to loopback).  Setting route_localnet=1 on the loopback interface
- * allows this routing and is required for our iptables DNAT proxy to work.
- */
-async function enableRouteLocalnet(): Promise<void> {
-  for (const iface of ["lo", "all"]) {
-    try {
-      await execAsync(`sysctl -w net.ipv4.conf.${iface}.route_localnet=1`);
-      logger.info({ iface }, "SIP proxy: route_localnet enabled");
-    } catch (err) {
-      logger.warn({ iface, err }, "SIP proxy: could not set route_localnet (non-fatal — proxy may not intercept)");
-    }
+async function removeHostsEntry(host: string): Promise<void> {
+  const marker = `${HOSTS_MARKER_PREFIX}${host}`;
+  try {
+    const content = await fs.readFile(HOSTS_FILE, "utf8");
+    const filtered = content.split("\n").filter(l => !l.includes(marker)).join("\n");
+    await fs.writeFile(HOSTS_FILE, filtered + "\n", "utf8");
+    logger.info({ host }, "SIP proxy: /etc/hosts entry removed");
+  } catch (err) {
+    logger.warn({ host, err }, "SIP proxy: failed to remove /etc/hosts entry (non-fatal)");
   }
 }
 
@@ -216,12 +213,13 @@ function ensureRport(pairs: Array<[string, string, string]>): Array<[string, str
 // ── Proxy state ───────────────────────────────────────────────────────────────
 
 interface ProxyState {
-  localSock: dgram.Socket;   // DNAT target: 127.0.0.1:proxyLocalPort
-  extSock: dgram.Socket;     // talks to Yeastar: 0.0.0.0:proxyExtPort
-  proxyLocalPort: number;
-  proxyExtPort: number;      // known source port → excluded from DNAT rule
-  binaryListenPort: number;  // binary's static SIP listen port (e.g. 7062)
-  yeastarIp: string;
+  localSock: dgram.Socket;   // bound to loopbackIp:yeastarPort — receives binary packets
+  extSock: dgram.Socket;     // bound to 0.0.0.0:proxyExtPort  — talks to Yeastar
+  loopbackIp: string;        // 127.1.0.<extensionId>
+  proxyExtPort: number;
+  binaryListenPort: number;  // binary's static SIP listen port (e.g. 7060)
+  yeastarHost: string;       // original FQDN (for /etc/hosts cleanup)
+  yeastarIp: string;         // resolved real IP
   yeastarPort: number;
   /** Source port of the binary's last outbound SIP packet on localSock. */
   binarySrcPort: number;
@@ -239,7 +237,7 @@ function rwOutboundResp(msg: SipMsg, s: ProxyState): Buffer {
   let stripped = false;
   const pairs: Array<[string, string, string]> = [];
   for (const [k, origKey, val] of msg.pairs) {
-    if (k === "via" && !stripped && val.includes(`127.0.0.1:${s.proxyLocalPort}`)) {
+    if (k === "via" && !stripped && val.includes(`${s.loopbackIp}:`)) {
       stripped = true;
       continue;
     }
@@ -253,7 +251,7 @@ function rwInboundResp(msg: SipMsg): Buffer {
 }
 
 function rwInboundReq(msg: SipMsg, s: ProxyState): Buffer {
-  const proxyVia = `SIP/2.0/UDP 127.0.0.1:${s.proxyLocalPort};branch=${randomBranch()}`;
+  const proxyVia = `SIP/2.0/UDP ${s.loopbackIp}:${s.yeastarPort};branch=${randomBranch()}`;
   let inserted = false;
   const pairs: Array<[string, string, string]> = [];
   for (const [k, origKey, val] of msg.pairs) {
@@ -267,7 +265,7 @@ function rwInboundReq(msg: SipMsg, s: ProxyState): Buffer {
   return rebuild({ ...msg, pairs });
 }
 
-// ── Socket helpers ─────────────────────────────────────────────────────────────
+// ── Socket helpers ────────────────────────────────────────────────────────────
 
 function bindSock(sock: dgram.Socket, port: number, addr: string): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -284,12 +282,12 @@ function closeSock(sock: dgram.Socket): Promise<void> {
 export async function startSipProxy(params: {
   extensionId: number;
   sipLocalPort: number;
-  proxyLocalPort: number;
+  proxyLocalPort: number;   // kept for call-site compatibility, not used here
   proxyExtPort: number;
   yeastarServer: string;
-  publicIp: string;       // kept for compatibility; not used in rewriting
+  publicIp: string;         // kept for compatibility; not used in rewriting
 }): Promise<void> {
-  const { extensionId, sipLocalPort, proxyLocalPort, proxyExtPort, yeastarServer } = params;
+  const { extensionId, sipLocalPort, proxyExtPort, yeastarServer } = params;
   await stopSipProxy(extensionId);
 
   // Parse Yeastar host:port
@@ -297,7 +295,7 @@ export async function startSipProxy(params: {
   const yeastarHost = colonIdx > 0 ? yeastarServer.slice(0, colonIdx) : yeastarServer;
   const yeastarPort = colonIdx > 0 ? (Number(yeastarServer.slice(colonIdx + 1)) || 5060) : 5060;
 
-  // Resolve FQDN → IP for stable routing and iptables rule
+  // Resolve FQDN → real IP (used by extSock for forwarding)
   let yeastarIp = yeastarHost;
   try {
     const addrs = await dns.resolve4(yeastarHost);
@@ -307,33 +305,40 @@ export async function startSipProxy(params: {
     logger.warn({ extensionId, yeastarHost, err }, "SIP proxy: DNS resolve failed, using hostname");
   }
 
+  // Assign a unique loopback IP for this extension and inject into /etc/hosts
+  // so the binary's DNS lookup returns our proxy address instead of the real Yeastar IP.
+  const loopbackIp = proxyLoopbackIp(extensionId);
+  await addHostsEntry(loopbackIp, yeastarHost);
+
   const localSock = dgram.createSocket("udp4");
   const extSock   = dgram.createSocket("udp4");
 
-  // Bind localSock — DNAT redirects binary packets here
+  // localSock binds on the SAME port as Yeastar (e.g. 5060) but on the loopback IP.
+  // The binary resolves the FQDN → loopbackIp via /etc/hosts and sends directly here.
   try {
-    await bindSock(localSock, proxyLocalPort, "127.0.0.1");
+    await bindSock(localSock, yeastarPort, loopbackIp);
   } catch (err) {
+    await removeHostsEntry(yeastarHost);
     await closeSock(localSock).catch(() => {});
     await closeSock(extSock).catch(() => {});
-    throw new Error(`SIP proxy: localSock bind failed for ext ${extensionId}: ${(err as Error).message}`);
+    throw new Error(`SIP proxy: localSock bind failed on ${loopbackIp}:${yeastarPort} for ext ${extensionId}: ${(err as Error).message}`);
   }
 
-  // Bind extSock to known port — this port is excluded from the DNAT rule so
-  // the proxy's own traffic to Yeastar is not redirected back to itself.
+  // extSock uses a known source port (excluded from nothing — iptables is gone).
   try {
     await bindSock(extSock, proxyExtPort, "0.0.0.0");
   } catch (err) {
+    await removeHostsEntry(yeastarHost);
     await closeSock(localSock).catch(() => {});
     await closeSock(extSock).catch(() => {});
-    throw new Error(`SIP proxy: extSock bind failed for ext ${extensionId} on port ${proxyExtPort}: ${(err as Error).message}`);
+    throw new Error(`SIP proxy: extSock bind failed on port ${proxyExtPort} for ext ${extensionId}: ${(err as Error).message}`);
   }
 
   const s: ProxyState = {
     localSock, extSock,
-    proxyLocalPort, proxyExtPort,
+    loopbackIp, proxyExtPort,
     binaryListenPort: sipLocalPort,
-    yeastarIp, yeastarPort,
+    yeastarHost, yeastarIp, yeastarPort,
     binarySrcPort: sipLocalPort,
   };
 
@@ -358,7 +363,7 @@ export async function startSipProxy(params: {
       } else {
         logger.info(
           { extensionId, dir: "binary→Yeastar",
-            from: `127.0.0.1:${rinfo.port}`, to: `${s.yeastarIp}:${s.yeastarPort}`,
+            from: `${rinfo.address}:${rinfo.port}`, to: `${s.yeastarIp}:${s.yeastarPort}`,
             sip: sipLine },
           "SIP proxy packet",
         );
@@ -384,13 +389,15 @@ export async function startSipProxy(params: {
     }
 
     const sipLine = msg?.firstLine ?? "(unparsed)";
-    localSock.send(out, destPort, "127.0.0.1", (err) => {
+    // Deliver to the loopback IP on the binary's source port.
+    // The binary binds to 0.0.0.0:sipLocalPort so any loopback dest reaches it.
+    localSock.send(out, destPort, s.loopbackIp, (err) => {
       if (err) {
         logger.warn({ extensionId, destPort, err, sip: sipLine }, "SIP proxy: localSock send error");
       } else {
         logger.info(
           { extensionId, dir: "Yeastar→binary",
-            from: `${rinfo.address}:${rinfo.port}`, to: `127.0.0.1:${destPort}`,
+            from: `${rinfo.address}:${rinfo.port}`, to: `${s.loopbackIp}:${destPort}`,
             sip: sipLine },
           "SIP proxy packet",
         );
@@ -403,30 +410,16 @@ export async function startSipProxy(params: {
 
   proxies.set(extensionId, s);
   logger.info({
-    extensionId, proxyLocalPort, proxyExtPort,
-    binaryListenPort: sipLocalPort, yeastarIp, yeastarPort,
-  }, "SIP FQDN proxy started — adding iptables DNAT rule");
-
-  // Add iptables DNAT rule to intercept the binary's outbound UDP to Yeastar.
-  // Necessary because sipgo routes by RFC 3263 (resolves Request-URI host),
-  // ignoring the "server" config field we set to 127.0.0.1:proxyLocalPort.
-  //
-  // route_localnet must be enabled so the kernel will deliver DNAT-redirected
-  // packets (destination rewritten to 127.0.0.1) back to our local socket.
-  // Without it the kernel silently drops them after the DNAT rewrite.
-  await enableRouteLocalnet();
-  const ipt = iptablesChainRule(yeastarIp, yeastarPort, proxyExtPort, proxyLocalPort);
-  await runIptables("-A", ipt, extensionId);
+    extensionId, loopbackIp, yeastarPort, proxyExtPort,
+    binaryListenPort: sipLocalPort, yeastarIp, yeastarHost,
+  }, "SIP FQDN proxy started — DNS interception via /etc/hosts");
 }
 
 export async function stopSipProxy(extensionId: number): Promise<void> {
   const s = proxies.get(extensionId);
   if (!s) return;
   proxies.delete(extensionId);
-
-  // Remove iptables rule first, then close sockets
-  const ipt = iptablesChainRule(s.yeastarIp, s.yeastarPort, s.proxyExtPort, s.proxyLocalPort);
-  await runIptables("-D", ipt, extensionId);
+  await removeHostsEntry(s.yeastarHost);
   await Promise.all([closeSock(s.localSock), closeSock(s.extSock)]);
   logger.info({ extensionId }, "SIP FQDN proxy stopped");
 }

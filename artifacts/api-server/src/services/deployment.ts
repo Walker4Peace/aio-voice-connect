@@ -9,6 +9,7 @@ import {
   needsSipProxy,
   proxyLocalPortFor,
   proxyExtPortFor,
+  proxyLoopbackIp,
   getPublicIp,
   startSipProxy,
   stopSipProxy,
@@ -669,10 +670,15 @@ async function buildConfig(
   // SIP domain and server now come from the linked IPBX (client)
   const sipDomain = ext.client?.sipDomain ?? "";
   const realSipServer = ext.client?.sipServer ?? "";
-  // When the SIP server is a public FQDN, route the binary through the local SIP proxy
-  // so it connects on a fixed-port socket (avoiding the ephemeral-port Contact mismatch).
+  // When the SIP server is a public FQDN, route the binary through the local SIP proxy.
+  // The proxy adds /etc/hosts entry mapping the FQDN to a unique loopback IP (127.1.0.N),
+  // so we point the binary's server field at that loopback IP:port explicitly.
   const sipServer = needsSipProxy(realSipServer)
-    ? `127.0.0.1:${proxyLocalPortFor(ports.sipLocalPort)}`
+    ? (() => {
+        const colonIdx = realSipServer.lastIndexOf(":");
+        const port = colonIdx > 0 ? (Number(realSipServer.slice(colonIdx + 1)) || 5060) : 5060;
+        return `${proxyLoopbackIp(extensionId)}:${port}`;
+      })()
     : realSipServer;
   // Each extension gets unique ports so multiple instances can coexist:
   //   api_port  19000 + id  (sip-agent's own HTTP API, unused by us but must not conflict)
@@ -1062,9 +1068,13 @@ function buildEnv(
   const cfg = ext.agentConfig!;
   const providerKey = PROVIDER_ENV_KEYS[cfg.provider as AiProviderKey] ?? "AI_API_KEY";
   const realSipServer = ext.client?.sipServer ?? "";
-  // When using the FQDN proxy, redirect SIP_SERVER env var to the local proxy too
+  // When using the FQDN proxy, redirect SIP_SERVER env var to the loopback proxy address
   const sipServerEnv = (sipLocalPort && needsSipProxy(realSipServer))
-    ? `127.0.0.1:${proxyLocalPortFor(sipLocalPort)}`
+    ? (() => {
+        const colonIdx = realSipServer.lastIndexOf(":");
+        const port = colonIdx > 0 ? (Number(realSipServer.slice(colonIdx + 1)) || 5060) : 5060;
+        return `${proxyLoopbackIp(extensionId)}:${port}`;
+      })()
     : realSipServer;
   return {
     CONFIG_FILE: configPath,
