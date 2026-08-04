@@ -123,6 +123,26 @@ async function runIptables(verb: "-A" | "-D", chainRule: string, extensionId: nu
   }
 }
 
+/**
+ * Enable loopback routing so OUTPUT-chain iptables DNAT to 127.0.0.1 works.
+ *
+ * By default net.ipv4.conf.lo.route_localnet=0, which means the kernel silently
+ * drops packets whose destination was rewritten to 127.x.x.x by DNAT in the
+ * OUTPUT chain (they originated on a non-loopback interface so the kernel won't
+ * route them to loopback).  Setting route_localnet=1 on the loopback interface
+ * allows this routing and is required for our iptables DNAT proxy to work.
+ */
+async function enableRouteLocalnet(): Promise<void> {
+  for (const iface of ["lo", "all"]) {
+    try {
+      await execAsync(`sysctl -w net.ipv4.conf.${iface}.route_localnet=1`);
+      logger.info({ iface }, "SIP proxy: route_localnet enabled");
+    } catch (err) {
+      logger.warn({ iface, err }, "SIP proxy: could not set route_localnet (non-fatal — proxy may not intercept)");
+    }
+  }
+}
+
 // ── Minimal SIP parser ────────────────────────────────────────────────────────
 
 interface SipMsg {
@@ -390,6 +410,11 @@ export async function startSipProxy(params: {
   // Add iptables DNAT rule to intercept the binary's outbound UDP to Yeastar.
   // Necessary because sipgo routes by RFC 3263 (resolves Request-URI host),
   // ignoring the "server" config field we set to 127.0.0.1:proxyLocalPort.
+  //
+  // route_localnet must be enabled so the kernel will deliver DNAT-redirected
+  // packets (destination rewritten to 127.0.0.1) back to our local socket.
+  // Without it the kernel silently drops them after the DNAT rewrite.
+  await enableRouteLocalnet();
   const ipt = iptablesChainRule(yeastarIp, yeastarPort, proxyExtPort, proxyLocalPort);
   await runIptables("-A", ipt, extensionId);
 }
