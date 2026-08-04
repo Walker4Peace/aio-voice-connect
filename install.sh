@@ -55,9 +55,28 @@ UI_PORT=8080             # Port for the Vite frontend preview (direct: http://SE
 
 DB_NAME="aio_voice_connect"
 DB_USER="aio_voice_connect"
-# Generate a random 24-character alphanumeric password
-DB_PASS="$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 24 2>/dev/null || openssl rand -hex 16)"
-SESSION_SECRET="$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 48 2>/dev/null || openssl rand -hex 32)"
+
+# Reuse existing DB_PASS / SESSION_SECRET from .env on re-runs so we never
+# mismatch what PostgreSQL has stored with what we pass to drizzle-kit.
+_EXISTING_ENV="${INSTALL_DIR}/.env"
+if [[ -f "$_EXISTING_ENV" ]]; then
+    _EXISTING_URL="$(grep -m1 '^DATABASE_URL=' "$_EXISTING_ENV" | cut -d= -f2-)"
+    _EXISTING_SECRET="$(grep -m1 '^SESSION_SECRET=' "$_EXISTING_ENV" | cut -d= -f2-)"
+fi
+
+if [[ -n "${_EXISTING_URL:-}" ]]; then
+    # Extract password from postgresql://user:PASS@host/db
+    DB_PASS="$(printf '%s' "$_EXISTING_URL" | sed 's|.*://[^:]*:\([^@]*\)@.*|\1|')"
+    [[ -z "$DB_PASS" ]] && DB_PASS="$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 24 2>/dev/null || openssl rand -hex 16)"
+else
+    DB_PASS="$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 24 2>/dev/null || openssl rand -hex 16)"
+fi
+
+if [[ -n "${_EXISTING_SECRET:-}" ]]; then
+    SESSION_SECRET="$_EXISTING_SECRET"
+else
+    SESSION_SECRET="$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 48 2>/dev/null || openssl rand -hex 32)"
+fi
 
 # ── Pre-flight checks ─────────────────────────────────────────────────────────
 [[ "${EUID}" -ne 0 ]] && die "This script must be run as root.\n\n  Try: sudo bash install.sh\n  or:  curl -fsSL https://your-domain/install.sh | sudo bash"
@@ -276,7 +295,7 @@ fi
 
 sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE ${DB_NAME} TO ${DB_USER};" >/dev/null
 
-DATABASE_URL="postgresql://${DB_USER}:${DB_PASS}@localhost:5432/${DB_NAME}"
+DATABASE_URL="postgresql://${DB_USER}:${DB_PASS}@127.0.0.1:5432/${DB_NAME}"
 
 # ── Step 6: Generate .env file ────────────────────────────────────────────────
 step "Generating .env configuration"
@@ -351,6 +370,12 @@ success "API server and dashboard built successfully"
 
 # ── Step 9: Database migrations ──────────────────────────────────────────────
 step "Running database migrations"
+
+# Verify the DB is reachable before running drizzle-kit
+PGPASSWORD="${DB_PASS}" psql \
+    -h 127.0.0.1 -p 5432 -U "${DB_USER}" -d "${DB_NAME}" \
+    -c "SELECT 1;" >/dev/null 2>&1 \
+    || die "Cannot connect to PostgreSQL as '${DB_USER}' — check pg_hba.conf and that the password in .env matches the database user."
 
 bash -c "
     set -e
