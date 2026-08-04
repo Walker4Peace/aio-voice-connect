@@ -355,7 +355,7 @@ step "Running database migrations"
 sudo -u "${APP_USER}" bash -c "
     set -e
     cd '${INSTALL_DIR}/lib/db'
-    DATABASE_URL='${DATABASE_URL}' '${INSTALL_DIR}/node_modules/.bin/drizzle-kit' push --force --config ./drizzle.config.ts
+    DATABASE_URL='${DATABASE_URL}' '${INSTALL_DIR}/lib/db/node_modules/.bin/drizzle-kit' push --force --config ./drizzle.config.ts
 " || die "Database migration (drizzle push) failed."
 success "Database schema applied"
 

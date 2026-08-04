@@ -78,7 +78,7 @@ if [[ -z "${DATABASE_URL:-}" ]]; then
   echo "  ⚠  DATABASE_URL not set — skipping schema push."
   echo "     Set it in $ENV_FILE or export it before running this script."
 else
-  (cd "$DEPLOY_DIR/lib/db" && "$DEPLOY_DIR/node_modules/.bin/drizzle-kit" push --config ./drizzle.config.ts)
+  (cd "$DEPLOY_DIR/lib/db" && "$DEPLOY_DIR/lib/db/node_modules/.bin/drizzle-kit" push --config ./drizzle.config.ts)
   echo "  ✓ Schema up to date"
 fi
 
