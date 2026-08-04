@@ -5,6 +5,14 @@ import net from "net";
 import { db, extensionsTable, deploymentsTable, callEventsTable, agentToolsTable, outboundCallsTable, agentConfigsTable, type Deployment } from "@workspace/db";
 import { eq, inArray, and, asc, desc } from "drizzle-orm";
 import { logger } from "../lib/logger.js";
+import {
+  needsSipProxy,
+  proxyLocalPortFor,
+  proxyExtPortFor,
+  getPublicIp,
+  startSipProxy,
+  stopSipProxy,
+} from "./sip-proxy.js";
 
 const SIP_AGENT_BIN =
   process.env["SIP_AGENT_BIN"] ?? "/home/runner/workspace/.bin/sip-agent";
@@ -660,7 +668,12 @@ async function buildConfig(
   const cfg = ext.agentConfig;
   // SIP domain and server now come from the linked IPBX (client)
   const sipDomain = ext.client?.sipDomain ?? "";
-  const sipServer = ext.client?.sipServer ?? "";
+  const realSipServer = ext.client?.sipServer ?? "";
+  // When the SIP server is a public FQDN, route the binary through the local SIP proxy
+  // so it connects on a fixed-port socket (avoiding the ephemeral-port Contact mismatch).
+  const sipServer = needsSipProxy(realSipServer)
+    ? `127.0.0.1:${proxyLocalPortFor(ports.sipLocalPort)}`
+    : realSipServer;
   // Each extension gets unique ports so multiple instances can coexist:
   //   api_port  19000 + id  (sip-agent's own HTTP API, unused by us but must not conflict)
   //   sip.listen  25060 + id  (local UDP port the SIP stack binds for send/receive)
@@ -1041,16 +1054,25 @@ function serviceNameFor(ext: NonNullable<Awaited<ReturnType<typeof getExtWithRel
   return `sip-agent-${suffix || ext.id}`;
 }
 
-function buildEnv(ext: NonNullable<Awaited<ReturnType<typeof getExtWithRelations>>>, configPath: string): Record<string, string> {
+function buildEnv(
+  ext: NonNullable<Awaited<ReturnType<typeof getExtWithRelations>>>,
+  configPath: string,
+  sipLocalPort?: number,
+): Record<string, string> {
   const cfg = ext.agentConfig!;
   const providerKey = PROVIDER_ENV_KEYS[cfg.provider as AiProviderKey] ?? "AI_API_KEY";
+  const realSipServer = ext.client?.sipServer ?? "";
+  // When using the FQDN proxy, redirect SIP_SERVER env var to the local proxy too
+  const sipServerEnv = (sipLocalPort && needsSipProxy(realSipServer))
+    ? `127.0.0.1:${proxyLocalPortFor(sipLocalPort)}`
+    : realSipServer;
   return {
     CONFIG_FILE: configPath,
     SIP_USERNAME: ext.sipUsername,
     SIP_AUTH_ID: ext.sipAuthId,
     SIP_PASSWORD: ext.sipPassword,
     SIP_DOMAIN: ext.client?.sipDomain ?? "",
-    SIP_SERVER: ext.client?.sipServer ?? "",
+    SIP_SERVER: sipServerEnv,
     [providerKey]: cfg.apiKey,
   };
 }
@@ -1201,7 +1223,7 @@ export async function startExtension(extensionId: number, opts?: {
     );
     await fs.writeFile(configPath, JSON.stringify(config, null, 2));
   }
-  const env = buildEnv(ext, configPath);
+  const env = buildEnv(ext, configPath, sipLocalPort);
 
   await upsertDeployment(extensionId, {
     status: "starting",
@@ -1213,6 +1235,28 @@ export async function startExtension(extensionId: number, opts?: {
     lastStartedAt: new Date(),
     lastError: null,
   });
+
+  // ── SIP FQDN proxy ───────────────────────────────────────────────────────
+  // When the PBX server is a public FQDN, start the proxy BEFORE the binary
+  // so the proxy's sockets are ready when the binary sends its first REGISTER.
+  const realSipServer = ext.client?.sipServer ?? "";
+  if (needsSipProxy(realSipServer)) {
+    try {
+      const publicIp = await getPublicIp();
+      await startSipProxy({
+        extensionId,
+        sipLocalPort,
+        proxyLocalPort: proxyLocalPortFor(sipLocalPort),
+        proxyExtPort: proxyExtPortFor(sipLocalPort),
+        yeastarServer: realSipServer,
+        publicIp,
+      });
+      logger.info({ extensionId, sipLocalPort, realSipServer }, "SIP FQDN proxy active — binary will connect via local proxy");
+    } catch (err) {
+      // Non-fatal: log and let the binary try to connect directly (old behaviour)
+      logger.warn({ extensionId, err }, "SIP FQDN proxy startup failed — binary will connect directly (FQDN NAT issue may occur)");
+    }
+  }
 
   // Patch a per-extension copy of the binary so its hardcoded ':5060' local
   // SIP listener becomes the allocated port.  The binary is statically linked
@@ -1394,11 +1438,14 @@ export async function stopExtension(extensionId: number): Promise<void> {
 
   const info = processes.get(extensionId);
   if (!info) {
+    await stopSipProxy(extensionId);
     await upsertDeployment(extensionId, { status: "stopped", pid: null, sipRegistered: false, lastStoppedAt: new Date() });
     return;
   }
   info.proc.kill("SIGTERM");
   processes.delete(extensionId);
+  // Stop SIP proxy after binary is killed (proxy sockets are no longer needed)
+  await stopSipProxy(extensionId);
   await upsertDeployment(extensionId, { status: "stopped", pid: null, sipRegistered: false, lastStoppedAt: new Date() });
 }
 
