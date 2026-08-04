@@ -207,7 +207,11 @@ fi
 step "Cloning repository"
 
 if [[ -d "${INSTALL_DIR}/.git" ]]; then
-    info "Repository already present — pulling latest changes..."
+    info "Repository already present — fixing ownership and pulling..."
+    # The directory may have been cloned by root (e.g. via manual `git clone`).
+    # Git refuses to operate on a repo owned by a different user, so we must
+    # correct ownership before switching to APP_USER for the pull.
+    chown -R "${APP_USER}:${APP_USER}" "${INSTALL_DIR}" 2>/dev/null || true
     sudo -u "${APP_USER}" git -C "${INSTALL_DIR}" pull --ff-only \
         || die "git pull failed. Resolve conflicts in ${INSTALL_DIR} before re-running."
     success "Repository updated"
@@ -386,9 +390,10 @@ StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=aio-voice-connect-api
 
-# Allow the sip-agent child processes to bind privileged SIP ports
-AmbientCapabilities=CAP_NET_BIND_SERVICE
-CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+# CAP_NET_BIND_SERVICE — sip-agent binary binds privileged SIP ports
+# CAP_NET_ADMIN        — SIP FQDN proxy adds/removes iptables DNAT rules
+AmbientCapabilities=CAP_NET_BIND_SERVICE CAP_NET_ADMIN
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE CAP_NET_ADMIN
 
 [Install]
 WantedBy=multi-user.target

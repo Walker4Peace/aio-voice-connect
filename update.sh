@@ -127,6 +127,48 @@ EOF
   echo "  ✓ nginx helper updated and path unit restarted"
 fi
 
+# ── 6a. Always refresh the API service unit ──────────────────────────────────
+# Re-write the unit on every update so capability changes, environment tweaks,
+# and ExecStart path fixes take effect without requiring a full reinstall.
+if systemctl list-unit-files --no-pager 2>/dev/null | grep -q "^aio-voice-connect-api\.service"; then
+  NODE_BIN_REFRESH="$(command -v node)"
+  APP_USER_REFRESH="$(systemctl show aio-voice-connect-api --property=User 2>/dev/null | cut -d= -f2)"
+  [[ -z "$APP_USER_REFRESH" ]] && APP_USER_REFRESH="aio-voice-connect"
+  cat > /etc/systemd/system/aio-voice-connect-api.service <<SVCEOF
+[Unit]
+Description=AIO Voice Connect API Server
+Documentation=https://github.com/Walker4Peace/ai-agent
+After=network.target postgresql.service
+Requires=postgresql.service
+
+[Service]
+Type=simple
+User=${APP_USER_REFRESH}
+WorkingDirectory=${DEPLOY_DIR}
+EnvironmentFile=${DEPLOY_DIR}/.env
+
+ExecStart=${NODE_BIN_REFRESH} --enable-source-maps ${DEPLOY_DIR}/artifacts/api-server/dist/index.mjs
+
+Restart=on-failure
+RestartSec=5
+StartLimitInterval=60
+StartLimitBurst=5
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=aio-voice-connect-api
+
+# CAP_NET_BIND_SERVICE — sip-agent binary binds privileged SIP ports
+# CAP_NET_ADMIN        — SIP FQDN proxy adds/removes iptables DNAT rules
+AmbientCapabilities=CAP_NET_BIND_SERVICE CAP_NET_ADMIN
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE CAP_NET_ADMIN
+
+[Install]
+WantedBy=multi-user.target
+SVCEOF
+  echo "  ✓ aio-voice-connect-api.service unit refreshed"
+fi
+
 # ── 6. Migrate services (old single-service → new split architecture) ─────────
 # If the old monolithic aio-voice-connect.service exists but the new split
 # services do not, create them now so a fresh install.sh is not required.
@@ -175,8 +217,8 @@ StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=aio-voice-connect-api
 
-AmbientCapabilities=CAP_NET_BIND_SERVICE
-CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+AmbientCapabilities=CAP_NET_BIND_SERVICE CAP_NET_ADMIN
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE CAP_NET_ADMIN
 
 [Install]
 WantedBy=multi-user.target
@@ -240,6 +282,9 @@ fi
 # ── 7. Restart services ───────────────────────────────────────────────────────
 echo ""
 echo "▶ Restarting services"
+
+# Reload systemd so any capability or unit changes written above take effect
+systemctl daemon-reload 2>/dev/null || true
 
 for SVC in aio-voice-connect-api aio-voice-connect-ui; do
   if systemctl is-active --quiet "$SVC"; then
