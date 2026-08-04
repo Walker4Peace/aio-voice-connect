@@ -1073,7 +1073,7 @@ function buildEnv(
     ? (() => {
         const colonIdx = realSipServer.lastIndexOf(":");
         const port = colonIdx > 0 ? (Number(realSipServer.slice(colonIdx + 1)) || 5060) : 5060;
-        return `${proxyLoopbackIp(extensionId)}:${port}`;
+        return `${proxyLoopbackIp(ext.id)}:${port}`;
       })()
     : realSipServer;
   return {
