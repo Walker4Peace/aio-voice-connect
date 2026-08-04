@@ -1,0 +1,27 @@
+"res":{"statusCode":200},"responseTime":1293,"msg":"request completed"}
+août 04 17:51:49 test aio-voice-connect-api[190857]: [ext:1] [2026-08-04T17:51:49.092Z] 2026/08/04 17:51:49 Loaded config with 0 functions
+août 04 17:51:49 test aio-voice-connect-api[190857]: [ext:1] [2026-08-04T17:51:49.105Z] 2026/08/04 17:51:49 Starting HTTP API server on :19001
+août 04 17:51:49 test aio-voice-connect-api[190857]: [ext:1] [2026-08-04T17:51:49.105Z] 2026/08/04 17:51:49 Starting SIP client with configuration:
+août 04 17:51:49 test aio-voice-connect-api[190857]: [ext:1] [2026-08-04T17:51:49.105Z] 2026/08/04 17:51:49 Username: 1005, Domain: aioprocess-demo.ras.yeastar.com, Server: 127.0.0.1:17062, Transport: udp
+août 04 17:51:49 test aio-voice-connect-api[190857]: [ext:1] [2026-08-04T17:51:49.105Z] 2026/08/04 17:51:49 Auth ID: TjoCu4uhmD (using separate authorization ID)
+août 04 17:51:49 test aio-voice-connect-api[190857]: [ext:1] [2026-08-04T17:51:49.105Z] 2026/08/04 17:51:49 No OPENAI_API_KEY set - calls will use fallback audio handling
+août 04 17:51:49 test aio-voice-connect-api[190857]: [ext:1] [2026-08-04T17:51:49.106Z] 2026/08/04 17:51:49 DEBUG: Determined outbound IP as 192.168.11.107
+août 04 17:51:49 test aio-voice-connect-api[190857]: [ext:1] [2026-08-04T17:51:49.106Z] 2026/08/04 17:51:49 Local IP determined as: 192.168.11.107
+août 04 17:51:49 test aio-voice-connect-api[190857]: [ext:1] [2026-08-04T17:51:49.170Z] 2026/08/04 17:51:49 DEBUG: Retrieved external IP as 105.188.3.70
+août 04 17:51:49 test aio-voice-connect-api[190857]: [ext:1] [2026-08-04T17:51:49.171Z] 2026/08/04 17:51:49 External IP determined as: 105.188.3.70
+août 04 17:51:49 test aio-voice-connect-api[190857]: [ext:1] [2026-08-04T17:51:49.171Z] 2026/08/04 17:51:49 Sending REGISTER request via sipgo client.
+août 04 17:51:51 test aio-voice-connect-api[190857]: {"level":30,"time":1785865911729,"pid":190857,"hostname":"test","req":{"id":49,"method":"GET","url":"/api/deploy/1/watchdog"},"res":{"statusCode":304},"responseTime":2,"msg":"request completed"}
+août 04 17:51:52 test aio-voice-connect-api[190857]: {"level":30,"time":1785865912131,"pid":190857,"hostname":"test","req":{"id":50,"method":"GET","url":"/api/deploy/1/status"},"res":{"statusCode":200},"responseTime":3,"msg":"request completed"}
+août 04 17:51:57 test aio-voice-connect-api[190857]: {"level":30,"time":1785865917102,"pid":190857,"hostname":"test","req":{"id":51,"method":"GET","url":"/api/deploy/1/watchdog"},"res":{"statusCode":304},"responseTime":30,"msg":"request completed"}
+août 04 17:51:58 test aio-voice-connect-api[190857]: {"level":30,"time":1785865918217,"pid":190857,"hostname":"test","req":{"id":52,"method":"GET","url":"/api/deploy/1/status"},"res":{"statusCode":200},"responseTime":5,"msg":"request completed"}
+août 04 17:52:01 test aio-voice-connect-api[190857]: {"level":30,"time":1785865921254,"pid":190857,"hostname":"test","req":{"id":53,"method":"GET","url":"/api/deploy/1/status"},"res":{"statusCode":200},"responseTime":4,"msg":"request completed"}
+août 04 17:52:04 test aio-voice-connect-api[190857]: {"level":30,"time":1785865924294,"pid":190857,"hostname":"test","req":{"id":54,"method":"GET","url":"/api/deploy/1/status"},"res":{"statusCode":200},"responseTime":9,"msg":"request completed"}
+août 04 17:52:07 test aio-voice-connect-api[190857]: {"level":30,"time":1785865927197,"pid":190857,"hostname":"test","req":{"id":55,"method":"GET","url":"/api/deploy/1/watchdog"},"res":{"statusCode":304},"responseTime":4,"msg":"request completed"}
+août 04 17:52:07 test aio-voice-connect-api[190857]: {"level":30,"time":1785865927328,"pid":190857,"hostname":"test","req":{"id":56,"method":"GET","url":"/api/deploy/1/status"},"res":{"statusCode":200},"responseTime":5,"msg":"request completed"}
+août 04 17:52:10 test aio-voice-connect-api[190857]: {"level":30,"time":1785865930378,"pid":190857,"hostname":"test","req":{"id":57,"method":"GET","url":"/api/deploy/1/status"},"res":{"statusCode":200},"responseTime":8,"msg":"request completed"}
+août 04 17:52:12 test aio-voice-connect-api[190857]: {"level":30,"time":1785865932227,"pid":190857,"hostname":"test","req":{"id":58,"method":"GET","url":"/api/deploy/1/watchdog"},"res":{"statusCode":304},"responseTime":2,"msg":"request completed"}
+août 04 17:52:13 test aio-voice-connect-api[190857]: {"level":30,"time":1785865933430,"pid":190857,"hostname":"test","req":{"id":59,"method":"GET","url":"/api/deploy/1/status"},"res":{"statusCode":200},"responseTime":6,"msg":"request completed"}
+août 04 17:52:18 test aio-voice-connect-api[190857]: {"level":30,"time":1785865938192,"pid":190857,"hostname":"test","req":{"id":60,"method":"GET","url":"/api/deploy/1/watchdog"},"res":{"statusCode":304},"responseTime":2,"msg":"request completed"}
+août 04 17:52:19 test aio-voice-connect-api[190857]: {"level":30,"time":1785865939468,"pid":190857,"hostname":"test","req":{"id":61,"method":"GET","url":"/api/deploy/1/status"},"res":{"statusCode":200},"responseTime":6,"msg":"request completed"}
+août 04 17:52:21 test aio-voice-connect-api[190857]: [ext:1] [2026-08-04T17:52:21.196Z] 2026/08/04 17:52:21 Initial registration failed: failed to send REGISTER: Timer_B timed out. transaction timeout
+août 04 17:52:21 test aio-voice-connect-api[190857]: {"level":30,"time":1785865941199,"pid":190857,"hostname":"test","extensionId":1,"code":1,"signal":null,"msg":"sip-agent process exited"}
