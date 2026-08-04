@@ -586,7 +586,34 @@ systemctl enable nginx --quiet
 systemctl restart nginx || die "Failed to start nginx. Check: journalctl -u nginx -n 30"
 success "nginx enabled and started (Debian default site only — no app virtual host)"
 
-# ── Step 12: Health verification ─────────────────────────────────────────────
+# ── Step 12: Firewall ────────────────────────────────────────────────────────
+# Open the ports the app needs.  We touch UFW only if it is already active or
+# if it is installed — we never force-enable UFW on a server that has its own
+# firewall management (e.g. Hetzner Cloud firewall, iptables rules).
+step "Configuring firewall"
+
+if command -v ufw &>/dev/null; then
+    # Ports we always need
+    ufw allow 80/tcp   comment 'AIO nginx'   >/dev/null 2>&1 || true
+    ufw allow 443/tcp  comment 'AIO nginx TLS' >/dev/null 2>&1 || true
+    ufw allow "${API_PORT}/tcp" comment 'AIO API server' >/dev/null 2>&1 || true
+    ufw allow "${UI_PORT}/tcp"  comment 'AIO frontend'   >/dev/null 2>&1 || true
+
+    UFW_STATUS="$(ufw status 2>/dev/null | head -1)"
+    if echo "$UFW_STATUS" | grep -q "inactive"; then
+        # UFW is installed but disabled — enable it now (default-deny incoming).
+        # We allow SSH first so we don't lock ourselves out.
+        ufw allow 22/tcp comment 'SSH' >/dev/null 2>&1 || true
+        ufw --force enable >/dev/null 2>&1 || true
+        success "UFW enabled — SSH, HTTP, HTTPS, API (${API_PORT}), UI (${UI_PORT}) open"
+    else
+        success "UFW rules added — API (${API_PORT}), UI (${UI_PORT}), HTTP/S open"
+    fi
+else
+    warn "ufw not found — skipping firewall configuration. Make sure ports 80, 443, ${API_PORT}, and ${UI_PORT} are open in your cloud firewall."
+fi
+
+# ── Step 13: Health verification ─────────────────────────────────────────────
 step "Verifying installation"
 
 # Give the services a moment to fully start

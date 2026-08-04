@@ -1,2 +1,4 @@
 - [Artifact build environment](build-environment.md) — Vite builds need the managed artifact PORT and BASE_PATH values during standalone verification.
 - [Yeastar P-Series OpenAPI quirks](yeastar-api-quirks.md) — auth body format, required User-Agent header, query-param token passing, correct dial endpoint.
+- [install.sh robustness rules](install-sh-rules.md) — key invariants for the VPS installer to survive re-runs and non-standard server setups.
+- [pnpm v11 breaking changes](pnpm-v11-changes.md) — onlyBuiltDependencies renamed; drizzle.config.ts ESM fix; drizzle-kit binary location.

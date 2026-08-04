@@ -1,0 +1,76 @@
+  dist/pino-pretty.mjs.map           203.6kb
+  dist/thread-stream-worker.mjs.map   12.0kb
+
+⚡ Done in 331ms
+[INFO]  Building dashboard frontend...
+$ vite build --config vite.config.ts
+vite v7.3.6 building client environment for production...
+src/components/ui/dropdown-menu.tsx (2:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+src/hooks/use-toast.ts (2:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+src/components/ui/collapsible.tsx (2:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+✓ 1900 modules transformed.
+dist/public/index.html                   1.41 kB │ gzip:   0.55 kB
+dist/public/assets/index-YMn6EI7D.css  126.08 kB │ gzip:  20.20 kB
+dist/public/assets/index-CxdlLt15.js   852.00 kB │ gzip: 245.45 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 7.60s
+[✓]    API server and dashboard built successfully
+
+▶ Running database migrations
+Reading config file '/opt/aio-voice-connect/lib/db/drizzle.config.ts'
+Using 'pg' driver for database querying
+[✓] Pulling schema from database...
+[✓] Changes applied
+[✓]    Database schema applied
+
+▶ Creating systemd services
+[✓]    aio-voice-connect-api service enabled and started (port 3100)
+[✓]    aio-voice-connect-ui  service enabled and started (port 8080)
+
+▶ Installing privileged nginx setup helper
+[✓]    nginx helper installed — path unit is active (/opt/aio-voice-connect/nginx-helper.sh)
+
+▶ Enabling nginx (no virtual host — configure domain in Settings)
+[✓]    nginx enabled and started (Debian default site only — no app virtual host)
+
+▶ Verifying installation
+[✓]    API server is healthy — direct port 3100 (/api/healthz → HTTP 200)
+[✓]    Frontend is reachable — direct port 8080 (HTTP 200)
+[✓]    PostgreSQL is running
+
+╔══════════════════════════════════════════════════════════════╗
+║           Installation completed successfully                 ║
+╠══════════════════════════════════════════════════════════════╣
+║  Dashboard  (direct): http://13.140.151.164:8080              ║
+║  API        (direct): http://13.140.151.164:3100             ║
+║                                                              ║
+║  nginx is installed and running (no virtual host yet).       ║
+║  Connect a domain in Settings → Domain to enable port 80/443.║
+╚══════════════════════════════════════════════════════════════╝
+
+Useful commands:
+  journalctl -u aio-voice-connect-api -f      # stream API server logs
+  journalctl -u aio-voice-connect-ui  -f      # stream frontend logs
+  systemctl restart aio-voice-connect-api     # restart API server
+  systemctl restart aio-voice-connect-ui      # restart frontend
+  cat /opt/aio-voice-connect/.env                      # view configuration (root only)
+
+root@vmi3357322:/opt/aio-voice-connect# journalctl -u aio-voice-connect-api -f
+Aug 04 22:31:00 vmi3357322 systemd[1]: Started aio-voice-connect-api.service - AIO Voice Connect API Server.
+Aug 04 22:31:00 vmi3357322 aio-voice-connect-api[3144858]: Warning: connect.session() MemoryStore is not
+Aug 04 22:31:00 vmi3357322 aio-voice-connect-api[3144858]: designed for a production environment, as it will leak
+Aug 04 22:31:00 vmi3357322 aio-voice-connect-api[3144858]: memory, and will not scale past a single process.
+Aug 04 22:31:00 vmi3357322 aio-voice-connect-api[3144858]: {"level":30,"time":1785875460834,"pid":3144858,"hostname":"vmi3357322","port":3100,"msg":"Server listening"}
+Aug 04 22:31:00 vmi3357322 aio-voice-connect-api[3144858]: {"level":30,"time":1785875460892,"pid":3144858,"hostname":"vmi3357322","count":0,"msg":"Loaded call events from DB"}
+Aug 04 22:31:00 vmi3357322 aio-voice-connect-api[3144858]: {"level":30,"time":1785875460892,"pid":3144858,"hostname":"vmi3357322","msg":"Deployment state reconciled on startup"}
+Aug 04 22:31:13 vmi3357322 aio-voice-connect-api[3144858]: {"level":30,"time":1785875473874,"pid":3144858,"hostname":"vmi3357322","req":{"id":1,"method":"GET","url":"/api/healthz"},"res":{"statusCode":200},"responseTime":14,"msg":"request completed"}
+^C
+root@vmi3357322:/opt/aio-voice-connect# journalctl -u aio-voice-connect-ui  -f
+Aug 04 22:31:00 vmi3357322 systemd[1]: Started aio-voice-connect-ui.service - AIO Voice Connect Frontend (static file server).
+Aug 04 22:31:00 vmi3357322 aio-voice-connect-ui[3144866]: [serve-static] Serving /opt/aio-voice-connect/artifacts/aio-voice-connect-manager/dist/public
+Aug 04 22:31:00 vmi3357322 aio-voice-connect-ui[3144866]: [serve-static] API proxy → http://127.0.0.1:3100
+Aug 04 22:31:00 vmi3357322 aio-voice-connect-ui[3144866]: [serve-static] Listening on http://0.0.0.0:8080
