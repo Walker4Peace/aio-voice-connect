@@ -1,0 +1,30 @@
+août 04 18:23:41 test aio-voice-connect-api[191715]: [ext:1] [2026-08-04T18:23:41.834Z] 2026/08/04 18:23:41 Loaded config with 0 functions
+août 04 18:23:41 test aio-voice-connect-api[191715]: [ext:1] [2026-08-04T18:23:41.834Z] 2026/08/04 18:23:41 Starting HTTP API server on :19001
+août 04 18:23:41 test aio-voice-connect-api[191715]: [ext:1] [2026-08-04T18:23:41.834Z] 2026/08/04 18:23:41 Starting SIP client with configuration:
+août 04 18:23:41 test aio-voice-connect-api[191715]: [ext:1] [2026-08-04T18:23:41.835Z] 2026/08/04 18:23:41 Username: 1005, Domain: 105.188.3.70, Server: 105.188.3.70:5060, Transport: udp
+août 04 18:23:41 test aio-voice-connect-api[191715]: [ext:1] [2026-08-04T18:23:41.835Z] 2026/08/04 18:23:41 Auth ID: TjoCu4uhmD (using separate authorization ID)
+août 04 18:23:41 test aio-voice-connect-api[191715]: [ext:1] [2026-08-04T18:23:41.835Z] 2026/08/04 18:23:41 No OPENAI_API_KEY set - calls will use fallback audio handling
+août 04 18:23:41 test aio-voice-connect-api[191715]: [ext:1] [2026-08-04T18:23:41.835Z] 2026/08/04 18:23:41 DEBUG: Determined outbound IP as 192.168.11.107
+août 04 18:23:41 test aio-voice-connect-api[191715]: [ext:1] [2026-08-04T18:23:41.836Z] 2026/08/04 18:23:41 Local IP determined as: 192.168.11.107
+août 04 18:23:41 test aio-voice-connect-api[191715]: {"level":30,"time":1785867821838,"pid":191715,"hostname":"test","req":{"id":67,"method":"POST","url":"/api/deploy/1/start"},"res":{"statusCode":200},"responseTime":269,"msg":"request completed"}
+août 04 18:23:41 test aio-voice-connect-api[191715]: [ext:1] [2026-08-04T18:23:41.898Z] 2026/08/04 18:23:41 DEBUG: Retrieved external IP as 105.188.3.70
+août 04 18:23:41 test aio-voice-connect-api[191715]: [ext:1] [2026-08-04T18:23:41.901Z] 2026/08/04 18:23:41 External IP determined as: 105.188.3.70
+août 04 18:23:41 test aio-voice-connect-api[191715]: [ext:1] [2026-08-04T18:23:41.902Z] 2026/08/04 18:23:41 Sending REGISTER request via sipgo client.
+août 04 18:23:41 test aio-voice-connect-api[191715]: [ext:1] [2026-08-04T18:23:41.902Z] 2026/08/04 18:23:41 Auth: digestUsername=TjoCu4uhmD, realm=YSAsterisk, uri=sip:105.188.3.70, password=EmkWA6lT7y
+août 04 18:23:41 test aio-voice-connect-api[191715]: [ext:1] [2026-08-04T18:23:41.902Z] 2026/08/04 18:23:41 Resending REGISTER with Authorization header (CSeq=2).
+août 04 18:23:41 test aio-voice-connect-api[191715]: [ext:1] [2026-08-04T18:23:41.902Z] 2026/08/04 18:23:41 Authorization: Digest username="TjoCu4uhmD", realm="YSAsterisk", nonce="1785867821/cb21e8e156d4fd9d61736db093a2329d", uri="sip:105.188.3.70", response="4e41eb4119d5a55ddaf7717e485bb347", algorithm=MD5
+août 04 18:23:41 test aio-voice-connect-api[191715]: [ext:1] [2026-08-04T18:23:41.913Z] 2026/08/04 18:23:41 Received REGISTER response: SIP/2.0 200 OK
+août 04 18:23:41 test aio-voice-connect-api[191715]: [ext:1] [2026-08-04T18:23:41.913Z] Via: SIP/2.0/UDP 192.168.11.107:49610;rport=49610;received=105.188.3.70;branch=z9hG4bK.iYCIrhnbSoqpzvos
+août 04 18:23:41 test aio-voice-connect-api[191715]: [ext:1] [2026-08-04T18:23:41.914Z] Call-ID: 7nb6xrwK4GhLPRpF
+août 04 18:23:41 test aio-voice-connect-api[191715]: [ext:1] [2026-08-04T18:23:41.914Z] From: <sip:1005@105.188.3.70>;tag=YSyuMPyA
+août 04 18:23:41 test aio-voice-connect-api[191715]: [ext:1] [2026-08-04T18:23:41.914Z] To: <sip:1005@105.188.3.70>;tag=z9hG4bK.iYCIrhnbSoqpzvos
+août 04 18:23:41 test aio-voice-connect-api[191715]: [ext:1] [2026-08-04T18:23:41.914Z] CSeq: 2 REGISTER
+août 04 18:23:41 test aio-voice-connect-api[191715]: [ext:1] [2026-08-04T18:23:41.914Z] Date: Tue, 04 Aug 2026 18:23:41 GMT
+août 04 18:23:41 test aio-voice-connect-api[191715]: [ext:1] [2026-08-04T18:23:41.914Z] Contact: <sip:1005@105.188.3.70:49610>;expires=650
+août 04 18:23:41 test aio-voice-connect-api[191715]: [ext:1] [2026-08-04T18:23:41.914Z] Expires: 605
+août 04 18:23:41 test aio-voice-connect-api[191715]: [ext:1] [2026-08-04T18:23:41.914Z] Server: Yeastar PSE
+août 04 18:23:41 test aio-voice-connect-api[191715]: [ext:1] [2026-08-04T18:23:41.914Z] Content-Length: 0
+août 04 18:23:41 test aio-voice-connect-api[191715]: [ext:1] [2026-08-04T18:23:41.914Z] 2026/08/04 18:23:41 Registration successful!
+août 04 18:23:41 test aio-voice-connect-api[191715]: [ext:1] [2026-08-04T18:23:41.914Z] 2026/08/04 18:23:41 Initial REGISTER request sent.
+août 04 18:23:41 test aio-voice-connect-api[191715]: [ext:1] [2026-08-04T18:23:41.916Z] 2026/08/04 18:23:41 SIP server is now listening for incoming messages.
+août 04 18:23:41 test aio-voice-connect-api[191715]: [ext:1] [2026-08-04T18:23:41.938Z] 2026/08/04 18:23:41 WARN SIP request handler not found caller=Server method=NOTIFY

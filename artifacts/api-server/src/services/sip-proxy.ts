@@ -320,22 +320,26 @@ export async function startSipProxy(params: {
       out = rwOutboundReq(msg);
     }
 
+    const outboundLine = msg?.firstLine ?? "(unparsed)";
     extSock.send(out, s.yeastarPort, s.yeastarIp, (err) => {
-      if (err) logger.warn({ extensionId, err }, "SIP proxy: extSock send error");
-      else if (!s.extBound) {
-        s.extBound = true;
-        try {
-          const addr = extSock.address();
-          logger.info({ extensionId, extSrcPort: addr.port, yeastarIp, yeastarPort },
+      if (err) {
+        logger.warn({ extensionId, err, line: outboundLine }, "SIP proxy: extSock send error");
+      } else {
+        let srcPort: number | undefined;
+        try { srcPort = extSock.address().port; } catch { /* not yet bound */ }
+        if (!s.extBound) {
+          s.extBound = true;
+          logger.info({ extensionId, extSrcPort: srcPort, yeastarIp, yeastarPort },
             "SIP proxy: extSock auto-bound, first packet sent to Yeastar");
-        } catch { /* ignore */ }
+        }
+        logger.info(
+          { extensionId, dir: "binary→Yeastar",
+            from: `127.0.0.1:${rinfo.port}`, to: `${s.yeastarIp}:${s.yeastarPort}`,
+            extSrcPort: srcPort, sip: outboundLine },
+          "SIP proxy packet",
+        );
       }
     });
-
-    logger.debug(
-      { extensionId, binarySrc: rinfo.port, line: msg?.firstLine.split(" ").slice(0, 2).join(" ") },
-      "SIP proxy: binary→Yeastar",
-    );
   });
 
   // ── Yeastar → Binary ──────────────────────────────────────────────────────
@@ -359,15 +363,19 @@ export async function startSipProxy(params: {
       destPort = s.binarySrcPort;
     }
 
+    const inboundLine = msg?.firstLine ?? "(unparsed)";
     localSock.send(out, destPort, "127.0.0.1", (err) => {
-      if (err) logger.warn({ extensionId, destPort, err }, "SIP proxy: localSock send error");
+      if (err) {
+        logger.warn({ extensionId, destPort, err, line: inboundLine }, "SIP proxy: localSock send error");
+      } else {
+        logger.info(
+          { extensionId, dir: "Yeastar→binary",
+            from: `${rinfo.address}:${rinfo.port}`, to: `127.0.0.1:${destPort}`,
+            sip: inboundLine },
+          "SIP proxy packet",
+        );
+      }
     });
-
-    logger.debug(
-      { extensionId, fromYeastar: rinfo.address, destPort,
-        line: msg?.firstLine.split(" ").slice(0, 3).join(" ") },
-      "SIP proxy: Yeastar→binary",
-    );
   });
 
   localSock.on("error", (err) => logger.warn({ extensionId, err }, "SIP proxy localSock error"));
