@@ -1,0 +1,94 @@
+root@vmi3357322:~# sipsak   -U   -vvv   --transport=udp   --auth-username=TjoCu4uhmD   --password=EmkWA6lT7y   --remote-port=5060   -s sip:1005@aioprocess-demo.ras.yeastar.com
+using A record: aioprocess-demo.ras.yeastar.com
+warning: Deactivated Via insertion in usrloc mode.
+         Please use option -i to suppress this warning.
+fqdnhostname: 127.0.1.1
+our Via-Line: Via: SIP/2.0/UDP 127.0.1.1:49657;branch=z9hG4bK.6a1658ff;rport;alias
+
+New message with Via-Line:
+REGISTER sip:aioprocess-demo.ras.yeastar.com SIP/2.0
+Via: SIP/2.0/UDP 127.0.1.1:49657;branch=z9hG4bK.6a1658ff;rport;alias
+From: sip:1005@aioprocess-demo.ras.yeastar.com;tag=2ab8427a
+To: sip:1005@aioprocess-demo.ras.yeastar.com
+Call-ID: 716718714@127.0.1.1
+CSeq: 1 REGISTER
+Content-Length: 0
+Max-Forwards: 70
+User-Agent: sipsak 0.9.8.1
+Expires: 15
+Contact: sip:1005@127.0.1.1:49657
+
+
+registering user 1005@... 
+request:
+REGISTER sip:aioprocess-demo.ras.yeastar.com SIP/2.0
+Via: SIP/2.0/UDP 127.0.1.1:49657;branch=z9hG4bK.6a1658ff;rport;alias
+From: sip:1005@aioprocess-demo.ras.yeastar.com;tag=2ab8427a
+To: sip:1005@aioprocess-demo.ras.yeastar.com
+Call-ID: 716718714@127.0.1.1
+CSeq: 1 REGISTER
+Content-Length: 0
+Max-Forwards: 70
+User-Agent: sipsak 0.9.8.1
+Expires: 15
+Contact: sip:1005@127.0.1.1:49657
+
+
+send to: UDP:52.47.94.244:5060
+
+received from: UDP:52.47.94.244:5060
+authorizing
+
+received:
+SIP/2.0 401 Unauthorized
+Via: SIP/2.0/UDP 127.0.1.1:49657;rport=42756;received=13.140.151.164;branch=z9hG4bK.6a1658ff;alias
+Call-ID: 716718714@127.0.1.1
+From: <sip:1005@aioprocess-demo.ras.yeastar.com>;tag=2ab8427a
+To: <sip:1005@aioprocess-demo.ras.yeastar.com>;tag=z9hG4bKa04a.a1fb67a6.0
+CSeq: 1 REGISTER
+WWW-Authenticate: Digest  realm="YSAsterisk",nonce="1785866787/d06e2e03519fe849b5dc5967e6eaf375",opaque="76ea86b00ec1f6ab",algorithm=md5,qop="auth"
+Server: Yeastar PSE
+Content-Length:  0
+YSUser-Agent: YSBC 2.12.30
+
+
+'CSeq' not found in reply
+registering user 1005@... 
+request:
+REGISTER sip:aioprocess-demo.ras.yeastar.com SIP/2.0
+Authorization: Digest username="TjoCu4uhmD", uri="sip:aioprocess-demo.ras.yeastar.com", algorithm=MD5, realm="YSAsterisk", opaque="76ea86b00ec1f6ab", nonce="1785866787/d06e2e03519fe849b5dc5967e6eaf375", qop=auth, nc=00000001, cnonce="67dce83f", response="d4d56a96d47fd438a8efba2e02a00668"
+Via: SIP/2.0/UDP 127.0.1.1:49657;branch=z9hG4bK.050f2741;rport;alias
+From: sip:1005@aioprocess-demo.ras.yeastar.com;tag=2ab8427a
+To: sip:1005@aioprocess-demo.ras.yeastar.com
+Call-ID: 716718714@127.0.1.1
+CSeq: 2 REGISTER
+Content-Length: 0
+Max-Forwards: 70
+User-Agent: sipsak 0.9.8.1
+Expires: 15
+Contact: sip:1005@127.0.1.1:49657
+
+
+send to: UDP:52.47.94.244:5060
+
+received from: UDP:52.47.94.244:5060
+        OK
+
+SIP/2.0 200 OK
+Via: SIP/2.0/UDP 127.0.1.1:49657;rport=42756;received=13.140.151.164;branch=z9hG4bK.050f2741;alias
+Call-ID: 716718714@127.0.1.1
+From: <sip:1005@aioprocess-demo.ras.yeastar.com>;tag=2ab8427a
+To: <sip:1005@aioprocess-demo.ras.yeastar.com>;tag=z9hG4bK704a.9c19b743.0
+CSeq: 2 REGISTER
+Contact: <sip:1005@aioprocess-demo.ras.yeastar.com:5060>;expires=612
+Date: Tue, 04 Aug 2026 18:06:27 GMT
+Expires: 602
+Server: Yeastar PSE
+Content-Length:  0
+YSUser-Agent: YSBC 2.12.30
+
+
+
+All usrloc tests completed successful.
+received last message 166.359 ms after first request (test duration).
+root@vmi3357322:~#
