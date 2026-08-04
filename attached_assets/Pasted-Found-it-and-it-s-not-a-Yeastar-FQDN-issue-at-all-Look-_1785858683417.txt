@@ -1,0 +1,28 @@
+Found it — and it's not a Yeastar/FQDN issue at all. Look closely at your Via header:
+
+Via: SIP/2.0/UDP 192.168.11.107:45801;branch=z9hG4bK.QTrTrUxX1RhLqeDa
+
+Compare to the working sipsak test:
+
+Via: SIP/2.0/UDP 127.0.1.1:56516;branch=z9hG4bK.01d33a65;rport;alias
+
+Your app's Via header is missing the ;rport parameter.
+
+Why this breaks everything
+
+Per SIP NAT traversal rules (RFC 3581):
+
+Without rport, the server is instructed to send its response back to the IP:port literally written in the Via header — in your case, 192.168.11.107:45801, which is a private LAN address, completely unroutable from the public internet.
+With rport, the server instead replies to the address/port the packet actually arrived from (i.e., your real public-facing NAT'd address/port) — which is what makes NAT traversal work at all.
+
+Your tcpdump capture confirms this exactly: 11 outbound REGISTER retransmissions, zero inbound replies, all using the same private-IP Via with no rport. The Yeastar PBX is dutifully trying to send its 401 Unauthorized challenge to 192.168.11.107:45801 — a private address it can never reach — so the packet just disappears, and your app keeps blindly retransmitting until Timer_B expires.
+
+This matches perfectly with why sipsak (which does add ;rport) worked instantly on the same host/network.
+
+The fix
+
+You need the sipgo-based app to add rport to its Via header on outbound requests. Depending on the library version:
+
+If using sipgo directly, when constructing the transport/UAC, make sure NAT traversal / rport support is enabled (some versions require explicitly setting Via.Params["rport"] = "" on outbound requests, or a client option like WithClientNAT() / similar depending on the version).
+If there's a config flag like enable_rport, nat_traversal, or use_rport in the app's SIP client config — turn it on.
+As a quick sanity check, you could also add a STUN-derived Contact/Via IP, but rport is the simpler and standard fix here — it's literally a one-line change on the outbound request builder.

@@ -1,0 +1,129 @@
+test@test:/tmp$ sudo tcpdump -i any -n udp port 5060 -w /tmp/sip_debug.pcap
+tcpdump: data link type LINUX_SLL2
+tcpdump: listening on any, link-type LINUX_SLL2 (Linux cooked v2), snapshot length 262144 bytes
+^C11 packets captured
+23 packets received by filter
+0 packets dropped by kernel
+test@test:/tmp$ cat sip_debug.pcap
+ò rjEks@@REGISTER sip:aioprocess-demo.ras.yeastar.com:5060 SIP/2.0
+Via: SIP/2.0/UDP 192.168.11.107:45801;branch=z9hG4bK.QTrTrUxX1RhLqeDa
+From: <sip:1005@aioprocess-demo.ras.yeastar.com>;tag=dcR3htI1
+To: <sip:1005@aioprocess-demo.ras.yeastar.com>
+Call-ID: pc39ZS5B5A1mebn7
+CSeq: 1 REGISTER
+Contact: <sip:1005@105.188.3.70:5060>
+Expires: 120
+Max-Forwards: 70
+Content-Length: 0
+
+       rjEk@@σREGISTER sip:aioprocess-demo.ras.yeastar.com:5060 SIP/2.0
+Via: SIP/2.0/UDP 192.168.11.107:45801;branch=z9hG4bK.QTrTrUxX1RhLqeDa
+From: <sip:1005@aioprocess-demo.ras.yeastar.com>;tag=dcR3htI1
+To: <sip:1005@aioprocess-demo.ras.yeastar.com>
+Call-ID: pc39ZS5B5A1mebn7
+CSeq: 1 REGISTER
+Contact: <sip:1005@105.188.3.70:5060>
+Expires: 120
+Max-Forwards: 70
+Content-Length: 0
+
+        rjmEl@@ζREGISTER sip:aioprocess-demo.ras.yeastar.com:5060 SIP/2.0
+Via: SIP/2.0/UDP 192.168.11.107:45801;branch=z9hG4bK.QTrTrUxX1RhLqeDa
+From: <sip:1005@aioprocess-demo.ras.yeastar.com>;tag=dcR3htI1
+To: <sip:1005@aioprocess-demo.ras.yeastar.com>
+Call-ID: pc39ZS5B5A1mebn7
+CSeq: 1 REGISTER
+Contact: <sip:1005@105.188.3.70:5060>
+Expires: 120
+Max-Forwards: 70
+Content-Length: 0
+
+                rjEl@@zREGISTER sip:aioprocess-demo.ras.yeastar.com:5060 SIP/2.0
+Via: SIP/2.0/UDP 192.168.11.107:45801;branch=z9hG4bK.QTrTrUxX1RhLqeDa
+From: <sip:1005@aioprocess-demo.ras.yeastar.com>;tag=dcR3htI1
+To: <sip:1005@aioprocess-demo.ras.yeastar.com>
+Call-ID: pc39ZS5B5A1mebn7
+CSeq: 1 REGISTER
+Contact: <sip:1005@105.188.3.70:5060>
+Expires: 120
+Max-Forwards: 70
+Content-Length: 0
+
+        rjEo@@˸REGISTER sip:aioprocess-demo.ras.yeastar.com:5060 SIP/2.0
+Via: SIP/2.0/UDP 192.168.11.107:45801;branch=z9hG4bK.QTrTrUxX1RhLqeDa
+From: <sip:1005@aioprocess-demo.ras.yeastar.com>;tag=dcR3htI1
+To: <sip:1005@aioprocess-demo.ras.yeastar.com>
+Call-ID: pc39ZS5B5A1mebn7
+CSeq: 1 REGISTER
+Contact: <sip:1005@105.188.3.70:5060>
+Expires: 120
+Max-Forwards: 70
+Content-Length: 0
+
+       rjEsj@@REGISTER sip:aioprocess-demo.ras.yeastar.com:5060 SIP/2.0
+Via: SIP/2.0/UDP 192.168.11.107:45801;branch=z9hG4bK.QTrTrUxX1RhLqeDa
+From: <sip:1005@aioprocess-demo.ras.yeastar.com>;tag=dcR3htI1
+To: <sip:1005@aioprocess-demo.ras.yeastar.com>
+Call-ID: pc39ZS5B5A1mebn7
+CSeq: 1 REGISTER
+Contact: <sip:1005@105.188.3.70:5060>
+Expires: 120
+Max-Forwards: 70
+Content-Length: 0
+
+       rjU&Evw@@REGISTER sip:aioprocess-demo.ras.yeastar.com:5060 SIP/2.0
+Via: SIP/2.0/UDP 192.168.11.107:45801;branch=z9hG4bK.QTrTrUxX1RhLqeDa
+From: <sip:1005@aioprocess-demo.ras.yeastar.com>;tag=dcR3htI1
+To: <sip:1005@aioprocess-demo.ras.yeastar.com>
+Call-ID: pc39ZS5B5A1mebn7
+CSeq: 1 REGISTER
+Contact: <sip:1005@105.188.3.70:5060>
+Expires: 120
+Max-Forwards: 70
+Content-Length: 0
+
+       rjUGEw@@REGISTER sip:aioprocess-demo.ras.yeastar.com:5060 SIP/2.0
+Via: SIP/2.0/UDP 192.168.11.107:45801;branch=z9hG4bK.QTrTrUxX1RhLqeDa
+From: <sip:1005@aioprocess-demo.ras.yeastar.com>;tag=dcR3htI1
+To: <sip:1005@aioprocess-demo.ras.yeastar.com>
+Call-ID: pc39ZS5B5A1mebn7
+CSeq: 1 REGISTER
+Contact: <sip:1005@105.188.3.70:5060>
+Expires: 120
+Max-Forwards: 70
+Content-Length: 0
+
+       rjrUE{^@@REGISTER sip:aioprocess-demo.ras.yeastar.com:5060 SIP/2.0
+Via: SIP/2.0/UDP 192.168.11.107:45801;branch=z9hG4bK.QTrTrUxX1RhLqeDa
+From: <sip:1005@aioprocess-demo.ras.yeastar.com>;tag=dcR3htI1
+To: <sip:1005@aioprocess-demo.ras.yeastar.com>
+Call-ID: pc39ZS5B5A1mebn7
+CSeq: 1 REGISTER
+Contact: <sip:1005@105.188.3.70:5060>
+Expires: 120
+Max-Forwards: 70
+Content-Length: 0
+
+!       rjtE{@@REGISTER sip:aioprocess-demo.ras.yeastar.com:5060 SIP/2.0
+Via: SIP/2.0/UDP 192.168.11.107:45801;branch=z9hG4bK.QTrTrUxX1RhLqeDa
+From: <sip:1005@aioprocess-demo.ras.yeastar.com>;tag=dcR3htI1
+To: <sip:1005@aioprocess-demo.ras.yeastar.com>
+Call-ID: pc39ZS5B5A1mebn7
+CSeq: 1 REGISTER
+Contact: <sip:1005@105.188.3.70:5060>
+Expires: 120
+Max-Forwards: 70
+Content-Length: 0
+
+%       rjՂE~@@REGISTER sip:aioprocess-demo.ras.yeastar.com:5060 SIP/2.0
+Via: SIP/2.0/UDP 192.168.11.107:45801;branch=z9hG4bK.QTrTrUxX1RhLqeDa
+From: <sip:1005@aioprocess-demo.ras.yeastar.com>;tag=dcR3htI1
+To: <sip:1005@aioprocess-demo.ras.yeastar.com>
+Call-ID: pc39ZS5B5A1mebn7
+CSeq: 1 REGISTER
+Contact: <sip:1005@105.188.3.70:5060>
+Expires: 120
+Max-Forwards: 70
+Content-Length: 0
+
+test@test:/tmp$
