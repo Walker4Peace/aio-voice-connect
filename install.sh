@@ -65,8 +65,9 @@ if [[ -f "$_EXISTING_ENV" ]]; then
 fi
 
 if [[ -n "${_EXISTING_URL:-}" ]]; then
-    # Extract password from postgresql://user:PASS@host/db
+    # Extract password and port from postgresql://user:PASS@host:PORT/db
     DB_PASS="$(printf '%s' "$_EXISTING_URL" | sed 's|.*://[^:]*:\([^@]*\)@.*|\1|')"
+    DB_PORT_EXISTING="$(printf '%s' "$_EXISTING_URL" | sed 's|.*@[^:]*:\([0-9]*\)/.*|\1|')"
     [[ -z "$DB_PASS" ]] && DB_PASS="$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 24 2>/dev/null || openssl rand -hex 16)"
 else
     DB_PASS="$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 24 2>/dev/null || openssl rand -hex 16)"
@@ -270,32 +271,74 @@ success "sip-agent binary ready at ${SIP_AGENT_BIN}"
 # ── Step 5: PostgreSQL database ───────────────────────────────────────────────
 step "Configuring PostgreSQL"
 
+# ── Determine which port system PostgreSQL should use ────────────────────────
+# Port 5432 may already be occupied by Docker or another service.  We detect
+# this by stopping our system PG temporarily and checking with ss; if 5432 is
+# still in use we pick the first free port in 5433-5438 and patch
+# postgresql.conf before starting.
+
+PG_CONF="$(find /etc/postgresql -name postgresql.conf 2>/dev/null | sort -V | tail -1)"
+[[ -z "$PG_CONF" ]] && die "Cannot find postgresql.conf — is postgresql installed?"
+
+# Helper: pick the first TCP port not currently LISTEN-ing
+_pick_free_port() {
+    local _p
+    for _p in 5433 5434 5435 5436 5437 5438; do
+        ss -tlnp 2>/dev/null | awk '{print $4}' | grep -q ":${_p}$" || { echo "${_p}"; return 0; }
+    done
+    return 1
+}
+
+# Default port; may be overridden below
+PG_PORT=5432
+
+if [[ -n "${DB_PORT_EXISTING:-}" && "${DB_PORT_EXISTING}" != "5432" ]]; then
+    # Re-run: restore the previously chosen non-default port so the stored
+    # DATABASE_URL remains valid without needing to update docker containers.
+    PG_PORT="${DB_PORT_EXISTING}"
+    info "Re-using previously configured PostgreSQL port ${PG_PORT}"
+    sed -i "s/^#*[[:space:]]*port[[:space:]]*=.*/port = ${PG_PORT}/" "$PG_CONF"
+else
+    # Temporarily stop system PG so its own socket releases 5432.
+    systemctl stop postgresql 2>/dev/null || true
+    sleep 1
+    # Now check if 5432 is still occupied (by Docker or another service).
+    if ss -tlnp 2>/dev/null | awk '{print $4}' | grep -q ':5432$'; then
+        PG_PORT="$(_pick_free_port)" \
+            || die "Port 5432 is occupied and no free alternative port found in 5433-5438. Free a port and re-run."
+        info "Port 5432 is occupied by another service — configuring system PostgreSQL to use port ${PG_PORT}"
+        sed -i "s/^#*[[:space:]]*port[[:space:]]*=.*/port = ${PG_PORT}/" "$PG_CONF"
+    fi
+fi
+
 systemctl enable postgresql --quiet
-systemctl start postgresql
+systemctl start postgresql || die "Failed to start PostgreSQL service. Check: journalctl -u postgresql -n 50"
+
+# Shortcut so every psql call targets the right port automatically
+_psql() { sudo -u postgres psql -p "${PG_PORT}" "$@"; }
 
 # Create role if it doesn't exist
-if ! sudo -u postgres psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='${DB_USER}'" | grep -q 1; then
-    sudo -u postgres psql -c "CREATE USER ${DB_USER} WITH PASSWORD '${DB_PASS}';" >/dev/null \
+if ! _psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='${DB_USER}'" | grep -q 1; then
+    _psql -c "CREATE USER ${DB_USER} WITH PASSWORD '${DB_PASS}';" >/dev/null \
         || die "Failed to create PostgreSQL user '${DB_USER}'."
     success "Database user '${DB_USER}' created"
 else
-    # Update the password on re-runs so the .env stays consistent
-    sudo -u postgres psql -c "ALTER USER ${DB_USER} WITH PASSWORD '${DB_PASS}';" >/dev/null
+    _psql -c "ALTER USER ${DB_USER} WITH PASSWORD '${DB_PASS}';" >/dev/null
     success "Database user '${DB_USER}' already exists (password updated)"
 fi
 
 # Create database if it doesn't exist
-if ! sudo -u postgres psql -tAc "SELECT 1 FROM pg_database WHERE datname='${DB_NAME}'" | grep -q 1; then
-    sudo -u postgres psql -c "CREATE DATABASE ${DB_NAME} OWNER ${DB_USER};" >/dev/null \
+if ! _psql -tAc "SELECT 1 FROM pg_database WHERE datname='${DB_NAME}'" | grep -q 1; then
+    _psql -c "CREATE DATABASE ${DB_NAME} OWNER ${DB_USER};" >/dev/null \
         || die "Failed to create PostgreSQL database '${DB_NAME}'."
     success "Database '${DB_NAME}' created"
 else
     success "Database '${DB_NAME}' already exists"
 fi
 
-sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE ${DB_NAME} TO ${DB_USER};" >/dev/null
+_psql -c "GRANT ALL PRIVILEGES ON DATABASE ${DB_NAME} TO ${DB_USER};" >/dev/null
 
-DATABASE_URL="postgresql://${DB_USER}:${DB_PASS}@127.0.0.1:5432/${DB_NAME}"
+DATABASE_URL="postgresql://${DB_USER}:${DB_PASS}@127.0.0.1:${PG_PORT}/${DB_NAME}"
 
 # ── Step 6: Generate .env file ────────────────────────────────────────────────
 step "Generating .env configuration"
@@ -373,9 +416,9 @@ step "Running database migrations"
 
 # Verify the DB is reachable before running drizzle-kit
 PGPASSWORD="${DB_PASS}" psql \
-    -h 127.0.0.1 -p 5432 -U "${DB_USER}" -d "${DB_NAME}" \
+    -h 127.0.0.1 -p "${PG_PORT}" -U "${DB_USER}" -d "${DB_NAME}" \
     -c "SELECT 1;" >/dev/null 2>&1 \
-    || die "Cannot connect to PostgreSQL as '${DB_USER}' — check pg_hba.conf and that the password in .env matches the database user."
+    || die "Cannot connect to PostgreSQL as '${DB_USER}' on port ${PG_PORT} — check pg_hba.conf and that the .env password matches the database user."
 
 bash -c "
     set -e
