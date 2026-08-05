@@ -362,12 +362,12 @@ function ExtensionTab() {
         onLiveToggle={() => setIsLive(v => !v)}
         onClear={handleClear}
       >
-        <table className="w-full">
-          <thead className="sticky top-0 z-10">
-            <tr className="text-gray-600 bg-[#161b22] border-b border-gray-800">
-              <th className="text-left font-medium py-2 px-4 w-44">{t("logs.thTime")}</th>
-              <th className="text-left font-medium py-2 px-2 w-16">{t("logs.thLevel")}</th>
-              <th className="text-left font-medium py-2 px-3">{t("logs.thMessage")}</th>
+        <table className="w-full border-collapse">
+          <thead>
+            <tr className="text-gray-600 bg-[#161b22]">
+              <th className="sticky top-0 z-10 bg-[#161b22] text-left font-medium py-2 px-4 w-44 border-b border-gray-800">{t("logs.thTime")}</th>
+              <th className="sticky top-0 z-10 bg-[#161b22] text-left font-medium py-2 px-2 w-16 border-b border-gray-800">{t("logs.thLevel")}</th>
+              <th className="sticky top-0 z-10 bg-[#161b22] text-left font-medium py-2 px-3 border-b border-gray-800">{t("logs.thMessage")}</th>
             </tr>
           </thead>
           <tbody>
@@ -461,12 +461,12 @@ function SystemTab() {
       onLiveToggle={() => setIsLive(v => !v)}
       onClear={handleClear}
     >
-      <table className="w-full">
-        <thead className="sticky top-0 z-10">
-          <tr className="text-gray-600 bg-[#161b22] border-b border-gray-800">
-            <th className="text-left font-medium py-2 px-4 w-44">{t("logs.thTime")}</th>
-            <th className="text-left font-medium py-2 px-2 w-28">{t("logs.thCategory")}</th>
-            <th className="text-left font-medium py-2 px-3">{t("logs.thMessage")}</th>
+      <table className="w-full border-collapse">
+        <thead>
+          <tr className="text-gray-600 bg-[#161b22]">
+            <th className="sticky top-0 z-10 bg-[#161b22] text-left font-medium py-2 px-4 w-44 border-b border-gray-800">{t("logs.thTime")}</th>
+            <th className="sticky top-0 z-10 bg-[#161b22] text-left font-medium py-2 px-2 w-28 border-b border-gray-800">{t("logs.thCategory")}</th>
+            <th className="sticky top-0 z-10 bg-[#161b22] text-left font-medium py-2 px-3 border-b border-gray-800">{t("logs.thMessage")}</th>
           </tr>
         </thead>
         <tbody>

@@ -1359,10 +1359,15 @@ export async function startExtension(extensionId: number, opts?: {
   proc.stderr?.on("data", handleData);
 
   proc.on("exit", (code, signal) => {
-    // Preserve logs so crash output stays readable after the process is gone
-    const dying = processes.get(extensionId);
-    if (dying) exitedLogs.set(extensionId, [...dying.logs]);
-    processes.delete(extensionId);
+    // Preserve logs using the closed-over `info` so they are always saved,
+    // even if stopExtension already removed this extensionId from `processes`
+    // (or a new process was registered in its place during a rapid restart).
+    exitedLogs.set(extensionId, [...info.logs]);
+    // Only remove from the active map when it still points to THIS process;
+    // a rapid restart may have already registered a new ProcessInfo.
+    if (processes.get(extensionId)?.proc === proc) {
+      processes.delete(extensionId);
+    }
     extensionHttpPorts.delete(extensionId);
     const wasKilled = signal === "SIGTERM" || signal === "SIGKILL";
     const status = wasKilled ? "stopped" : code === 0 ? "stopped" : "error";
@@ -1418,6 +1423,9 @@ export async function startExtension(extensionId: number, opts?: {
 async function restartExtensionInternal(extensionId: number): Promise<void> {
   const info = processes.get(extensionId);
   if (!info) return;
+  // Save logs before deleting from the map so the exit handler (which fires
+  // asynchronously) still has logs to preserve even after processes.delete.
+  exitedLogs.set(extensionId, [...info.logs]);
   closeOutstandingCalls(extensionId);
   info.proc.kill("SIGTERM");
   processes.delete(extensionId);
@@ -1445,6 +1453,10 @@ export async function stopExtension(extensionId: number): Promise<void> {
     await upsertDeployment(extensionId, { status: "stopped", pid: null, sipRegistered: false, lastStoppedAt: new Date() });
     return;
   }
+  // Save logs now — the exit handler fires asynchronously, and processes.delete
+  // below would make `processes.get()` return undefined by the time it runs,
+  // causing the exit handler to skip the exitedLogs save entirely.
+  exitedLogs.set(extensionId, [...info.logs]);
   info.proc.kill("SIGTERM");
   processes.delete(extensionId);
   // Stop SIP proxy after binary is killed (proxy sockets are no longer needed)
