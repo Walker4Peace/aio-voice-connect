@@ -41,7 +41,8 @@
  * connectivity issue never silently blocks the call.
  */
 
-import { getYeastarToken, yeastarGet, evictYeastarToken, type YeastarClient } from "./yeastarAuth.js";
+import { getYeastarToken, yeastarGet, yeastarPost, evictYeastarToken, type YeastarClient } from "./yeastarAuth.js";
+export type { YeastarClient };
 import { logger } from "../lib/logger.js";
 
 // ── Types matching the P-Series Software Edition Developer Guide ──────────────
@@ -163,6 +164,80 @@ async function queryActiveCalls(
 }
 
 // ── Public API ────────────────────────────────────────────────────────────────
+
+// ── Call drop ─────────────────────────────────────────────────────────────────
+
+interface DropCallResponse {
+  errcode?: number;
+  errmsg?: string;
+}
+
+/**
+ * Tell the Yeastar PBX to immediately hang up the active call on the given
+ * extension.  Used when the AI fires `end_call` on an inbound leg — the binary
+ * closes its ElevenLabs WS but never sends SIP BYE, so we drive the teardown
+ * from the PBX side instead of relying on the binary's /bye HTTP endpoint.
+ *
+ * Flow:
+ *   1. Query call/query?extension=<num> to get Yeastar's internal call_id.
+ *   2. POST call/drop with that call_id → Yeastar sends SIP BYE to the caller.
+ *
+ * Returns true on success, false on any error (fail-open; caller must not block).
+ * Never rejects.
+ */
+export async function dropCallViaYeastar(
+  client: YeastarClient,
+  extensionNumber: string,
+  retrying = false,
+): Promise<boolean> {
+  if (!client.yeastarApiUrl || !client.yeastarClientId || !client.yeastarClientSecret) {
+    logger.debug({ extensionNumber }, "dropCallViaYeastar: Yeastar not configured — skipping");
+    return false;
+  }
+
+  try {
+    // Step 1 — find the active Yeastar call_id for this extension
+    const calls = await queryActiveCalls(client, extensionNumber);
+    if (!calls || calls.length === 0) {
+      logger.warn({ extensionNumber }, "dropCallViaYeastar: no active calls found for extension — cannot drop");
+      return false;
+    }
+
+    const yeastarCallId = calls[0].call_id;
+    if (!yeastarCallId) {
+      logger.warn({ extensionNumber }, "dropCallViaYeastar: active call has no call_id — cannot drop");
+      return false;
+    }
+
+    // Step 2 — ask the PBX to drop it
+    const token = await getYeastarToken(client);
+    const base = client.yeastarApiUrl.replace(/\/$/, "");
+    const url = `${base}/openapi/v1.0/call/drop?access_token=${encodeURIComponent(token)}`;
+
+    const res = await yeastarPost(url, { call_id: yeastarCallId });
+    const data = res.json<DropCallResponse>();
+
+    if (data.errcode === 10004 && !retrying) {
+      // Token expired — evict and retry once
+      evictYeastarToken(client.id);
+      return dropCallViaYeastar(client, extensionNumber, true);
+    }
+
+    if (data.errcode !== 0) {
+      logger.warn(
+        { extensionNumber, yeastarCallId, errcode: data.errcode, errmsg: data.errmsg },
+        "dropCallViaYeastar: call/drop returned non-zero errcode",
+      );
+      return false;
+    }
+
+    logger.info({ extensionNumber, yeastarCallId }, "dropCallViaYeastar: PBX call dropped via Yeastar API");
+    return true;
+  } catch (err) {
+    logger.warn({ err, extensionNumber }, "dropCallViaYeastar: unexpected error — call may remain active");
+    return false;
+  }
+}
 
 export interface WaitForAnswerOptions {
   /** Yeastar call_id returned by call/dial. Used for precise per-call querying. */

@@ -17,6 +17,7 @@ import {
   startSipProxy,
   stopSipProxy,
 } from "./sip-proxy.js";
+import { dropCallViaYeastar, type YeastarClient } from "./yeastarCalls.js";
 
 const SIP_AGENT_BIN =
   process.env["SIP_AGENT_BIN"] ?? "/home/runner/workspace/.bin/sip-agent";
@@ -153,6 +154,11 @@ const extensionAgentNames = new Map<number, string>();
 // Cache of extensionId → binary HTTP port, populated when an extension is started
 // Used to call the binary's /bye endpoint when the AI requests a hangup.
 const extensionHttpPorts = new Map<number, number>();
+
+// Cache of extensionId → { yeastarClient, extensionNumber }, populated when an
+// extension is started.  Used by dropCallViaYeastar to hang up inbound calls
+// when the AI fires end_call (binary closes ElevenLabs WS too fast for /bye).
+const extensionYeastarData = new Map<number, { client: YeastarClient; extensionNumber: string }>();
 
 // Tracks calls where the AI agent used the end_call tool (keyed extensionId → Set<callId>)
 // Populated when "ElevenLabs raw message" contains "tool_name":"end_call"
@@ -486,15 +492,13 @@ function parseAndStoreCallEvents(extensionId: number, line: string, timestamp: s
       s.add(lastInvite.callId);
       aiEndedCallIds.set(extensionId, s);
       logger.info({ extensionId, callId: lastInvite.callId }, "AI end_call tool detected — will tag ended event");
-      // Send SIP BYE via binary HTTP API so the caller hears hang-up immediately.
-      // The binary closes the ElevenLabs WS but does NOT send SIP BYE on its own.
-      sendSipHangup(extensionId, lastInvite.callId).catch(() => {});
 
-      // Outbound safety timeout: if the binary is still alive 10 s after the AI
-      // decided to hang up, force-kill it so the ElevenLabs session closes cleanly
-      // and the call is not left dangling.  Inbound extensions restart automatically;
-      // outbound ones stay stopped until the next outbound call is triggered.
       if (outboundCallModes.has(extensionId)) {
+        // ── Outbound: binary placed the INVITE itself so its SIP dialog is intact.
+        // /bye endpoint works here because the dialog is tracked independently of
+        // the ElevenLabs bridge.  Also schedule a 10 s force-kill as a safety net
+        // in case the binary stalls after the BYE.
+        sendSipHangup(extensionId, lastInvite.callId).catch(() => {});
         setTimeout(() => {
           if (outboundCallModes.has(extensionId) && processes.has(extensionId)) {
             logger.info({ extensionId }, "Outbound: binary still running 10 s after AI end_call — force-killing to close call");
@@ -502,6 +506,24 @@ function parseAndStoreCallEvents(extensionId: number, line: string, timestamp: s
             if (p) p.proc.kill("SIGTERM");
           }
         }, 10_000);
+      } else {
+        // ── Inbound: binary closes the ElevenLabs WS synchronously on end_call,
+        // which unregisters the bridge before our HTTP /bye arrives.  The binary's
+        // /bye endpoint then finds no active bridge and does nothing, leaving the
+        // SIP dialog open (caller's phone stays active).
+        //
+        // Fix: use the Yeastar PBX OpenAPI (call/drop) to terminate the call from
+        // the PBX side.  Yeastar sends SIP BYE to the caller directly — no binary
+        // involvement needed.  Fire-and-forget; failure is logged but not fatal.
+        const ystData = extensionYeastarData.get(extensionId);
+        if (ystData) {
+          dropCallViaYeastar(ystData.client, ystData.extensionNumber).catch(() => {});
+        } else {
+          // Yeastar not configured — fall back to binary /bye (may not work but
+          // it's the only option we have without PBX API access).
+          logger.warn({ extensionId }, "end_call inbound: no Yeastar credentials cached — falling back to binary /bye (may not terminate the SIP leg)");
+          sendSipHangup(extensionId, lastInvite.callId).catch(() => {});
+        }
       }
     }
     return;
@@ -1228,6 +1250,21 @@ export async function startExtension(extensionId: number, opts?: {
   if (!ext) throw new Error("Extension not found");
   if (!ext.agentConfig) throw new Error("No AI agent config assigned. Select an Agent in the extension settings first.");
   extensionAgentNames.set(extensionId, ext.agentConfig.name);
+
+  // Cache Yeastar credentials so the end_call handler can drop inbound calls
+  // via the PBX API without querying the DB on the hot log-parse path.
+  if (ext.client?.yeastarApiUrl && ext.client?.yeastarClientId && ext.client?.yeastarClientSecret) {
+    extensionYeastarData.set(extensionId, {
+      client: {
+        id: ext.client.id,
+        yeastarApiUrl: ext.client.yeastarApiUrl,
+        yeastarClientId: ext.client.yeastarClientId,
+        yeastarClientSecret: ext.client.yeastarClientSecret,
+      },
+      extensionNumber: ext.number,
+    });
+  }
+
   if (!ext.client?.sipDomain || !ext.client?.sipServer) {
     throw new Error("IPBX SIP Domain and SIP Server must be configured on the linked IPBX before deploying.");
   }
@@ -1481,6 +1518,8 @@ export async function stopExtension(extensionId: number): Promise<void> {
   // Mark as intentionally stopped so watchdog doesn't restart it
   manuallyStopped.add(extensionId);
   cancelWatchdog(extensionId);
+  // Clear Yeastar credentials cache for this extension
+  extensionYeastarData.delete(extensionId);
   // Discard any buffered connected_ai events waiting for a bridge callId
   pendingConnectedAi.delete(extensionId);
   // Close any outstanding calls so they don't ghost as "active" after restart
