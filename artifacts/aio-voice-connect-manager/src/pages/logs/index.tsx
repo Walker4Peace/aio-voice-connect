@@ -4,7 +4,7 @@ import { useAllDeployStatuses, useDeployLogs, useSystemLogs, useClearExtensionLo
 import { useListExtensions } from "@workspace/api-client-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Server, Phone, RefreshCw, Trash2, Copy, Download, Check } from "lucide-react";
+import { Monitor, Users, RefreshCw, Trash2, Copy, Download, Check } from "lucide-react";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -56,10 +56,18 @@ function parseSysLine(raw: string): SysParsed {
 
 function fmtTs(ts: string | null): string {
   if (!ts) return "—";
-  // ISO → local time only (HH:MM:SS)
+  // ISO → DD/MM/YYYY HH:MM:SS
   try {
     const d = new Date(ts);
-    if (!isNaN(d.getTime())) return d.toLocaleTimeString();
+    if (!isNaN(d.getTime())) {
+      const dd   = String(d.getDate()).padStart(2, "0");
+      const mm   = String(d.getMonth() + 1).padStart(2, "0");
+      const yyyy = d.getFullYear();
+      const hh   = String(d.getHours()).padStart(2, "0");
+      const min  = String(d.getMinutes()).padStart(2, "0");
+      const ss   = String(d.getSeconds()).padStart(2, "0");
+      return `${dd}/${mm}/${yyyy} ${hh}:${min}:${ss}`;
+    }
   } catch { /* */ }
   return ts;
 }
@@ -303,7 +311,7 @@ function ExtensionTab() {
               return (
                 <SelectItem key={ext.id} value={ext.id.toString()}>
                   <span className="flex items-center gap-2">
-                    <Phone className="h-3.5 w-3.5 text-muted-foreground" />
+                    <Users className="h-3.5 w-3.5 text-muted-foreground" />
                     <span>Extension {ext.extensionNumber}{ext.displayName ? ` — ${ext.displayName}` : ""}</span>
                     {isOutbound ? (
                       <>
@@ -330,7 +338,7 @@ function ExtensionTab() {
       <TerminalShell
         headerLeft={
           <>
-            <Phone className="h-3.5 w-3.5" />
+            <Users className="h-3.5 w-3.5" />
             {selectedExt
               ? <>Ext {selectedExt.extensionNumber}{selectedExt.displayName ? ` — ${selectedExt.displayName}` : ""}</>
               : <span className="text-gray-600">{t("logs.noExtSelected")}</span>
@@ -355,9 +363,9 @@ function ExtensionTab() {
         onClear={handleClear}
       >
         <table className="w-full">
-          <thead>
-            <tr className="text-gray-600 bg-[#161b22] sticky top-0 border-b border-gray-800 z-10">
-              <th className="text-left font-medium py-2 px-4 w-28">{t("logs.thTime")}</th>
+          <thead className="sticky top-0 z-10">
+            <tr className="text-gray-600 bg-[#161b22] border-b border-gray-800">
+              <th className="text-left font-medium py-2 px-4 w-44">{t("logs.thTime")}</th>
               <th className="text-left font-medium py-2 px-2 w-16">{t("logs.thLevel")}</th>
               <th className="text-left font-medium py-2 px-3">{t("logs.thMessage")}</th>
             </tr>
@@ -431,7 +439,7 @@ function SystemTab() {
 
   return (
     <TerminalShell
-      headerLeft={<><Server className="h-3.5 w-3.5" />{t("logs.system")}</>}
+      headerLeft={<><Monitor className="h-3.5 w-3.5" />{t("logs.general")}</>}
       headerRight={
         <Select value={filterCat} onValueChange={v => setFilterCat(v as SystemCategory)}>
           <SelectTrigger className="h-7 text-xs w-36 border-gray-300 bg-white text-gray-900 focus:ring-0 focus:ring-offset-0">
@@ -454,9 +462,9 @@ function SystemTab() {
       onClear={handleClear}
     >
       <table className="w-full">
-        <thead>
-          <tr className="text-gray-600 bg-[#161b22] sticky top-0 border-b border-gray-800 z-10">
-            <th className="text-left font-medium py-2 px-4 w-28">{t("logs.thTime")}</th>
+        <thead className="sticky top-0 z-10">
+          <tr className="text-gray-600 bg-[#161b22] border-b border-gray-800">
+            <th className="text-left font-medium py-2 px-4 w-44">{t("logs.thTime")}</th>
             <th className="text-left font-medium py-2 px-2 w-28">{t("logs.thCategory")}</th>
             <th className="text-left font-medium py-2 px-3">{t("logs.thMessage")}</th>
           </tr>
@@ -511,10 +519,10 @@ export default function LogsPage() {
       <Tabs defaultValue="system">
         <TabsList className="mb-4">
           <TabsTrigger value="system" className="gap-1.5">
-            <Server className="h-3.5 w-3.5" /> {t("logs.system")}
+            <Monitor className="h-3.5 w-3.5" /> {t("logs.general")}
           </TabsTrigger>
           <TabsTrigger value="extension" className="gap-1.5">
-            <Phone className="h-3.5 w-3.5" /> {t("logs.extension")}
+            <Users className="h-3.5 w-3.5" /> {t("logs.extension")}
           </TabsTrigger>
         </TabsList>
 

@@ -1459,7 +1459,13 @@ export async function restartExtension(extensionId: number): Promise<void> {
 }
 
 export function getLogs(extensionId: number): string[] {
-  return processes.get(extensionId)?.logs ?? exitedLogs.get(extensionId) ?? [];
+  const live = processes.get(extensionId)?.logs;
+  // Fall back to exitedLogs when the live process exists but has not yet
+  // produced output (e.g. just restarted after a call) so logs don't flash empty.
+  if (live && live.length > 0) return live;
+  const exited = exitedLogs.get(extensionId);
+  if (exited && exited.length > 0) return exited;
+  return live ?? [];
 }
 
 export function clearExtensionLogs(extensionId: number): void {
