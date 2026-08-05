@@ -1574,6 +1574,22 @@ export async function startExtension(extensionId: number, opts?: {
       }
       finalizeOutboundCall(extensionId, "completed");
       logger.info({ extensionId, code, signal }, "Outbound call ended — extension returning to idle (stopped)");
+
+      // If the binary crashed (panic, non-zero exit, not killed by us) the SIP
+      // dialog may still be open on the PBX — the binary never sent BYE.
+      // Call Yeastar's hangup API immediately so the caller's phone hangs up
+      // instead of waiting for the PBX session-timer (~30 s).
+      const crashed = !wasKilled && code !== 0;
+      if (crashed) {
+        const ystData = extensionYeastarData.get(extensionId);
+        if (ystData) {
+          logger.info({ extensionId, code }, "Outbound binary crashed — hanging up via Yeastar API");
+          hangupCallViaYeastar(ystData.client, ystData.extensionNumber).catch((err) => {
+            logger.warn({ extensionId, err }, "Outbound crash hangup via Yeastar failed");
+          });
+        }
+      }
+
       return; // expected exit — skip watchdog
     }
 

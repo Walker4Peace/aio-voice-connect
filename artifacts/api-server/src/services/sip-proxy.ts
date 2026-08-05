@@ -407,7 +407,28 @@ export async function startSipProxy(params: {
       out = rwInboundReq(msg, s);
       destPort = s.binaryListenPort;
     } else {
-      out = rebuild(msg); // responses: no rewriting needed, forward as-is
+      // Strip session-timer headers from Yeastar responses before the binary sees them.
+      // If the 200 OK carries Session-Expires: 30 the binary starts a session-timer and
+      // sends BYE ~30 s later regardless of whether the conversation is still active.
+      const filtered: Array<[string, string, string]> = [];
+      for (const [nKey, origKey, val] of msg.pairs) {
+        // Drop Session-Expires and Min-SE entirely
+        if (nKey === "session-expires" || nKey === "min-se") continue;
+        // Drop or trim Require: remove "timer" token; drop header if it was the only token
+        if (nKey === "require") {
+          const trimmed = val.split(",").map(t => t.trim()).filter(t => t.toLowerCase() !== "timer").join(", ");
+          if (trimmed) filtered.push([nKey, origKey, trimmed]);
+          continue;
+        }
+        // Strip "timer" from Supported in responses (belt-and-suspenders)
+        if (nKey === "supported") {
+          const trimmed = val.split(",").map(t => t.trim()).filter(t => t.toLowerCase() !== "timer").join(", ");
+          filtered.push([nKey, origKey, trimmed || val]);
+          continue;
+        }
+        filtered.push([nKey, origKey, val]);
+      }
+      out = rebuild({ ...msg, pairs: filtered });
       destPort = s.binarySrcPort;
     }
 
