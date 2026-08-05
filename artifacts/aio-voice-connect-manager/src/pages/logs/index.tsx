@@ -362,7 +362,7 @@ function ExtensionTab() {
         onLiveToggle={() => setIsLive(v => !v)}
         onClear={handleClear}
       >
-        <table className="w-full border-collapse">
+        <table className="w-full border-separate border-spacing-0">
           <thead>
             <tr className="text-gray-600 bg-[#161b22]">
               <th className="sticky top-0 z-10 bg-[#161b22] text-left font-medium py-2 px-4 w-44 border-b border-gray-800">{t("logs.thTime")}</th>
@@ -461,7 +461,7 @@ function SystemTab() {
       onLiveToggle={() => setIsLive(v => !v)}
       onClear={handleClear}
     >
-      <table className="w-full border-collapse">
+      <table className="w-full border-separate border-spacing-0">
         <thead>
           <tr className="text-gray-600 bg-[#161b22]">
             <th className="sticky top-0 z-10 bg-[#161b22] text-left font-medium py-2 px-4 w-44 border-b border-gray-800">{t("logs.thTime")}</th>
