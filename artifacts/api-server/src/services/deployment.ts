@@ -1261,7 +1261,7 @@ export async function startExtension(extensionId: number, opts?: {
         yeastarClientId: ext.client.yeastarClientId,
         yeastarClientSecret: ext.client.yeastarClientSecret,
       },
-      extensionNumber: ext.number,
+      extensionNumber: ext.extensionNumber,
     });
   }
 
