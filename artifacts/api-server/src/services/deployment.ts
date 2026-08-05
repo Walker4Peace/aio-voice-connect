@@ -6,6 +6,11 @@ import { db, extensionsTable, deploymentsTable, callEventsTable, agentToolsTable
 import { eq, inArray, and, asc, desc } from "drizzle-orm";
 import { logger } from "../lib/logger.js";
 import {
+  addSystemLog,
+  getSystemLogs,
+  clearSystemLogs,
+} from "../lib/system-log-buffer.js";
+import {
   needsSipProxy,
   proxyLocalPortFor,
   proxyExtPortFor,
@@ -1281,7 +1286,11 @@ export async function startExtension(extensionId: number, opts?: {
     detached: false,
   });
 
-  const info: ProcessInfo = { proc, logs: [], startedAt: new Date() };
+  // Carry over logs from the previous call/session so they persist across
+  // process restarts (call end → new call start).  Old entries are evicted
+  // naturally once the buffer hits MAX_LOG_LINES.
+  const priorLogs = exitedLogs.get(extensionId) ?? [];
+  const info: ProcessInfo = { proc, logs: [...priorLogs], startedAt: new Date() };
   processes.set(extensionId, info);
 
   await upsertDeployment(extensionId, {
@@ -1487,24 +1496,10 @@ export function clearExtensionLogs(extensionId: number): void {
 }
 
 // ── System / application log buffer ────────────────────────────────────────
-const MAX_SYSTEM_LOG_LINES = 300;
-const systemLogBuffer: string[] = [];
-
-export type SystemLogCategory = "DEPLOYMENT" | "WATCHDOG" | "STARTUP" | "YEASTAR" | "HTTP";
-
-export function addSystemLog(line: string, category: SystemLogCategory = "DEPLOYMENT"): void {
-  const timestamp = new Date().toISOString();
-  systemLogBuffer.push(`[${timestamp}] [${category}] ${line}`);
-  if (systemLogBuffer.length > MAX_SYSTEM_LOG_LINES) systemLogBuffer.shift();
-}
-
-export function getSystemLogs(): string[] {
-  return [...systemLogBuffer];
-}
-
-export function clearSystemLogs(): void {
-  systemLogBuffer.length = 0;
-}
+// Implemented in ../lib/system-log-buffer.ts; re-exported here for backward
+// compatibility with routes that import from this module.
+export type { SystemLogCategory } from "../lib/system-log-buffer.js";
+export { addSystemLog, getSystemLogs, clearSystemLogs } from "../lib/system-log-buffer.js";
 
 export async function getStatus(extensionId: number) {
   const info = processes.get(extensionId);

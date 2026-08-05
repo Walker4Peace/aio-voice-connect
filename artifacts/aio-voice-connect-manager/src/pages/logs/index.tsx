@@ -86,12 +86,20 @@ const LEVEL_BADGE: Record<string, BadgeStyle> = {
 };
 
 const CAT_BADGE: Record<string, BadgeStyle> = {
+  // Deployment-service categories
   DEPLOYMENT: { bg: "#2563eb", color: "#fff" },  // blue-600
   WATCHDOG:   { bg: "#ca8a04", color: "#fff" },  // yellow-600
   STARTUP:    { bg: "#16a34a", color: "#fff" },  // green-600
   YEASTAR:    { bg: "#9333ea", color: "#fff" },  // purple-600
   HTTP:       { bg: "#6b7280", color: "#fff" },  // gray-500
   OTHER:      { bg: "#4b5563", color: "#fff" },  // gray-600
+  // Pino log-level categories (from application logger)
+  TRACE:      { bg: "#374151", color: "#9ca3af" }, // gray-700
+  DEBUG:      { bg: "#1d4ed8", color: "#fff" },  // blue-700
+  INFO:       { bg: "#15803d", color: "#fff" },  // green-700
+  WARN:       { bg: "#b45309", color: "#fff" },  // amber-700
+  ERROR:      { bg: "#b91c1c", color: "#fff" },  // red-700
+  FATAL:      { bg: "#7f1d1d", color: "#fca5a5" }, // red-900
 };
 
 const LEVEL_DEFAULT: BadgeStyle = { bg: "#16a34a", color: "#fff" };
@@ -104,7 +112,13 @@ const EXT_ROW_COLOR: Record<string, string> = {
   INFO:  "text-gray-200",
 };
 
-const ALL_SYSTEM_CATEGORIES = ["ALL", "DEPLOYMENT", "WATCHDOG", "STARTUP", "YEASTAR", "HTTP"] as const;
+const ALL_SYSTEM_CATEGORIES = [
+  "ALL",
+  // Pino log levels (from application logger)
+  "INFO", "WARN", "ERROR", "DEBUG",
+  // Deployment-service categories
+  "HTTP", "DEPLOYMENT", "WATCHDOG", "STARTUP", "YEASTAR",
+] as const;
 type SystemCategory = typeof ALL_SYSTEM_CATEGORIES[number];
 
 // ── Clipboard helper (works inside cross-origin iframes) ─────────────────────
