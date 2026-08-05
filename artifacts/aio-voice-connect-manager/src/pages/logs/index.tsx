@@ -158,6 +158,7 @@ function CopyButton({ text }: { text: string }) {
 function TerminalShell({
   headerLeft,
   headerRight,
+  logHeader,
   isEmpty,
   isLive,
   children,
@@ -168,6 +169,8 @@ function TerminalShell({
 }: {
   headerLeft: React.ReactNode;
   headerRight?: React.ReactNode;
+  /** Column-header row rendered OUTSIDE the scroll container so it never scrolls away. */
+  logHeader?: React.ReactNode;
   isEmpty: boolean;
   isLive: boolean;
   children: React.ReactNode;
@@ -220,10 +223,17 @@ function TerminalShell({
         </div>
       </div>
 
-      {/* Log body — fixed 450 px, scrolls internally */}
+      {/* Column header — lives OUTSIDE the scroll container so it is always visible */}
+      {logHeader && (
+        <div className="bg-[#161b22] border-b border-gray-800 font-mono text-xs">
+          {logHeader}
+        </div>
+      )}
+
+      {/* Log body — fixed 410 px (450 - ~40 for the column header row), scrolls internally */}
       <div
         className="text-gray-200 overflow-y-auto font-mono text-xs [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-[#0d1117] [&::-webkit-scrollbar-thumb]:bg-gray-600 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-500"
-        style={{ height: "450px" }}
+        style={{ height: logHeader ? "410px" : "450px" }}
       >
         {isEmpty ? (
           <div className="flex flex-col items-center justify-center h-full gap-2 text-gray-500">
@@ -355,6 +365,22 @@ function ExtensionTab() {
             )}
           </>
         }
+        logHeader={
+          <table className="w-full" style={{ tableLayout: "fixed" }}>
+            <colgroup>
+              <col style={{ width: "11rem" }} />
+              <col style={{ width: "4.5rem" }} />
+              <col />
+            </colgroup>
+            <thead>
+              <tr className="text-gray-600">
+                <th className="text-left font-medium py-2 px-4">{t("logs.thTime")}</th>
+                <th className="text-left font-medium py-2 px-2">{t("logs.thLevel")}</th>
+                <th className="text-left font-medium py-2 px-3">{t("logs.thMessage")}</th>
+              </tr>
+            </thead>
+          </table>
+        }
         isEmpty={parsed.length === 0}
         isLive={isLive}
         lines={allLines}
@@ -362,20 +388,18 @@ function ExtensionTab() {
         onLiveToggle={() => setIsLive(v => !v)}
         onClear={handleClear}
       >
-        <table className="w-full border-separate border-spacing-0">
-          <thead>
-            <tr className="text-gray-600 bg-[#161b22]">
-              <th className="sticky top-0 z-10 bg-[#161b22] text-left font-medium py-2 px-4 w-44 border-b border-gray-800">{t("logs.thTime")}</th>
-              <th className="sticky top-0 z-10 bg-[#161b22] text-left font-medium py-2 px-2 w-16 border-b border-gray-800">{t("logs.thLevel")}</th>
-              <th className="sticky top-0 z-10 bg-[#161b22] text-left font-medium py-2 px-3 border-b border-gray-800">{t("logs.thMessage")}</th>
-            </tr>
-          </thead>
+        <table className="w-full" style={{ tableLayout: "fixed" }}>
+          <colgroup>
+            <col style={{ width: "11rem" }} />
+            <col style={{ width: "4.5rem" }} />
+            <col />
+          </colgroup>
           <tbody>
             {parsed.map((p, i) => {
               const badge = LEVEL_BADGE[p.level] ?? LEVEL_DEFAULT;
               return (
                 <tr key={i} className="hover:bg-white/[0.03]" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-                  <td className="py-1 px-4 text-green-400/70 whitespace-nowrap">
+                  <td className="py-1 px-4 text-green-400/70 whitespace-nowrap overflow-hidden text-ellipsis">
                     {p.ts ? (
                       <span className="flex items-center gap-1.5">
                         <span className="h-1.5 w-1.5 rounded-full bg-green-400/40 shrink-0" />
@@ -454,6 +478,22 @@ function SystemTab() {
           </SelectContent>
         </Select>
       }
+      logHeader={
+        <table className="w-full" style={{ tableLayout: "fixed" }}>
+          <colgroup>
+            <col style={{ width: "11rem" }} />
+            <col style={{ width: "7rem" }} />
+            <col />
+          </colgroup>
+          <thead>
+            <tr className="text-gray-600">
+              <th className="text-left font-medium py-2 px-4">{t("logs.thTime")}</th>
+              <th className="text-left font-medium py-2 px-2">{t("logs.thCategory")}</th>
+              <th className="text-left font-medium py-2 px-3">{t("logs.thMessage")}</th>
+            </tr>
+          </thead>
+        </table>
+      }
       isEmpty={visible.length === 0}
       isLive={isLive}
       lines={visibleRaw}
@@ -461,20 +501,18 @@ function SystemTab() {
       onLiveToggle={() => setIsLive(v => !v)}
       onClear={handleClear}
     >
-      <table className="w-full border-separate border-spacing-0">
-        <thead>
-          <tr className="text-gray-600 bg-[#161b22]">
-            <th className="sticky top-0 z-10 bg-[#161b22] text-left font-medium py-2 px-4 w-44 border-b border-gray-800">{t("logs.thTime")}</th>
-            <th className="sticky top-0 z-10 bg-[#161b22] text-left font-medium py-2 px-2 w-28 border-b border-gray-800">{t("logs.thCategory")}</th>
-            <th className="sticky top-0 z-10 bg-[#161b22] text-left font-medium py-2 px-3 border-b border-gray-800">{t("logs.thMessage")}</th>
-          </tr>
-        </thead>
+      <table className="w-full" style={{ tableLayout: "fixed" }}>
+        <colgroup>
+          <col style={{ width: "11rem" }} />
+          <col style={{ width: "7rem" }} />
+          <col />
+        </colgroup>
         <tbody>
           {visible.map((p, i) => {
             const badge = CAT_BADGE[p.category] ?? CAT_DEFAULT;
             return (
               <tr key={i} className="hover:bg-white/[0.03]" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-                <td className="py-1 px-4 text-green-400/70 whitespace-nowrap">
+                <td className="py-1 px-4 text-green-400/70 whitespace-nowrap overflow-hidden text-ellipsis">
                   {p.ts ? (
                     <span className="flex items-center gap-1.5">
                       <span className="h-1.5 w-1.5 rounded-full bg-green-400/40 shrink-0" />
