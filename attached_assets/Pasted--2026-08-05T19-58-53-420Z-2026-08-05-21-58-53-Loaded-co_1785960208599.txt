@@ -1,0 +1,124 @@
+[2026-08-05T19:58:53.420Z] 2026/08/05 21:58:53 Loaded config with 0 functions
+[2026-08-05T19:58:53.420Z] 2026/08/05 21:58:53 Starting HTTP API server on :19001
+[2026-08-05T19:58:53.420Z] 2026/08/05 21:58:53 Starting SIP client with configuration:
+[2026-08-05T19:58:53.420Z] 2026/08/05 21:58:53 Username: 1004, Domain: aioprocess-demo.ras.yeastar.com, Server: aioprocess-demo.ras.yeastar.com:5060, Transport: udp
+[2026-08-05T19:58:53.420Z] 2026/08/05 21:58:53 Auth ID: qjFB7cTE9q (using separate authorization ID)
+[2026-08-05T19:58:53.420Z] 2026/08/05 21:58:53 Outbound Proxy: 127.0.0.1:17062
+[2026-08-05T19:58:53.420Z] 2026/08/05 21:58:53 No OPENAI_API_KEY set - calls will use fallback audio handling
+[2026-08-05T19:58:53.420Z] 2026/08/05 21:58:53 DEBUG: Determined outbound IP as 13.140.151.164
+[2026-08-05T19:58:53.420Z] 2026/08/05 21:58:53 Local IP determined as: 13.140.151.164
+[2026-08-05T19:58:53.436Z] 2026/08/05 21:58:53 DEBUG: Retrieved external IP as 13.140.151.164
+[2026-08-05T19:58:53.436Z] 2026/08/05 21:58:53 External IP determined as: 13.140.151.164
+[2026-08-05T19:58:53.436Z] 2026/08/05 21:58:53 === OUTBOUND CALLING MODE ===
+[2026-08-05T19:58:53.436Z] 2026/08/05 21:58:53 Target: +212661209845
+[2026-08-05T19:58:53.436Z] 2026/08/05 21:58:53 Task:
+[2026-08-05T19:58:53.436Z] 2026/08/05 21:58:53 Result webhook:
+[2026-08-05T19:58:53.436Z] 2026/08/05 21:58:53 REGISTER via outbound proxy: 127.0.0.1:17062
+[2026-08-05T19:58:53.437Z] 2026/08/05 21:58:53 Sending REGISTER request via sipgo client.
+[2026-08-05T19:58:53.489Z] 2026/08/05 21:58:53 Auth: digestUsername=qjFB7cTE9q, realm=YSAsterisk, uri=sip:aioprocess-demo.ras.yeastar.com, password=WQHy0b05PJ
+[2026-08-05T19:58:53.489Z] 2026/08/05 21:58:53 Resending REGISTER with Authorization header (CSeq=2).
+[2026-08-05T19:58:53.489Z] 2026/08/05 21:58:53 Authorization: Digest username="qjFB7cTE9q", realm="YSAsterisk", nonce="1785959933/8fe9cb618c6f8be5ad6bc4682d254f95", uri="sip:aioprocess-demo.ras.yeastar.com", response="098bd6735d9d4dfa23196e5f92e94961", algorithm=MD5
+[2026-08-05T19:58:53.543Z] 2026/08/05 21:58:53 Received REGISTER response: SIP/2.0 200 OK
+[2026-08-05T19:58:53.543Z] Via: SIP/2.0/UDP 13.140.151.164:37373;rport=27060;received=13.140.151.164;branch=z9hG4bK.cVP0OiD15BoU93d7
+[2026-08-05T19:58:53.543Z] Call-ID: UUBppvHlTyObjXEY
+[2026-08-05T19:58:53.543Z] From: <sip:1004@aioprocess-demo.ras.yeastar.com>;tag=y7aFgfE5
+[2026-08-05T19:58:53.543Z] To: <sip:1004@aioprocess-demo.ras.yeastar.com>;tag=z9hG4bK1f5d.29e44dd.0
+[2026-08-05T19:58:53.543Z] CSeq: 2 REGISTER
+[2026-08-05T19:58:53.543Z] Contact: <sip:1004@aioprocess-demo.ras.yeastar.com:5060>;expires=621
+[2026-08-05T19:58:53.543Z] Date: Wed, 05 Aug 2026 19:58:53 GMT
+[2026-08-05T19:58:53.543Z] Expires: 636
+[2026-08-05T19:58:53.543Z] Server: Yeastar PSE
+[2026-08-05T19:58:53.543Z] Content-Length: 0
+[2026-08-05T19:58:53.543Z] YSUser-Agent: YSBC 2.12.30
+[2026-08-05T19:58:53.543Z] 2026/08/05 21:58:53 Registration successful!
+[2026-08-05T19:58:53.543Z] 2026/08/05 21:58:53 Registered with SIP provider
+[2026-08-05T19:58:53.543Z] 2026/08/05 21:58:53 Initiating outbound call to +212661209845
+[2026-08-05T19:58:53.544Z] 2026/08/05 21:58:53 RTP listener created on 0.0.0.0:36963
+[2026-08-05T19:58:53.545Z] 2026/08/05 21:58:53 Using outbound proxy: 127.0.0.1:17062
+[2026-08-05T19:58:53.545Z] 2026/08/05 21:58:53 Sending INVITE to sip:+212661209845@aioprocess-demo.ras.yeastar.com
+[2026-08-05T19:58:53.545Z] 2026/08/05 21:58:53 SDP Offer:
+[2026-08-05T19:58:53.545Z] v=0
+[2026-08-05T19:58:53.545Z] o=- 1549114927026396677 6563712172518192601 IN IP4 13.140.151.164
+[2026-08-05T19:58:53.545Z] s=-
+[2026-08-05T19:58:53.545Z] c=IN IP4 13.140.151.164
+[2026-08-05T19:58:53.545Z] t=0 0
+[2026-08-05T19:58:53.545Z] m=audio 36963 RTP/AVP 0 8 18 101
+[2026-08-05T19:58:53.545Z] a=rtpmap:0 PCMU/8000
+[2026-08-05T19:58:53.545Z] a=rtpmap:8 PCMA/8000
+[2026-08-05T19:58:53.545Z] a=rtpmap:18 G729/8000
+[2026-08-05T19:58:53.545Z] a=rtpmap:101 telephone-event/8000
+[2026-08-05T19:58:53.545Z] a=fmtp:101 0-16
+[2026-08-05T19:58:53.545Z] a=ptime:20
+[2026-08-05T19:58:53.545Z] a=sendrecv
+[2026-08-05T19:58:53.598Z] 2026/08/05 21:58:53 Received 401 Unauthorized
+[2026-08-05T19:58:53.598Z] 2026/08/05 21:58:53 First 401 received. Response:
+[2026-08-05T19:58:53.599Z] SIP/2.0 401 Unauthorized
+[2026-08-05T19:58:53.599Z] Via: SIP/2.0/UDP 13.140.151.164:37373;received=13.140.151.164;rport=27060;branch=z9hG4bK.4FqAaDdTltmTeTMy
+[2026-08-05T19:58:53.599Z] Call-ID: s3n421JvMRDG5PeY-1785959933543274252
+[2026-08-05T19:58:53.599Z] From: "Little Bird Electronics" <sip:1004@aioprocess-demo.ras.yeastar.com>;tag=hE15Hycl
+[2026-08-05T19:58:53.599Z] To: <sip:+212661209845@aioprocess-demo.ras.yeastar.com>;tag=z9hG4bK843c.d0d1fd47.0
+[2026-08-05T19:58:53.599Z] CSeq: 1 INVITE
+[2026-08-05T19:58:53.599Z] WWW-Authenticate: Digest  realm="YSAsterisk",nonce="1785959933/8fe9cb618c6f8be5ad6bc4682d254f95",opaque="4df28f9a3c670cf7",algorithm=md5,qop="auth"
+[2026-08-05T19:58:53.599Z] Server: Yeastar PSE
+[2026-08-05T19:58:53.599Z] Content-Length: 0
+[2026-08-05T19:58:53.599Z] YSUser-Agent: YSBC 2.12.30
+[2026-08-05T19:58:53.599Z] 2026/08/05 21:58:53 Auth URI: sip:+212661209845@aioprocess-demo.ras.yeastar.com, Realm: YSAsterisk
+[2026-08-05T19:58:53.599Z] 2026/08/05 21:58:53 Auth header: Digest username="qjFB7cTE9q", realm="YSAsterisk", nonce="1785959933/8fe9cb618c6f8be5ad6bc4682d254f95", uri="sip:+212661209845@aioprocess-demo.ras.yeastar.com", response="ca496d8b54a46fb0d13d7afc096bbc8e", algorithm=MD5
+[2026-08-05T19:58:53.599Z] 2026/08/05 21:58:53 Resending INVITE with authorization...
+[2026-08-05T19:58:53.652Z] 2026/08/05 21:58:53 Received 100 Trying
+[2026-08-05T19:58:53.652Z] 2026/08/05 21:58:53 Call progress: Trying
+[2026-08-05T19:58:54.946Z] 2026/08/05 21:58:54 Received 183 Session Progress
+[2026-08-05T19:58:54.946Z] 2026/08/05 21:58:54 Call progress: Session Progress
+[2026-08-05T19:59:04.690Z] 2026/08/05 21:59:04 Received 200 OK
+[2026-08-05T19:59:04.690Z] 2026/08/05 21:59:04 Call answered!
+[2026-08-05T19:59:04.690Z] 2026/08/05 21:59:04 Remote RTP address: 52.47.94.244:41088
+[2026-08-05T19:59:04.700Z] 2026/08/05 21:59:04 ACK sent
+[2026-08-05T19:59:04.700Z] 2026/08/05 21:59:04 Sending NAT hole-punch packets to 52.47.94.244:41088
+[2026-08-05T19:59:04.804Z] 2026/08/05 21:59:04 Connecting to ElevenLabs Conversational AI (agent: agent_2001kz9f5688fdha99mkt70nb915)...
+[2026-08-05T19:59:05.059Z] 2026/08/05 21:59:05 Connected to ElevenLabs Conversational AI
+[2026-08-05T19:59:05.059Z] AI responded — ElevenLabs Conversational AI - Hakim
+[2026-08-05T19:59:05.061Z] 2026/08/05 21:59:05 Note: first_message/system_prompt in config require 'Allow client overrides' in ElevenLabs dashboard
+[2026-08-05T19:59:05.061Z] 2026/08/05 21:59:05 If override fails, the agent's default greeting will be used
+[2026-08-05T19:59:05.061Z] 2026/08/05 21:59:05 DEBUG: appConfig=true
+[2026-08-05T19:59:05.061Z] 2026/08/05 21:59:05 DEBUG: ElevenLabs.FirstMessage='', SystemPrompt='Tu es un agent de confirmation de commande chez AIO PROCESS. Tu appelles Yassine pour confirmer sa commande d'une caméra Sony FX3. L'adresse de livraison enregistrée est Boulevard Maghreb Arabi N°8, Alzhar. Attends que le client parle en premier. Confirme que l'adresse est correcte, demande s'il a une note pour la livraison, puis appelle l'outil confirm_order avec address_confirmed (true/false), address (adresse finale), et note (ou null). après tous ça vous pouvez Termine l'appel poliment.
+[2026-08-05T19:59:05.061Z] IMPORTANT — comportement au décrochage : si la personne dit 'Allô', 'Allô ?', 'Oui', 'Oui allô', 'Oui ?' ou toute autre salutation de décrochage après ton introduction, c'est qu'elle vient simplement de décrocher le téléphone. Ne te présente PAS à nouveau. Reprends la conversation naturellement depuis là où elle en est.', Functions=0
+[2026-08-05T19:59:05.061Z] 2026/08/05 21:59:05 Overriding system prompt
+[2026-08-05T19:59:05.061Z] 2026/08/05 21:59:05 Sending conversation initiation to ElevenLabs: {"conversation_config_override":{"agent":{"prompt":{"prompt":"Tu es un agent de confirmation de commande chez AIO PROCESS. Tu appelles Yassine pour confirmer sa commande d'une caméra Sony FX3. L'adresse de livraison enregistrée est Boulevard Maghreb Arabi N°8, Alzhar. Attends que le client parle en premier. Confirme que l'adresse est correcte, demande s'il a une note pour la livraison, puis appelle l'outil confirm_order avec address_confirmed (true/false), address (adresse finale), et note (ou null). après tous ça vous pouvez Termine l'appel poliment.\n\nIMPORTANT — comportement au décrochage : si la personne dit 'Allô', 'Allô ?', 'Oui', 'Oui allô', 'Oui ?' ou toute autre salutation de décrochage après ton introduction, c'est qu'elle vient simplement de décrocher le téléphone. Ne te présente PAS à nouveau. Reprends la conversation naturellement depuis là où elle en est."}}},"type":"conversation_initiation_client_data"}
+[2026-08-05T19:59:05.062Z] 2026/08/05 21:59:05 Registered bridge for call: s3n421JvMRDG5PeY-1785959933543274252
+[2026-08-05T19:59:05.063Z] 2026/08/05 21:59:05 Outbound call active - AI is now talking to remote party
+[2026-08-05T19:59:05.063Z] 2026/08/05 21:59:05 Starting outbound ElevenLabs to RTP bridge...
+[2026-08-05T19:59:05.063Z] 2026/08/05 21:59:05 Starting outbound RTP to ElevenLabs bridge...
+[2026-08-05T19:59:05.063Z] 2026/08/05 21:59:05 Outbound RTP packet #1 from 52.47.94.244:41088, size=172
+[2026-08-05T19:59:05.063Z] 2026/08/05 21:59:05 ElevenLabs outbound conversation: conv_1101kz9r44pgf52rbh4j4rxtjyzd
+[2026-08-05T19:59:06.700Z] 2026/08/05 21:59:06 Outbound RTP packet #100 from 52.47.94.244:41088, size=172
+[2026-08-05T19:59:08.268Z] 2026/08/05 21:59:08 Remote: Allô ?
+[2026-08-05T19:59:08.281Z] 2026/08/05 21:59:08 Outbound sent 1 RTP packets to 52.47.94.244:41088
+[2026-08-05T19:59:08.700Z] 2026/08/05 21:59:08 Outbound RTP packet #200 from 52.47.94.244:41088, size=172
+[2026-08-05T19:59:09.631Z] 2026/08/05 21:59:09 AI: Bonjour, je suis un agent de confirmation de commande chez AIO PROCESS. J'appelle pour confirmer votre commande d'une caméra Sony FX3.
+[2026-08-05T19:59:10.260Z] 2026/08/05 21:59:10 Outbound sent 100 RTP packets to 52.47.94.244:41088
+[2026-08-05T19:59:10.700Z] 2026/08/05 21:59:10 Outbound RTP packet #300 from 52.47.94.244:41088, size=172
+[2026-08-05T19:59:12.261Z] 2026/08/05 21:59:12 Outbound sent 200 RTP packets to 52.47.94.244:41088
+[2026-08-05T19:59:12.700Z] 2026/08/05 21:59:12 Outbound RTP packet #400 from 52.47.94.244:41088, size=172
+[2026-08-05T19:59:14.261Z] 2026/08/05 21:59:14 Outbound sent 300 RTP packets to 52.47.94.244:41088
+[2026-08-05T19:59:14.700Z] 2026/08/05 21:59:14 Outbound RTP packet #500 from 52.47.94.244:41088, size=172
+[2026-08-05T19:59:16.261Z] 2026/08/05 21:59:16 Outbound sent 400 RTP packets to 52.47.94.244:41088
+[2026-08-05T19:59:16.700Z] 2026/08/05 21:59:16 Outbound RTP packet #600 from 52.47.94.244:41088, size=172
+[2026-08-05T19:59:18.700Z] 2026/08/05 21:59:18 Outbound RTP packet #700 from 52.47.94.244:41088, size=172
+[2026-08-05T19:59:20.533Z] 2026/08/05 21:59:20 Remote: Oui, c'est Yacine.
+[2026-08-05T19:59:20.701Z] 2026/08/05 21:59:20 Outbound RTP packet #800 from 52.47.94.244:41088, size=172
+[2026-08-05T19:59:22.360Z] 2026/08/05 21:59:22 Outbound sent 500 RTP packets to 52.47.94.244:41088
+[2026-08-05T19:59:22.700Z] 2026/08/05 21:59:22 Outbound RTP packet #900 from 52.47.94.244:41088, size=172
+[2026-08-05T19:59:24.361Z] 2026/08/05 21:59:24 Outbound sent 600 RTP packets to 52.47.94.244:41088
+[2026-08-05T19:59:24.700Z] 2026/08/05 21:59:24 Outbound RTP packet #1000 from 52.47.94.244:41088, size=172
+[2026-08-05T19:59:24.769Z] 2026/08/05 21:59:24 AI: [happy] Super. Alors, l'adresse de livraison enregistrée pour votre caméra Sony FX3 est Boulevard Maghreb Arabi numéro huit, Alzhar. C'est bien ça ?The user confirmed their name is Yacine. The agent needs to confirm the delivery address. The agent states the address and asks for confirmation.
+[2026-08-05T19:59:26.360Z] 2026/08/05 21:59:26 Outbound sent 700 RTP packets to 52.47.94.244:41088
+[2026-08-05T19:59:26.699Z] 2026/08/05 21:59:26 Outbound RTP packet #1100 from 52.47.94.244:41088, size=172
+[2026-08-05T19:59:28.361Z] 2026/08/05 21:59:28 Outbound sent 800 RTP packets to 52.47.94.244:41088
+[2026-08-05T19:59:28.704Z] 2026/08/05 21:59:28 Outbound RTP packet #1200 from 52.47.94.244:41088, size=172
+[2026-08-05T19:59:30.361Z] 2026/08/05 21:59:30 Outbound sent 900 RTP packets to 52.47.94.244:41088
+[2026-08-05T19:59:30.700Z] 2026/08/05 21:59:30 Outbound RTP packet #1300 from 52.47.94.244:41088, size=172
+[2026-08-05T19:59:32.332Z] 2026/08/05 21:59:32 Remote: C'est correct.
+[2026-08-05T19:59:32.647Z] 2026/08/05 21:59:32 AI: Parfait. Est-ce que vous avez une note particulière pour la livraison ?
+[2026-08-05T19:59:32.700Z] 2026/08/05 21:59:32 Outbound RTP packet #1400 from 52.47.94.244:41088, size=172
+[2026-08-05T19:59:34.240Z] 2026/08/05 21:59:34 Outbound sent 1000 RTP packets to 52.47.94.244:41088
+[2026-08-05T19:59:34.700Z] 2026/08/05 21:59:34 Outbound RTP packet #1500 from 52.47.94.244:41088, size=172
