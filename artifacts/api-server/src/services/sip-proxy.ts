@@ -151,8 +151,35 @@ const proxies = new Map<number, ProxyState>();
 
 // ── Rewrite helpers ───────────────────────────────────────────────────────────
 
+/**
+ * Remove "timer" from a Supported header value.
+ * e.g. "replaces, timer" → "replaces"
+ *      "timer"           → (header dropped)
+ * Prevents Yeastar from activating SIP Session Timers (RFC 4028): the binary
+ * never sends a refresh re-INVITE, so leaving "timer" in Supported causes
+ * Yeastar to terminate the call ~30 s after answer.
+ */
+function stripTimerFromSupported(pairs: Array<[string, string, string]>): Array<[string, string, string]> {
+  const result: Array<[string, string, string]> = [];
+  for (const [nKey, origKey, val] of pairs) {
+    if (nKey === "supported") {
+      const stripped = val
+        .split(",")
+        .map(t => t.trim())
+        .filter(t => t.toLowerCase() !== "timer")
+        .join(", ");
+      if (stripped) result.push([nKey, origKey, stripped]);
+      // drop the header entirely if "timer" was the only token
+      continue;
+    }
+    result.push([nKey, origKey, val]);
+  }
+  return result;
+}
+
 function rwOutboundReq(msg: SipMsg): Buffer {
-  return rebuild({ ...msg, pairs: ensureRport(msg.pairs) });
+  const pairs = stripTimerFromSupported(ensureRport(msg.pairs));
+  return rebuild({ ...msg, pairs });
 }
 
 function rwOutboundResp(msg: SipMsg, s: ProxyState): Buffer {
@@ -227,7 +254,7 @@ function buildAutoResponse(
     pairs.push(["allow", "Allow",
       "INVITE, ACK, BYE, CANCEL, OPTIONS, REGISTER, INFO, NOTIFY, SUBSCRIBE"]);
     pairs.push(["accept", "Accept", "application/sdp"]);
-    pairs.push(["supported", "Supported", "replaces, timer"]);
+    pairs.push(["supported", "Supported", "replaces"]);
   }
   pairs.push(["content-length", "Content-Length", "0"]);
 
