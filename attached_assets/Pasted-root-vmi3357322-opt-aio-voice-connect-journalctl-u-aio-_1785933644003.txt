@@ -1,0 +1,36 @@
+root@vmi3357322:/opt/aio-voice-connect# journalctl -u aio-voice-connect-ui -f
+Aug 05 13:59:03 vmi3357322 aio-voice-connect-ui[3274994]: [serve-static] Serving /opt/aio-voice-connect/artifacts/aio-voice-connect-manager/dist/public
+Aug 05 13:59:03 vmi3357322 aio-voice-connect-ui[3274994]: [serve-static] API proxy → http://127.0.0.1:3100
+Aug 05 13:59:03 vmi3357322 aio-voice-connect-ui[3274994]: [serve-static] Listening on http://0.0.0.0:8080
+Aug 05 14:27:26 vmi3357322 systemd[1]: Stopping aio-voice-connect-ui.service - AIO Voice Connect Frontend (static file server)...
+Aug 05 14:27:26 vmi3357322 systemd[1]: aio-voice-connect-ui.service: Deactivated successfully.
+Aug 05 14:27:26 vmi3357322 systemd[1]: Stopped aio-voice-connect-ui.service - AIO Voice Connect Frontend (static file server).
+Aug 05 14:27:26 vmi3357322 systemd[1]: Started aio-voice-connect-ui.service - AIO Voice Connect Frontend (static file server).
+Aug 05 14:27:26 vmi3357322 aio-voice-connect-ui[3279284]: [serve-static] Serving /opt/aio-voice-connect/artifacts/aio-voice-connect-manager/dist/public
+Aug 05 14:27:26 vmi3357322 aio-voice-connect-ui[3279284]: [serve-static] API proxy → http://127.0.0.1:3100
+Aug 05 14:27:26 vmi3357322 aio-voice-connect-ui[3279284]: [serve-static] Listening on http://0.0.0.0:8080
+^C
+root@vmi3357322:/opt/aio-voice-connect# journalctl -u aio-voice-connect-api -f
+Aug 05 14:32:26 vmi3357322 aio-voice-connect-api[3279273]: [ext:1] [2026-08-05T12:32:26.738Z] Content-Length: 0
+Aug 05 14:32:26 vmi3357322 aio-voice-connect-api[3279273]: [ext:1] [2026-08-05T12:32:26.738Z] YSUser-Agent: YSBC 2.12.30
+Aug 05 14:32:26 vmi3357322 aio-voice-connect-api[3279273]: [ext:1] [2026-08-05T12:32:26.738Z] 2026/08/05 14:32:26 Registration successful!
+Aug 05 14:32:26 vmi3357322 aio-voice-connect-api[3279273]: [ext:1] [2026-08-05T12:32:26.738Z] 2026/08/05 14:32:26 Re-registration successful.
+Aug 05 14:32:26 vmi3357322 aio-voice-connect-api[3279273]: [ext:1] [2026-08-05T12:32:26.742Z] 2026/08/05 14:32:26 WARN SIP request handler not found caller=Server method=NOTIFY
+Aug 05 14:32:26 vmi3357322 aio-voice-connect-api[3279273]: {"level":30,"time":1785933146743,"pid":3279273,"hostname":"vmi3357322","extensionId":1,"dir":"binary→Yeastar","from":"127.0.0.1:7060","to":"52.47.94.244:5060","sip":"SIP/2.0 405 Method Not Allowed","msg":"SIP proxy packet"}
+Aug 05 14:32:26 vmi3357322 aio-voice-connect-api[3279273]: {"level":30,"time":1785933146760,"pid":3279273,"hostname":"vmi3357322","req":{"id":127,"method":"GET","url":"/api/extensions"},"res":{"statusCode":304},"responseTime":11,"msg":"request completed"}
+Aug 05 14:32:27 vmi3357322 aio-voice-connect-api[3279273]: {"level":30,"time":1785933147993,"pid":3279273,"hostname":"vmi3357322","req":{"id":128,"method":"GET","url":"/api/extensions"},"res":{"statusCode":304},"responseTime":21,"msg":"request completed"}
+Aug 05 14:32:28 vmi3357322 aio-voice-connect-api[3279273]: {"level":30,"time":1785933148087,"pid":3279273,"hostname":"vmi3357322","req":{"id":129,"method":"GET","url":"/api/outbound/calls"},"res":{"statusCode":304},"responseTime":5,"msg":"request completed"}
+Aug 05 14:32:29 vmi3357322 aio-voice-connect-api[3279273]: {"level":30,"time":1785933149658,"pid":3279273,"hostname":"vmi3357322","req":{"id":130,"method":"GET","url":"/api/deploy/system/logs"},"res":{"statusCode":200},"responseTime":3,"msg":"request completed"}
+Aug 05 14:33:04 vmi3357322 aio-voice-connect-api[3279273]: {"level":30,"time":1785933184486,"pid":3279273,"hostname":"vmi3357322","req":{"id":133,"method":"GET","url":"/api/deploy/all"},"res":{"statusCode":200},"responseTime":58,"msg":"request completed"}
+Aug 05 14:33:04 vmi3357322 aio-voice-connect-api[3279273]: {"level":30,"time":1785933184490,"pid":3279273,"hostname":"vmi3357322","req":{"id":131,"method":"GET","url":"/api/clients"},"res":{"statusCode":304},"responseTime":103,"msg":"request completed"}
+Aug 05 14:33:04 vmi3357322 aio-voice-connect-api[3279273]: {"level":30,"time":1785933184493,"pid":3279273,"hostname":"vmi3357322","req":{"id":134,"method":"GET","url":"/api/agent-configs"},"res":{"statusCode":304},"responseTime":60,"msg":"request completed"}
+Aug 05 14:33:04 vmi3357322 aio-voice-connect-api[3279273]: {"level":30,"time":1785933184496,"pid":3279273,"hostname":"vmi3357322","req":{"id":132,"method":"GET","url":"/api/extensions"},"res":{"statusCode":304},"responseTime":88,"msg":"request completed"}
+Aug 05 14:33:06 vmi3357322 aio-voice-connect-api[3279273]: {"level":30,"time":1785933186883,"pid":3279273,"hostname":"vmi3357322","req":{"id":135,"method":"GET","url":"/api/deploy/system/logs"},"res":{"statusCode":200},"responseTime":2,"msg":"request completed"}
+Aug 05 14:33:10 vmi3357322 aio-voice-connect-api[3279273]: {"level":30,"time":1785933190704,"pid":3279273,"hostname":"vmi3357322","req":{"id":136,"method":"GET","url":"/api/deploy/all"},"res":{"statusCode":200},"responseTime":9,"msg":"request completed"}
+Aug 05 14:33:10 vmi3357322 aio-voice-connect-api[3279273]: {"level":30,"time":1785933190707,"pid":3279273,"hostname":"vmi3357322","req":{"id":137,"method":"GET","url":"/api/extensions"},"res":{"statusCode":304},"responseTime":9,"msg":"request completed"}
+Aug 05 14:33:10 vmi3357322 aio-voice-connect-api[3279273]: {"level":30,"time":1785933190749,"pid":3279273,"hostname":"vmi3357322","req":{"id":139,"method":"GET","url":"/api/agent-configs"},"res":{"statusCode":304},"responseTime":4,"msg":"request completed"}
+Aug 05 14:33:10 vmi3357322 aio-voice-connect-api[3279273]: {"level":30,"time":1785933190752,"pid":3279273,"hostname":"vmi3357322","req":{"id":138,"method":"GET","url":"/api/stats"},"res":{"statusCode":304},"responseTime":9,"msg":"request completed"}
+Aug 05 14:33:10 vmi3357322 aio-voice-connect-api[3279273]: {"level":30,"time":1785933190754,"pid":3279273,"hostname":"vmi3357322","req":{"id":140,"method":"GET","url":"/api/deploy/call-events"},"res":{"statusCode":304},"responseTime":8,"msg":"request completed"}
+Aug 05 14:33:29 vmi3357322 aio-voice-connect-api[3279273]: {"level":30,"time":1785933209645,"pid":3279273,"hostname":"vmi3357322","extensionId":1,"dir":"Yeastar→binary","from":"52.47.94.244:5060","to":"127.0.0.1:7060","sip":"OPTIONS sip:1005@aioprocess-demo.ras.yeastar.com:5060 SIP/2.0","msg":"SIP proxy packet"}
+Aug 05 14:33:29 vmi3357322 aio-voice-connect-api[3279273]: [ext:1] [2026-08-05T12:33:29.649Z] 2026/08/05 14:33:29 WARN SIP request handler not found caller=Server method=OPTIONS
+Aug 05 14:33:29 vmi3357322 aio-voice-connect-api[3279273]: {"level":30,"time":1785933209650,"pid":3279273,"hostname":"vmi3357322","extensionId":1,"dir":"binary→Yeastar","from":"127.0.0.1:7060","to":"52.47.94.244:5060","sip":"SIP/2.0 405 Method Not Allowed","msg":"SIP proxy packet"}

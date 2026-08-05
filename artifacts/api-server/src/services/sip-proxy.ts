@@ -185,6 +185,55 @@ function rwInboundReq(msg: SipMsg, s: ProxyState): Buffer {
   return rebuild({ ...msg, pairs });
 }
 
+// ── Auto-response helpers ─────────────────────────────────────────────────────
+
+/**
+ * Extract the SIP method from a request first-line, e.g. "INVITE sip:..." → "INVITE".
+ * Returns undefined if the message is a response (starts with "SIP/2.0").
+ */
+function sipMethod(firstLine: string): string | undefined {
+  if (firstLine.startsWith("SIP/2.0")) return undefined;
+  return firstLine.split(" ")[0]?.toUpperCase();
+}
+
+/**
+ * Build a minimal but RFC-3261-compliant SIP response for an inbound request.
+ *
+ * Required headers to echo: Via (all), From, To (add tag if absent), Call-ID, CSeq.
+ * OPTIONS 200 OK also carries Allow and Accept so the PBX knows our capabilities.
+ */
+function buildAutoResponse(
+  req: SipMsg,
+  statusCode: number,
+  reason: string,
+  method: string,
+): Buffer {
+  const ECHO = new Set(["via", "from", "to", "call-id", "cseq"]);
+  const pairs: Array<[string, string, string]> = [];
+
+  for (const [nKey, origKey, val] of req.pairs) {
+    if (!ECHO.has(nKey)) continue;
+    if (nKey === "to" && !val.toLowerCase().includes("tag=")) {
+      // Non-provisional responses must add a To tag (RFC 3261 §8.2.6.2)
+      const tag = Math.random().toString(36).slice(2, 10);
+      pairs.push([nKey, origKey, `${val};tag=${tag}`]);
+    } else {
+      pairs.push([nKey, origKey, val]);
+    }
+  }
+
+  if (method === "OPTIONS") {
+    // RFC 3261 §11.2 — OPTIONS 200 OK should advertise supported methods
+    pairs.push(["allow", "Allow",
+      "INVITE, ACK, BYE, CANCEL, OPTIONS, REGISTER, INFO, NOTIFY, SUBSCRIBE"]);
+    pairs.push(["accept", "Accept", "application/sdp"]);
+    pairs.push(["supported", "Supported", "replaces, timer"]);
+  }
+  pairs.push(["content-length", "Content-Length", "0"]);
+
+  return rebuild({ firstLine: `SIP/2.0 ${statusCode} ${reason}`, pairs, body: "" });
+}
+
 // ── Socket helpers ────────────────────────────────────────────────────────────
 
 function bindSock(sock: dgram.Socket, port: number, addr: string): Promise<void> {
@@ -295,6 +344,32 @@ export async function startSipProxy(params: {
   // ── Yeastar → Binary ──────────────────────────────────────────────────────
   extSock.on("message", (buf, rinfo) => {
     const msg = parse(buf);
+
+    // ── Auto-respond to OPTIONS and NOTIFY at the proxy layer ──────────────
+    // The sip-agent binary responds 405 to both because it has no handler for
+    // them.  We intercept here, reply 200 OK to Yeastar directly, and do NOT
+    // forward to the binary — matching the behaviour of Fanvil, Yeastar Linkus,
+    // and other commercial SIP endpoints (RFC 3261 §11.2, RFC 3265 §3.2.2).
+    if (msg && isRequest(msg.firstLine)) {
+      const method = sipMethod(msg.firstLine);
+      if (method === "OPTIONS" || method === "NOTIFY") {
+        const resp = buildAutoResponse(msg, 200, "OK", method);
+        extSock.send(resp, rinfo.port, rinfo.address, (err) => {
+          if (err) {
+            logger.warn({ extensionId, method, err }, "SIP proxy: auto-response send error");
+          } else {
+            logger.info(
+              { extensionId, dir: "proxy→Yeastar",
+                from: `0.0.0.0:${s.proxyExtPort}`, to: `${rinfo.address}:${rinfo.port}`,
+                sip: `SIP/2.0 200 OK (auto: ${method})` },
+              "SIP proxy packet",
+            );
+          }
+        });
+        return; // do not forward to binary
+      }
+    }
+
     let out: Buffer;
     let destPort: number;
 
