@@ -663,16 +663,15 @@ async function buildConfig(
   ports: { sipLocalPort: number; httpPort: number },
   overrides?: { firstMessage?: string | null; systemPromptOverride?: string | null; variables?: Record<string, unknown> | null },
   outboundTarget?: { phoneNumber: string; callerId?: string | null; taskDescription?: string | null },
-  effectiveSipServer?: string,
 ) {
   if (!ext?.agentConfig) return null;
   const cfg = ext.agentConfig;
-  // SIP domain and server now come from the linked IPBX (client)
+  // SIP domain and server come from the linked IPBX (client).
+  // Always use the real FQDN/IP here — SIP headers must reference the actual registrar.
+  // If a local proxy is active, SIP_OUTBOUND_PROXY (env var) routes packets through it
+  // without changing what appears in SIP_SERVER / the "server" config field.
   const sipDomain = ext.client?.sipDomain ?? "";
-  const realSipServer = ext.client?.sipServer ?? "";
-  // Use effectiveSipServer when provided (proxy address or resolved fallback);
-  // otherwise use the real server value from the IPBX config.
-  const sipServer = effectiveSipServer ?? realSipServer;
+  const sipServer = ext.client?.sipServer ?? "";
   // Each extension gets unique ports so multiple instances can coexist:
   //   api_port  19000 + id  (sip-agent's own HTTP API, unused by us but must not conflict)
   //   sip.listen  25060 + id  (local UDP port the SIP stack binds for send/receive)
@@ -1056,21 +1055,28 @@ function serviceNameFor(ext: NonNullable<Awaited<ReturnType<typeof getExtWithRel
 function buildEnv(
   ext: NonNullable<Awaited<ReturnType<typeof getExtWithRelations>>>,
   configPath: string,
-  effectiveSipServer?: string,
+  proxyAddress?: string | null,
 ): Record<string, string> {
   const cfg = ext.agentConfig!;
   const providerKey = PROVIDER_ENV_KEYS[cfg.provider as AiProviderKey] ?? "AI_API_KEY";
-  // Use effectiveSipServer when provided (proxy address or real FQDN fallback).
-  const sipServerEnv = effectiveSipServer ?? ext.client?.sipServer ?? "";
-  return {
+  const env: Record<string, string> = {
     CONFIG_FILE: configPath,
     SIP_USERNAME: ext.sipUsername,
     SIP_AUTH_ID: ext.sipAuthId,
     SIP_PASSWORD: ext.sipPassword,
     SIP_DOMAIN: ext.client?.sipDomain ?? "",
-    SIP_SERVER: sipServerEnv,
+    // Always the real registrar — SIP headers must reference the actual PBX.
+    SIP_SERVER: ext.client?.sipServer ?? "",
     [providerKey]: cfg.apiKey,
   };
+  // When the FQDN proxy is active, route all SIP packets through it via the
+  // standard outbound-proxy mechanism.  SIP_SERVER stays as the real FQDN so
+  // Yeastar sees the correct To/From/Contact headers; packets travel through the
+  // proxy which resolves the FQDN and handles NAT/rport rewriting.
+  if (proxyAddress) {
+    env["SIP_OUTBOUND_PROXY"] = proxyAddress;
+  }
+  return env;
 }
 
 async function getExtWithRelations(extensionId: number) {
@@ -1212,17 +1218,17 @@ export async function startExtension(extensionId: number, opts?: {
   const serviceName = serviceNameFor(ext);
 
   // ── SIP FQDN proxy ───────────────────────────────────────────────────────
-  // Start the proxy BEFORE buildConfig/buildEnv so the effective SIP_SERVER
-  // address (proxy or real FQDN) is known before writing config.json and the
-  // binary environment.  If the proxy fails to start we fall back to the real
-  // FQDN — the binary will attempt a direct connection (NAT may be an issue,
-  // but at least it won't send REGISTER to a loopback address with no listener).
+  // When the PBX server is a public FQDN, start the local UDP proxy so we can
+  // handle NAT/rport rewriting.  The proxy address is passed to the binary as
+  // SIP_OUTBOUND_PROXY — SIP_SERVER remains the real FQDN so Yeastar sees
+  // correct SIP headers.  If the proxy fails to start the binary connects
+  // directly (may have NAT issues, but won't hit a dead loopback address).
   const realSipServer = ext.client?.sipServer ?? "";
-  let effectiveSipServer: string = realSipServer;
+  let proxyAddress: string | null = null;
   if (needsSipProxy(realSipServer)) {
     try {
       const publicIp = await getPublicIp();
-      effectiveSipServer = await startSipProxy({
+      proxyAddress = await startSipProxy({
         extensionId,
         sipLocalPort,
         proxyLocalPort: proxyLocalPortFor(sipLocalPort),
@@ -1230,12 +1236,9 @@ export async function startExtension(extensionId: number, opts?: {
         yeastarServer: realSipServer,
         publicIp,
       });
-      logger.info({ extensionId, sipLocalPort, realSipServer, effectiveSipServer }, "SIP FQDN proxy active — binary will connect via local proxy");
+      logger.info({ extensionId, sipLocalPort, realSipServer, proxyAddress }, "SIP FQDN proxy active — binary will use SIP_OUTBOUND_PROXY");
     } catch (err) {
-      // Proxy failed to start — fall back to the real FQDN so the binary at
-      // least attempts a direct connection instead of hitting a dead loopback.
-      effectiveSipServer = realSipServer;
-      logger.warn({ extensionId, realSipServer, err }, "SIP FQDN proxy startup failed — falling back to direct FQDN connection");
+      logger.warn({ extensionId, realSipServer, err }, "SIP FQDN proxy startup failed — binary will connect directly");
     }
   }
 
@@ -1245,11 +1248,10 @@ export async function startExtension(extensionId: number, opts?: {
       { sipLocalPort, httpPort },
       opts?.overrides,
       opts?.outboundTarget,
-      effectiveSipServer,
     );
     await fs.writeFile(configPath, JSON.stringify(config, null, 2));
   }
-  const env = buildEnv(ext, configPath, effectiveSipServer);
+  const env = buildEnv(ext, configPath, proxyAddress);
 
   await upsertDeployment(extensionId, {
     status: "starting",

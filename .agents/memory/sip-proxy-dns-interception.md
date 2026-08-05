@@ -1,39 +1,47 @@
 ---
 name: SIP FQDN Proxy — approach history and current implementation
-description: Why iptables and /etc/hosts failed, and how the current direct FQDN interception works.
+description: Why iptables and /etc/hosts failed, and how the current SIP_OUTBOUND_PROXY approach works.
 ---
 
 # SIP FQDN Proxy: approach history
 
 ## Key fact about the binary
-The sip-agent binary DOES use the `SIP_SERVER` / `server` config field for packet routing (not just
-Via/Contact construction). The earlier code comment claiming "server is NOT used for routing" was wrong —
-Timer_B timeouts confirmed the binary sends packets to whatever SIP_SERVER is set to.
+The sip-agent binary (`sip4ai`) supports `SIP_OUTBOUND_PROXY` as a documented env var.
+This is the correct SIP mechanism — SIP_SERVER stays as the real registrar FQDN (correct headers),
+while all packets physically route through the proxy.
 
 ## Failed approach 1: iptables OUTPUT DNAT
 iptables rule accumulated 0 packet hits regardless of configuration. Not reliable on this VPS.
 
 ## Failed approach 2: /etc/hosts DNS interception
-Assigned unique loopback IPs (`127.1.0.N`) and rewrote /etc/hosts to point the Yeastar FQDN there.
+Rewrote /etc/hosts to point the Yeastar FQDN at a unique loopback IP (127.1.0.N).
 Failed because the service account lacks write access to /etc/hosts (EACCES).
-Critical bug: the code caught the EACCES error but still set `SIP_SERVER=127.1.0.N:5060` — the binary
-then sent REGISTER to a loopback address with no proxy listener → Timer_B timeout.
+Critical bug from this phase: code caught EACCES but still set SIP_SERVER=127.1.0.N:5060 →
+binary sent REGISTER to a dead loopback → Timer_B timeout.
 
-## Current approach: direct FQDN interception (no root needed)
-Since the binary uses SIP_SERVER for routing, no DNS trick is needed at all:
+## Failed approach 3: rewrite SIP_SERVER to proxy address
+Set SIP_SERVER=127.0.0.1:<proxyPort>. This caused Timer_B too — the binary resolves the
+SIP domain (aioprocess-demo.ras.yeastar.com) via RFC 3263 DNS for packet routing, ignoring
+the changed SIP_SERVER for actual UDP destination in some code paths.
 
-1. Resolve Yeastar FQDN → real IP (DNS, once at start).
-2. Bind `localSock` on `127.0.0.1:<proxyLocalPort>` (sipLocalPort + 10000). No privileges needed.
-3. Bind `extSock` on `0.0.0.0:<proxyExtPort>` (sipLocalPort + 20000).
-4. Set `SIP_SERVER=127.0.0.1:<proxyLocalPort>` in binary env and config.json.
-5. Binary sends all SIP to localSock → proxy relays to Yeastar via extSock.
-6. `startSipProxy()` returns the proxy address string so callers use it directly.
+## Current approach: SIP_OUTBOUND_PROXY (correct SIP standard)
+The binary natively supports outbound proxy via `SIP_OUTBOUND_PROXY` env var (confirmed from
+`--help` output and binary strings: `Outbound Proxy: %s`).
 
-**Why:** Avoids /etc/hosts, iptables, special loopback IPs, and root privileges entirely.
+Configuration when proxy is active:
+```
+SIP_DOMAIN=aioprocess-demo.ras.yeastar.com   (unchanged — correct SIP headers)
+SIP_SERVER=aioprocess-demo.ras.yeastar.com:5060  (unchanged — real registrar)
+SIP_OUTBOUND_PROXY=127.0.0.1:17060           (proxy address — all packets route here first)
+```
 
-**Critical invariant:** `effectiveSipServer` must be determined (proxy address OR real FQDN fallback)
-BEFORE calling `buildConfig`/`buildEnv`. If proxy fails to start, fall back to `realSipServer` — never
-leave SIP_SERVER pointing at a loopback address where no proxy is listening.
+Proxy (`sip-proxy.ts`) binds `localSock` on `127.0.0.1:<sipLocalPort+10000>`, no root needed.
 
-**How to apply:** `startExtension` starts the proxy first, captures the returned address or falls back,
-then passes `effectiveSipServer` to both `buildConfig` and `buildEnv`.
+**Why:** Standard SIP outbound proxy mechanism. No DNS tricks, no iptables, no /etc/hosts.
+SIP headers stay correct for Yeastar; proxy handles NAT/rport rewriting.
+
+**How to apply:**
+- `buildEnv` adds `SIP_OUTBOUND_PROXY` only when `proxyAddress` is non-null (proxy started successfully)
+- `SIP_SERVER` is never changed from the real FQDN/IP value stored in the IPBX record
+- `buildConfig` (config.json `sip.server`) also stays as the real FQDN — binary reads SIP_OUTBOUND_PROXY from env only
+- If proxy fails to start, binary connects directly (no dead loopback risk)
