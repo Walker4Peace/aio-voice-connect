@@ -449,6 +449,49 @@ function parseAndStoreCallEvents(extensionId: number, line: string, timestamp: s
       aiEndedNow = true;
     }
 
+    // ── Natural ElevenLabs WS close — no SIP BYE and no AI tool detected ───
+    // The bridge unregistered but we never received a SIP BYE and the AI
+    // did not use end_call (or conversation_ended was not logged).  This
+    // happens when ElevenLabs closes the WS for any other reason (network
+    // drop, server-side disconnect, etc.).
+    // The SIP leg is still open — terminate it so the caller's phone hangs up.
+    if (!callEnded) {
+      const lastInvite = [...persistedCallEvents].reverse().find(
+        e => e.extensionId === extensionId && e.event === "invite"
+      );
+      if (lastInvite) {
+        // Tag as AI-ended so the synthesized ended event reads "AI Agent"
+        const s = aiEndedCallIds.get(extensionId) ?? new Set<string>();
+        s.add(lastInvite.callId);
+        aiEndedCallIds.set(extensionId, s);
+        logger.info(
+          { extensionId, callId: lastInvite.callId },
+          "ElevenLabs WS closed without SIP BYE — terminating SIP leg"
+        );
+        if (outboundCallModes.has(extensionId)) {
+          // Outbound: binary tracks its own SIP dialog — send /bye.
+          // Wait 3 s to let hangup_on_task_complete handle it first; only
+          // force if the call is still not ended.
+          const hCallId = lastInvite.callId;
+          setTimeout(() => {
+            const alreadyEnded = persistedCallEvents.some(
+              e => e.extensionId === extensionId && e.callId === hCallId && e.event === "ended"
+            );
+            if (!alreadyEnded) sendSipHangup(extensionId, hCallId).catch(() => {});
+          }, 3_000);
+        } else {
+          // Inbound: drop via Yeastar PBX API (same as end_call path).
+          const ystData = extensionYeastarData.get(extensionId);
+          if (ystData) {
+            dropCallViaYeastar(ystData.client, ystData.extensionNumber).catch(() => {});
+          } else {
+            logger.warn({ extensionId }, "ElevenLabs WS closed (inbound): no Yeastar credentials — falling back to binary /bye");
+            sendSipHangup(extensionId, lastInvite.callId).catch(() => {});
+          }
+        }
+      }
+    }
+
     // Only trigger the orphan-cleanup restart when a duplicate INVITE left an
     // orphaned ElevenLabs WebSocket open.  Skip it when the AI used end_call:
     //   • sendSipHangup already handled the SIP BYE, so no need to restart.
@@ -522,6 +565,62 @@ function parseAndStoreCallEvents(extensionId: number, line: string, timestamp: s
           // Yeastar not configured — fall back to binary /bye (may not work but
           // it's the only option we have without PBX API access).
           logger.warn({ extensionId }, "end_call inbound: no Yeastar credentials cached — falling back to binary /bye (may not terminate the SIP leg)");
+          sendSipHangup(extensionId, lastInvite.callId).catch(() => {});
+        }
+      }
+    }
+    return;
+  }
+
+  // ── ElevenLabs conversation_ended event ─────────────────────────────────
+  // Fires when ElevenLabs signals the conversation is fully over
+  // ({"type":"conversation_ended"} in the raw WebSocket message log).
+  //
+  // Inbound: the SIP leg is still open — terminate it via Yeastar API so the
+  // caller's phone hangs up without them needing to press anything.
+  //
+  // Outbound: the binary will call hangup_on_task_complete which sends SIP BYE
+  // on its own.  We set the AI-ended flag so the BYE-WARN / exit handler marks
+  // the outbound call record as "completed" correctly, and we schedule a
+  // safety-net kill in case the binary stalls after the WS closes.
+  if (/"type"\s*:\s*"conversation_ended"/i.test(body)) {
+    const lastInvite = [...persistedCallEvents].reverse().find(
+      e => e.extensionId === extensionId && e.event === "invite"
+    );
+    if (lastInvite) {
+      const s = aiEndedCallIds.get(extensionId) ?? new Set<string>();
+      s.add(lastInvite.callId);
+      aiEndedCallIds.set(extensionId, s);
+      logger.info({ extensionId, callId: lastInvite.callId }, "ElevenLabs conversation_ended — flagging AI end and terminating SIP leg");
+
+      if (outboundCallModes.has(extensionId)) {
+        // Binary should handle BYE itself via hangup_on_task_complete.
+        // Schedule a safety-net: if the call is still "active" 8 s later,
+        // nudge it with /bye; if still alive 5 s after that, force-kill.
+        const hCallId = lastInvite.callId;
+        setTimeout(() => {
+          if (!outboundCallModes.has(extensionId)) return; // already cleaned up
+          const alreadyEnded = persistedCallEvents.some(
+            e => e.extensionId === extensionId && e.callId === hCallId && e.event === "ended"
+          );
+          if (!alreadyEnded && processes.has(extensionId)) {
+            logger.info({ extensionId }, "conversation_ended safety-net: binary still active — sending /bye");
+            sendSipHangup(extensionId, hCallId).catch(() => {});
+            setTimeout(() => {
+              if (outboundCallModes.has(extensionId) && processes.has(extensionId)) {
+                logger.info({ extensionId }, "conversation_ended safety-net: force-killing binary after 13 s");
+                processes.get(extensionId)?.proc.kill("SIGTERM");
+              }
+            }, 5_000);
+          }
+        }, 8_000);
+      } else {
+        // Inbound: drop via Yeastar PBX API
+        const ystData = extensionYeastarData.get(extensionId);
+        if (ystData) {
+          dropCallViaYeastar(ystData.client, ystData.extensionNumber).catch(() => {});
+        } else {
+          logger.warn({ extensionId }, "conversation_ended inbound: no Yeastar credentials — falling back to binary /bye");
           sendSipHangup(extensionId, lastInvite.callId).catch(() => {});
         }
       }
