@@ -62,6 +62,18 @@ router.get("/deploy/call-events", async (_req, res) => {
     }));
   }
 
+  // Build a lookup of in-memory event details keyed by extensionId:callId:event.
+  // Used below to backfill DB rows whose detail column is NULL because the
+  // async pushEvent INSERT hadn't committed when the caller-number UPDATE ran
+  // (race condition: UPDATE finds 0 rows → detail stays null in DB, but
+  // in-memory already has the correct value).
+  const memDetailLookup = new Map<string, string>();
+  for (const e of getPersistedCallEvents()) {
+    if (e.detail != null) {
+      memDetailLookup.set(`${e.extensionId}:${e.callId}:${e.event}`, e.detail);
+    }
+  }
+
   // Merge with any in-memory events not yet flushed to DB
   // (events arrive faster than fire-and-forget inserts complete)
   const dbCallIds = new Set(dbRows.map(r => `${r.extensionId}:${r.callId}:${r.event}:${r.timestamp.getTime()}`));
@@ -71,7 +83,14 @@ router.get("/deploy/call-events", async (_req, res) => {
 
   type EventRow = { extensionId: number; callId: string; event: string; timestamp: string; detail?: string };
   const events: EventRow[] = [
-    ...dbRows.map(r => ({ extensionId: r.extensionId, callId: r.callId, event: r.event, timestamp: r.timestamp.toISOString(), detail: r.detail ?? undefined })),
+    ...dbRows.map(r => ({
+      extensionId: r.extensionId,
+      callId: r.callId,
+      event: r.event,
+      timestamp: r.timestamp.toISOString(),
+      // If DB detail is null, fall back to in-memory (race-condition fix for caller number)
+      detail: r.detail ?? memDetailLookup.get(`${r.extensionId}:${r.callId}:${r.event}`) ?? undefined,
+    })),
     ...memOnly.map(e => ({ extensionId: e.extensionId, callId: e.callId, event: e.event, timestamp: e.timestamp, detail: e.detail })),
   ];
 

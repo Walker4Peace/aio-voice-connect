@@ -240,15 +240,20 @@ function parseAndStoreCallEvents(extensionId: number, line: string, timestamp: s
       const e = persistedCallEvents[i];
       if (e.extensionId === extensionId && e.event === "invite") {
         e.detail = fromNumber;
-        // Also persist to DB so the caller survives restarts
-        db.update(callEventsTable)
-          .set({ detail: fromNumber })
-          .where(and(
-            eq(callEventsTable.extensionId, extensionId),
-            eq(callEventsTable.callId, e.callId),
-            eq(callEventsTable.event, "invite"),
-          ))
-          .catch(err => logger.error({ err }, "Failed to update caller number in DB"));
+        // Persist to DB so the caller number survives restarts.
+        // Delay by 1 s to let the async fire-and-forget pushEvent INSERT
+        // commit before this UPDATE runs — without the delay the UPDATE
+        // can find 0 rows (insert not yet flushed) and detail stays null.
+        setTimeout(() => {
+          db.update(callEventsTable)
+            .set({ detail: fromNumber })
+            .where(and(
+              eq(callEventsTable.extensionId, extensionId),
+              eq(callEventsTable.callId, e.callId),
+              eq(callEventsTable.event, "invite"),
+            ))
+            .catch(err => logger.error({ err }, "Failed to update caller number in DB"));
+        }, 1000);
         break;
       }
     }
@@ -429,14 +434,21 @@ function parseAndStoreCallEvents(extensionId: number, line: string, timestamp: s
     // If the AI used end_call the binary closes its WS without sending SIP BYE.
     // When the bridge unregisters and we still have no ended event, synthesize
     // one now so the call doesn't remain "active" in Call History.
+    let aiEndedNow = false;
     if (!callEnded && aiEndedCallIds.get(extensionId)?.has(callId)) {
       const endedBy = consumeAiEndedFlag(extensionId, callId);
       pushEvent({ extensionId, callId, event: "ended", timestamp, detail: endedBy });
       logger.info({ extensionId, callId }, "Synthesized ended event after AI end_call (no SIP BYE received)");
       callEnded = true;
+      aiEndedNow = true;
     }
 
-    if (callEnded && !orphanCleanupTimers.has(extensionId)) {
+    // Only trigger the orphan-cleanup restart when a duplicate INVITE left an
+    // orphaned ElevenLabs WebSocket open.  Skip it when the AI used end_call:
+    //   • sendSipHangup already handled the SIP BYE, so no need to restart.
+    //   • The ElevenLabs WS is already closed — there is nothing orphaned.
+    //   • Restarting kills the binary mid-BYE and leaves the caller's phone active.
+    if (callEnded && !aiEndedNow && !orphanCleanupTimers.has(extensionId)) {
       const t = setTimeout(async () => {
         orphanCleanupTimers.delete(extensionId);
         if (!processes.has(extensionId)) return; // already stopped by user
@@ -477,6 +489,20 @@ function parseAndStoreCallEvents(extensionId: number, line: string, timestamp: s
       // Send SIP BYE via binary HTTP API so the caller hears hang-up immediately.
       // The binary closes the ElevenLabs WS but does NOT send SIP BYE on its own.
       sendSipHangup(extensionId, lastInvite.callId).catch(() => {});
+
+      // Outbound safety timeout: if the binary is still alive 10 s after the AI
+      // decided to hang up, force-kill it so the ElevenLabs session closes cleanly
+      // and the call is not left dangling.  Inbound extensions restart automatically;
+      // outbound ones stay stopped until the next outbound call is triggered.
+      if (outboundCallModes.has(extensionId)) {
+        setTimeout(() => {
+          if (outboundCallModes.has(extensionId) && processes.has(extensionId)) {
+            logger.info({ extensionId }, "Outbound: binary still running 10 s after AI end_call — force-killing to close call");
+            const p = processes.get(extensionId);
+            if (p) p.proc.kill("SIGTERM");
+          }
+        }, 10_000);
+      }
     }
     return;
   }
@@ -1403,7 +1429,11 @@ export async function startExtension(extensionId: number, opts?: {
       }
       for (const callId of inviteIds) {
         if (!endedIds.has(callId)) {
-          pushEvent({ extensionId, callId, event: "ended", timestamp: exitTimestamp });
+          // Check whether the AI used end_call so the detail reads "AI Agent"
+          // instead of blank.  consumeAiEndedFlag clears the flag so it won't
+          // double-fire if a BYE WARN was already processed before the exit.
+          const endedBy = consumeAiEndedFlag(extensionId, callId);
+          pushEvent({ extensionId, callId, event: "ended", timestamp: exitTimestamp, detail: endedBy });
         }
       }
       finalizeOutboundCall(extensionId, "completed");
