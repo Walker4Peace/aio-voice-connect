@@ -1,0 +1,38 @@
+J'ai ouvert le vrai .pcap (le texte que tu as collé, ce sont juste les logs applicatifs — pas le contenu du pcap) et j'ai trouvé la cause exacte.
+
+Ce qui se passe réellement
+
+Sur le leg SIP local (127.0.0.1:4070 = ton app Go/sipgo ↔ 127.0.0.1:5060 = ton proxy outbound) :
+
+t=14.559s  proxy -> app   SIP/2.0 200 OK   (CSeq: 2 INVITE)   ← l'appel est décroché
+t=15.059s  proxy -> app   SIP/2.0 200 OK   (retransmission, +0.5s)
+t=16.059s  proxy -> app   SIP/2.0 200 OK   (+1s)
+t=18.060s  proxy -> app   SIP/2.0 200 OK   (+2s)
+t=22.060s  proxy -> app   SIP/2.0 200 OK   (+4s)
+t=26.060s  proxy -> app   SIP/2.0 200 OK   (+4s)
+t=30.060s  proxy -> app   SIP/2.0 200 OK   (+4s)
+t=34.060s  proxy -> app   SIP/2.0 200 OK   (+4s)
+t=38.061s  proxy -> app   SIP/2.0 200 OK   (+4s)
+
+Ton app n'envoie jamais l'ACK pour ce 200 OK. J'ai vérifié tout le pcap : le seul ACK envoyé par ton app (4070 -> 5060) est à t=5.062s, pour le 401 (challenge d'auth) — ça, ça marche. Mais pour le 200 OK final de l'INVITE, aucun ACK n'est jamais émis.
+
+C'est exactement le pattern de retransmission RFC 3261 d'un 200 OK jamais acquitté (0.5s → 1s → 2s → 4s → 4s… plafonné à T2, jusqu'à Timer H = 32s après le premier envoi). C'est ce qui explique le "coupe après ~34s" : le proxy/PBX finit par abandonner la transaction faute d'ACK et termine l'appel.
+
+Pourquoi ça n'arrive qu'en outbound
+
+En SIP, l'ACK pour une réponse 2xx à un INVITE n'est pas géré automatiquement par la couche transaction — c'est à la couche UAC (le "core" applicatif) de construire et d'envoyer cet ACK manuellement, dans un nouveau transaction context, en réutilisant le tag To, le Contact/Record-Route de la réponse 200. C'est différent de l'ACK sur un 4xx/401, qui lui est souvent auto-généré par la lib (sipgo le fait automatiquement, d'où le fait que ton ACK au 401 fonctionne).
+
+En inbound, ton app est UAS (elle répond 200 OK), c'est le PBX qui doit t'envoyer l'ACK — code path différent, qui marche visiblement.
+En outbound, ton app est UAC et reçoit le 200 OK — c'est justement le path où sipgo ne fait rien automatiquement, et il semble que ce bout de code (construire/envoyer l'ACK sur succès) manque ou est cassé dans ton implémentation.
+Pourquoi le bridge reste ouvert si tu raccroches à 15s
+
+Comme le dialog SIP n'est jamais "confirmé" côté app (pas d'ACK envoyé), l'état interne du dialog reste incomplet. Quand le correspondant raccroche (BYE), soit ce BYE n'est pas matché correctement à un dialog confirmé par ta lib/ton code, soit ton handler de BYE est conditionné à un état "confirmed" qui n'est jamais atteint. Résultat : le goroutine qui bridge RTP ↔ ElevenLabs continue de tourner indéfiniment, même après le BYE.
+
+Fix à faire
+
+Dans le code qui gère la réponse à l'INVITE sortant (probablement dans le callback OnResponse ou équivalent côté sipgo) :
+
+Vérifier que sur réception d'un 200 OK à une INVITE, tu construis explicitement une requête ACK (même URI que l'INVITE original, To avec le tag reçu dans le 200 OK, CSeq identique en méthode ACK, via le Contact de la 200 OK si Record-Route absent) et que tu l'envoies hors de la transaction client de l'INVITE (c'est une transaction séparée en SIP, RFC 3261 §17.1.1.3).
+Une fois ce fix fait, vérifier que le handler de BYE se déclenche bien même quand il arrive juste après (peu après ACK), pour fermer proprement le bridge RTP.
+
+Si tu veux, colle-moi la portion du code Go qui gère la réponse à l'INVITE sortant (le callback après Received 200 OK / ACK sent dans tes logs) et je peux te pointer précisément la ligne manquante.

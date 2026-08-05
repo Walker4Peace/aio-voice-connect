@@ -135,6 +135,18 @@ function ensureRport(pairs: Array<[string, string, string]>): Array<[string, str
 
 // ── Proxy state ───────────────────────────────────────────────────────────────
 
+/**
+ * State captured when the binary sends an outbound INVITE.
+ * Used to synthesise the ACK when Yeastar responds with 200 OK
+ * (sipgo does not auto-ACK 2xx responses — RFC 3261 §17.1.1.3).
+ */
+interface InviteRecord {
+  fromHdr: string;    // full From header value (with tag)
+  cseqNum: string;    // numeric part of CSeq, e.g. "1"
+  requestUri: string; // original INVITE Request-URI
+  viaIp: string;      // external IP extracted from the binary's Via
+}
+
 interface ProxyState {
   localSock: dgram.Socket; // 127.0.0.1:<proxyLocalPort> — receives binary packets
   extSock: dgram.Socket;   // 0.0.0.0:<proxyExtPort>    — talks to Yeastar
@@ -145,6 +157,13 @@ interface ProxyState {
   yeastarPort: number;
   /** Source port of the binary's last outbound SIP packet on localSock. */
   binarySrcPort: number;
+  /**
+   * Tracks active outbound INVITE dialogs so the proxy can send the mandatory
+   * ACK on 200 OK.  Keyed by Call-ID.  Entry persists through the call lifetime
+   * (to re-ACK retransmitted 200 OKs per RFC 3261 §13.2.2.4) and is cleaned up
+   * when a BYE is seen on that dialog.
+   */
+  pendingInvites: Map<string, InviteRecord>;
 }
 
 const proxies = new Map<number, ProxyState>();
@@ -337,6 +356,7 @@ export async function startSipProxy(params: {
     binaryListenPort: sipLocalPort,
     yeastarIp, yeastarPort,
     binarySrcPort: sipLocalPort,
+    pendingInvites: new Map(),
   };
 
   // ── Binary → Yeastar ──────────────────────────────────────────────────────
@@ -351,6 +371,26 @@ export async function startSipProxy(params: {
       out = rwOutboundResp(msg, s);
     } else {
       out = rwOutboundReq(msg);
+    }
+
+    // ── Track outbound INVITEs for ACK synthesis ───────────────────────────
+    // When the binary sends an INVITE, record the dialog state we need to build
+    // the ACK once Yeastar responds 200 OK.  sipgo auto-ACKs 4xx (same
+    // transaction) but never ACKs 2xx (out-of-transaction per RFC 3261
+    // §17.1.1.3); the proxy fills that gap.
+    if (msg && isRequest(msg.firstLine) && sipMethod(msg.firstLine) === "INVITE") {
+      const callId   = msg.pairs.find(([k]) => k === "call-id")?.[2] ?? "";
+      const fromHdr  = msg.pairs.find(([k]) => k === "from")?.[2] ?? "";
+      const cseqVal  = msg.pairs.find(([k]) => k === "cseq")?.[2] ?? "";
+      const cseqNum  = cseqVal.split(/\s+/)[0] ?? "";
+      const requestUri = msg.firstLine.split(/\s+/)[1] ?? "";
+      const viaVal   = msg.pairs.find(([k]) => k === "via")?.[2] ?? "";
+      // Extract bare IP from "SIP/2.0/UDP ip:port;…"
+      const viaIp    = viaVal.match(/SIP\/2\.0\/UDP\s+([0-9.]+)/i)?.[1] ?? "";
+      if (callId && fromHdr && cseqNum) {
+        s.pendingInvites.set(callId, { fromHdr, cseqNum, requestUri, viaIp });
+        logger.debug({ extensionId, callId }, "SIP proxy: tracking outbound INVITE for ACK synthesis");
+      }
     }
 
     const sipLine = msg?.firstLine ?? "(unparsed)";
@@ -394,6 +434,78 @@ export async function startSipProxy(params: {
           }
         });
         return; // do not forward to binary
+      }
+
+      // Clean up dialog tracking when a BYE arrives from Yeastar
+      if (method === "BYE") {
+        const byeCallId = msg.pairs.find(([k]) => k === "call-id")?.[2] ?? "";
+        if (byeCallId) s.pendingInvites.delete(byeCallId);
+      }
+    }
+
+    // ── Synthesise ACK for 200 OK responses to outbound INVITEs ──────────
+    // sipgo (UAC) never sends ACK on 2xx responses — only on 4xx (where the
+    // library handles it within the same transaction).  For 2xx, RFC 3261
+    // §17.1.1.3 requires a brand-new out-of-transaction ACK built by the
+    // application layer.  Without it Yeastar retransmits the 200 OK (per
+    // T1=0.5s, doubling to T2=4s) until Timer H fires (~32s) and drops the
+    // call.  We send the ACK here, from extSock, on behalf of the binary.
+    if (msg && !isRequest(msg.firstLine)) {
+      const statusCode = parseInt(msg.firstLine.split(/\s+/)[1] ?? "0", 10);
+      const cseqHdr   = msg.pairs.find(([k]) => k === "cseq")?.[2] ?? "";
+      if (statusCode >= 200 && statusCode < 300 && /INVITE$/i.test(cseqHdr)) {
+        const callId = msg.pairs.find(([k]) => k === "call-id")?.[2] ?? "";
+        const invite = s.pendingInvites.get(callId);
+        if (invite) {
+          // Build Request-URI: prefer Contact from 200 OK, fall back to original INVITE URI.
+          const contactVal = msg.pairs.find(([k]) => k === "contact")?.[2] ?? "";
+          const contactUri = contactVal.match(/<([^>]+)>/)?.[1]
+            ?? contactVal.split(";")[0]?.trim();
+          const reqUri = contactUri || invite.requestUri;
+
+          // Record-Route (if present) becomes the route set, reversed.
+          const recordRoutes = msg.pairs
+            .filter(([k]) => k === "record-route")
+            .map(([, , v]) => v);
+
+          const toHdr = msg.pairs.find(([k]) => k === "to")?.[2] ?? "";
+
+          // Via: use the binary's external IP + our proxyExtPort so Yeastar
+          // delivers any response back to our extSock (ACK has no response,
+          // but Via must still be RFC-compliant).
+          const viaHost = invite.viaIp
+            ? `${invite.viaIp}:${s.proxyExtPort}`
+            : `0.0.0.0:${s.proxyExtPort}`;
+
+          const ackPairs: Array<[string, string, string]> = [];
+          ackPairs.push(["via", "Via", `SIP/2.0/UDP ${viaHost};branch=${randomBranch()}`]);
+          // Route set: Record-Route in reverse order (RFC 3261 §12.1.2)
+          for (let i = recordRoutes.length - 1; i >= 0; i--) {
+            ackPairs.push(["route", "Route", recordRoutes[i]!]);
+          }
+          ackPairs.push(["from",           "From",           invite.fromHdr]);
+          ackPairs.push(["to",             "To",             toHdr]);
+          ackPairs.push(["call-id",        "Call-ID",        callId]);
+          ackPairs.push(["cseq",           "CSeq",           `${invite.cseqNum} ACK`]);
+          ackPairs.push(["content-length", "Content-Length", "0"]);
+
+          const ackBuf = rebuild({ firstLine: `ACK ${reqUri} SIP/2.0`, pairs: ackPairs, body: "" });
+
+          extSock.send(ackBuf, rinfo.port, rinfo.address, (err) => {
+            if (err) {
+              logger.warn({ extensionId, callId, err }, "SIP proxy: ACK send error");
+            } else {
+              logger.info(
+                { extensionId, dir: "proxy→Yeastar",
+                  from: `0.0.0.0:${s.proxyExtPort}`, to: `${rinfo.address}:${rinfo.port}`,
+                  sip: `ACK ${reqUri}` },
+                "SIP proxy: sent ACK for outbound INVITE 200 OK",
+              );
+            }
+          });
+          // Keep the record so retransmitted 200 OKs are also ACKed
+          // (cleaned up when BYE arrives or proxy stops).
+        }
       }
     }
 
