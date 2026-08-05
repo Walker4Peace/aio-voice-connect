@@ -1,30 +1,28 @@
 /**
  * SIP FQDN Proxy — direct UDP relay for the sip-agent binary.
  *
- * Problem
- * -------
- * The sip-agent binary receives SIP_SERVER from its environment and uses that
- * address for outbound UDP packets. When the PBX server is a public FQDN the
- * binary must still be able to reach it, and we need to intercept packets so
- * we can add the rport parameter required for NAT traversal.
+ * Why this exists
+ * ---------------
+ * When the PBX server is a public FQDN the binary needs NAT/rport rewriting so
+ * Yeastar can reply back through firewalled ports.  We run a local UDP relay and
+ * pass its address to the binary as SIP_OUTBOUND_PROXY.  SIP_SERVER (and all SIP
+ * headers) continue to reference the real Yeastar FQDN — only the physical UDP
+ * path is redirected.
  *
- * Previous approaches (both abandoned)
- * -------------------------------------
- * 1. iptables DNAT — accumulated 0 packet hits regardless of configuration.
- * 2. /etc/hosts rewriting — requires write access to /etc/hosts which the
- *    service account does not have (EACCES). When this failed the code still
- *    set SIP_SERVER=127.1.0.N:5060, so the binary sent REGISTER to an address
- *    where no proxy socket was listening, producing Timer_B timeouts.
+ * Previous approaches (abandoned)
+ * --------------------------------
+ * 1. iptables DNAT — accumulated 0 packet hits on this VPS.
+ * 2. /etc/hosts rewriting — EACCES; service account cannot write /etc/hosts.
+ * 3. Rewriting SIP_SERVER to 127.0.0.1:<port> — binary uses the SIP domain for
+ *    RFC 3263 routing in some paths, causing Timer_B timeouts.
  *
- * Current approach: direct FQDN interception
- * -------------------------------------------
- * No kernel networking or system-file manipulation required.
- *
- *   1. Resolve the Yeastar FQDN → real IP (DNS, done once at start).
- *   2. Bind localSock on 127.0.0.1:<proxyLocalPort>   (no special privileges).
- *   3. Bind extSock   on 0.0.0.0:<proxyExtPort>       (outbound socket to Yeastar).
- *   4. Tell the binary: SIP_SERVER=127.0.0.1:<proxyLocalPort>
- *      The binary sends all SIP traffic to localSock. No DNS interception needed.
+ * Current approach
+ * ----------------
+ *   1. Resolve Yeastar FQDN → real IP (DNS, once at start).
+ *   2. Bind localSock on 127.0.0.1:<proxyLocalPort>  — no special privileges.
+ *   3. Bind extSock   on 0.0.0.0:<proxyExtPort>      — outbound socket to Yeastar.
+ *   4. Return "127.0.0.1:<proxyLocalPort>" to caller → set as SIP_OUTBOUND_PROXY.
+ *      SIP_SERVER stays as the real FQDN; all packets physically go via the proxy.
  *   5. localSock relays to Yeastar via extSock; extSock relays back to the binary.
  *
  * Relay logic
@@ -47,32 +45,6 @@ import dgram from "dgram";
 import dns from "dns/promises";
 import { logger } from "../lib/logger.js";
 
-// ── Public IP (cached) ────────────────────────────────────────────────────────
-
-let cachedPublicIp: string | null = null;
-
-export async function getPublicIp(): Promise<string> {
-  if (cachedPublicIp) return cachedPublicIp;
-  for (const url of [
-    "https://api.ipify.org?format=text",
-    "https://ipinfo.io/ip",
-    "https://checkip.amazonaws.com",
-  ]) {
-    try {
-      const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
-      if (res.ok) {
-        const ip = (await res.text()).trim();
-        if (/^\d+\.\d+\.\d+\.\d+$/.test(ip)) {
-          cachedPublicIp = ip;
-          logger.info({ ip, source: url }, "SIP proxy: detected public IP");
-          return ip;
-        }
-      }
-    } catch { /* try next */ }
-  }
-  throw new Error("Could not determine public IP for SIP FQDN proxy");
-}
-
 /** Return true if sipServer is a hostname that requires the FQDN proxy. */
 export function needsSipProxy(sipServer: string): boolean {
   const host = sipServer.split(":")[0]!.trim();
@@ -81,7 +53,7 @@ export function needsSipProxy(sipServer: string): boolean {
   return /[a-zA-Z]/.test(host); // any FQDN
 }
 
-/** Port the binary connects to on 127.0.0.1 (localSock). */
+/** Port localSock binds to on 127.0.0.1; used as SIP_OUTBOUND_PROXY by the binary. */
 export function proxyLocalPortFor(sipLocalPort: number): number {
   return sipLocalPort + 10000;
 }
@@ -197,10 +169,6 @@ function rwOutboundResp(msg: SipMsg, s: ProxyState): Buffer {
   return rebuild({ ...msg, pairs });
 }
 
-function rwInboundResp(msg: SipMsg): Buffer {
-  return rebuild(msg);
-}
-
 function rwInboundReq(msg: SipMsg, s: ProxyState): Buffer {
   // Prepend a proxy Via so the binary's response routes back through localSock
   const proxyVia = `SIP/2.0/UDP 127.0.0.1:${s.proxyLocalPort};branch=${randomBranch()}`;
@@ -244,7 +212,6 @@ export async function startSipProxy(params: {
   proxyLocalPort: number;
   proxyExtPort: number;
   yeastarServer: string;
-  publicIp?: string; // kept for call-site compatibility, not used in rewriting
 }): Promise<string> {
   const { extensionId, sipLocalPort, proxyLocalPort, proxyExtPort, yeastarServer } = params;
   await stopSipProxy(extensionId);
@@ -279,7 +246,7 @@ export async function startSipProxy(params: {
   }
 
   // extSock is the outbound socket that talks to Yeastar.
-  // Yeastar will reply to this socket's source address (publicIp:proxyExtPort).
+  // Yeastar replies to extSock's source address (server's public IP : proxyExtPort).
   try {
     await bindSock(extSock, proxyExtPort, "0.0.0.0");
   } catch (err) {
@@ -338,7 +305,7 @@ export async function startSipProxy(params: {
       out = rwInboundReq(msg, s);
       destPort = s.binaryListenPort;
     } else {
-      out = rwInboundResp(msg);
+      out = rebuild(msg); // responses: no rewriting needed, forward as-is
       destPort = s.binarySrcPort;
     }
 

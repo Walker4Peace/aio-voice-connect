@@ -9,7 +9,6 @@ import {
   needsSipProxy,
   proxyLocalPortFor,
   proxyExtPortFor,
-  getPublicIp,
   startSipProxy,
   stopSipProxy,
 } from "./sip-proxy.js";
@@ -1227,14 +1226,12 @@ export async function startExtension(extensionId: number, opts?: {
   let proxyAddress: string | null = null;
   if (needsSipProxy(realSipServer)) {
     try {
-      const publicIp = await getPublicIp();
       proxyAddress = await startSipProxy({
         extensionId,
         sipLocalPort,
         proxyLocalPort: proxyLocalPortFor(sipLocalPort),
         proxyExtPort: proxyExtPortFor(sipLocalPort),
         yeastarServer: realSipServer,
-        publicIp,
       });
       logger.info({ extensionId, sipLocalPort, realSipServer, proxyAddress }, "SIP FQDN proxy active — binary will use SIP_OUTBOUND_PROXY");
     } catch (err) {
