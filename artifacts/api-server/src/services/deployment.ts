@@ -17,7 +17,7 @@ import {
   startSipProxy,
   stopSipProxy,
 } from "./sip-proxy.js";
-import { dropCallViaYeastar, type YeastarClient } from "./yeastarCalls.js";
+import { dropCallViaYeastar, hangupCallViaYeastar, type YeastarClient } from "./yeastarCalls.js";
 
 const SIP_AGENT_BIN =
   process.env["SIP_AGENT_BIN"] ?? "/home/runner/workspace/.bin/sip-agent";
@@ -480,10 +480,10 @@ function parseAndStoreCallEvents(extensionId: number, line: string, timestamp: s
             if (!alreadyEnded) sendSipHangup(extensionId, hCallId).catch(() => {});
           }, 3_000);
         } else {
-          // Inbound: drop via Yeastar PBX API (same as end_call path).
+          // Inbound: hang up via Yeastar PBX API using channel_id (call/hangup).
           const ystData = extensionYeastarData.get(extensionId);
           if (ystData) {
-            dropCallViaYeastar(ystData.client, ystData.extensionNumber).catch(() => {});
+            hangupCallViaYeastar(ystData.client, ystData.extensionNumber).catch(() => {});
           } else {
             logger.warn({ extensionId }, "ElevenLabs WS closed (inbound): no Yeastar credentials — falling back to binary /bye");
             sendSipHangup(extensionId, lastInvite.callId).catch(() => {});
@@ -560,7 +560,7 @@ function parseAndStoreCallEvents(extensionId: number, line: string, timestamp: s
         // involvement needed.  Fire-and-forget; failure is logged but not fatal.
         const ystData = extensionYeastarData.get(extensionId);
         if (ystData) {
-          dropCallViaYeastar(ystData.client, ystData.extensionNumber).catch(() => {});
+          hangupCallViaYeastar(ystData.client, ystData.extensionNumber).catch(() => {});
         } else {
           // Yeastar not configured — fall back to binary /bye (may not work but
           // it's the only option we have without PBX API access).
@@ -615,10 +615,10 @@ function parseAndStoreCallEvents(extensionId: number, line: string, timestamp: s
           }
         }, 8_000);
       } else {
-        // Inbound: drop via Yeastar PBX API
+        // Inbound: hang up via Yeastar PBX API using channel_id (call/hangup)
         const ystData = extensionYeastarData.get(extensionId);
         if (ystData) {
-          dropCallViaYeastar(ystData.client, ystData.extensionNumber).catch(() => {});
+          hangupCallViaYeastar(ystData.client, ystData.extensionNumber).catch(() => {});
         } else {
           logger.warn({ extensionId }, "conversation_ended inbound: no Yeastar credentials — falling back to binary /bye");
           sendSipHangup(extensionId, lastInvite.callId).catch(() => {});

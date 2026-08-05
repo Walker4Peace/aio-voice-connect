@@ -239,6 +239,111 @@ export async function dropCallViaYeastar(
   }
 }
 
+// ── Call hangup (by channel_id) ───────────────────────────────────────────────
+
+interface HangupCallResponse {
+  errcode?: number;
+  errmsg?: string;
+}
+
+/**
+ * Tell the Yeastar PBX to hang up the active call on the given extension using
+ * the call/hangup API (channel_id) instead of call/drop (call_id).
+ *
+ * This is preferred for inbound call termination because channel_id directly
+ * identifies the extension leg — it terminates cleanly even when the binary's
+ * SIP dialog is no longer tracking the call (e.g. after ElevenLabs WS closes).
+ *
+ * Flow:
+ *   1. Query call/query?extension=<num> to get the extension member's channel_id.
+ *   2. POST call/hangup with that channel_id → Yeastar sends SIP BYE to the caller.
+ *
+ * Returns true on success, false on any error (fail-open; caller must not block).
+ * Never rejects.
+ */
+export async function hangupCallViaYeastar(
+  client: YeastarClient,
+  extensionNumber: string,
+  retrying = false,
+): Promise<boolean> {
+  if (!client.yeastarApiUrl || !client.yeastarClientId || !client.yeastarClientSecret) {
+    logger.debug({ extensionNumber }, "hangupCallViaYeastar: Yeastar not configured — skipping");
+    return false;
+  }
+
+  try {
+    // Step 1 — find the active call and resolve the extension leg's channel_id
+    const calls = await queryActiveCalls(client, extensionNumber);
+    if (!calls || calls.length === 0) {
+      logger.warn({ extensionNumber }, "hangupCallViaYeastar: no active calls found for extension — cannot hang up");
+      return false;
+    }
+
+    // Prefer the extension member's channel_id (the AI agent leg).
+    // Fall back to inbound/outbound member channel_id if the extension leg
+    // doesn't carry one (some firmware versions may differ).
+    let channelId: string | undefined;
+    outer: for (const call of calls) {
+      for (const entry of call.members ?? []) {
+        if ("extension" in entry && entry.extension?.channel_id) {
+          channelId = entry.extension.channel_id;
+          break outer;
+        }
+      }
+    }
+    if (!channelId) {
+      outer2: for (const call of calls) {
+        for (const entry of call.members ?? []) {
+          if ("inbound" in entry && entry.inbound?.channel_id) {
+            channelId = entry.inbound.channel_id;
+            break outer2;
+          }
+          if ("outbound" in entry && entry.outbound?.channel_id) {
+            channelId = entry.outbound.channel_id;
+            break outer2;
+          }
+        }
+      }
+    }
+
+    if (!channelId) {
+      logger.warn(
+        { extensionNumber },
+        "hangupCallViaYeastar: no channel_id found in active call members — cannot hang up",
+      );
+      return false;
+    }
+
+    // Step 2 — POST call/hangup with channel_id
+    const token = await getYeastarToken(client);
+    const base = client.yeastarApiUrl.replace(/\/$/, "");
+    const url = `${base}/openapi/v1.0/call/hangup?access_token=${encodeURIComponent(token)}`;
+
+    const res = await yeastarPost(url, { channel_id: channelId });
+    const data = res.json<HangupCallResponse>();
+
+    if (data.errcode === 10004 && !retrying) {
+      // Token expired — evict and retry once
+      evictYeastarToken(client.id);
+      return hangupCallViaYeastar(client, extensionNumber, true);
+    }
+
+    if (data.errcode !== 0) {
+      logger.warn(
+        { extensionNumber, channelId, errcode: data.errcode, errmsg: data.errmsg },
+        "hangupCallViaYeastar: call/hangup returned non-zero errcode",
+      );
+      return false;
+    }
+
+    logger.info({ extensionNumber, channelId }, "hangupCallViaYeastar: inbound call hung up via Yeastar API (channel_id)");
+    return true;
+  } catch (err) {
+    logger.warn({ err, extensionNumber }, "hangupCallViaYeastar: unexpected error — call may remain active");
+    return false;
+  }
+}
+
 export interface WaitForAnswerOptions {
   /** Yeastar call_id returned by call/dial. Used for precise per-call querying. */
   callId?: string;
