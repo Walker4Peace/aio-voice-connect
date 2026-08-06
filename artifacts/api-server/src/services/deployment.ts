@@ -18,6 +18,8 @@ import {
   stopSipProxy,
   setOutboundBYEHandler,
   clearOutboundBYEHandler,
+  setInboundBYEHandler,
+  clearInboundBYEHandler,
 } from "./sip-proxy.js";
 import { dropCallViaYeastar, hangupCallViaYeastar, type YeastarClient } from "./yeastarCalls.js";
 
@@ -1417,13 +1419,24 @@ export async function startExtension(extensionId: number, opts?: {
       });
       logger.info({ extensionId, sipLocalPort, realSipServer, proxyAddress }, "SIP FQDN proxy active — binary will use SIP_OUTBOUND_PROXY");
 
-      // For outbound calls, register a BYE handler so the proxy can kill the
-      // binary as soon as Yeastar sends BYE (remote party hung up).  The proxy
-      // responds 200 OK to Yeastar immediately and fires this callback — no
-      // dependency on the binary logging a specific WARN line.
+      // Register a BYE handler so the proxy can kill the binary as soon as
+      // Yeastar sends BYE (remote party / PSTN hung up).  The proxy responds
+      // 200 OK to Yeastar immediately and fires this callback — no dependency
+      // on the binary logging a specific WARN line.
       if (opts?.outboundTarget) {
         setOutboundBYEHandler(extensionId, () => {
           logger.info({ extensionId }, "Outbound BYE received via SIP proxy — killing binary to close ElevenLabs bridge");
+          const p = processes.get(extensionId);
+          if (p) p.proc.kill("SIGTERM");
+        });
+      } else {
+        // Inbound extension: register the same kill-on-BYE handler.
+        // When the remote caller (or PSTN/gateway) hangs up, Yeastar sends BYE
+        // to the proxy's extSock.  Without this handler the proxy responds 200 OK
+        // to Yeastar (good) but the binary keeps running and the ElevenLabs
+        // WebSocket stays open indefinitely.
+        setInboundBYEHandler(extensionId, () => {
+          logger.info({ extensionId }, "Inbound BYE received via SIP proxy — killing binary to close ElevenLabs bridge");
           const p = processes.get(extensionId);
           if (p) p.proc.kill("SIGTERM");
         });
@@ -1629,6 +1642,7 @@ export async function startExtension(extensionId: number, opts?: {
       // wasKilled=true means we killed it ourselves after detecting a BYE from
       // Yeastar — the remote already hung up, no need to call Yeastar again.
       clearOutboundBYEHandler(extensionId);
+      clearInboundBYEHandler(extensionId);
       const needsHangup = !wasKilled;
       if (needsHangup) {
         const ystData = extensionYeastarData.get(extensionId);
@@ -1642,6 +1656,31 @@ export async function startExtension(extensionId: number, opts?: {
       }
 
       return; // expected exit — skip watchdog
+    }
+
+    // ── Inbound exit cleanup ──────────────────────────────────────────────
+    // When the binary is killed via SIGTERM (inbound BYE handler fired because
+    // the remote caller hung up), or crashes unexpectedly, close any open call
+    // so it doesn't ghost as "active" in Call History.
+    // (stopExtension already calls closeOutstandingCalls before SIGTERM, so
+    // this path only synthesises for the BYE-handler kill case.)
+    clearInboundBYEHandler(extensionId);
+    if (wasKilled && !manuallyStopped.has(extensionId)) {
+      // Attribute the ended event to "Caller" (remote party hung up via BYE).
+      const exitTimestamp = new Date().toISOString();
+      const inviteIds = new Set<string>();
+      const endedIds  = new Set<string>();
+      for (const e of persistedCallEvents) {
+        if (e.extensionId !== extensionId) continue;
+        if (e.event === "invite") inviteIds.add(e.callId);
+        if (e.event === "ended")  endedIds.add(e.callId);
+      }
+      for (const callId of inviteIds) {
+        if (!endedIds.has(callId)) {
+          const endedBy = consumeAiEndedFlag(extensionId, callId) ?? "Caller";
+          pushEvent({ extensionId, callId, event: "ended", timestamp: exitTimestamp, detail: endedBy });
+        }
+      }
     }
 
     // Watchdog: if this was an unexpected crash (not a manual stop) and watchdog is on, start pinging
@@ -1688,6 +1727,9 @@ export async function stopExtension(extensionId: number): Promise<void> {
   extensionYeastarData.delete(extensionId);
   // Discard any buffered connected_ai events waiting for a bridge callId
   pendingConnectedAi.delete(extensionId);
+  // Clear any pending BYE handlers (proxy won't fire them after stop)
+  clearOutboundBYEHandler(extensionId);
+  clearInboundBYEHandler(extensionId);
   // Close any outstanding calls so they don't ghost as "active" after restart
   closeOutstandingCalls(extensionId);
 

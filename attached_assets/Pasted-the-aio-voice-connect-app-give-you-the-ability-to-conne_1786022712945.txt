@@ -1,0 +1,309 @@
+the aio voice connect app give you the ability to connect Yeastar with AI voice Provider, and the extension that connect with extension of yeastar has two possibilities based on the agent configuration either inbound or outbound if it inbound the extension keep connecting unless i disconnect it, and extension that connected with agent config on outbound its always disconnected not registred until we make a call and registred and after the call end it return to not registred.
+
+i did 4 calls, two inbound (one the agent logic hangup and one i hang up) two Outbound (one the agent logic hangup and one i hang up)
+
+-in inbound call when it finish, sometimes i think he didnt wait for bridge to close because in a previous call and it not in this log he hangup on me before he complet the sentnse. and also in inbound if i hangup from the bridge still on even the call was terminated with me and yeastar.
+
+-in outbound its the same when the agent hangup its good, but when i hangup from my phone the bridge with elevenlabs still on.
+
+if you saw 192.168.11.201 its the gateway that has the SIM Card, and 192.168.11.90 its Yeastar, and sip.aioprocess.com/13.140.151.164 its AIO Voice Connect on my VPS
+
+here team possible diagnostic
+
+AIO Voice Connect Diagnostic Report
+
+Test Environment
+
+Topology PSTN (SIM) │ ▼ OpenVox Gateway (192.168.11.201) │ ▼ Yeastar PBX (192.168.11.90) │ SIP Trunk │ ▼ AIO Voice Connect (13.140.151.164) │ WebSocket ▼ ElevenLabs
+
+Tested Scenarios Scenario
+
+Result
+
+Inbound - Agent hangs up
+
+✅ Works
+
+Inbound - User hangs up
+
+❌ ElevenLabs bridge remains alive
+
+Outbound - Agent hangs up
+
+✅ Works
+
+Outbound - User hangs up
+
+❌ ElevenLabs bridge remains alive
+
+Issue 1 – SIP dialog termination is not propagated to the AI bridge
+
+Symptoms
+
+When the caller hangs up:
+
+Yeastar correctly terminates the SIP call.
+Phone disconnects.
+PSTN disconnects.
+AIO Voice Connect continues streaming audio to ElevenLabs.
+The AI continues speaking even though the SIP dialog no longer exists.
+
+⸻
+
+Expected flow Remote Phone │ ▼ BYE │ ▼ AIO Voice Connect │ ▼ Terminate SIP Dialog │ ▼ Stop RTP │ ▼ Close ElevenLabs WebSocket │ ▼ Destroy Bridge
+
+Actual behavior Remote Phone │ ▼ BYE │ ▼ SIP dialog removed
+
+Bridge still running
+
+RTP still running
+
+WebSocket still open
+
+ElevenLabs continues talking
+
+Diagnostic
+
+The SIP dialog teardown is not notifying the bridge manager.
+
+This affects both inbound and outbound.
+
+That strongly indicates the problem is inside the shared bridge lifecycle rather than the inbound or outbound call logic.
+
+⸻
+
+Issue 2 – Bridge cleanup depends on who hangs up
+
+Current behavior:
+
+Agent hangs up ElevenLabs │ ▼ WebSocket closes ▼ Bridge destroyed ▼ BYE sent Works perfectly.
+
+User hangs up Phone │ ▼ BYE ▼ Call ends
+
+Bridge survives
+
+Does not work.
+
+⸻
+
+Diagnostic
+
+There are two teardown paths.
+
+Only one has full cleanup.
+
+The SIP-initiated teardown is missing cleanup.
+
+⸻
+
+Issue 3 – Final AI sentence occasionally gets cut off
+
+Observed:
+
+Sometimes the AI hangs up before finishing the final sentence.
+
+⸻
+
+Likely current sequence Last AI message
+
+↓
+
+WebSocket closed
+
+↓
+
+Destroy bridge
+
+↓
+
+Send BYE
+
+instead of Last AI message
+
+↓
+
+Flush RTP queue
+
+↓
+
+Wait until audio transmission finishes
+
+↓
+
+BYE
+
+↓
+
+Cleanup Diagnostic
+
+The bridge is likely being destroyed immediately after the final ElevenLabs event instead of waiting for all RTP packets to leave the transmit queue.
+
+⸻
+
+Issue 4 – RTP goroutines likely survive after SIP termination
+
+Since the bridge continues after BYE, one of these is probably happening:
+
+RTP receive loop never exits
+RTP transmit loop never exits
+websocket loop never exits
+context cancellation never reaches goroutines
+⸻
+
+Expected ctx.Cancel()
+
+↓
+
+Receive RTP loop exits
+
+↓
+
+Send RTP loop exits
+
+↓
+
+WebSocket loop exits
+
+↓
+
+Bridge removed
+
+Actual BYE
+
+↓
+
+Dialog removed
+
+↓
+
+Context still alive
+
+↓
+
+Goroutines still alive Issue 5 – SIP dialog state synchronization
+
+The logs show WARN SIP request handler not found method=ACK
+
+during inbound calls.
+
+The call still works afterwards, so this warning is probably not the root cause of the teardown issue. However, it suggests that dialog state management in the SIP layer may not be consistently routing all in-dialog requests (ACK/BYE) through the same dialog object.
+
+⸻
+
+Areas Replit should investigate
+
+SIP BYE handling
+Verify that every incoming BYE triggers: bridge.Stop()
+
+context.Cancel()
+
+websocket.Close()
+
+RTP.Stop()
+
+BridgeRegistry.Remove() 2. Dialog state callbacks
+
+Ensure the bridge is destroyed whenever the SIP dialog enters: Terminated
+
+Completed
+
+Canceled
+
+instead of only when ElevenLabs disconnects.
+
+⸻
+
+RTP lifecycle
+Confirm both RTP goroutines terminate on:
+
+ctx.Done() instead of waiting only for: WebSocket closed
+
+ElevenLabs lifecycle
+Currently it appears cleanup only happens after ElevenLabs WebSocket Closed
+
+It should also happen after Incoming SIP BYE
+
+Dialog timeout
+
+Call cancellation
+
+Transport failure
+
+Bridge manager
+Review the bridge registry.
+
+Ensure every bridge has only one owner responsible for cleanup.
+
+Example lifecycle:
+
+Create Bridge
+
+↓
+
+Register
+
+↓
+
+Running
+
+↓
+
+Stopping
+
+↓
+
+Stopped
+
+↓
+
+Unregister There should be no path that skips “Stopping.”
+
+Audio drain before hangup
+Before destroying the bridge:
+
+Stop accepting new AI audio
+
+↓
+
+Flush queued RTP packets
+
+↓
+
+Wait until queue empty
+
+↓
+
+Send BYE
+
+↓
+
+Destroy bridge
+
+This should eliminate clipped final words.
+
+Context propagation
+Verify that the same cancellation context is shared across:
+
+SIP dialog
+RTP sender
+RTP receiver
+ElevenLabs websocket
+Audio queues
+Bridge manager
+A single ctx.Cancel() should stop every component.
+
+⸻
+
+Overall Diagnosis
+
+The signaling and media setup appear healthy: registration, authentication, call establishment, RTP negotiation, and ElevenLabs connectivity all work correctly in both inbound and outbound modes.
+
+The failures are concentrated in call teardown, specifically when the SIP endpoint (phone/PSTN side) ends the call.
+
+Primary issue
+
+The SIP BYE/dialog termination event is not fully propagated to the shared bridge manager, leaving the RTP bridge and ElevenLabs WebSocket active after the SIP call has ended.
+
+Secondary issue
+
+When the AI ends a conversation, bridge cleanup occurs before all queued RTP audio has been transmitted, causing the last sentence to be clipped occasionally.

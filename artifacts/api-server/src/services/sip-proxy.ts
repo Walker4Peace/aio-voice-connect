@@ -168,11 +168,16 @@ interface ProxyState {
 
 const proxies = new Map<number, ProxyState>();
 
-// ── Outbound BYE handlers ─────────────────────────────────────────────────────
-// When Yeastar sends a BYE to an outbound call, the proxy intercepts it,
-// responds 200 OK on behalf of the binary, and fires this callback so
+// ── BYE handlers (outbound + inbound) ────────────────────────────────────────
+// When Yeastar sends a BYE the proxy intercepts it on extSock, responds
+// 200 OK on behalf of the binary, and fires the appropriate callback so
 // deployment.ts can kill the binary (and close the ElevenLabs bridge).
+//
+// Outbound calls register via setOutboundBYEHandler.
+// Inbound  calls register via setInboundBYEHandler.
+// In the BYE intercept path both are fired (at most one will be set).
 const outboundByeHandlers = new Map<number, () => void>();
+const inboundByeHandlers  = new Map<number, () => void>();
 
 /**
  * Register a callback to be fired once when Yeastar sends BYE for an outbound
@@ -183,9 +188,24 @@ export function setOutboundBYEHandler(extensionId: number, cb: () => void): void
   outboundByeHandlers.set(extensionId, cb);
 }
 
-/** Remove the BYE handler (called on process exit / stop). */
+/** Remove the outbound BYE handler (called on process exit / stop). */
 export function clearOutboundBYEHandler(extensionId: number): void {
   outboundByeHandlers.delete(extensionId);
+}
+
+/**
+ * Register a callback to be fired once when Yeastar sends BYE for an inbound
+ * call (i.e. the remote party / PSTN hung up).  The proxy responds 200 OK
+ * automatically so Yeastar is satisfied, then calls the callback so the binary
+ * can be terminated and the ElevenLabs bridge closed.
+ */
+export function setInboundBYEHandler(extensionId: number, cb: () => void): void {
+  inboundByeHandlers.set(extensionId, cb);
+}
+
+/** Remove the inbound BYE handler (called on process exit / stop). */
+export function clearInboundBYEHandler(extensionId: number): void {
+  inboundByeHandlers.delete(extensionId);
 }
 
 // ── Rewrite helpers ───────────────────────────────────────────────────────────
@@ -484,11 +504,18 @@ export async function startSipProxy(params: {
           }
         });
 
-        // Step 3 — fire the BYE handler (kills the binary in deployment.ts)
-        const handler = outboundByeHandlers.get(extensionId);
-        if (handler) {
+        // Step 3 — fire the BYE handler (kills the binary in deployment.ts).
+        // Outbound calls register via setOutboundBYEHandler; inbound calls via
+        // setInboundBYEHandler.  At most one will be set at a time.
+        const outboundHandler = outboundByeHandlers.get(extensionId);
+        if (outboundHandler) {
           outboundByeHandlers.delete(extensionId);
-          handler();
+          outboundHandler();
+        }
+        const inboundHandler = inboundByeHandlers.get(extensionId);
+        if (inboundHandler) {
+          inboundByeHandlers.delete(extensionId);
+          inboundHandler();
         }
 
         return; // Step 4 — do not forward BYE to binary
