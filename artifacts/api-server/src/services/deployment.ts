@@ -453,21 +453,27 @@ function parseAndStoreCallEvents(extensionId: number, line: string, timestamp: s
       aiEndedNow = true;
     }
 
-    // ── Race-condition guard: fast Yeastar BYE ───────────────────────────
-    // When hangupCallViaYeastar responds quickly, Yeastar sends BYE to the
-    // binary before "Unregistered bridge" is logged.  The byeMatch handler
-    // fires first, consuming the aiEndedCallIds flag and pushing an ended
-    // event with detail "AI Agent".  By the time we arrive here the flag is
-    // gone and callEnded=true, making it look like an orphaned bridge even
-    // though the AI cleanly used end_call.  Check the existing ended event's
-    // detail to detect this case and skip the orphan-cleanup restart.
+    // ── BYE-ended guard ──────────────────────────────────────────────────
+    // When a SIP BYE is received (for any reason — caller hung up OR fast
+    // Yeastar reply to AI end_call), byeMatch fires BEFORE unregMatch and
+    // pushes an ended event with detail "Caller" or "AI Agent".  Both are
+    // clean terminations: the ElevenLabs WS is already being torn down by
+    // the binary, so there is no orphaned bridge to clean up.
+    //
+    // Without this guard the condition `callEnded && !aiEndedNow` would
+    // incorrectly trigger the orphan-cleanup restart for every normal caller
+    // hangup (byeMatch → "Caller" → unregMatch → callEnded=true,
+    // aiEndedNow=false → 5 s restart timer fires).
     if (!aiEndedNow && callEnded) {
       const endedEv = [...persistedCallEvents].reverse().find(
         e => e.extensionId === extensionId && e.callId === callId && e.event === "ended"
       );
-      if (endedEv?.detail === "AI Agent") {
+      if (endedEv?.detail === "AI Agent" || endedEv?.detail === "Caller") {
         aiEndedNow = true;
-        logger.info({ extensionId, callId }, "Orphan cleanup skipped — ended event already attributed to AI Agent (fast BYE race)");
+        logger.info(
+          { extensionId, callId, detail: endedEv.detail },
+          "Orphan cleanup skipped — call ended cleanly via SIP BYE, no orphaned bridge",
+        );
       }
     }
 
