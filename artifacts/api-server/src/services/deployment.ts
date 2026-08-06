@@ -16,6 +16,8 @@ import {
   proxyExtPortFor,
   startSipProxy,
   stopSipProxy,
+  setOutboundBYEHandler,
+  clearOutboundBYEHandler,
 } from "./sip-proxy.js";
 import { dropCallViaYeastar, hangupCallViaYeastar, type YeastarClient } from "./yeastarCalls.js";
 
@@ -469,16 +471,24 @@ function parseAndStoreCallEvents(extensionId: number, line: string, timestamp: s
           "ElevenLabs WS closed without SIP BYE — terminating SIP leg"
         );
         if (outboundCallModes.has(extensionId)) {
-          // Outbound: binary tracks its own SIP dialog — send /bye.
-          // Wait 3 s to let hangup_on_task_complete handle it first; only
-          // force if the call is still not ended.
-          const hCallId = lastInvite.callId;
-          setTimeout(() => {
-            const alreadyEnded = persistedCallEvents.some(
-              e => e.extensionId === extensionId && e.callId === hCallId && e.event === "ended"
-            );
-            if (!alreadyEnded) sendSipHangup(extensionId, hCallId).catch(() => {});
-          }, 3_000);
+          // Outbound: the binary exits almost immediately after logging
+          // "Unregistered bridge", so its HTTP server is already gone by the
+          // time any timer fires — sendSipHangup would hit ECONNREFUSED.
+          // Use the Yeastar PBX API instead (same as the inbound path).
+          const ystData = extensionYeastarData.get(extensionId);
+          if (ystData) {
+            hangupCallViaYeastar(ystData.client, ystData.extensionNumber).catch(() => {});
+          } else {
+            // No Yeastar credentials — fall back to /bye with a short delay in
+            // case the binary is still briefly alive when we fire.
+            const hCallId = lastInvite.callId;
+            setTimeout(() => {
+              const alreadyEnded = persistedCallEvents.some(
+                e => e.extensionId === extensionId && e.callId === hCallId && e.event === "ended"
+              );
+              if (!alreadyEnded) sendSipHangup(extensionId, hCallId).catch(() => {});
+            }, 500);
+          }
         } else {
           // Inbound: hang up via Yeastar PBX API using channel_id (call/hangup).
           const ystData = extensionYeastarData.get(extensionId);
@@ -1406,6 +1416,18 @@ export async function startExtension(extensionId: number, opts?: {
         yeastarServer: realSipServer,
       });
       logger.info({ extensionId, sipLocalPort, realSipServer, proxyAddress }, "SIP FQDN proxy active — binary will use SIP_OUTBOUND_PROXY");
+
+      // For outbound calls, register a BYE handler so the proxy can kill the
+      // binary as soon as Yeastar sends BYE (remote party hung up).  The proxy
+      // responds 200 OK to Yeastar immediately and fires this callback — no
+      // dependency on the binary logging a specific WARN line.
+      if (opts?.outboundTarget) {
+        setOutboundBYEHandler(extensionId, () => {
+          logger.info({ extensionId }, "Outbound BYE received via SIP proxy — killing binary to close ElevenLabs bridge");
+          const p = processes.get(extensionId);
+          if (p) p.proc.kill("SIGTERM");
+        });
+      }
     } catch (err) {
       logger.warn({ extensionId, realSipServer, err }, "SIP FQDN proxy startup failed — binary will connect directly");
     }
@@ -1598,17 +1620,23 @@ export async function startExtension(extensionId: number, opts?: {
       finalizeOutboundCall(extensionId, "completed");
       logger.info({ extensionId, code, signal }, "Outbound call ended — extension returning to idle (stopped)");
 
-      // If the binary crashed (panic, non-zero exit, not killed by us) the SIP
-      // dialog may still be open on the PBX — the binary never sent BYE.
-      // Call Yeastar's hangup API immediately so the caller's phone hangs up
-      // instead of waiting for the PBX session-timer (~30 s).
-      const crashed = !wasKilled && code !== 0;
-      if (crashed) {
+      // If the binary exited without being killed by our BYE-detection SIGTERM,
+      // the SIP dialog may still be open on the PBX.  This covers:
+      //   • Normal AI-ended exit (code 0): binary closed ElevenLabs WS and
+      //     exited cleanly without sending SIP BYE — Yeastar and the phone
+      //     still show the call as active.
+      //   • Crash (code != 0): binary panicked before sending BYE.
+      // wasKilled=true means we killed it ourselves after detecting a BYE from
+      // Yeastar — the remote already hung up, no need to call Yeastar again.
+      clearOutboundBYEHandler(extensionId);
+      const needsHangup = !wasKilled;
+      if (needsHangup) {
         const ystData = extensionYeastarData.get(extensionId);
         if (ystData) {
-          logger.info({ extensionId, code }, "Outbound binary crashed — hanging up via Yeastar API");
+          const reason = code !== 0 ? "crashed" : "exited cleanly (no SIP BYE sent)";
+          logger.info({ extensionId, code }, `Outbound binary ${reason} — hanging up via Yeastar API`);
           hangupCallViaYeastar(ystData.client, ystData.extensionNumber).catch((err) => {
-            logger.warn({ extensionId, err }, "Outbound crash hangup via Yeastar failed");
+            logger.warn({ extensionId, err }, "Outbound exit hangup via Yeastar failed");
           });
         }
       }

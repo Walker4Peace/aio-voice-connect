@@ -168,6 +168,26 @@ interface ProxyState {
 
 const proxies = new Map<number, ProxyState>();
 
+// ── Outbound BYE handlers ─────────────────────────────────────────────────────
+// When Yeastar sends a BYE to an outbound call, the proxy intercepts it,
+// responds 200 OK on behalf of the binary, and fires this callback so
+// deployment.ts can kill the binary (and close the ElevenLabs bridge).
+const outboundByeHandlers = new Map<number, () => void>();
+
+/**
+ * Register a callback to be fired once when Yeastar sends BYE for an outbound
+ * call.  The proxy responds 200 OK automatically so Yeastar is satisfied, then
+ * calls the callback so the binary can be terminated.
+ */
+export function setOutboundBYEHandler(extensionId: number, cb: () => void): void {
+  outboundByeHandlers.set(extensionId, cb);
+}
+
+/** Remove the BYE handler (called on process exit / stop). */
+export function clearOutboundBYEHandler(extensionId: number): void {
+  outboundByeHandlers.delete(extensionId);
+}
+
 // ── Rewrite helpers ───────────────────────────────────────────────────────────
 
 /**
@@ -436,10 +456,42 @@ export async function startSipProxy(params: {
         return; // do not forward to binary
       }
 
-      // Clean up dialog tracking when a BYE arrives from Yeastar
+      // When Yeastar sends a BYE (remote party hung up on an outbound call):
+      //   1. Clean up the dialog tracking entry.
+      //   2. Send 200 OK immediately from the proxy so Yeastar is satisfied and
+      //      does not retransmit.  The binary in outbound mode has no BYE handler
+      //      and would log a WARN; responding here avoids that race.
+      //   3. Fire the registered outbound BYE handler so deployment.ts can kill
+      //      the binary and close the ElevenLabs bridge cleanly.
+      //   4. Do NOT forward to the binary — it cannot handle BYE, and we have
+      //      already responded to Yeastar.
       if (method === "BYE") {
         const byeCallId = msg.pairs.find(([k]) => k === "call-id")?.[2] ?? "";
         if (byeCallId) s.pendingInvites.delete(byeCallId);
+
+        // Step 2 — auto-respond 200 OK to Yeastar
+        const byeResp = buildAutoResponse(msg, 200, "OK", "BYE");
+        extSock.send(byeResp, rinfo.port, rinfo.address, (err) => {
+          if (err) {
+            logger.warn({ extensionId, err }, "SIP proxy: BYE 200 OK send error");
+          } else {
+            logger.info(
+              { extensionId, dir: "proxy→Yeastar",
+                from: `0.0.0.0:${s.proxyExtPort}`, to: `${rinfo.address}:${rinfo.port}`,
+                sip: "SIP/2.0 200 OK (auto: BYE)" },
+              "SIP proxy packet",
+            );
+          }
+        });
+
+        // Step 3 — fire the BYE handler (kills the binary in deployment.ts)
+        const handler = outboundByeHandlers.get(extensionId);
+        if (handler) {
+          outboundByeHandlers.delete(extensionId);
+          handler();
+        }
+
+        return; // Step 4 — do not forward BYE to binary
       }
     }
 
