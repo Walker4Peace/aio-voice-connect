@@ -476,49 +476,51 @@ export async function startSipProxy(params: {
         return; // do not forward to binary
       }
 
-      // When Yeastar sends a BYE (remote party hung up on an outbound call):
-      //   1. Clean up the dialog tracking entry.
-      //   2. Send 200 OK immediately from the proxy so Yeastar is satisfied and
-      //      does not retransmit.  The binary in outbound mode has no BYE handler
-      //      and would log a WARN; responding here avoids that race.
-      //   3. Fire the registered outbound BYE handler so deployment.ts can kill
-      //      the binary and close the ElevenLabs bridge cleanly.
-      //   4. Do NOT forward to the binary — it cannot handle BYE, and we have
-      //      already responded to Yeastar.
+      // BYE handling differs by call direction:
+      //
+      // Outbound: the binary has no BYE handler and would log a WARN.
+      //   → Respond 200 OK from the proxy, fire the kill handler so
+      //     deployment.ts terminates the binary and closes the ElevenLabs
+      //     bridge, and do NOT forward to the binary.
+      //
+      // Inbound: the binary has a built-in BYE handler that closes the
+      //   ElevenLabs WebSocket and returns the extension to a listening state
+      //   (no process restart required).
+      //   → Forward BYE to the binary unchanged so it can handle teardown
+      //     itself.  The binary will respond 200 OK to Yeastar through the
+      //     normal proxy path (localSock → extSock).
       if (method === "BYE") {
         const byeCallId = msg.pairs.find(([k]) => k === "call-id")?.[2] ?? "";
         if (byeCallId) s.pendingInvites.delete(byeCallId);
 
-        // Step 2 — auto-respond 200 OK to Yeastar
-        const byeResp = buildAutoResponse(msg, 200, "OK", "BYE");
-        extSock.send(byeResp, rinfo.port, rinfo.address, (err) => {
-          if (err) {
-            logger.warn({ extensionId, err }, "SIP proxy: BYE 200 OK send error");
-          } else {
-            logger.info(
-              { extensionId, dir: "proxy→Yeastar",
-                from: `0.0.0.0:${s.proxyExtPort}`, to: `${rinfo.address}:${rinfo.port}`,
-                sip: "SIP/2.0 200 OK (auto: BYE)" },
-              "SIP proxy packet",
-            );
-          }
-        });
-
-        // Step 3 — fire the BYE handler (kills the binary in deployment.ts).
-        // Outbound calls register via setOutboundBYEHandler; inbound calls via
-        // setInboundBYEHandler.  At most one will be set at a time.
         const outboundHandler = outboundByeHandlers.get(extensionId);
         if (outboundHandler) {
+          // Outbound — respond on behalf of binary and kill it.
+          const byeResp = buildAutoResponse(msg, 200, "OK", "BYE");
+          extSock.send(byeResp, rinfo.port, rinfo.address, (err) => {
+            if (err) {
+              logger.warn({ extensionId, err }, "SIP proxy: BYE 200 OK send error");
+            } else {
+              logger.info(
+                { extensionId, dir: "proxy→Yeastar",
+                  from: `0.0.0.0:${s.proxyExtPort}`, to: `${rinfo.address}:${rinfo.port}`,
+                  sip: "SIP/2.0 200 OK (auto: BYE)" },
+                "SIP proxy packet",
+              );
+            }
+          });
           outboundByeHandlers.delete(extensionId);
           outboundHandler();
-        }
-        const inboundHandler = inboundByeHandlers.get(extensionId);
-        if (inboundHandler) {
-          inboundByeHandlers.delete(extensionId);
-          inboundHandler();
+          return; // do not forward to binary
         }
 
-        return; // Step 4 — do not forward BYE to binary
+        // Inbound — fall through to the normal forward path so the binary
+        // receives BYE, closes the ElevenLabs bridge, and stays registered.
+        logger.info(
+          { extensionId, dir: "Yeastar→binary (BYE forward)",
+            from: `${rinfo.address}:${rinfo.port}` },
+          "SIP proxy: forwarding inbound BYE to binary for internal handling",
+        );
       }
     }
 

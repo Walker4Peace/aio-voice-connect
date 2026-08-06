@@ -425,18 +425,6 @@ function parseAndStoreCallEvents(extensionId: number, line: string, timestamp: s
       // Complete any active outbound call for this extension
       finalizeOutboundCall(extensionId, "completed");
     }
-    // Inbound: the binary receives BYE and terminates the SIP dialog, but its
-    // internal goroutines (RTP bridge, ElevenLabs WebSocket) keep running.
-    // Kill the process so the WS is closed immediately.  The exit handler will
-    // re-register and restart the extension so it is ready for the next call.
-    // Outbound calls already have their own kill path (WARN log detection above).
-    if (!outboundCallModes.has(extensionId)) {
-      const p = processes.get(extensionId);
-      if (p) {
-        logger.info({ extensionId, callId }, "Inbound BYE detected via log — killing binary to close ElevenLabs bridge");
-        p.proc.kill("SIGTERM");
-      }
-    }
     return;
   }
 
@@ -1441,18 +1429,12 @@ export async function startExtension(extensionId: number, opts?: {
           const p = processes.get(extensionId);
           if (p) p.proc.kill("SIGTERM");
         });
-      } else {
-        // Inbound extension: register the same kill-on-BYE handler.
-        // When the remote caller (or PSTN/gateway) hangs up, Yeastar sends BYE
-        // to the proxy's extSock.  Without this handler the proxy responds 200 OK
-        // to Yeastar (good) but the binary keeps running and the ElevenLabs
-        // WebSocket stays open indefinitely.
-        setInboundBYEHandler(extensionId, () => {
-          logger.info({ extensionId }, "Inbound BYE received via SIP proxy — killing binary to close ElevenLabs bridge");
-          const p = processes.get(extensionId);
-          if (p) p.proc.kill("SIGTERM");
-        });
       }
+      // Inbound extensions: no BYE handler needed here.
+      // The proxy now forwards BYE directly to the binary (inbound path in
+      // sip-proxy.ts) so the binary handles teardown internally — it closes
+      // the ElevenLabs WebSocket and returns to a listening/registered state
+      // without any process restart.
     } catch (err) {
       logger.warn({ extensionId, realSipServer, err }, "SIP FQDN proxy startup failed — binary will connect directly");
     }
@@ -1693,22 +1675,6 @@ export async function startExtension(extensionId: number, opts?: {
           pushEvent({ extensionId, callId, event: "ended", timestamp: exitTimestamp, detail: endedBy });
         }
       }
-    }
-
-    // Auto-restart inbound extension so it is ready for the next call.
-    // Inbound extensions should always be running (registered and listening).
-    // We reach this path only when outboundCallModes did NOT contain this
-    // extensionId, meaning it was started without an outbound target.
-    // Skip restart when the user explicitly stopped the extension.
-    if (!manuallyStopped.has(extensionId)) {
-      logger.info({ extensionId }, "Inbound extension exited — scheduling restart to stay registered");
-      setTimeout(() => {
-        // Guard: don't restart if already running again or user stopped it
-        if (processes.has(extensionId) || manuallyStopped.has(extensionId)) return;
-        startExtension(extensionId).catch(err =>
-          logger.error({ err, extensionId }, "Failed to auto-restart inbound extension after call ended"),
-        );
-      }, 1_500);
     }
 
     // Watchdog: if this was an unexpected crash (not a manual stop) and watchdog is on, start pinging
