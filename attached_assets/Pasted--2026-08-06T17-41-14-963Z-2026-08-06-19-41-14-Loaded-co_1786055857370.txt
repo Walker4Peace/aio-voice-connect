@@ -1,0 +1,121 @@
+[2026-08-06T17:41:14.963Z] 2026/08/06 19:41:14 Loaded config with 0 functions
+[2026-08-06T17:41:14.964Z] 2026/08/06 19:41:14 Starting HTTP API server on :19001
+[2026-08-06T17:41:14.964Z] 2026/08/06 19:41:14 Starting SIP client with configuration:
+[2026-08-06T17:41:14.964Z] 2026/08/06 19:41:14 Username: 1004, Domain: aioprocess-demo.ras.yeastar.com, Server: aioprocess-demo.ras.yeastar.com:5060, Transport: udp
+[2026-08-06T17:41:14.964Z] 2026/08/06 19:41:14 Auth ID: qjFB7cTE9q (using separate authorization ID)
+[2026-08-06T17:41:14.964Z] 2026/08/06 19:41:14 Outbound Proxy: 127.0.0.1:17062
+[2026-08-06T17:41:14.964Z] 2026/08/06 19:41:14 No OPENAI_API_KEY set - calls will use fallback audio handling
+[2026-08-06T17:41:14.964Z] 2026/08/06 19:41:14 DEBUG: Determined outbound IP as 13.140.151.164
+[2026-08-06T17:41:14.964Z] 2026/08/06 19:41:14 Local IP determined as: 13.140.151.164
+[2026-08-06T17:41:15.013Z] 2026/08/06 19:41:15 DEBUG: Retrieved external IP as 13.140.151.164
+[2026-08-06T17:41:15.014Z] 2026/08/06 19:41:15 External IP determined as: 13.140.151.164
+[2026-08-06T17:41:15.014Z] 2026/08/06 19:41:15 === OUTBOUND CALLING MODE ===
+[2026-08-06T17:41:15.014Z] 2026/08/06 19:41:15 Target: +212661209845
+[2026-08-06T17:41:15.014Z] 2026/08/06 19:41:15 Task:
+[2026-08-06T17:41:15.014Z] 2026/08/06 19:41:15 Result webhook:
+[2026-08-06T17:41:15.014Z] 2026/08/06 19:41:15 REGISTER via outbound proxy: 127.0.0.1:17062
+[2026-08-06T17:41:15.014Z] 2026/08/06 19:41:15 Sending REGISTER request via sipgo client.
+[2026-08-06T17:41:15.086Z] 2026/08/06 19:41:15 Auth: digestUsername=qjFB7cTE9q, realm=YSAsterisk, uri=sip:aioprocess-demo.ras.yeastar.com, password=WQHy0b05PJ
+[2026-08-06T17:41:15.088Z] 2026/08/06 19:41:15 Resending REGISTER with Authorization header (CSeq=2).
+[2026-08-06T17:41:15.088Z] 2026/08/06 19:41:15 Authorization: Digest username="qjFB7cTE9q", realm="YSAsterisk", nonce="1786032697/2e016f8d8a8f7fb42b0ce42271098513", uri="sip:aioprocess-demo.ras.yeastar.com", response="8ca0ba5b29732c457289a8486efa477a", algorithm=MD5
+[2026-08-06T17:41:15.181Z] 2026/08/06 19:41:15 Received REGISTER response: SIP/2.0 200 OK
+[2026-08-06T17:41:15.182Z] Via: SIP/2.0/UDP 13.140.151.164:35435;rport=27060;received=13.140.151.164;branch=z9hG4bK.2DFuYknnIc0k2RUu
+[2026-08-06T17:41:15.184Z] Call-ID: aQrCtRWJVtwzWJY8
+[2026-08-06T17:41:15.186Z] From: <sip:1004@aioprocess-demo.ras.yeastar.com>;tag=l7wphKyK
+[2026-08-06T17:41:15.186Z] To: <sip:1004@aioprocess-demo.ras.yeastar.com>;tag=z9hG4bK792f.50f13832.0
+[2026-08-06T17:41:15.186Z] CSeq: 2 REGISTER
+[2026-08-06T17:41:15.186Z] Contact: <sip:1004@aioprocess-demo.ras.yeastar.com:5060>;expires=658
+[2026-08-06T17:41:15.186Z] Date: Thu, 06 Aug 2026 16:11:37 GMT
+[2026-08-06T17:41:15.186Z] Expires: 630
+[2026-08-06T17:41:15.186Z] Server: Yeastar PSE
+[2026-08-06T17:41:15.186Z] Content-Length: 0
+[2026-08-06T17:41:15.186Z] YSUser-Agent: YSBC 2.12.30
+[2026-08-06T17:41:15.186Z] 2026/08/06 19:41:15 Registration successful!
+[2026-08-06T17:41:15.186Z] 2026/08/06 19:41:15 Registered with SIP provider
+[2026-08-06T17:41:15.186Z] 2026/08/06 19:41:15 Initiating outbound call to +212661209845
+[2026-08-06T17:41:15.186Z] 2026/08/06 19:41:15 RTP listener created on 0.0.0.0:39183
+[2026-08-06T17:41:15.186Z] 2026/08/06 19:41:15 Using outbound proxy: 127.0.0.1:17062
+[2026-08-06T17:41:15.186Z] 2026/08/06 19:41:15 Sending INVITE to sip:+212661209845@aioprocess-demo.ras.yeastar.com
+[2026-08-06T17:41:15.187Z] 2026/08/06 19:41:15 SDP Offer:
+[2026-08-06T17:41:15.187Z] v=0
+[2026-08-06T17:41:15.187Z] o=- 8493800960357924831 6653906481560688207 IN IP4 13.140.151.164
+[2026-08-06T17:41:15.187Z] s=-
+[2026-08-06T17:41:15.187Z] c=IN IP4 13.140.151.164
+[2026-08-06T17:41:15.187Z] t=0 0
+[2026-08-06T17:41:15.187Z] m=audio 39183 RTP/AVP 0 8 18 101
+[2026-08-06T17:41:15.187Z] a=rtpmap:0 PCMU/8000
+[2026-08-06T17:41:15.187Z] a=rtpmap:8 PCMA/8000
+[2026-08-06T17:41:15.187Z] a=rtpmap:18 G729/8000
+[2026-08-06T17:41:15.187Z] a=rtpmap:101 telephone-event/8000
+[2026-08-06T17:41:15.187Z] a=fmtp:101 0-16
+[2026-08-06T17:41:15.187Z] a=ptime:20
+[2026-08-06T17:41:15.187Z] a=sendrecv
+[2026-08-06T17:41:15.259Z] 2026/08/06 19:41:15 Received 401 Unauthorized
+[2026-08-06T17:41:15.259Z] 2026/08/06 19:41:15 First 401 received. Response:
+[2026-08-06T17:41:15.260Z] SIP/2.0 401 Unauthorized
+[2026-08-06T17:41:15.260Z] Via: SIP/2.0/UDP 13.140.151.164:35435;branch=z9hG4bK.9MkhVBX5GURfDiXm;received=13.140.151.164;rport=27060
+[2026-08-06T17:41:15.260Z] Call-ID: fTJ1J6BfbL4Tii0V-1786038075179120388
+[2026-08-06T17:41:15.260Z] From: "Little Bird Electronics" <sip:1004@aioprocess-demo.ras.yeastar.com>;tag=07XpTR8S
+[2026-08-06T17:41:15.260Z] To: <sip:+212661209845@aioprocess-demo.ras.yeastar.com>;tag=z9hG4bKcff6.3e8684f7.0
+[2026-08-06T17:41:15.260Z] CSeq: 1 INVITE
+[2026-08-06T17:41:15.260Z] WWW-Authenticate: Digest  realm="YSAsterisk",nonce="1786032697/2e016f8d8a8f7fb42b0ce42271098513",opaque="6e1550311cd64152",algorithm=md5,qop="auth"
+[2026-08-06T17:41:15.260Z] Server: Yeastar PSE
+[2026-08-06T17:41:15.260Z] Content-Length: 0
+[2026-08-06T17:41:15.260Z] YSUser-Agent: YSBC 2.12.30
+[2026-08-06T17:41:15.260Z] 2026/08/06 19:41:15 Auth URI: sip:+212661209845@aioprocess-demo.ras.yeastar.com, Realm: YSAsterisk
+[2026-08-06T17:41:15.260Z] 2026/08/06 19:41:15 Auth header: Digest username="qjFB7cTE9q", realm="YSAsterisk", nonce="1786032697/2e016f8d8a8f7fb42b0ce42271098513", uri="sip:+212661209845@aioprocess-demo.ras.yeastar.com", response="bc6bb146229b261dfbf46f7111a956d7", algorithm=MD5
+[2026-08-06T17:41:15.260Z] 2026/08/06 19:41:15 Resending INVITE with authorization...
+[2026-08-06T17:41:15.364Z] 2026/08/06 19:41:15 Received 100 Trying
+[2026-08-06T17:41:15.367Z] 2026/08/06 19:41:15 Call progress: Trying
+[2026-08-06T17:41:17.280Z] 2026/08/06 19:41:17 Received 183 Session Progress
+[2026-08-06T17:41:17.280Z] 2026/08/06 19:41:17 Call progress: Session Progress
+[2026-08-06T17:41:26.427Z] 2026/08/06 19:41:26 Received 200 OK
+[2026-08-06T17:41:26.427Z] 2026/08/06 19:41:26 Call answered!
+[2026-08-06T17:41:26.427Z] 2026/08/06 19:41:26 Remote RTP address: 52.47.94.244:47920
+[2026-08-06T17:41:26.439Z] 2026/08/06 19:41:26 ACK sent
+[2026-08-06T17:41:26.447Z] 2026/08/06 19:41:26 Sending NAT hole-punch packets to 52.47.94.244:47920
+[2026-08-06T17:41:26.592Z] 2026/08/06 19:41:26 Connecting to ElevenLabs Conversational AI (agent: agent_5901kza3aq5rebcvbzv1qb9mj5rt)...
+[2026-08-06T17:41:27.907Z] 2026/08/06 19:41:27 Connected to ElevenLabs Conversational AI
+[2026-08-06T17:41:27.907Z] AI responded — ElevenLabs Conversational AI - Hamza
+[2026-08-06T17:41:27.909Z] 2026/08/06 19:41:27 Note: first_message/system_prompt in config require 'Allow client overrides' in ElevenLabs dashboard
+[2026-08-06T17:41:27.928Z] 2026/08/06 19:41:27 If override fails, the agent's default greeting will be used
+[2026-08-06T17:41:27.928Z] 2026/08/06 19:41:27 DEBUG: appConfig=true
+[2026-08-06T17:41:27.928Z] 2026/08/06 19:41:27 DEBUG: ElevenLabs.FirstMessage='', SystemPrompt='Tu es un agent de confirmation de commande chez AIO PROCESS. Tu appelles Yassine pour confirmer sa commande d'une caméra Sony FX3. L'adresse de livraison enregistrée est Boulevard Maghreb Arabi N°8, Alzhar. Attends que le client parle en premier. Confirme que l'adresse est correcte, demande s'il a une note pour la livraison, puis appelle l'outil confirm_order avec address_confirmed (true/false), address (adresse finale), et note (ou null). après tous ça vous pouvez Termine l'appel poliment.
+[2026-08-06T17:41:27.928Z] IMPORTANT — comportement au décrochage : si la personne dit 'Allô', 'Allô ?', 'Oui', 'Oui allô', 'Oui ?' ou toute autre salutation de décrochage après ton introduction, c'est qu'elle vient simplement de décrocher le téléphone. Ne te présente PAS à nouveau. Reprends la conversation naturellement depuis là où elle en est.', Functions=0
+[2026-08-06T17:41:27.928Z] 2026/08/06 19:41:27 Overriding system prompt
+[2026-08-06T17:41:27.928Z] 2026/08/06 19:41:27 Sending conversation initiation to ElevenLabs: {"conversation_config_override":{"agent":{"prompt":{"prompt":"Tu es un agent de confirmation de commande chez AIO PROCESS. Tu appelles Yassine pour confirmer sa commande d'une caméra Sony FX3. L'adresse de livraison enregistrée est Boulevard Maghreb Arabi N°8, Alzhar. Attends que le client parle en premier. Confirme que l'adresse est correcte, demande s'il a une note pour la livraison, puis appelle l'outil confirm_order avec address_confirmed (true/false), address (adresse finale), et note (ou null). après tous ça vous pouvez Termine l'appel poliment.\n\nIMPORTANT — comportement au décrochage : si la personne dit 'Allô', 'Allô ?', 'Oui', 'Oui allô', 'Oui ?' ou toute autre salutation de décrochage après ton introduction, c'est qu'elle vient simplement de décrocher le téléphone. Ne te présente PAS à nouveau. Reprends la conversation naturellement depuis là où elle en est."}}},"type":"conversation_initiation_client_data"}
+[2026-08-06T17:41:27.932Z] 2026/08/06 19:41:27 Registered bridge for call: fTJ1J6BfbL4Tii0V-1786038075179120388
+[2026-08-06T17:41:27.934Z] 2026/08/06 19:41:27 Outbound call active - AI is now talking to remote party
+[2026-08-06T17:41:27.934Z] 2026/08/06 19:41:27 Starting outbound ElevenLabs to RTP bridge...
+[2026-08-06T17:41:27.934Z] 2026/08/06 19:41:27 ElevenLabs outbound conversation: conv_9401kzc2mw0ke8w87pewehntzcqt
+[2026-08-06T17:41:27.934Z] 2026/08/06 19:41:27 Starting outbound RTP to ElevenLabs bridge...
+[2026-08-06T17:41:27.934Z] 2026/08/06 19:41:27 Outbound RTP packet #1 from 52.47.94.244:47920, size=172
+[2026-08-06T17:41:28.304Z] 2026/08/06 19:41:28 Outbound RTP packet #100 from 52.47.94.244:47920, size=172
+[2026-08-06T17:41:30.198Z] 2026/08/06 19:41:30 Remote: Allô ?
+[2026-08-06T17:41:30.268Z] 2026/08/06 19:41:30 Outbound sent 1 RTP packets to 52.47.94.244:47920
+[2026-08-06T17:41:30.294Z] 2026/08/06 19:41:30 Outbound RTP packet #200 from 52.47.94.244:47920, size=172
+[2026-08-06T17:41:31.376Z] 2026/08/06 19:41:31 AI: Bonjour, je suis un agent de confirmation de commande chez AIO PROCESS. J'appelle pour confirmer votre commande d'une caméra Sony FX3.
+[2026-08-06T17:41:32.299Z] 2026/08/06 19:41:32 Outbound RTP packet #300 from 52.47.94.244:47920, size=172
+[2026-08-06T17:41:32.819Z] 2026/08/06 19:41:32 Outbound sent 100 RTP packets to 52.47.94.244:47920
+[2026-08-06T17:41:34.294Z] 2026/08/06 19:41:34 Outbound RTP packet #400 from 52.47.94.244:47920, size=172
+[2026-08-06T17:41:34.814Z] 2026/08/06 19:41:34 Outbound sent 200 RTP packets to 52.47.94.244:47920
+[2026-08-06T17:41:36.380Z] 2026/08/06 19:41:36 Outbound RTP packet #500 from 52.47.94.244:47920, size=172
+[2026-08-06T17:41:37.211Z] 2026/08/06 19:41:37 Outbound sent 300 RTP packets to 52.47.94.244:47920
+[2026-08-06T17:41:38.256Z] panic: concurrent write to websocket connection
+[2026-08-06T17:41:38.257Z] goroutine 31 [running]:
+[2026-08-06T17:41:38.257Z] github.com/gorilla/websocket.(*messageWriter).flushFrame(0xc000500ed0, 0x1, {0x0?, 0x0?, 0x0?})
+[2026-08-06T17:41:38.257Z] /Users/admin/go/pkg/mod/github.com/gorilla/websocket@v1.5.3/conn.go:617 +0x4b8
+[2026-08-06T17:41:38.257Z] github.com/gorilla/websocket.(*messageWriter).Close(0xc000318a80?)
+[2026-08-06T17:41:38.257Z] /Users/admin/go/pkg/mod/github.com/gorilla/websocket@v1.5.3/conn.go:731 +0x35
+[2026-08-06T17:41:38.257Z] github.com/gorilla/websocket.(*Conn).beginMessage
+[2026-08-06T17:41:38.259Z] (0xc000236000, 0xc000318a80, 0x1)
+[2026-08-06T17:41:38.259Z] /Users/admin/go/pkg/mod/github.com/gorilla/websocket@v1.5.3/conn.go:480 +0x3a
+[2026-08-06T17:41:38.259Z] github.com/gorilla/websocket.(*Conn).NextWriter(0xc000236000, 0x1)
+[2026-08-06T17:41:38.259Z] /Users/admin/go/pkg/mod/github.com/gorilla/websocket@v1.5.3/conn.go:520 +0x3f
+[2026-08-06T17:41:38.259Z] github.com/gorilla/websocket.(*Conn).WriteMessage(0x7b5fa0?, 0xc000318a50?, {0xc0001d0020, 0x1c, 0x20})
+[2026-08-06T17:41:38.259Z] /Users/admin/go/pkg/mod/github.com/gorilla/websocket@v1.5.3/conn.go:773 +0x137
+[2026-08-06T17:41:38.259Z] main.(*OutboundBridge).elevenLabsToRTP(0xc000230000)
+[2026-08-06T17:41:38.259Z] /Users/admin/code/sip2/outbound.go:501 +0x44b
+[2026-08-06T17:41:38.259Z] created by main.(*OutboundBridge).Start in goroutine 1
+[2026-08-06T17:41:38.259Z] /Users/admin/code/sip2/outbound.go
+[2026-08-06T17:41:38.259Z] :129 +0x316

@@ -1649,7 +1649,7 @@ export async function startExtension(extensionId: number, opts?: {
         pushEvent({ extensionId, callId: mostRecentCallId, event: "ended", timestamp: exitTimestamp, detail: endedBy });
       }
       finalizeOutboundCall(extensionId, "completed");
-      logger.info({ extensionId, code, signal }, "Outbound call ended — extension returning to idle (stopped)");
+      logger.info({ extensionId, code, signal }, "Outbound call ended — will restart in inbound/standby mode");
 
       // If the binary exited without being killed by our BYE-detection SIGTERM,
       // the SIP dialog may still be open on the PBX.  This covers:
@@ -1671,6 +1671,17 @@ export async function startExtension(extensionId: number, opts?: {
             logger.warn({ extensionId, err }, "Outbound exit hangup via Yeastar failed");
           });
         }
+      }
+
+      // Restart in inbound/standby mode after 3 s so the extension stays
+      // deployed and ready for the next outbound call trigger.
+      // Skip restart only if the user manually stopped the extension.
+      if (!manuallyStopped.has(extensionId)) {
+        setTimeout(() => {
+          startExtension(extensionId).catch((err) => {
+            logger.warn({ extensionId, err }, "Outbound post-call standby restart failed — extension will stay stopped");
+          });
+        }, 3_000);
       }
 
       return; // expected exit — skip watchdog
