@@ -453,6 +453,24 @@ function parseAndStoreCallEvents(extensionId: number, line: string, timestamp: s
       aiEndedNow = true;
     }
 
+    // ── Race-condition guard: fast Yeastar BYE ───────────────────────────
+    // When hangupCallViaYeastar responds quickly, Yeastar sends BYE to the
+    // binary before "Unregistered bridge" is logged.  The byeMatch handler
+    // fires first, consuming the aiEndedCallIds flag and pushing an ended
+    // event with detail "AI Agent".  By the time we arrive here the flag is
+    // gone and callEnded=true, making it look like an orphaned bridge even
+    // though the AI cleanly used end_call.  Check the existing ended event's
+    // detail to detect this case and skip the orphan-cleanup restart.
+    if (!aiEndedNow && callEnded) {
+      const endedEv = [...persistedCallEvents].reverse().find(
+        e => e.extensionId === extensionId && e.callId === callId && e.event === "ended"
+      );
+      if (endedEv?.detail === "AI Agent") {
+        aiEndedNow = true;
+        logger.info({ extensionId, callId }, "Orphan cleanup skipped — ended event already attributed to AI Agent (fast BYE race)");
+      }
+    }
+
     // ── Natural ElevenLabs WS close — no SIP BYE and no AI tool detected ───
     // The bridge unregistered but we never received a SIP BYE and the AI
     // did not use end_call (or conversation_ended was not logged).  This
