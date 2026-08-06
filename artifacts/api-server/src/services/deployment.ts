@@ -539,9 +539,14 @@ function parseAndStoreCallEvents(extensionId: number, line: string, timestamp: s
       if (outboundCallModes.has(extensionId)) {
         // ── Outbound: binary placed the INVITE itself so its SIP dialog is intact.
         // /bye endpoint works here because the dialog is tracked independently of
-        // the ElevenLabs bridge.  Also schedule a 10 s force-kill as a safety net
-        // in case the binary stalls after the BYE.
-        sendSipHangup(extensionId, lastInvite.callId).catch(() => {});
+        // the ElevenLabs bridge.
+        //
+        // Delay the BYE by 2.5 s so any in-flight TTS audio (the last AI phrase)
+        // has time to finish streaming to the RTP bridge before the SIP teardown
+        // stops it mid-sentence.  The 10 s force-kill remains as a safety net.
+        setTimeout(() => {
+          sendSipHangup(extensionId, lastInvite.callId).catch(() => {});
+        }, 2_500);
         setTimeout(() => {
           if (outboundCallModes.has(extensionId) && processes.has(extensionId)) {
             logger.info({ extensionId }, "Outbound: binary still running 10 s after AI end_call — force-killing to close call");
@@ -1557,20 +1562,38 @@ export async function startExtension(extensionId: number, opts?: {
       // This covers crashes/panics that prevent the BYE log line from being emitted.
       const exitTimestamp = new Date().toISOString();
       const inviteIds = new Set<string>();
-      const endedIds = new Set<string>();
+      const endedIds  = new Set<string>();
       for (const e of persistedCallEvents) {
         if (e.extensionId !== extensionId) continue;
         if (e.event === "invite") inviteIds.add(e.callId);
-        if (e.event === "ended") endedIds.add(e.callId);
+        if (e.event === "ended")  endedIds.add(e.callId);
       }
-      for (const callId of inviteIds) {
-        if (!endedIds.has(callId)) {
-          // Check whether the AI used end_call so the detail reads "AI Agent"
-          // instead of blank.  consumeAiEndedFlag clears the flag so it won't
-          // double-fire if a BYE WARN was already processed before the exit.
-          const endedBy = consumeAiEndedFlag(extensionId, callId);
-          pushEvent({ extensionId, callId, event: "ended", timestamp: exitTimestamp, detail: endedBy });
-        }
+
+      // Re-INVITEs from Yeastar (e.g. after media renegotiation or before our
+      // ACK-synthesis fix was deployed) can create multiple invite callIds for
+      // the same physical call.  Only synthesize an ended event for the most
+      // recently started open invite to avoid duplicate "Call ended" rows.
+      const openCallIds = [...inviteIds].filter(id => !endedIds.has(id));
+      let mostRecentCallId: string | null = null;
+      let mostRecentTs = 0;
+      for (const e of persistedCallEvents) {
+        if (e.extensionId !== extensionId || e.event !== "invite") continue;
+        if (!openCallIds.includes(e.callId)) continue;
+        const ts = new Date(e.timestamp).getTime();
+        if (ts > mostRecentTs) { mostRecentTs = ts; mostRecentCallId = e.callId; }
+      }
+      // Consume and discard AI flags for earlier open invites (same physical call)
+      for (const id of openCallIds) {
+        if (id !== mostRecentCallId) consumeAiEndedFlag(extensionId, id);
+      }
+      if (mostRecentCallId) {
+        // consumeAiEndedFlag → "AI Agent" if AI ended it; undefined otherwise.
+        // For a normally-terminated binary (SIGTERM from BYE detection): fall back
+        // to "Caller" so Call History shows who ended it.
+        // For a crashed binary (non-zero exit, not killed by us): leave blank.
+        const endedBy = consumeAiEndedFlag(extensionId, mostRecentCallId)
+          ?? (wasKilled ? "Caller" : undefined);
+        pushEvent({ extensionId, callId: mostRecentCallId, event: "ended", timestamp: exitTimestamp, detail: endedBy });
       }
       finalizeOutboundCall(extensionId, "completed");
       logger.info({ extensionId, code, signal }, "Outbound call ended — extension returning to idle (stopped)");
