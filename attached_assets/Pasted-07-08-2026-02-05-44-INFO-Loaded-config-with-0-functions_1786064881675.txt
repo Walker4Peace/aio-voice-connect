@@ -1,0 +1,170 @@
+07/08/2026 02:05:44
+INFO	Loaded config with 0 functions
+07/08/2026 02:05:44
+INFO	Starting HTTP API server on :19000
+07/08/2026 02:05:44
+DEBUG	2026/08/07 03:05:44 DEBUG: Determined outbound IP as detecting...
+07/08/2026 02:05:44
+DEBUG	2026/08/07 03:05:44 Local IP determined as: 13.140.151.164
+07/08/2026 02:05:44
+DEBUG	2026/08/07 03:05:44 DEBUG: Retrieved external IP as 13.140.151.164
+07/08/2026 02:05:44
+DEBUG	2026/08/07 03:05:44 External IP determined as: 13.140.151.164
+07/08/2026 02:05:45
+INFO	2026/08/07 03:05:45 Starting SIP client with configuration:
+07/08/2026 02:05:45
+INFO	2026/08/07 03:05:45 Username: 1005, Domain: aioprocess-demo.ras.yeastar.com, Server: aioprocess-demo.ras.yeastar.com:5060, Transport: UDP
+07/08/2026 02:05:45
+INFO	2026/08/07 03:05:45 Auth ID: TjoCu4uhmD (using separate authorization ID)
+07/08/2026 02:05:45
+INFO	2026/08/07 03:05:45 Outbound Proxy: 127.0.0.1:17060
+07/08/2026 02:05:45
+INFO	2026/08/07 03:05:45 REGISTER via outbound proxy: 127.0.0.1:17060
+07/08/2026 02:05:45
+INFO	2026/08/07 03:05:45 Sending REGISTER request via sipgo client.
+07/08/2026 02:05:45
+INFO	2026/08/07 03:05:45 First 401 received. Response:
+07/08/2026 02:05:45
+INFO	2026/08/07 03:05:45 SIP/2.0 401 Unauthorized
+07/08/2026 02:05:45
+INFO	2026/08/07 03:05:45 Via: SIP/2.0/UDP 13.140.151.164:7060;rport=27060;received=13.140.151.164;branch=z9hG4bK.HAees2wk5K3I8SxB
+07/08/2026 02:05:45
+INFO	2026/08/07 03:05:45 Call-ID: d7948086-eac3-4c75-9e31-1263cd9e4adf
+07/08/2026 02:05:45
+INFO	2026/08/07 03:05:45 From: <sip:1005@aioprocess-demo.ras.yeastar.com>;tag=Qws4GK6t
+07/08/2026 02:05:45
+INFO	2026/08/07 03:05:45 To: <sip:1005@aioprocess-demo.ras.yeastar.com>;tag=z9hG4bKeb02.6a653541.0
+07/08/2026 02:05:45
+INFO	2026/08/07 03:05:45 CSeq: 26162 REGISTER
+07/08/2026 02:05:45
+DEBUG	2026/08/07 03:05:45 WWW-Authenticate: Digest realm="YSAsterisk",nonce="1786059368/2df93b44adb7a4bf560c2c66390f5c8c",opaque="73e31bfe0144b453",algorithm=md5,qop="auth"
+07/08/2026 02:05:45
+INFO	2026/08/07 03:05:45 Server: Yeastar PSE
+07/08/2026 02:05:45
+INFO	2026/08/07 03:05:45 Content-Length: 0
+07/08/2026 02:05:45
+INFO	2026/08/07 03:05:45 YSUser-Agent: YSBC 2.12.30
+07/08/2026 02:05:45
+DEBUG	2026/08/07 03:05:45 Auth: digestUsername=TjoCu4uhmD, realm=YSAsterisk, uri=sip:aioprocess-demo.ras.yeastar.com, password=EmkWA6lT7y
+07/08/2026 02:05:45
+DEBUG	2026/08/07 03:05:45 Resending REGISTER with Authorization header (CSeq=2).
+07/08/2026 02:05:45
+DEBUG	2026/08/07 03:05:45 Received REGISTER response: SIP/2.0 200 OK
+07/08/2026 02:05:45
+INFO	2026/08/07 03:05:45 SIP/2.0 200 OK
+07/08/2026 02:05:45
+INFO	2026/08/07 03:05:45 Via: SIP/2.0/UDP 13.140.151.164:7060;rport=27060;received=13.140.151.164;branch=z9hG4bK.8YqKG3mUed8TduxC
+07/08/2026 02:05:45
+INFO	2026/08/07 03:05:45 Call-ID: d7948086-eac3-4c75-9e31-1263cd9e4adf
+07/08/2026 02:05:45
+INFO	2026/08/07 03:05:45 From: <sip:1005@aioprocess-demo.ras.yeastar.com>;tag=Qws4GK6t
+07/08/2026 02:05:45
+INFO	2026/08/07 03:05:45 To: <sip:1005@aioprocess-demo.ras.yeastar.com>;tag=z9hG4bKfb02.22296624.0
+07/08/2026 02:05:45
+INFO	2026/08/07 03:05:45 CSeq: 26163 REGISTER
+07/08/2026 02:05:45
+INFO	2026/08/07 03:05:45 Contact: <sip:1005@aioprocess-demo.ras.yeastar.com:5060>;expires=3558
+07/08/2026 02:05:45
+INFO	2026/08/07 03:05:45 Date: Thu, 06 Aug 2026 23:36:08 GMT
+07/08/2026 02:05:45
+INFO	2026/08/07 03:05:45 Expires: 3553
+07/08/2026 02:05:45
+INFO	2026/08/07 03:05:45 Server: Yeastar PSE
+07/08/2026 02:05:45
+INFO	2026/08/07 03:05:45 Content-Length: 0
+07/08/2026 02:05:45
+INFO	2026/08/07 03:05:45 YSUser-Agent: YSBC 2.12.30
+07/08/2026 02:05:45
+INFO	2026/08/07 03:05:45 Registration successful!
+07/08/2026 02:05:45
+INFO	2026/08/07 03:05:45 Registered with SIP provider
+07/08/2026 02:05:45
+INFO	2026/08/07 03:05:45 Initial REGISTER request sent.
+07/08/2026 02:05:45
+INFO	2026/08/07 03:05:45 SIP server is now listening for incoming messages.
+07/08/2026 02:06:15
+INFO	2026/08/07 03:06:15 INVITE received for call: 9ba877cb-6439-4572-9f79-f9cc5ea7a599, auto-answering using sipgo.
+07/08/2026 02:06:15
+INFO	2026/08/07 03:06:15 Stored remote Contact for dialog: sip:0661209845@aioprocess-demo.ras.yeastar.com
+07/08/2026 02:06:15
+INFO	2026/08/07 03:06:15 Connecting to ElevenLabs Conversational AI (agent: agent_4601kzcmy96hfa090r0scfddmq71)...
+07/08/2026 02:06:16
+DEBUG	RTP listener created on 0.0.0.0:43117
+07/08/2026 02:06:16
+WARN	2026/08/07 03:06:16 WARN SIP request handler not found caller=Server method=ACK
+07/08/2026 02:06:17
+INFO	2026/08/07 03:06:16 Connected to ElevenLabs Conversational AI
+07/08/2026 02:06:17
+INFO	AI responded — ElevenLabs Conversational AI - Hakim
+07/08/2026 02:06:17
+INFO	2026/08/07 03:06:17 ElevenLabs outbound conversation: conv_7301kzcw3bk5e3f8p0g61j2f9b2j
+07/08/2026 02:06:17
+INFO	2026/08/07 03:06:17 ElevenLabs conversation started: conv_7301kzcw3bk5e3f8p0g61j2f9b2j (audio format: ulaw_8000)
+07/08/2026 02:06:17
+INFO	2026/08/07 03:06:17 Note: first_message/system_prompt in config require 'Allow client overrides' in ElevenLabs dashboard
+07/08/2026 02:06:17
+INFO	2026/08/07 03:06:17 If override fails, the agent's default greeting will be used
+07/08/2026 02:06:17
+DEBUG	2026/08/07 03:06:17 DEBUG: appConfig=true
+07/08/2026 02:06:17
+DEBUG	2026/08/07 03:06:17 DEBUG: ElevenLabs.FirstMessage='Bonjour, vous êtes bien chez AIO PROCESS. Je suis Hakim, comment puis-je vous aider aujourd'hui ?', SystemPrompt='Vous êtes Hakim, consultant IT chez AIO PROCESS. Vous appelez pour programmer un rendez-vous avec le client. Proposez des créneaux disponibles cette semaine. Soyez bref et professionnel. Répondez en français et rependre après la réponse du client à l'appel.', Functions=0
+07/08/2026 02:06:17
+INFO	2026/08/07 03:06:17 Overriding system prompt
+07/08/2026 02:06:17
+INFO	2026/08/07 03:06:17 Sending conversation initiation to ElevenLabs: {"conversation_config_override":{"agent":{"prompt":{"prompt":"Vous êtes Hakim, consultant IT chez AIO PROCESS. Vous appelez pour programmer un rendez-vous avec le client. Proposez des créneaux disponibles cette semaine. Soyez bref et professionnel. Répondez en français et rependre après la réponse du client à l'appel."},"first_message":"Bonjour, vous êtes bien chez AIO PROCESS. Je suis Hakim, comment puis-je vous aider aujourd'hui ?"}},"type":"conversation_initiation_client_data"}
+07/08/2026 02:06:17
+INFO	2026/08/07 03:06:17 Registered bridge for call: 9ba877cb-6439-4572-9f79-f9cc5ea7a599
+07/08/2026 02:06:17
+DEBUG	2026/08/07 03:06:17 Outbound RTP packet #1 from 52.47.94.244:40002, size=172
+07/08/2026 02:06:18
+INFO	2026/08/07 03:06:18 AI: Bonjour, vous êtes bien chez AIO PROCESS. Je suis Hakim, comment puis-je vous aider aujourd'hui ?
+07/08/2026 02:06:19
+DEBUG	2026/08/07 03:06:19 Outbound RTP packet #100 from 52.47.94.244:40002, size=172
+07/08/2026 02:06:21
+DEBUG	2026/08/07 03:06:21 Outbound RTP packet #200 from 52.47.94.244:40002, size=172
+07/08/2026 02:06:23
+DEBUG	2026/08/07 03:06:23 Outbound RTP packet #300 from 52.47.94.244:40002, size=172
+07/08/2026 02:06:25
+DEBUG	2026/08/07 03:06:25 Outbound RTP packet #400 from 52.47.94.244:40002, size=172
+07/08/2026 02:06:27
+DEBUG	2026/08/07 03:06:27 Outbound RTP packet #500 from 52.47.94.244:40002, size=172
+07/08/2026 02:06:29
+DEBUG	2026/08/07 03:06:29 Outbound RTP packet #600 from 52.47.94.244:40002, size=172
+07/08/2026 02:06:31
+DEBUG	2026/08/07 03:06:31 Outbound RTP packet #700 from 52.47.94.244:40002, size=172
+07/08/2026 02:06:33
+DEBUG	2026/08/07 03:06:33 Outbound RTP packet #800 from 52.47.94.244:40002, size=172
+07/08/2026 02:06:33
+INFO	2026/08/07 03:06:33 Remote: Euh...
+07/08/2026 02:06:35
+INFO	2026/08/07 03:06:35 AI: Bonjour, je suis Hakim, consultant IT chez AIO PROCESS. Je vous appelle pour planifier un rendez-vous cette semaine. Seriez-vous disponible mardi ou jeudi après-midi ?
+07/08/2026 02:06:35
+DEBUG	2026/08/07 03:06:35 Outbound RTP packet #900 from 52.47.94.244:40002, size=172
+07/08/2026 02:06:37
+DEBUG	2026/08/07 03:06:37 Outbound RTP packet #1000 from 52.47.94.244:40002, size=172
+07/08/2026 02:06:39
+DEBUG	2026/08/07 03:06:39 Outbound RTP packet #1100 from 52.47.94.244:40002, size=172
+07/08/2026 02:06:41
+DEBUG	2026/08/07 03:06:41 Outbound RTP packet #1200 from 52.47.94.244:40002, size=172
+07/08/2026 02:06:43
+DEBUG	2026/08/07 03:06:43 Outbound RTP packet #1300 from 52.47.94.244:40002, size=172
+07/08/2026 02:06:45
+DEBUG	2026/08/07 03:06:45 Outbound RTP packet #1400 from 52.47.94.244:40002, size=172
+07/08/2026 02:06:47
+DEBUG	2026/08/07 03:06:47 Outbound RTP packet #1500 from 52.47.94.244:40002, size=172
+07/08/2026 02:06:49
+DEBUG	2026/08/07 03:06:49 Outbound RTP packet #1600 from 52.47.94.244:40002, size=172
+07/08/2026 02:06:51
+INFO	2026/08/07 03:06:51 Remote: ...
+07/08/2026 02:06:51
+DEBUG	2026/08/07 03:06:51 Outbound RTP packet #1700 from 52.47.94.244:40002, size=172
+07/08/2026 02:06:53
+DEBUG	2026/08/07 03:06:53 Outbound RTP packet #1800 from 52.47.94.244:40002, size=172
+07/08/2026 02:06:54
+INFO	2026/08/07 03:06:54 AI: [slow] Je vous propose un rendez-vous mardi ou jeudi après-midi. Est-ce que l'un de ces créneaux vous conviendrait ?Je vous ai proposé un rendez-vous mardi ou jeudi après-midi. Est-ce que l'un de ces créneaux vous conviendrait ?
+07/08/2026 02:06:55
+INFO	2026/08/07 03:06:55 BYE received for call: 9ba877cb-6439-4572-9f79-f9cc5ea7a599
+07/08/2026 02:06:56
+INFO	2026/08/07 03:06:56 Unregistered bridge for call: 9ba877cb-6439-4572-9f79-f9cc5ea7a599
+07/08/2026 02:06:56
+INFO	2026/08/07 03:06:56 Call ended: 9ba877cb-6439-4572-9f79-f9cc5ea7a599

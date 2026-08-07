@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -109,10 +110,11 @@ type elInitMetadata struct {
 }
 
 type elAudioChunk struct {
-	Type  string `json:"type"`
-	Audio struct {
-		Chunk string `json:"chunk"`
-	} `json:"audio"`
+	Type string `json:"type"`
+	// ElevenLabs ConvAI API format: audio_event.audio_base_64
+	AudioEvent struct {
+		AudioBase64 string `json:"audio_base_64"`
+	} `json:"audio_event"`
 }
 
 type elUserTranscript struct {
@@ -293,7 +295,40 @@ func (b *ElevenLabsBridge) Start(ctx context.Context) {
 	wg.Wait()
 }
 
+// sendPCMUToRTP splits a PCMU buffer into 160-byte (20 ms) RTP packets and
+// sends each one.  Splitting is important because ElevenLabs may deliver a
+// large chunk (e.g. 500+ bytes) in a single message, and sending the whole
+// thing as one RTP packet confuses the phone's jitter-buffer.
+func (b *ElevenLabsBridge) sendPCMUToRTP(pcmu []byte) int {
+	const chunkSize = 160 // 20 ms of PCMU @ 8 kHz
+	sent := 0
+	for len(pcmu) > 0 {
+		n := len(pcmu)
+		if n > chunkSize {
+			n = chunkSize
+		}
+		if err := b.rtpConn.SendPacket(pcmu[:n]); err != nil {
+			log.Printf("Error sending RTP packet: %v", err)
+		}
+		pcmu = pcmu[n:]
+		sent++
+	}
+	return sent
+}
+
 // elevenLabsToRTP reads audio from ElevenLabs and sends it as RTP.
+//
+// ElevenLabs ConvAI sends audio in one of two ways depending on the negotiated
+// format:
+//
+//   - Binary WebSocket frames: raw PCMU bytes (ulaw_8000) or raw PCM16 bytes
+//     (pcm_16000 / pcm_24000).  This is the common path for ulaw_8000.
+//
+//   - Text WebSocket frames: JSON with type "audio" and
+//     audio_event.audio_base_64 containing the base64-encoded audio bytes.
+//     Used by some ElevenLabs agent configurations.
+//
+// We handle both paths so that either encoding works.
 func (b *ElevenLabsBridge) elevenLabsToRTP(ctx context.Context) {
 	sentPackets := 0
 	for {
@@ -303,12 +338,38 @@ func (b *ElevenLabsBridge) elevenLabsToRTP(ctx context.Context) {
 		default:
 		}
 
-		_, raw, err := b.conn.ReadMessage()
+		msgType, raw, err := b.conn.ReadMessage()
 		if err != nil {
 			log.Printf("Error reading from ElevenLabs: %v", err)
 			return
 		}
 
+		// ── Binary frame: raw audio bytes ─────────────────────────────────
+		// ulaw_8000  → raw is already PCMU, send directly.
+		// pcm_16000  → raw is PCM16 LE at 16 kHz, downsample + encode.
+		// pcm_24000  → raw is PCM16 LE at 24 kHz, downsample + encode.
+		if msgType == websocket.BinaryMessage {
+			var pcmu []byte
+			if b.outputRate == 8000 {
+				pcmu = raw // already PCMU
+			} else {
+				pcm16 := raw
+				if b.outputRate == 16000 {
+					pcm16 = downsample2x(pcm16)
+				} else if b.outputRate > 16000 {
+					pcm16 = downsample3x(pcm16)
+				}
+				pcmu = encodePCMU(pcm16)
+			}
+			n := b.sendPCMUToRTP(pcmu)
+			sentPackets += n
+			if sentPackets/100 > (sentPackets-n)/100 {
+				log.Printf("Outbound sent %d RTP packets to %s", sentPackets, b.rtpConn.RemoteAddr())
+			}
+			continue
+		}
+
+		// ── Text frame: JSON control message ─────────────────────────────
 		var base elRawMsg
 		if err := json.Unmarshal(raw, &base); err != nil {
 			continue
@@ -326,27 +387,35 @@ func (b *ElevenLabsBridge) elevenLabsToRTP(ctx context.Context) {
 
 		switch base.Type {
 		case "audio":
+			// JSON audio path (used when binary frames are not sent).
+			// Field: audio_event.audio_base_64
 			var audioMsg elAudioChunk
 			if err := json.Unmarshal(raw, &audioMsg); err != nil {
 				continue
 			}
-			pcm16, err := base64ToPCM16(audioMsg.Audio.Chunk)
+			b64 := audioMsg.AudioEvent.AudioBase64
+			if b64 == "" {
+				continue
+			}
+			rawAudio, err := base64.StdEncoding.DecodeString(b64)
 			if err != nil {
 				continue
 			}
-			// Downsample if ElevenLabs sends 16kHz
-			if b.outputRate == 16000 {
-				pcm16 = downsample2x(pcm16)
-			} else if b.outputRate > 16000 {
-				// 24kHz → 8kHz: downsample 3x
-				pcm16 = downsample3x(pcm16)
+			var pcmu []byte
+			if b.outputRate == 8000 {
+				pcmu = rawAudio // already PCMU
+			} else {
+				pcm16 := rawAudio
+				if b.outputRate == 16000 {
+					pcm16 = downsample2x(pcm16)
+				} else if b.outputRate > 16000 {
+					pcm16 = downsample3x(pcm16)
+				}
+				pcmu = encodePCMU(pcm16)
 			}
-			pcmu := encodePCMU(pcm16)
-			if err := b.rtpConn.SendPacket(pcmu); err != nil {
-				log.Printf("Error sending RTP packet: %v", err)
-			}
-			sentPackets++
-			if sentPackets%100 == 0 {
+			n := b.sendPCMUToRTP(pcmu)
+			sentPackets += n
+			if sentPackets/100 > (sentPackets-n)/100 {
 				log.Printf("Outbound sent %d RTP packets to %s", sentPackets, b.rtpConn.RemoteAddr())
 			}
 
