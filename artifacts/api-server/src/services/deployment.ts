@@ -1659,9 +1659,16 @@ export async function startExtension(extensionId: number, opts?: {
       //   • Crash (code != 0): binary panicked before sending BYE.
       // wasKilled=true means we killed it ourselves after detecting a BYE from
       // Yeastar — the remote already hung up, no need to call Yeastar again.
+      //
+      // alreadyEndedCleanly=true means the call already has an "ended" event
+      // (written by unregMatch when bridge unregistered after AI end_call).
+      // The binary sent session.Bye() itself — calling hangupCallViaYeastar on
+      // top causes Yeastar to fire another SIP BYE which creates a spurious
+      // "Call ended by Caller" entry in Call History.  Skip it when clean.
       clearOutboundBYEHandler(extensionId);
       clearInboundBYEHandler(extensionId);
-      const needsHangup = !wasKilled;
+      const alreadyEndedCleanly = inviteIds.size > 0 && [...inviteIds].every(id => endedIds.has(id));
+      const needsHangup = !wasKilled && !alreadyEndedCleanly;
       if (needsHangup) {
         const ystData = extensionYeastarData.get(extensionId);
         if (ystData) {
