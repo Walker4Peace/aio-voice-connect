@@ -1,0 +1,420 @@
+07/08/2026 19:43:54
+INFO	Loaded config with 0 functions
+07/08/2026 19:43:54
+INFO	Starting HTTP API server on :19001
+07/08/2026 19:43:54
+DEBUG	2026/08/07 20:43:54 DEBUG: Determined outbound IP as detecting...
+07/08/2026 19:43:54
+DEBUG	2026/08/07 20:43:54 Local IP determined as: 13.140.151.164
+07/08/2026 19:43:54
+DEBUG	2026/08/07 20:43:54 DEBUG: Retrieved external IP as 13.140.151.164
+07/08/2026 19:43:54
+DEBUG	2026/08/07 20:43:54 External IP determined as: 13.140.151.164
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 Starting SIP client with configuration:
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 Username: 1004, Domain: aioprocess-demo.ras.yeastar.com, Server: aioprocess-demo.ras.yeastar.com:5060, Transport: UDP
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 Auth ID: qjFB7cTE9q (using separate authorization ID)
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 Outbound Proxy: 127.0.0.1:17062
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 REGISTER via outbound proxy: 127.0.0.1:17062
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 Sending REGISTER request via sipgo client.
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 First 401 received. Response:
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 SIP/2.0 401 Unauthorized
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 Via: SIP/2.0/UDP 13.140.151.164:7062;branch=z9hG4bK.XVEmZXXet23gIsfC;rport=27060;received=13.140.151.164
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 Call-ID: e8fe2e03-d906-4fec-babc-68fda325228a
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 From: <sip:1004@aioprocess-demo.ras.yeastar.com>;tag=JMK56RDd
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 To: <sip:1004@aioprocess-demo.ras.yeastar.com>;tag=z9hG4bK158.f61f0041.0
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 CSeq: 10354 REGISTER
+07/08/2026 19:43:55
+DEBUG	2026/08/07 20:43:55 WWW-Authenticate: Digest realm="YSAsterisk",nonce="1786122858/e572d120caafec2aaf02fdaaeddf62ad",opaque="3e3fb092058d5a2d",algorithm=md5,qop="auth"
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 Server: Yeastar PSE
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 Content-Length: 0
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 YSUser-Agent: YSBC 2.12.30
+07/08/2026 19:43:55
+DEBUG	2026/08/07 20:43:55 Auth: digestUsername=qjFB7cTE9q, realm=YSAsterisk, uri=sip:aioprocess-demo.ras.yeastar.com, password=WQHy0b05PJ
+07/08/2026 19:43:55
+DEBUG	2026/08/07 20:43:55 Resending REGISTER with Authorization header (CSeq=2).
+07/08/2026 19:43:55
+DEBUG	2026/08/07 20:43:55 Received REGISTER response: SIP/2.0 200 OK
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 SIP/2.0 200 OK
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 Via: SIP/2.0/UDP 13.140.151.164:7062;rport=27060;received=13.140.151.164;branch=z9hG4bK.Y7Lalg3aEYBfQcMk
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 Call-ID: e8fe2e03-d906-4fec-babc-68fda325228a
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 From: <sip:1004@aioprocess-demo.ras.yeastar.com>;tag=JMK56RDd
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 To: <sip:1004@aioprocess-demo.ras.yeastar.com>;tag=z9hG4bK258.da0ebce3.0
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 CSeq: 10355 REGISTER
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 Contact: <sip:1004@aioprocess-demo.ras.yeastar.com:5060>;expires=3598
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 Date: Fri, 07 Aug 2026 17:14:18 GMT
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 Expires: 3574
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 Server: Yeastar PSE
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 Content-Length: 0
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 YSUser-Agent: YSBC 2.12.30
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 Registration successful!
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 Registered with SIP provider
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 === OUTBOUND CALLING MODE ===
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 Target: +212661209845
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 Task:
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 Initiating outbound call to +212661209845
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 Sending INVITE to sip:+212661209845@aioprocess-demo.ras.yeastar.com
+07/08/2026 19:43:55
+DEBUG	2026/08/07 20:43:55 SDP Offer:
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 v=0
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 o=- 6104056630608933872 8656994641952956783 IN IP4 13.140.151.164
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 s=-
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 c=IN IP4 13.140.151.164
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 t=0 0
+07/08/2026 19:43:55
+DEBUG	2026/08/07 20:43:55 m=audio 44177 RTP/AVP 0 8 18 101
+07/08/2026 19:43:55
+DEBUG	2026/08/07 20:43:55 a=rtpmap:0 PCMU/8000
+07/08/2026 19:43:55
+DEBUG	2026/08/07 20:43:55 a=rtpmap:8 PCMA/8000
+07/08/2026 19:43:55
+DEBUG	2026/08/07 20:43:55 a=rtpmap:18 G729/8000
+07/08/2026 19:43:55
+DEBUG	2026/08/07 20:43:55 a=rtpmap:101 telephone-event/8000
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 a=fmtp:101 0-16
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 a=ptime:20
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 a=sendrecv
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 Using outbound proxy: 127.0.0.1:17062
+07/08/2026 19:43:55
+DEBUG	RTP listener created on 0.0.0.0:44177
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 Received 401 Unauthorized
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 First 401 received. Response:
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 SIP/2.0 401 Unauthorized
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 Via: SIP/2.0/UDP 13.140.151.164:7062;branch=z9hG4bK.0JkAu4HM1Jpl93QC;received=13.140.151.164;rport=27060
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 Call-ID: 2vtlRUhp-3492782022869192532
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 From: "1004" <sip:1004@aioprocess-demo.ras.yeastar.com>;tag=J5iA0P7V
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 To: <sip:+212661209845@aioprocess-demo.ras.yeastar.com>;tag=z9hG4bKa8a.f31066f2.0
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 CSeq: 31194 INVITE
+07/08/2026 19:43:55
+DEBUG	2026/08/07 20:43:55 WWW-Authenticate: Digest realm="YSAsterisk",nonce="1786122858/e572d120caafec2aaf02fdaaeddf62ad",opaque="3c89647d28014170",algorithm=md5,qop="auth"
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 Server: Yeastar PSE
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 Content-Length: 0
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 YSUser-Agent: YSBC 2.12.30
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 Received 100 Trying
+07/08/2026 19:43:55
+INFO	2026/08/07 20:43:55 Call progress: Trying
+07/08/2026 19:43:57
+INFO	2026/08/07 20:43:57 Received 183 Session Progress
+07/08/2026 19:43:57
+INFO	2026/08/07 20:43:57 Call progress: Session Progress
+07/08/2026 19:44:05
+INFO	2026/08/07 20:44:05 Received 200 OK
+07/08/2026 19:44:05
+INFO	2026/08/07 20:44:05 Call answered!
+07/08/2026 19:44:05
+DEBUG	2026/08/07 20:44:05 Remote RTP address: 52.47.94.244:44302
+07/08/2026 19:44:05
+INFO	2026/08/07 20:44:05 ACK sent
+07/08/2026 19:44:05
+INFO	2026/08/07 20:44:05 Sending NAT hole-punch packets to 52.47.94.244:44302
+07/08/2026 19:44:05
+INFO	2026/08/07 20:44:05 Connecting to ElevenLabs Conversational AI (agent: agent_8801kzegr6bke4stpc4ktmkfrys3)...
+07/08/2026 19:44:06
+INFO	2026/08/07 20:44:06 Connected to ElevenLabs Conversational AI
+07/08/2026 19:44:06
+INFO	AI responded — ElevenLabs Conversational AI - Hamza
+07/08/2026 19:44:06
+INFO	2026/08/07 20:44:06 ElevenLabs outbound conversation: conv_2301kzerm90wf1dsrjyg3z7rmp4q
+07/08/2026 19:44:06
+INFO	2026/08/07 20:44:06 ElevenLabs conversation started: conv_2301kzerm90wf1dsrjyg3z7rmp4q (audio format: ulaw_8000)
+07/08/2026 19:44:06
+INFO	2026/08/07 20:44:06 Note: first_message/system_prompt in config require 'Allow client overrides' in ElevenLabs dashboard
+07/08/2026 19:44:06
+INFO	2026/08/07 20:44:06 If override fails, the agent's default greeting will be used
+07/08/2026 19:44:06
+DEBUG	2026/08/07 20:44:06 DEBUG: appConfig=true
+07/08/2026 19:44:06
+DEBUG	2026/08/07 20:44:06 DEBUG: ElevenLabs.FirstMessage='', SystemPrompt='Tu es un agent de confirmation de commande chez AIO PROCESS. Tu appelles Yassine pour confirmer sa commande d'une caméra Sony FX3. L'adresse de livraison enregistrée est Boulevard Maghreb Arabi N°8, Alzhar. Attends que le client parle en premier. Confirme que l'adresse est correcte, demande s'il a une note pour la livraison, puis appelle l'outil confirm_order avec address_confirmed (true/false), address (adresse finale), et note (ou null). après tous ça vous pouvez Termine l'appel poliment.
+07/08/2026 19:44:06
+INFO	IMPORTANT — comportement au décrochage : si la personne dit 'Allô', 'Allô ?', 'Oui', 'Oui allô', 'Oui ?' ou toute autre salutation de décrochage après ton introduction, c'est qu'elle vient simplement de décrocher le téléphone. Ne te présente PAS à nouveau. Reprends la conversation naturellement depuis là où elle en est.', Functions=0
+07/08/2026 19:44:06
+INFO	2026/08/07 20:44:06 Overriding system prompt
+07/08/2026 19:44:06
+INFO	2026/08/07 20:44:06 Sending conversation initiation to ElevenLabs: {"conversation_config_override":{"agent":{"prompt":{"prompt":"Tu es un agent de confirmation de commande chez AIO PROCESS. Tu appelles Yassine pour confirmer sa commande d'une caméra Sony FX3. L'adresse de livraison enregistrée est Boulevard Maghreb Arabi N°8, Alzhar. Attends que le client parle en premier. Confirme que l'adresse est correcte, demande s'il a une note pour la livraison, puis appelle l'outil confirm_order avec address_confirmed (true/false), address (adresse finale), et note (ou null). après tous ça vous pouvez Termine l'appel poliment.\n\nIMPORTANT — comportement au décrochage : si la personne dit 'Allô', 'Allô ?', 'Oui', 'Oui allô', 'Oui ?' ou toute autre salutation de décrochage après ton introduction, c'est qu'elle vient simplement de décrocher le téléphone. Ne te présente PAS à nouveau. Reprends la conversation naturellement depuis là où elle en est."}}},"type":"conversation_initiation_client_data"}
+07/08/2026 19:44:06
+INFO	2026/08/07 20:44:06 Registered bridge for call: 2vtlRUhp-3492782022869192532
+07/08/2026 19:44:06
+INFO	2026/08/07 20:44:06 Outbound call active - AI is now talking to remote party
+07/08/2026 19:44:06
+DEBUG	2026/08/07 20:44:06 Starting outbound ElevenLabs to RTP bridge...
+07/08/2026 19:44:06
+DEBUG	2026/08/07 20:44:06 Starting outbound RTP to ElevenLabs bridge...
+07/08/2026 19:44:06
+DEBUG	2026/08/07 20:44:06 Inbound RTP packet #1 from phone, pt=0 size=160
+07/08/2026 19:44:06
+DEBUG	2026/08/07 20:44:06 RTP pacer: sending first silence packet to 52.47.94.244:44302
+07/08/2026 19:44:07
+DEBUG	2026/08/07 20:44:07 Inbound RTP packet #100 from phone, pt=0 size=160
+07/08/2026 19:44:09
+INFO	2026/08/07 20:44:09 Remote: C'est, euh, allô ?
+07/08/2026 19:44:09
+DEBUG	2026/08/07 20:44:09 Inbound RTP packet #200 from phone, pt=0 size=160
+07/08/2026 19:44:11
+DEBUG	2026/08/07 20:44:11 RTP pacer: sent 100 audio packets to 52.47.94.244:44302
+07/08/2026 19:44:11
+DEBUG	2026/08/07 20:44:11 Inbound RTP packet #300 from phone, pt=0 size=160
+07/08/2026 19:44:12
+INFO	2026/08/07 20:44:12 AI: Bonjour Yassine, je vous appelle de la part d'AIO PROCESS pour confirmer votre commande d'une caméra Sony FX3. L'adresse de livraison enregistrée est Boulevard Maghreb Arabi numéro huit, Alzhar. Est-ce bien correct ?
+07/08/2026 19:44:13
+DEBUG	2026/08/07 20:44:13 RTP pacer: sent 200 audio packets to 52.47.94.244:44302
+07/08/2026 19:44:13
+DEBUG	2026/08/07 20:44:13 Inbound RTP packet #400 from phone, pt=0 size=160
+07/08/2026 19:44:15
+DEBUG	2026/08/07 20:44:15 RTP pacer: sent 300 audio packets to 52.47.94.244:44302
+07/08/2026 19:44:15
+DEBUG	2026/08/07 20:44:15 Inbound RTP packet #500 from phone, pt=0 size=160
+07/08/2026 19:44:17
+DEBUG	2026/08/07 20:44:17 RTP pacer: sent 400 audio packets to 52.47.94.244:44302
+07/08/2026 19:44:17
+DEBUG	2026/08/07 20:44:17 Inbound RTP packet #600 from phone, pt=0 size=160
+07/08/2026 19:44:19
+DEBUG	2026/08/07 20:44:19 RTP pacer: sent 500 audio packets to 52.47.94.244:44302
+07/08/2026 19:44:19
+DEBUG	2026/08/07 20:44:19 Inbound RTP packet #700 from phone, pt=0 size=160
+07/08/2026 19:44:21
+DEBUG	2026/08/07 20:44:21 Inbound RTP packet #800 from phone, pt=0 size=160
+07/08/2026 19:44:21
+DEBUG	2026/08/07 20:44:21 RTP pacer: sent 600 audio packets to 52.47.94.244:44302
+07/08/2026 19:44:22
+DEBUG	2026/08/07 20:44:22 Inbound RTP packet #900 from phone, pt=0 size=160
+07/08/2026 19:44:23
+DEBUG	2026/08/07 20:44:23 Inbound RTP packet #1000 from phone, pt=0 size=160
+07/08/2026 19:44:24
+DEBUG	2026/08/07 20:44:24 Inbound RTP packet #1100 from phone, pt=0 size=160
+07/08/2026 19:44:24
+INFO	2026/08/07 20:44:24 Remote: Oui, c'est correct.
+07/08/2026 19:44:25
+DEBUG	2026/08/07 20:44:25 Inbound RTP packet #1200 from phone, pt=0 size=160
+07/08/2026 19:44:25
+INFO	2026/08/07 20:44:25 AI: Parfait. Avez-vous des notes ou des instructions particulières pour la livraison ?
+07/08/2026 19:44:26
+DEBUG	2026/08/07 20:44:26 Inbound RTP packet #1300 from phone, pt=0 size=160
+07/08/2026 19:44:26
+DEBUG	2026/08/07 20:44:26 RTP pacer: sent 700 audio packets to 52.47.94.244:44302
+07/08/2026 19:44:27
+DEBUG	2026/08/07 20:44:27 Inbound RTP packet #1400 from phone, pt=0 size=160
+07/08/2026 19:44:28
+DEBUG	2026/08/07 20:44:28 Inbound RTP packet #1500 from phone, pt=0 size=160
+07/08/2026 19:44:28
+DEBUG	2026/08/07 20:44:28 RTP pacer: sent 800 audio packets to 52.47.94.244:44302
+07/08/2026 19:44:29
+DEBUG	2026/08/07 20:44:29 Inbound RTP packet #1600 from phone, pt=0 size=160
+07/08/2026 19:44:30
+DEBUG	2026/08/07 20:44:30 Inbound RTP packet #1700 from phone, pt=0 size=160
+07/08/2026 19:44:31
+DEBUG	2026/08/07 20:44:31 Inbound RTP packet #1800 from phone, pt=0 size=160
+07/08/2026 19:44:32
+DEBUG	2026/08/07 20:44:32 Inbound RTP packet #1900 from phone, pt=0 size=160
+07/08/2026 19:44:33
+DEBUG	2026/08/07 20:44:33 Inbound RTP packet #2000 from phone, pt=0 size=160
+07/08/2026 19:44:34
+DEBUG	2026/08/07 20:44:34 Inbound RTP packet #2100 from phone, pt=0 size=160
+07/08/2026 19:44:35
+DEBUG	2026/08/07 20:44:35 Inbound RTP packet #2200 from phone, pt=0 size=160
+07/08/2026 19:44:35
+INFO	2026/08/07 20:44:35 Remote: Euh, pouvez-vous me livrer la caméra à frigidaire ?
+07/08/2026 19:44:36
+DEBUG	2026/08/07 20:44:36 Inbound RTP packet #2300 from phone, pt=0 size=160
+07/08/2026 19:44:36
+INFO	2026/08/07 20:44:36 AI: Je ne suis pas sûre de comprendre "frigidaire". Pourriez-vous préciser ce que vous entendez par là ?
+07/08/2026 19:44:37
+DEBUG	2026/08/07 20:44:37 RTP pacer: sent 900 audio packets to 52.47.94.244:44302
+07/08/2026 19:44:37
+DEBUG	2026/08/07 20:44:37 Inbound RTP packet #2400 from phone, pt=0 size=160
+07/08/2026 19:44:38
+DEBUG	2026/08/07 20:44:38 Inbound RTP packet #2500 from phone, pt=0 size=160
+07/08/2026 19:44:39
+DEBUG	2026/08/07 20:44:39 RTP pacer: sent 1000 audio packets to 52.47.94.244:44302
+07/08/2026 19:44:39
+DEBUG	2026/08/07 20:44:39 Inbound RTP packet #2600 from phone, pt=0 size=160
+07/08/2026 19:44:40
+DEBUG	2026/08/07 20:44:40 Inbound RTP packet #2700 from phone, pt=0 size=160
+07/08/2026 19:44:41
+DEBUG	2026/08/07 20:44:41 Inbound RTP packet #2800 from phone, pt=0 size=160
+07/08/2026 19:44:42
+DEBUG	2026/08/07 20:44:42 Inbound RTP packet #2900 from phone, pt=0 size=160
+07/08/2026 19:44:43
+DEBUG	2026/08/07 20:44:43 Inbound RTP packet #3000 from phone, pt=0 size=160
+07/08/2026 19:44:44
+DEBUG	2026/08/07 20:44:44 Inbound RTP packet #3100 from phone, pt=0 size=160
+07/08/2026 19:44:45
+DEBUG	2026/08/07 20:44:45 Inbound RTP packet #3200 from phone, pt=0 size=160
+07/08/2026 19:44:45
+INFO	2026/08/07 20:44:45 Remote: Je voudrais un prix du chasseur.
+07/08/2026 19:44:46
+DEBUG	2026/08/07 20:44:46 Inbound RTP packet #3300 from phone, pt=0 size=160
+07/08/2026 19:44:46
+DEBUG	2026/08/07 20:44:46 RTP pacer: sent 1100 audio packets to 52.47.94.244:44302
+07/08/2026 19:44:47
+DEBUG	2026/08/07 20:44:47 Inbound RTP packet #3400 from phone, pt=0 size=160
+07/08/2026 19:44:48
+DEBUG	2026/08/07 20:44:48 Inbound RTP packet #3500 from phone, pt=0 size=160
+07/08/2026 19:44:48
+DEBUG	2026/08/07 20:44:48 RTP pacer: sent 1200 audio packets to 52.47.94.244:44302
+07/08/2026 19:44:48
+INFO	2026/08/07 20:44:48 AI: Je suis désolée, je ne suis pas sûre de comprendre ce que vous voulez dire par "prix du chasseur" dans le cadre de votre commande. Pourriez-vous s'il vous plaît me confirmer si vous avez des instructions spécifiques pour la livraison de votre caméra Sony FX3 à l'adresse Boulevard Maghreb Arabi numéro huit, Alzhar ?
+07/08/2026 19:44:49
+DEBUG	2026/08/07 20:44:49 Inbound RTP packet #3600 from phone, pt=0 size=160
+07/08/2026 19:44:50
+DEBUG	2026/08/07 20:44:50 Inbound RTP packet #3700 from phone, pt=0 size=160
+07/08/2026 19:44:50
+DEBUG	2026/08/07 20:44:50 RTP pacer: sent 1300 audio packets to 52.47.94.244:44302
+07/08/2026 19:44:51
+DEBUG	2026/08/07 20:44:51 Inbound RTP packet #3800 from phone, pt=0 size=160
+07/08/2026 19:44:52
+DEBUG	2026/08/07 20:44:52 Inbound RTP packet #3900 from phone, pt=0 size=160
+07/08/2026 19:44:52
+DEBUG	2026/08/07 20:44:52 RTP pacer: sent 1400 audio packets to 52.47.94.244:44302
+07/08/2026 19:44:53
+DEBUG	2026/08/07 20:44:53 Inbound RTP packet #4000 from phone, pt=0 size=160
+07/08/2026 19:44:54
+DEBUG	2026/08/07 20:44:54 Inbound RTP packet #4100 from phone, pt=0 size=160
+07/08/2026 19:44:54
+DEBUG	2026/08/07 20:44:54 RTP pacer: sent 1500 audio packets to 52.47.94.244:44302
+07/08/2026 19:44:55
+DEBUG	2026/08/07 20:44:55 Inbound RTP packet #4200 from phone, pt=0 size=160
+07/08/2026 19:44:56
+DEBUG	2026/08/07 20:44:56 Inbound RTP packet #4300 from phone, pt=0 size=160
+07/08/2026 19:44:56
+DEBUG	2026/08/07 20:44:56 RTP pacer: sent 1600 audio packets to 52.47.94.244:44302
+07/08/2026 19:44:57
+DEBUG	2026/08/07 20:44:57 Inbound RTP packet #4400 from phone, pt=0 size=160
+07/08/2026 19:44:58
+DEBUG	2026/08/07 20:44:58 Inbound RTP packet #4500 from phone, pt=0 size=160
+07/08/2026 19:44:58
+DEBUG	2026/08/07 20:44:58 RTP pacer: sent 1700 audio packets to 52.47.94.244:44302
+07/08/2026 19:44:59
+DEBUG	2026/08/07 20:44:59 Inbound RTP packet #4600 from phone, pt=0 size=160
+07/08/2026 19:45:00
+DEBUG	2026/08/07 20:45:00 Inbound RTP packet #4700 from phone, pt=0 size=160
+07/08/2026 19:45:00
+DEBUG	2026/08/07 20:45:00 RTP pacer: sent 1800 audio packets to 52.47.94.244:44302
+07/08/2026 19:45:01
+DEBUG	2026/08/07 20:45:01 Inbound RTP packet #4800 from phone, pt=0 size=160
+07/08/2026 19:45:02
+DEBUG	2026/08/07 20:45:02 Inbound RTP packet #4900 from phone, pt=0 size=160
+07/08/2026 19:45:03
+DEBUG	2026/08/07 20:45:03 Inbound RTP packet #5000 from phone, pt=0 size=160
+07/08/2026 19:45:04
+DEBUG	2026/08/07 20:45:04 Inbound RTP packet #5100 from phone, pt=0 size=160
+07/08/2026 19:45:05
+DEBUG	2026/08/07 20:45:05 Inbound RTP packet #5200 from phone, pt=0 size=160
+07/08/2026 19:45:06
+DEBUG	2026/08/07 20:45:06 Inbound RTP packet #5300 from phone, pt=0 size=160
+07/08/2026 19:45:06
+INFO	2026/08/07 20:45:06 Remote: Non, non, c'est bon, merci.
+07/08/2026 19:45:07
+DEBUG	2026/08/07 20:45:07 Inbound RTP packet #5400 from phone, pt=0 size=160
+07/08/2026 19:45:07
+INFO	2026/08/07 20:45:07 AI: Merci pour la confirmation. Je vais maintenant finaliser votre commande. Puis-je vous aider avec autre chose ?
+07/08/2026 19:45:08
+DEBUG	2026/08/07 20:45:08 Inbound RTP packet #5500 from phone, pt=0 size=160
+07/08/2026 19:45:08
+DEBUG	2026/08/07 20:45:08 RTP pacer: sent 1900 audio packets to 52.47.94.244:44302
+07/08/2026 19:45:09
+DEBUG	2026/08/07 20:45:09 Inbound RTP packet #5600 from phone, pt=0 size=160
+07/08/2026 19:45:10
+DEBUG	2026/08/07 20:45:10 Inbound RTP packet #5700 from phone, pt=0 size=160
+07/08/2026 19:45:10
+DEBUG	2026/08/07 20:45:10 RTP pacer: sent 2000 audio packets to 52.47.94.244:44302
+07/08/2026 19:45:11
+DEBUG	2026/08/07 20:45:11 Inbound RTP packet #5800 from phone, pt=0 size=160
+07/08/2026 19:45:12
+DEBUG	2026/08/07 20:45:12 Inbound RTP packet #5900 from phone, pt=0 size=160
+07/08/2026 19:45:13
+DEBUG	2026/08/07 20:45:13 Inbound RTP packet #6000 from phone, pt=0 size=160
+07/08/2026 19:45:14
+DEBUG	2026/08/07 20:45:14 Inbound RTP packet #6100 from phone, pt=0 size=160
+07/08/2026 19:45:15
+DEBUG	2026/08/07 20:45:15 Inbound RTP packet #6200 from phone, pt=0 size=160
+07/08/2026 19:45:16
+DEBUG	2026/08/07 20:45:16 Inbound RTP packet #6300 from phone, pt=0 size=160
+07/08/2026 19:45:17
+DEBUG	2026/08/07 20:45:17 Inbound RTP packet #6400 from phone, pt=0 size=160
+07/08/2026 19:45:17
+INFO	2026/08/07 20:45:17 Remote: Non, c'est tout.
+07/08/2026 19:45:17
+DEBUG	2026/08/07 20:45:17 RTP pacer: sent 2100 audio packets to 52.47.94.244:44302
+07/08/2026 19:45:18
+DEBUG	2026/08/07 20:45:18 Inbound RTP packet #6500 from phone, pt=0 size=160
+07/08/2026 19:45:18
+INFO	2026/08/07 20:45:18 AI: Merci beaucoup pour votre temps. Votre commande est maintenant confirmée. Je vous souhaite une excellente journée.
+07/08/2026 19:45:19
+DEBUG	2026/08/07 20:45:19 Inbound RTP packet #6600 from phone, pt=0 size=160
+07/08/2026 19:45:19
+DEBUG	2026/08/07 20:45:19 RTP pacer: sent 2200 audio packets to 52.47.94.244:44302
+07/08/2026 19:45:21
+DEBUG	2026/08/07 20:45:21 Inbound RTP packet #6700 from phone, pt=0 size=160
+07/08/2026 19:45:21
+DEBUG	2026/08/07 20:45:21 RTP pacer: sent 2300 audio packets to 52.47.94.244:44302
+07/08/2026 19:45:23
+DEBUG	2026/08/07 20:45:23 Inbound RTP packet #6800 from phone, pt=0 size=160
+07/08/2026 19:45:23
+INFO	2026/08/07 20:45:23 ElevenLabs raw message: {"agent_tool_response":{"tool_name":"end_call","tool_call_id":"end_call_be08f8094d0f4cc89a5f07b59ddad4c2","tool_type":"system","is_error":false,"is_blocked":false,"event_id":716,"is_called":true},"type":"agent_tool_response"}
+07/08/2026 19:45:23
+ERROR	2026/08/07 20:45:23 Error reading from ElevenLabs: websocket: close 1000 (normal)
+07/08/2026 19:45:23
+DEBUG	2026/08/07 20:45:23 RTP pacer: queue drained, stopping (sent 2367 audio packets)
+07/08/2026 19:45:23
+INFO	2026/08/07 20:45:23 Unregistered bridge for call: 2vtlRUhp-3492782022869192532
+07/08/2026 19:45:28
+ERROR	2026/08/07 20:45:28 BYE send error (ignored): context deadline exceeded
+07/08/2026 19:45:28
+INFO	2026/08/07 20:45:28 Outbound call completed. Task completed: true
+07/08/2026 19:45:28
+INFO	2026/08/07 20:45:28 Outbound call completed.
