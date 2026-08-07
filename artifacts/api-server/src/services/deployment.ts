@@ -1443,18 +1443,11 @@ export async function startExtension(extensionId: number, opts?: {
       });
       logger.info({ extensionId, sipLocalPort, realSipServer, proxyAddress }, "SIP FQDN proxy active — binary will use SIP_OUTBOUND_PROXY");
 
-      // Register a BYE handler so the proxy can kill the binary as soon as
-      // Yeastar sends BYE (remote party / PSTN hung up).  The proxy responds
-      // 200 OK to Yeastar immediately and fires this callback — no dependency
-      // on the binary logging a specific WARN line.
-      if (opts?.outboundTarget) {
-        setOutboundBYEHandler(extensionId, () => {
-          logger.info({ extensionId }, "Outbound BYE received via SIP proxy — killing binary to close ElevenLabs bridge");
-          const p = processes.get(extensionId);
-          if (p) p.proc.kill("SIGTERM");
-        });
-      }
-      // Inbound extensions: no BYE handler needed here.
+      // No BYE handler registered for outbound extensions here.
+      // The proxy now forwards BYE directly to the binary (same as inbound)
+      // so the binary's OnBye handler responds 200 OK, cancels the call context,
+      // and the watchdog goroutine closes the ElevenLabs WebSocket — no SIGTERM.
+      // Inbound extensions: no BYE handler needed here either.
       // The proxy now forwards BYE directly to the binary (inbound path in
       // sip-proxy.ts) so the binary handles teardown internally — it closes
       // the ElevenLabs WebSocket and returns to a listening/registered state

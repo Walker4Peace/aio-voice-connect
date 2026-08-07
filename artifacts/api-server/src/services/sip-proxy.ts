@@ -476,51 +476,31 @@ export async function startSipProxy(params: {
         return; // do not forward to binary
       }
 
-      // BYE handling differs by call direction:
+      // BYE handling — forward to binary for BOTH inbound and outbound calls.
       //
-      // Outbound: the binary has no BYE handler and would log a WARN.
-      //   → Respond 200 OK from the proxy, fire the kill handler so
-      //     deployment.ts terminates the binary and closes the ElevenLabs
-      //     bridge, and do NOT forward to the binary.
+      // The binary has a built-in OnBye handler (outbound.go + inbound handler)
+      // that responds 200 OK, cancels the call context, and lets the watchdog
+      // goroutine close the ElevenLabs WebSocket so all goroutines exit cleanly.
+      // This is identical to the inbound flow, so we use the same path for both:
+      //   Yeastar → proxy → binary (binary responds 200 OK → proxy → Yeastar)
       //
-      // Inbound: the binary has a built-in BYE handler that closes the
-      //   ElevenLabs WebSocket and returns the extension to a listening state
-      //   (no process restart required).
-      //   → Forward BYE to the binary unchanged so it can handle teardown
-      //     itself.  The binary will respond 200 OK to Yeastar through the
-      //     normal proxy path (localSock → extSock).
+      // The old approach for outbound (auto-respond + SIGTERM) caused the binary
+      // to get stuck because cancelling the context alone does not unblock a
+      // ws.ReadMessage() call in the elevenLabsReader goroutine.  The binary's
+      // watchdog goroutine (<-ctx.Done() → b.CloseConnection()) handles this, but
+      // only if the binary actually receives the BYE and cancels the context via
+      // its own OnBye handler.
       if (method === "BYE") {
         const byeCallId = msg.pairs.find(([k]) => k === "call-id")?.[2] ?? "";
         if (byeCallId) s.pendingInvites.delete(byeCallId);
 
-        const outboundHandler = outboundByeHandlers.get(extensionId);
-        if (outboundHandler) {
-          // Outbound — respond on behalf of binary and kill it.
-          const byeResp = buildAutoResponse(msg, 200, "OK", "BYE");
-          extSock.send(byeResp, rinfo.port, rinfo.address, (err) => {
-            if (err) {
-              logger.warn({ extensionId, err }, "SIP proxy: BYE 200 OK send error");
-            } else {
-              logger.info(
-                { extensionId, dir: "proxy→Yeastar",
-                  from: `0.0.0.0:${s.proxyExtPort}`, to: `${rinfo.address}:${rinfo.port}`,
-                  sip: "SIP/2.0 200 OK (auto: BYE)" },
-                "SIP proxy packet",
-              );
-            }
-          });
-          outboundByeHandlers.delete(extensionId);
-          outboundHandler();
-          return; // do not forward to binary
-        }
-
-        // Inbound — fall through to the normal forward path so the binary
-        // receives BYE, closes the ElevenLabs bridge, and stays registered.
+        const dir = outboundByeHandlers.has(extensionId) ? "outbound" : "inbound";
         logger.info(
-          { extensionId, dir: "Yeastar→binary (BYE forward)",
+          { extensionId, dir: `Yeastar→binary (BYE forward, ${dir})`,
             from: `${rinfo.address}:${rinfo.port}` },
-          "SIP proxy: forwarding inbound BYE to binary for internal handling",
+          "SIP proxy: forwarding BYE to binary for internal handling",
         );
+        // Fall through to the normal localSock forward path below.
       }
     }
 
