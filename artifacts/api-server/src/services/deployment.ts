@@ -1633,15 +1633,33 @@ export async function startExtension(extensionId: number, opts?: {
       // the same physical call.  Only synthesize an ended event for the most
       // recently started open invite to avoid duplicate "Call ended" rows.
       const openCallIds = [...inviteIds].filter(id => !endedIds.has(id));
+
+      // ── Guard: if ANY invite for this extension already has an ended event,
+      // another path already handled termination (byeMatch on "BYE received for
+      // call: X", or unregMatch AI-ended synthesize).  Synthesising another
+      // ended event here would create a duplicate row in Call History.
+      //
+      // This covers the common cases:
+      //   • Caller hangs up → Yeastar BYE → binary OnBye → "BYE received for
+      //     call: X" → byeMatch pushes "Caller" → binary exits → here
+      //   • AI end_call → unregMatch synthesizes "AI Agent" → binary exits → here
+      //   • Re-INVITE created two invite callIds; one already ended → here
+      //
+      // Only synthesize when NO invite has any ended event yet (crash / stall).
+      const alreadyEndedByAny = inviteIds.size > 0 && openCallIds.length < inviteIds.size;
+
       let mostRecentCallId: string | null = null;
-      let mostRecentTs = 0;
-      for (const e of persistedCallEvents) {
-        if (e.extensionId !== extensionId || e.event !== "invite") continue;
-        if (!openCallIds.includes(e.callId)) continue;
-        const ts = new Date(e.timestamp).getTime();
-        if (ts > mostRecentTs) { mostRecentTs = ts; mostRecentCallId = e.callId; }
+      if (!alreadyEndedByAny) {
+        let mostRecentTs = 0;
+        for (const e of persistedCallEvents) {
+          if (e.extensionId !== extensionId || e.event !== "invite") continue;
+          if (!openCallIds.includes(e.callId)) continue;
+          const ts = new Date(e.timestamp).getTime();
+          if (ts > mostRecentTs) { mostRecentTs = ts; mostRecentCallId = e.callId; }
+        }
       }
-      // Consume and discard AI flags for earlier open invites (same physical call)
+      // Consume and discard AI flags for open invites we are not synthesising
+      // an event for (keeps aiEndedCallIds state clean across calls).
       for (const id of openCallIds) {
         if (id !== mostRecentCallId) consumeAiEndedFlag(extensionId, id);
       }
