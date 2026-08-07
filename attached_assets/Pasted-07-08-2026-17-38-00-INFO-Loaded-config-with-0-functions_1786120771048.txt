@@ -1,0 +1,218 @@
+07/08/2026 17:38:00
+INFO	Loaded config with 0 functions
+07/08/2026 17:38:00
+INFO	Starting HTTP API server on :19001
+07/08/2026 17:38:00
+DEBUG	2026/08/07 18:38:00 DEBUG: Determined outbound IP as detecting...
+07/08/2026 17:38:00
+DEBUG	2026/08/07 18:38:00 Local IP determined as: 13.140.151.164
+07/08/2026 17:38:00
+DEBUG	2026/08/07 18:38:00 DEBUG: Retrieved external IP as 13.140.151.164
+07/08/2026 17:38:00
+DEBUG	2026/08/07 18:38:00 External IP determined as: 13.140.151.164
+07/08/2026 17:38:00
+INFO	2026/08/07 18:38:00 Starting SIP client with configuration:
+07/08/2026 17:38:00
+INFO	2026/08/07 18:38:00 Username: 1004, Domain: aioprocess-demo.ras.yeastar.com, Server: aioprocess-demo.ras.yeastar.com:5060, Transport: UDP
+07/08/2026 17:38:00
+INFO	2026/08/07 18:38:00 Auth ID: qjFB7cTE9q (using separate authorization ID)
+07/08/2026 17:38:00
+INFO	2026/08/07 18:38:00 Outbound Proxy: 127.0.0.1:17062
+07/08/2026 17:38:00
+INFO	2026/08/07 18:38:00 REGISTER via outbound proxy: 127.0.0.1:17062
+07/08/2026 17:38:00
+INFO	2026/08/07 18:38:00 Sending REGISTER request via sipgo client.
+07/08/2026 17:38:00
+INFO	2026/08/07 18:38:00 First 401 received. Response:
+07/08/2026 17:38:00
+INFO	2026/08/07 18:38:00 SIP/2.0 401 Unauthorized
+07/08/2026 17:38:00
+INFO	2026/08/07 18:38:00 Via: SIP/2.0/UDP 13.140.151.164:7062;branch=z9hG4bK.lSQYJjhBUYk7x4Vb;rport=27060;received=13.140.151.164
+07/08/2026 17:38:00
+INFO	2026/08/07 18:38:00 Call-ID: fe4cccca-ba50-441a-9acb-c247b1846917
+07/08/2026 17:38:00
+INFO	2026/08/07 18:38:00 From: <sip:1004@aioprocess-demo.ras.yeastar.com>;tag=1ToIqkBj
+07/08/2026 17:38:00
+INFO	2026/08/07 18:38:00 To: <sip:1004@aioprocess-demo.ras.yeastar.com>;tag=z9hG4bKf2f4.9f928a63.0
+07/08/2026 17:38:00
+INFO	2026/08/07 18:38:00 CSeq: 2902 REGISTER
+07/08/2026 17:38:00
+DEBUG	2026/08/07 18:38:00 WWW-Authenticate: Digest realm="YSAsterisk",nonce="1786115304/b3d2baced153cce917730daf4bdebe99",opaque="3ebc008144b841bc",algorithm=md5,qop="auth"
+07/08/2026 17:38:00
+INFO	2026/08/07 18:38:00 Server: Yeastar PSE
+07/08/2026 17:38:00
+INFO	2026/08/07 18:38:00 Content-Length: 0
+07/08/2026 17:38:00
+INFO	2026/08/07 18:38:00 YSUser-Agent: YSBC 2.12.30
+07/08/2026 17:38:00
+DEBUG	2026/08/07 18:38:00 Auth: digestUsername=qjFB7cTE9q, realm=YSAsterisk, uri=sip:aioprocess-demo.ras.yeastar.com, password=WQHy0b05PJ
+07/08/2026 17:38:00
+DEBUG	2026/08/07 18:38:00 Resending REGISTER with Authorization header (CSeq=2).
+07/08/2026 17:38:00
+DEBUG	2026/08/07 18:38:00 Received REGISTER response: SIP/2.0 200 OK
+07/08/2026 17:38:00
+INFO	2026/08/07 18:38:00 SIP/2.0 200 OK
+07/08/2026 17:38:00
+INFO	2026/08/07 18:38:00 Via: SIP/2.0/UDP 13.140.151.164:7062;rport=27060;received=13.140.151.164;branch=z9hG4bK.yjxebdoNSVOqC8HQ
+07/08/2026 17:38:00
+INFO	2026/08/07 18:38:00 Call-ID: fe4cccca-ba50-441a-9acb-c247b1846917
+07/08/2026 17:38:00
+INFO	2026/08/07 18:38:00 From: <sip:1004@aioprocess-demo.ras.yeastar.com>;tag=1ToIqkBj
+07/08/2026 17:38:00
+INFO	2026/08/07 18:38:00 To: <sip:1004@aioprocess-demo.ras.yeastar.com>;tag=z9hG4bK03f4.a80c3644.0
+07/08/2026 17:38:00
+INFO	2026/08/07 18:38:00 CSeq: 2903 REGISTER
+07/08/2026 17:38:00
+INFO	2026/08/07 18:38:00 Contact: <sip:1004@aioprocess-demo.ras.yeastar.com:5060>;expires=3594
+07/08/2026 17:38:00
+INFO	2026/08/07 18:38:00 Date: Fri, 07 Aug 2026 15:08:24 GMT
+07/08/2026 17:38:00
+INFO	2026/08/07 18:38:00 Expires: 3583
+07/08/2026 17:38:00
+INFO	2026/08/07 18:38:00 Server: Yeastar PSE
+07/08/2026 17:38:00
+INFO	2026/08/07 18:38:00 Content-Length: 0
+07/08/2026 17:38:00
+INFO	2026/08/07 18:38:00 YSUser-Agent: YSBC 2.12.30
+07/08/2026 17:38:00
+INFO	2026/08/07 18:38:00 Registration successful!
+07/08/2026 17:38:00
+INFO	2026/08/07 18:38:00 Registered with SIP provider
+07/08/2026 17:38:00
+INFO	2026/08/07 18:38:00 === OUTBOUND CALLING MODE ===
+07/08/2026 17:38:00
+INFO	2026/08/07 18:38:00 Target: +212661209845
+07/08/2026 17:38:00
+INFO	2026/08/07 18:38:00 Task:
+07/08/2026 17:38:00
+INFO	2026/08/07 18:38:00 Initiating outbound call to +212661209845
+07/08/2026 17:38:00
+INFO	2026/08/07 18:38:00 Sending INVITE to sip:+212661209845@aioprocess-demo.ras.yeastar.com
+07/08/2026 17:38:00
+DEBUG	2026/08/07 18:38:00 SDP Offer:
+07/08/2026 17:38:00
+INFO	2026/08/07 18:38:00 v=0
+07/08/2026 17:38:00
+INFO	2026/08/07 18:38:00 o=- 1843945904399219956 5208255370730552955 IN IP4 13.140.151.164
+07/08/2026 17:38:00
+INFO	2026/08/07 18:38:00 s=-
+07/08/2026 17:38:00
+INFO	2026/08/07 18:38:00 c=IN IP4 13.140.151.164
+07/08/2026 17:38:00
+INFO	2026/08/07 18:38:00 t=0 0
+07/08/2026 17:38:00
+DEBUG	2026/08/07 18:38:00 m=audio 57408 RTP/AVP 0 8 18 101
+07/08/2026 17:38:00
+DEBUG	2026/08/07 18:38:00 a=rtpmap:0 PCMU/8000
+07/08/2026 17:38:00
+DEBUG	2026/08/07 18:38:00 a=rtpmap:8 PCMA/8000
+07/08/2026 17:38:00
+DEBUG	2026/08/07 18:38:00 a=rtpmap:18 G729/8000
+07/08/2026 17:38:00
+DEBUG	2026/08/07 18:38:00 a=rtpmap:101 telephone-event/8000
+07/08/2026 17:38:00
+INFO	2026/08/07 18:38:00 a=fmtp:101 0-16
+07/08/2026 17:38:00
+INFO	2026/08/07 18:38:00 a=ptime:20
+07/08/2026 17:38:00
+INFO	2026/08/07 18:38:00 a=sendrecv
+07/08/2026 17:38:00
+INFO	2026/08/07 18:38:00 Using outbound proxy: 127.0.0.1:17062
+07/08/2026 17:38:00
+DEBUG	RTP listener created on 0.0.0.0:57408
+07/08/2026 17:38:01
+INFO	2026/08/07 18:38:01 Received 401 Unauthorized
+07/08/2026 17:38:01
+INFO	2026/08/07 18:38:01 First 401 received. Response:
+07/08/2026 17:38:01
+INFO	2026/08/07 18:38:01 SIP/2.0 401 Unauthorized
+07/08/2026 17:38:01
+INFO	2026/08/07 18:38:01 Via: SIP/2.0/UDP 13.140.151.164:7062;received=13.140.151.164;rport=27060;branch=z9hG4bK.0y8FBXbaMu493Y4k
+07/08/2026 17:38:01
+INFO	2026/08/07 18:38:01 Call-ID: nYyG0fFx-8004611228207114427
+07/08/2026 17:38:01
+INFO	2026/08/07 18:38:01 From: "1004" <sip:1004@aioprocess-demo.ras.yeastar.com>;tag=4wmtJ15x
+07/08/2026 17:38:01
+INFO	2026/08/07 18:38:01 To: <sip:+212661209845@aioprocess-demo.ras.yeastar.com>;tag=z9hG4bK6d37.08dde467.0
+07/08/2026 17:38:01
+INFO	2026/08/07 18:38:01 CSeq: 31350 INVITE
+07/08/2026 17:38:01
+DEBUG	2026/08/07 18:38:01 WWW-Authenticate: Digest realm="YSAsterisk",nonce="1786115304/b3d2baced153cce917730daf4bdebe99",opaque="3562d5c0366c24ac",algorithm=md5,qop="auth"
+07/08/2026 17:38:01
+INFO	2026/08/07 18:38:01 Server: Yeastar PSE
+07/08/2026 17:38:01
+INFO	2026/08/07 18:38:01 Content-Length: 0
+07/08/2026 17:38:01
+INFO	2026/08/07 18:38:01 YSUser-Agent: YSBC 2.12.30
+07/08/2026 17:38:01
+INFO	2026/08/07 18:38:01 Received 100 Trying
+07/08/2026 17:38:01
+INFO	2026/08/07 18:38:01 Call progress: Trying
+07/08/2026 17:38:02
+INFO	2026/08/07 18:38:02 Received 183 Session Progress
+07/08/2026 17:38:02
+INFO	2026/08/07 18:38:02 Call progress: Session Progress
+07/08/2026 17:38:10
+INFO	2026/08/07 18:38:10 Received 200 OK
+07/08/2026 17:38:10
+INFO	2026/08/07 18:38:10 Call answered!
+07/08/2026 17:38:10
+DEBUG	2026/08/07 18:38:10 Remote RTP address: 52.47.94.244:48256
+07/08/2026 17:38:11
+WARN	2026/08/07 18:38:11 WARN DNS resolution is slow caller=TransportLayer dur=485.992714ms
+07/08/2026 17:38:11
+INFO	2026/08/07 18:38:11 ACK sent
+07/08/2026 17:38:11
+INFO	2026/08/07 18:38:11 Sending NAT hole-punch packets to 52.47.94.244:48256
+07/08/2026 17:38:11
+INFO	2026/08/07 18:38:11 Connecting to ElevenLabs Conversational AI (agent: agent_8801kzegr6bke4stpc4ktmkfrys3)...
+07/08/2026 17:38:11
+INFO	2026/08/07 18:38:11 Connected to ElevenLabs Conversational AI
+07/08/2026 17:38:11
+INFO	AI responded — ElevenLabs Conversational AI - Hamza
+07/08/2026 17:38:11
+INFO	2026/08/07 18:38:11 ElevenLabs outbound conversation: conv_5601kzehdqqdebbr0bxk4rkrj200
+07/08/2026 17:38:11
+INFO	2026/08/07 18:38:11 ElevenLabs conversation started: conv_5601kzehdqqdebbr0bxk4rkrj200 (audio format: ulaw_8000)
+07/08/2026 17:38:11
+INFO	2026/08/07 18:38:11 Note: first_message/system_prompt in config require 'Allow client overrides' in ElevenLabs dashboard
+07/08/2026 17:38:11
+INFO	2026/08/07 18:38:11 If override fails, the agent's default greeting will be used
+07/08/2026 17:38:11
+DEBUG	2026/08/07 18:38:11 DEBUG: appConfig=true
+07/08/2026 17:38:11
+DEBUG	2026/08/07 18:38:11 DEBUG: ElevenLabs.FirstMessage='', SystemPrompt='Tu es un agent de confirmation de commande chez AIO PROCESS. Tu appelles Yassine pour confirmer sa commande d'une caméra Sony FX3. L'adresse de livraison enregistrée est Boulevard Maghreb Arabi N°8, Alzhar. Attends que le client parle en premier. Confirme que l'adresse est correcte, demande s'il a une note pour la livraison, puis appelle l'outil confirm_order avec address_confirmed (true/false), address (adresse finale), et note (ou null). après tous ça vous pouvez Termine l'appel poliment.
+07/08/2026 17:38:11
+INFO	IMPORTANT — comportement au décrochage : si la personne dit 'Allô', 'Allô ?', 'Oui', 'Oui allô', 'Oui ?' ou toute autre salutation de décrochage après ton introduction, c'est qu'elle vient simplement de décrocher le téléphone. Ne te présente PAS à nouveau. Reprends la conversation naturellement depuis là où elle en est.', Functions=0
+07/08/2026 17:38:11
+INFO	2026/08/07 18:38:11 Overriding system prompt
+07/08/2026 17:38:11
+INFO	2026/08/07 18:38:11 Sending conversation initiation to ElevenLabs: {"conversation_config_override":{"agent":{"prompt":{"prompt":"Tu es un agent de confirmation de commande chez AIO PROCESS. Tu appelles Yassine pour confirmer sa commande d'une caméra Sony FX3. L'adresse de livraison enregistrée est Boulevard Maghreb Arabi N°8, Alzhar. Attends que le client parle en premier. Confirme que l'adresse est correcte, demande s'il a une note pour la livraison, puis appelle l'outil confirm_order avec address_confirmed (true/false), address (adresse finale), et note (ou null). après tous ça vous pouvez Termine l'appel poliment.\n\nIMPORTANT — comportement au décrochage : si la personne dit 'Allô', 'Allô ?', 'Oui', 'Oui allô', 'Oui ?' ou toute autre salutation de décrochage après ton introduction, c'est qu'elle vient simplement de décrocher le téléphone. Ne te présente PAS à nouveau. Reprends la conversation naturellement depuis là où elle en est."}}},"type":"conversation_initiation_client_data"}
+07/08/2026 17:38:11
+INFO	2026/08/07 18:38:11 Registered bridge for call: nYyG0fFx-8004611228207114427
+07/08/2026 17:38:11
+INFO	2026/08/07 18:38:11 Outbound call active - AI is now talking to remote party
+07/08/2026 17:38:11
+DEBUG	2026/08/07 18:38:11 Starting outbound ElevenLabs to RTP bridge...
+07/08/2026 17:38:11
+DEBUG	2026/08/07 18:38:11 Starting outbound RTP to ElevenLabs bridge...
+07/08/2026 17:38:11
+DEBUG	2026/08/07 18:38:11 Inbound RTP packet #1 from phone, pt=0 size=160
+07/08/2026 17:38:11
+DEBUG	2026/08/07 18:38:11 RTP pacer: sending first silence packet to 52.47.94.244:48256
+07/08/2026 17:38:13
+DEBUG	2026/08/07 18:38:13 Inbound RTP packet #100 from phone, pt=0 size=160
+07/08/2026 17:38:14
+INFO	2026/08/07 18:38:14 Remote: Allô ?
+07/08/2026 17:38:14
+INFO	2026/08/07 18:38:14 AI: Bonjour Yassine, je vous appelle de la part d'AIO PROCESS pour confirmer votre commande d'une caméra Sony FX3.
+07/08/2026 17:38:15
+DEBUG	2026/08/07 18:38:15 Inbound RTP packet #200 from phone, pt=0 size=160
+07/08/2026 17:38:16
+DEBUG	2026/08/07 18:38:16 RTP pacer: sent 100 audio packets to 52.47.94.244:48256
+07/08/2026 17:38:17
+DEBUG	2026/08/07 18:38:17 Inbound RTP packet #300 from phone, pt=0 size=160
+07/08/2026 17:38:18
+DEBUG	2026/08/07 18:38:18 RTP pacer: sent 200 audio packets to 52.47.94.244:48256
+07/08/2026 17:38:20
+DEBUG	2026/08/07 18:38:20 RTP pacer: sent 300 audio packets to 52.47.94.244:48256

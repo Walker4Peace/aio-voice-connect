@@ -1,0 +1,171 @@
+[2026-08-07T16:25:07.525Z] [INFO] Server listening port=3100
+[2026-08-07T16:25:07.527Z] [STARTUP] Server starting — reconciling deployment state
+[2026-08-07T16:25:07.650Z] [INFO] Loaded call events from DB
+[2026-08-07T16:25:07.650Z] [STARTUP] Deployment state reconciled on startup
+[2026-08-07T16:25:07.650Z] [INFO] Deployment state reconciled on startup
+[2026-08-07T16:25:07.650Z] [INFO] Scheduling auto-restart for inbound extensions
+[2026-08-07T16:25:11.655Z] [DEPLOYMENT] Auto-restarting inbound extension 1 after server restart
+[2026-08-07T16:25:11.657Z] [DEPLOYMENT] Starting extension 1
+[2026-08-07T16:25:11.745Z] [INFO] [ext:1] SIP proxy: resolved Yeastar FQDN
+[2026-08-07T16:25:11.749Z] [INFO] [ext:1] SIP FQDN proxy started — direct FQDN interception (no /etc/hosts)
+[2026-08-07T16:25:11.750Z] [INFO] [ext:1] SIP FQDN proxy active — binary will use SIP_OUTBOUND_PROXY
+[2026-08-07T16:25:12.037Z] [INFO] [ext:1] Patched sip-agent binary local SIP port
+[2026-08-07T16:25:12.150Z] [INFO] [ext:1] Spawning patched sip-agent bin=/tmp/sip-agent/1/sip-agent
+[2026-08-07T16:25:12.179Z] [INFO] [ext:1] Auto-restarted inbound extension after server restart
+[2026-08-07T16:29:18.233Z] [HTTP] GET /api/agent-configs → 401 66ms
+[2026-08-07T16:29:20.782Z] [HTTP] GET /api/auth/me → 200 39ms
+[2026-08-07T16:29:24.704Z] [HTTP] POST /api/auth/login → 200 562ms
+[2026-08-07T16:29:24.705Z] [HTTP] POST /api/auth/login → 200
+[2026-08-07T16:29:24.788Z] [HTTP] GET /api/auth/me → 200 7ms
+[2026-08-07T16:29:24.910Z] [HTTP] GET /api/agent-configs → 200 33ms
+[2026-08-07T16:29:29.460Z] [HTTP] GET /api/agent-configs/2 → 304 16ms
+[2026-08-07T16:29:29.579Z] [HTTP] GET /api/agent-tools → 304 33ms
+[2026-08-07T16:29:33.397Z] [HTTP] PUT /api/agent-configs/2 → 200 13ms
+[2026-08-07T16:29:33.397Z] [HTTP] PUT /api/agent-configs/2 → 200
+[2026-08-07T16:29:33.479Z] [HTTP] GET /api/agent-configs/2 → 200 8ms
+[2026-08-07T16:29:33.539Z] [HTTP] GET /api/agent-configs → 200 6ms
+[2026-08-07T16:29:36.336Z] [HTTP] GET /api/agent-configs/1 → 304 27ms
+[2026-08-07T16:29:36.436Z] [HTTP] GET /api/agent-tools → 304 8ms
+[2026-08-07T16:29:40.975Z] [HTTP] PUT /api/agent-configs/1 → 200 272ms
+[2026-08-07T16:29:40.980Z] [HTTP] PUT /api/agent-configs/1 → 200
+[2026-08-07T16:29:41.333Z] [HTTP] GET /api/agent-configs/1 → null 63ms
+[2026-08-07T16:29:41.463Z] [HTTP] GET /api/agent-configs → 200 90ms
+[2026-08-07T16:30:07.267Z] [HTTP] GET /api/agent-configs/1 → 200 62ms
+[2026-08-07T16:30:07.379Z] [HTTP] GET /api/agent-tools → 304 29ms
+[2026-08-07T16:30:11.196Z] [HTTP] PUT /api/agent-configs/1 → 200 57ms
+[2026-08-07T16:30:11.197Z] [HTTP] PUT /api/agent-configs/1 → 200
+[2026-08-07T16:30:11.274Z] [HTTP] GET /api/agent-configs/1 → 200 4ms
+[2026-08-07T16:30:11.432Z] [HTTP] GET /api/agent-configs → 200 8ms
+[2026-08-07T16:30:14.037Z] [HTTP] GET /api/agent-configs/2 → 200 9ms
+[2026-08-07T16:30:14.152Z] [HTTP] GET /api/agent-tools → 304 50ms
+[2026-08-07T16:30:18.166Z] [HTTP] PUT /api/agent-configs/2 → 200 49ms
+[2026-08-07T16:30:18.166Z] [HTTP] PUT /api/agent-configs/2 → 200
+[2026-08-07T16:30:18.245Z] [HTTP] GET /api/agent-configs/2 → 200 13ms
+[2026-08-07T16:30:18.325Z] [HTTP] GET /api/agent-configs → 200 15ms
+[2026-08-07T16:34:05.028Z] [HTTP] GET /api/agent-configs/2 → 200 87ms
+[2026-08-07T16:34:05.045Z] [HTTP] GET /api/agent-tools → 304 101ms
+[2026-08-07T16:34:08.395Z] [HTTP] PUT /api/agent-configs/2 → 200 23ms
+[2026-08-07T16:34:08.395Z] [HTTP] PUT /api/agent-configs/2 → 200
+[2026-08-07T16:34:08.474Z] [HTTP] GET /api/agent-configs/2 → 200 7ms
+[2026-08-07T16:34:08.568Z] [HTTP] GET /api/agent-configs → 200 36ms
+[2026-08-07T16:34:11.510Z] [HTTP] GET /api/agent-configs/1 → 200 6ms
+[2026-08-07T16:34:11.580Z] [HTTP] GET /api/agent-tools → 304 15ms
+[2026-08-07T16:34:15.457Z] [HTTP] PUT /api/agent-configs/1 → 200 8ms
+[2026-08-07T16:34:15.457Z] [HTTP] PUT /api/agent-configs/1 → 200
+[2026-08-07T16:34:15.527Z] [HTTP] GET /api/agent-configs/1 → 200 6ms
+[2026-08-07T16:34:15.695Z] [HTTP] GET /api/agent-configs → 200 99ms
+[2026-08-07T16:34:18.744Z] [HTTP] GET /api/extensions → 200 414ms
+[2026-08-07T16:34:18.922Z] [HTTP] GET /api/outbound/calls → 304 396ms
+[2026-08-07T16:34:20.602Z] [HTTP] GET /api/deploy/call-events → 304 186ms
+[2026-08-07T16:34:20.644Z] [HTTP] GET /api/extensions → 304 145ms
+[2026-08-07T16:34:24.566Z] [HTTP] GET /api/deploy/call-events → 304 22ms
+[2026-08-07T16:34:26.569Z] [HTTP] GET /api/extensions → 304 36ms
+[2026-08-07T16:34:26.643Z] [HTTP] GET /api/outbound/calls → 304 52ms
+[2026-08-07T16:34:27.055Z] [HTTP] GET /api/deploy/system/logs → 200 29ms
+[2026-08-07T16:34:27.869Z] [HTTP] GET /api/extensions → 304 19ms
+[2026-08-07T16:34:27.906Z] [HTTP] GET /api/deploy/all → 200 9ms
+[2026-08-07T16:34:29.205Z] [HTTP] GET /api/deploy/2/logs → 200 9ms
+[2026-08-07T16:34:33.220Z] [HTTP] GET /api/deploy/all → 200 6ms
+[2026-08-07T16:34:38.381Z] [HTTP] GET /api/deploy/all → 200 5ms
+[2026-08-07T16:34:39.292Z] [INFO] [ext:2] Restarting extension in outbound mode — binary will place the call itself
+[2026-08-07T16:34:39.293Z] [DEPLOYMENT] Starting extension 2
+[2026-08-07T16:34:39.405Z] [INFO] [ext:2] SIP proxy: resolved Yeastar FQDN
+[2026-08-07T16:34:39.407Z] [INFO] [ext:2] SIP FQDN proxy started — direct FQDN interception (no /etc/hosts)
+[2026-08-07T16:34:39.407Z] [INFO] [ext:2] SIP FQDN proxy active — binary will use SIP_OUTBOUND_PROXY
+[2026-08-07T16:34:39.658Z] [INFO] [ext:2] Patched sip-agent binary local SIP port
+[2026-08-07T16:34:39.795Z] [INFO] [ext:2] Spawning patched sip-agent bin=/tmp/sip-agent/2/sip-agent
+[2026-08-07T16:34:40.359Z] [INFO] [ext:2] Extension re-registered with outbound config — binary is dialling
+[2026-08-07T16:34:40.397Z] [HTTP] POST /api/outbound/call → 202 1202ms
+[2026-08-07T16:34:40.398Z] [HTTP] POST /api/outbound/call → 202
+[2026-08-07T16:34:43.574Z] [HTTP] GET /api/deploy/all → 200 5ms
+[2026-08-07T16:34:44.149Z] [HTTP] GET /api/deploy/2/logs → 200 4ms
+[2026-08-07T16:34:46.311Z] [HTTP] GET /api/deploy/2/logs → 304 13ms
+[2026-08-07T16:34:48.429Z] [HTTP] GET /api/deploy/2/logs → 304 8ms
+[2026-08-07T16:34:49.296Z] [HTTP] GET /api/deploy/all → 200 191ms
+[2026-08-07T16:34:50.117Z] [INFO] [ext:1] SIP proxy: sent ACK for outbound INVITE 200 OK
+[2026-08-07T16:34:50.143Z] [INFO] [ext:2] SIP proxy: sent ACK for outbound INVITE 200 OK
+[2026-08-07T16:34:50.570Z] [HTTP] GET /api/deploy/2/logs → 200 6ms
+[2026-08-07T16:34:50.645Z] [INFO] [ext:2] Linked ElevenLabs conversation_id to call
+[2026-08-07T16:34:50.807Z] [INFO] [ext:2] Outbound bridge registered — callId linked, pre-bridge events backfilled
+[2026-08-07T16:34:52.821Z] [HTTP] GET /api/deploy/2/logs → 200 56ms
+[2026-08-07T16:34:54.785Z] [HTTP] GET /api/deploy/all → 200 42ms
+[2026-08-07T16:34:55.068Z] [HTTP] GET /api/deploy/2/logs → 200 3ms
+[2026-08-07T16:34:57.288Z] [HTTP] GET /api/deploy/2/logs → 200 7ms
+[2026-08-07T16:34:59.688Z] [HTTP] GET /api/deploy/2/logs → 200 201ms
+[2026-08-07T16:34:59.865Z] [HTTP] GET /api/deploy/all → 200 8ms
+[2026-08-07T16:35:02.086Z] [HTTP] GET /api/deploy/2/logs → 200 130ms
+[2026-08-07T16:35:04.543Z] [HTTP] GET /api/deploy/2/logs → 200 21ms
+[2026-08-07T16:35:05.047Z] [HTTP] GET /api/deploy/all → 200 66ms
+[2026-08-07T16:35:06.840Z] [HTTP] GET /api/deploy/2/logs → 200 134ms
+[2026-08-07T16:35:08.988Z] [HTTP] GET /api/deploy/2/logs → 200 58ms
+[2026-08-07T16:35:10.256Z] [HTTP] GET /api/deploy/all → 200 11ms
+[2026-08-07T16:35:11.234Z] [HTTP] GET /api/deploy/2/logs → 200 55ms
+[2026-08-07T16:35:13.414Z] [HTTP] GET /api/deploy/2/logs → 200 2ms
+[2026-08-07T16:35:15.399Z] [HTTP] GET /api/deploy/all → 200 35ms
+[2026-08-07T16:35:15.504Z] [HTTP] GET /api/deploy/2/logs → 200 3ms
+[2026-08-07T16:35:17.606Z] [HTTP] GET /api/deploy/2/logs → 200 8ms
+[2026-08-07T16:35:19.776Z] [HTTP] GET /api/deploy/2/logs → 200 18ms
+[2026-08-07T16:35:20.518Z] [HTTP] GET /api/deploy/all → 200 14ms
+[2026-08-07T16:35:21.936Z] [HTTP] GET /api/deploy/2/logs → 200 31ms
+[2026-08-07T16:35:24.237Z] [HTTP] GET /api/deploy/2/logs → 200 2ms
+[2026-08-07T16:35:25.614Z] [HTTP] GET /api/deploy/all → 200 8ms
+[2026-08-07T16:35:26.512Z] [HTTP] GET /api/deploy/2/logs → 200 15ms
+[2026-08-07T16:35:28.813Z] [HTTP] GET /api/deploy/2/logs → 200 10ms
+[2026-08-07T16:35:30.701Z] [HTTP] GET /api/deploy/all → 200 13ms
+[2026-08-07T16:35:30.955Z] [HTTP] GET /api/deploy/2/logs → 200 7ms
+[2026-08-07T16:35:33.429Z] [HTTP] GET /api/deploy/2/logs → 200 25ms
+[2026-08-07T16:35:35.820Z] [HTTP] GET /api/deploy/2/logs → 200 4ms
+[2026-08-07T16:35:35.933Z] [HTTP] GET /api/deploy/all → 200 10ms
+[2026-08-07T16:35:38.005Z] [HTTP] GET /api/deploy/2/logs → 200 3ms
+[2026-08-07T16:35:40.224Z] [HTTP] GET /api/deploy/2/logs → 200 6ms
+[2026-08-07T16:35:41.061Z] [HTTP] GET /api/deploy/all → 200 10ms
+[2026-08-07T16:35:42.558Z] [HTTP] GET /api/deploy/2/logs → 200 15ms
+[2026-08-07T16:35:44.965Z] [HTTP] GET /api/deploy/2/logs → 200 91ms
+[2026-08-07T16:35:46.413Z] [HTTP] GET /api/deploy/all → 200 49ms
+[2026-08-07T16:35:47.080Z] [HTTP] GET /api/deploy/2/logs → 200 12ms
+[2026-08-07T16:35:49.236Z] [HTTP] GET /api/deploy/2/logs → 200 7ms
+[2026-08-07T16:35:51.378Z] [HTTP] GET /api/deploy/2/logs → 200 4ms
+[2026-08-07T16:35:51.647Z] [HTTP] GET /api/deploy/all → 200 6ms
+[2026-08-07T16:35:53.536Z] [HTTP] GET /api/deploy/2/logs → 200 3ms
+[2026-08-07T16:35:55.677Z] [HTTP] GET /api/deploy/2/logs → 200 7ms
+[2026-08-07T16:35:56.764Z] [HTTP] GET /api/deploy/all → 200 34ms
+[2026-08-07T16:35:59.174Z] [HTTP] GET /api/deploy/2/logs → 200 5ms
+[2026-08-07T16:36:01.211Z] [INFO] [ext:2] AI end_call tool detected — will tag ended event
+[2026-08-07T16:36:01.449Z] [HTTP] GET /api/deploy/2/logs → 200 5ms
+[2026-08-07T16:36:02.028Z] [HTTP] GET /api/deploy/all → 200 13ms
+[2026-08-07T16:36:03.824Z] [HTTP] GET /api/deploy/2/logs → 304 113ms
+[2026-08-07T16:36:03.834Z] [INFO] [ext:2] SIP BYE sent via binary HTTP API
+[2026-08-07T16:36:05.956Z] [HTTP] GET /api/deploy/2/logs → 200 6ms
+[2026-08-07T16:36:06.279Z] [INFO] [ext:2] sip-agent process exited
+[2026-08-07T16:36:06.281Z] [INFO] [ext:2] Outbound call ended — extension returning to stopped (one-shot mode)
+[2026-08-07T16:36:06.281Z] [INFO] [ext:2] Outbound binary exited cleanly (no SIP BYE sent) — hanging up via Yeastar API
+[2026-08-07T16:36:06.282Z] [INFO] Yeastar: requesting new access token
+[2026-08-07T16:36:06.347Z] [INFO] [ext:2] Outbound call finalized (no webhook configured)
+[2026-08-07T16:36:06.397Z] [INFO] [ext:2] Outbound config override cleared — base config restored
+[2026-08-07T16:36:06.764Z] [INFO] Yeastar: get_token response
+[2026-08-07T16:36:07.066Z] [INFO] hangupCallViaYeastar: inbound call hung up via Yeastar API (channel_id)
+[2026-08-07T16:36:07.136Z] [INFO] [ext:1] SIP proxy: forwarding inbound BYE to binary for internal handling
+[2026-08-07T16:36:07.153Z] [HTTP] GET /api/deploy/all → 200 10ms
+[2026-08-07T16:36:08.115Z] [HTTP] GET /api/deploy/2/logs → 200 20ms
+[2026-08-07T16:36:10.256Z] [HTTP] GET /api/deploy/2/logs → 304 15ms
+[2026-08-07T16:36:12.343Z] [HTTP] GET /api/deploy/all → 200 108ms
+[2026-08-07T16:36:12.570Z] [HTTP] GET /api/deploy/2/logs → 304 148ms
+[2026-08-07T16:36:14.711Z] [HTTP] GET /api/deploy/2/logs → 304 6ms
+[2026-08-07T16:36:16.806Z] [HTTP] GET /api/deploy/2/logs → 304 2ms
+[2026-08-07T16:36:17.428Z] [HTTP] GET /api/deploy/all → 200 18ms
+[2026-08-07T16:36:18.903Z] [HTTP] GET /api/deploy/2/logs → 304 5ms
+[2026-08-07T16:36:19.989Z] [INFO] ElevenLabs post-call webhook received
+[2026-08-07T16:36:19.991Z] [INFO] Stored ElevenLabs post-call result
+[2026-08-07T16:36:20.040Z] [INFO] ElevenLabs webhook: persisted to call_results DB
+[2026-08-07T16:36:20.075Z] [INFO] Matched outbound call via time proximity
+[2026-08-07T16:36:20.094Z] [INFO] ElevenLabs webhook: back-filled callId on call_results
+[2026-08-07T16:36:20.095Z] [INFO] ElevenLabs webhook: result stored for outbound call
+[2026-08-07T16:36:20.112Z] [HTTP] POST /api/providers/elevenlabs/post-call → 200 142ms
+[2026-08-07T16:36:20.115Z] [HTTP] POST /api/providers/elevenlabs/post-call → 200
+[2026-08-07T16:36:21.002Z] [HTTP] GET /api/deploy/2/logs → 304 4ms
+[2026-08-07T16:36:22.596Z] [HTTP] GET /api/deploy/all → 200 14ms
+[2026-08-07T16:36:23.102Z] [HTTP] GET /api/deploy/2/logs → 304 8ms
+[2026-08-07T16:36:25.198Z] [HTTP] GET /api/deploy/2/logs → 304 2ms
+[2026-08-07T16:36:27.296Z] [HTTP] GET /api/deploy/2/logs → 304 2ms
+[2026-08-07T16:36:27.619Z] [HTTP] GET /api/deploy/call-events → 200 25ms
+[2026-08-07T16:36:27.639Z] [HTTP] GET /api/extensions → 304 42ms
