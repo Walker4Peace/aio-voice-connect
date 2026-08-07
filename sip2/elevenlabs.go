@@ -299,6 +299,15 @@ func (b *ElevenLabsBridge) Start(ctx context.Context) {
 	var closeOnce sync.Once
 	closeQueue := func() { closeOnce.Do(func() { close(b.rtpQueue) }) }
 
+	// Watchdog: if parent ctx is cancelled (SIGTERM / remote-party BYE) close
+	// the WebSocket immediately so elevenLabsReader unblocks from ReadMessage()
+	// and exits promptly.  Without this the goroutine can block until ElevenLabs
+	// closes the socket (~30 s), preventing clean shutdown.
+	go func() {
+		<-ctx.Done()
+		b.CloseConnection()
+	}()
+
 	var wg sync.WaitGroup
 	wg.Add(3)
 

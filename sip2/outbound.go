@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/emiago/sipgo"
 	"github.com/emiago/sipgo/sip"
@@ -141,9 +142,17 @@ func runOutboundMode(ctx context.Context, sipClient *SIPClient, cfg *Config, api
 		log.Printf("Provider error: %v", err)
 	}
 
-	// Send BYE if we haven't received one
+	// Send BYE if we haven't received one.
+	// Use a short timeout so the binary doesn't block for SIP Timer H (~32 s)
+	// if Yeastar is slow to respond.  context.Background() is intentional as
+	// the base so SIGTERM (which cancels the main ctx) doesn't race here —
+	// we want exactly 5 s regardless of external signals.
 	if callCtx.Err() == nil || ob.HangupOnTaskComplete {
-		session.Bye(context.Background()) //nolint
+		byeCtx, byeCancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer byeCancel()
+		if err := session.Bye(byeCtx); err != nil {
+			log.Printf("BYE send error (ignored): %v", err)
+		}
 	}
 
 	log.Printf("Outbound call completed. Task completed: %v", true)
