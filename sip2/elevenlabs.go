@@ -161,6 +161,10 @@ type ElevenLabsBridge struct {
 	callID     string
 	outputRate int // Hz (8000 or 16000)
 
+	// rtpQueue carries 160-byte (20 ms) PCMU chunks from elevenLabsReader to
+	// rtpPacer.  Buffered to absorb bursts from ElevenLabs without blocking.
+	rtpQueue chan []byte
+
 	// Callbacks
 	onConvID     func(convID string)
 	onUserSpeech func(text string)
@@ -275,62 +279,116 @@ func (b *ElevenLabsBridge) sendInitData(ctx context.Context) error {
 }
 
 // Start launches the RTP↔ElevenLabs audio bridge goroutines.
-// It blocks until both goroutines finish (call ended).
+// It blocks until all goroutines finish (call ended or context cancelled).
+//
+// Three goroutines run concurrently:
+//   1. elevenLabsReader — reads WS messages, queues PCMU chunks, handles control.
+//   2. rtpPacer         — sends one queued PCMU chunk every 20 ms (real-time pacing).
+//   3. rtpToElevenLabs  — forwards phone RTP → ElevenLabs.
+//
+// When elevenLabsReader exits (conversation_ended, WS error, or ctx done):
+//   • it closes rtpQueue so rtpPacer drains remaining audio and exits.
+//   • it cancels bridgeCtx so rtpToElevenLabs exits within one read-deadline.
 func (b *ElevenLabsBridge) Start(ctx context.Context) {
-	var wg sync.WaitGroup
-	wg.Add(2)
+	bridgeCtx, cancelBridge := context.WithCancel(ctx)
 
-	// elevenLabsToRTP: read from ElevenLabs WS, write to RTP
+	// rtpQueue buffers 20-ms PCMU chunks from ElevenLabs.
+	// 2000 slots ≈ 40 seconds — enough for the longest burst.
+	b.rtpQueue = make(chan []byte, 2000)
+
+	var closeOnce sync.Once
+	closeQueue := func() { closeOnce.Do(func() { close(b.rtpQueue) }) }
+
+	var wg sync.WaitGroup
+	wg.Add(3)
+
+	// 1. ElevenLabs reader
 	go func() {
 		defer wg.Done()
-		b.elevenLabsToRTP(ctx)
+		defer cancelBridge() // unblocks rtpToElevenLabs
+		defer closeQueue()   // unblocks rtpPacer after drain
+		b.elevenLabsReader(bridgeCtx)
 	}()
 
-	// rtpToElevenLabs: read from RTP, write to ElevenLabs WS
+	// 2. RTP pacer (one packet per 20 ms)
 	go func() {
 		defer wg.Done()
-		b.rtpToElevenLabs(ctx)
+		b.rtpPacer(bridgeCtx)
+	}()
+
+	// 3. Phone → ElevenLabs forwarder
+	go func() {
+		defer wg.Done()
+		b.rtpToElevenLabs(bridgeCtx)
 	}()
 
 	wg.Wait()
+	cancelBridge() // ensure no leak if Start returns first
 }
 
-// sendPCMUToRTP splits a PCMU buffer into 160-byte (20 ms) RTP packets and
-// sends each one.  Splitting is important because ElevenLabs may deliver a
-// large chunk (e.g. 500+ bytes) in a single message, and sending the whole
-// thing as one RTP packet confuses the phone's jitter-buffer.
-func (b *ElevenLabsBridge) sendPCMUToRTP(pcmu []byte) int {
-	const chunkSize = 160 // 20 ms of PCMU @ 8 kHz
-	sent := 0
+// enqueuePCMU splits a raw PCMU buffer into 160-byte (20 ms) chunks and
+// pushes each chunk onto b.rtpQueue for the pacer to send in real time.
+func (b *ElevenLabsBridge) enqueuePCMU(pcmu []byte) {
+	const chunkSize = 160
 	for len(pcmu) > 0 {
-		n := len(pcmu)
-		if n > chunkSize {
-			n = chunkSize
+		n := chunkSize
+		if n > len(pcmu) {
+			n = len(pcmu)
 		}
-		if err := b.rtpConn.SendPacket(pcmu[:n]); err != nil {
-			log.Printf("Error sending RTP packet: %v", err)
+		chunk := make([]byte, n)
+		copy(chunk, pcmu[:n])
+		select {
+		case b.rtpQueue <- chunk:
+		default:
+			// Queue full (> 40 s of buffered audio) — drop oldest would be
+			// ideal but dropping newest is simpler; this should never happen
+			// in practice.
 		}
 		pcmu = pcmu[n:]
-		sent++
 	}
-	return sent
 }
 
-// elevenLabsToRTP reads audio from ElevenLabs and sends it as RTP.
+// rtpPacer sends one 160-byte PCMU chunk from rtpQueue every 20 ms.
+// This decouples ElevenLabs burst delivery from real-time RTP pacing so the
+// phone's jitter buffer is never overflowed.
+func (b *ElevenLabsBridge) rtpPacer(ctx context.Context) {
+	ticker := time.NewTicker(20 * time.Millisecond)
+	defer ticker.Stop()
+	sent := 0
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			// Non-blocking read: send one packet per tick if available.
+			select {
+			case pkt, ok := <-b.rtpQueue:
+				if !ok {
+					return // queue closed (conversation ended)
+				}
+				if err := b.rtpConn.SendPacket(pkt); err != nil {
+					log.Printf("Error sending RTP packet: %v", err)
+				}
+				sent++
+				if sent%100 == 0 {
+					log.Printf("Outbound sent %d RTP packets to %s", sent, b.rtpConn.RemoteAddr())
+				}
+			default:
+				// No audio ready this tick — send nothing (natural silence).
+			}
+		}
+	}
+}
+
+// elevenLabsReader reads messages from ElevenLabs and routes them:
 //
-// ElevenLabs ConvAI sends audio in one of two ways depending on the negotiated
-// format:
+//   - Binary frames  → decode PCMU, split into 160-byte chunks, enqueue for pacer.
+//   - "audio" JSON   → same as binary (fallback for non-ulaw formats).
+//   - Control JSON   → handle ping/pong, transcripts, tool calls, conv_ended.
 //
-//   - Binary WebSocket frames: raw PCMU bytes (ulaw_8000) or raw PCM16 bytes
-//     (pcm_16000 / pcm_24000).  This is the common path for ulaw_8000.
-//
-//   - Text WebSocket frames: JSON with type "audio" and
-//     audio_event.audio_base_64 containing the base64-encoded audio bytes.
-//     Used by some ElevenLabs agent configurations.
-//
-// We handle both paths so that either encoding works.
-func (b *ElevenLabsBridge) elevenLabsToRTP(ctx context.Context) {
-	sentPackets := 0
+// ElevenLabs ConvAI sends audio as binary WebSocket frames for ulaw_8000,
+// and as base64 JSON for PCM formats.  We handle both.
+func (b *ElevenLabsBridge) elevenLabsReader(ctx context.Context) {
 	for {
 		select {
 		case <-ctx.Done():
@@ -344,10 +402,7 @@ func (b *ElevenLabsBridge) elevenLabsToRTP(ctx context.Context) {
 			return
 		}
 
-		// ── Binary frame: raw audio bytes ─────────────────────────────────
-		// ulaw_8000  → raw is already PCMU, send directly.
-		// pcm_16000  → raw is PCM16 LE at 16 kHz, downsample + encode.
-		// pcm_24000  → raw is PCM16 LE at 24 kHz, downsample + encode.
+		// ── Binary frame: raw audio ───────────────────────────────────────
 		if msgType == websocket.BinaryMessage {
 			var pcmu []byte
 			if b.outputRate == 8000 {
@@ -361,11 +416,7 @@ func (b *ElevenLabsBridge) elevenLabsToRTP(ctx context.Context) {
 				}
 				pcmu = encodePCMU(pcm16)
 			}
-			n := b.sendPCMUToRTP(pcmu)
-			sentPackets += n
-			if sentPackets/100 > (sentPackets-n)/100 {
-				log.Printf("Outbound sent %d RTP packets to %s", sentPackets, b.rtpConn.RemoteAddr())
-			}
+			b.enqueuePCMU(pcmu)
 			continue
 		}
 
@@ -375,20 +426,17 @@ func (b *ElevenLabsBridge) elevenLabsToRTP(ctx context.Context) {
 			continue
 		}
 
-		// Log raw message for tool_name/type detection by deployment.ts
 		rawStr := string(raw)
 		if b.onRawMsg != nil {
 			b.onRawMsg(rawStr)
 		}
-		// Log so deployment.ts can parse end_call and conversation_ended
 		if strings.Contains(rawStr, `"tool_name"`) || strings.Contains(rawStr, `"conversation_ended"`) {
 			log.Printf("ElevenLabs raw message: %s", rawStr)
 		}
 
 		switch base.Type {
 		case "audio":
-			// JSON audio path (used when binary frames are not sent).
-			// Field: audio_event.audio_base_64
+			// JSON audio path (some ElevenLabs configurations).
 			var audioMsg elAudioChunk
 			if err := json.Unmarshal(raw, &audioMsg); err != nil {
 				continue
@@ -403,7 +451,7 @@ func (b *ElevenLabsBridge) elevenLabsToRTP(ctx context.Context) {
 			}
 			var pcmu []byte
 			if b.outputRate == 8000 {
-				pcmu = rawAudio // already PCMU
+				pcmu = rawAudio
 			} else {
 				pcm16 := rawAudio
 				if b.outputRate == 16000 {
@@ -413,11 +461,7 @@ func (b *ElevenLabsBridge) elevenLabsToRTP(ctx context.Context) {
 				}
 				pcmu = encodePCMU(pcm16)
 			}
-			n := b.sendPCMUToRTP(pcmu)
-			sentPackets += n
-			if sentPackets/100 > (sentPackets-n)/100 {
-				log.Printf("Outbound sent %d RTP packets to %s", sentPackets, b.rtpConn.RemoteAddr())
-			}
+			b.enqueuePCMU(pcmu)
 
 		case "user_transcript":
 			var t elUserTranscript
