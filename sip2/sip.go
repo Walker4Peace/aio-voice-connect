@@ -146,9 +146,8 @@ func (c *SIPClient) buildRegisterRequest() *sip.Request {
 	req.AppendHeader(sip.NewHeader("Expires", "3600"))
 	req.AppendHeader(sip.NewHeader("Content-Length", "0"))
 
-	if c.cfg.outboundProxy != "" {
-		req.AppendHeader(sip.NewHeader("Route", fmt.Sprintf("<sip:%s;lr>", c.cfg.outboundProxy)))
-	}
+	// No Route header — the outbound proxy is a transparent UDP relay.
+	// SetDestination (set in Register) routes the packet there physically.
 	return req
 }
 
@@ -161,7 +160,13 @@ func (c *SIPClient) Register(ctx context.Context) error {
 	log.Printf("Sending REGISTER request via sipgo client.")
 
 	req := c.buildRegisterRequest()
-	req.SetDestination(fmt.Sprintf("%s:5060", host))
+	// Route packets through the outbound proxy (transparent UDP relay to Yeastar).
+	// When no proxy is configured, send directly to the registrar.
+	if c.cfg.outboundProxy != "" {
+		req.SetDestination(c.cfg.outboundProxy)
+	} else {
+		req.SetDestination(fmt.Sprintf("%s:5060", host))
+	}
 
 	// ClientRequestRegisterBuild adds all mandatory SIP headers (CSeq, CallID,
 	// Max-Forwards, Via) if missing. It also handles CSeq increment on re-sends.

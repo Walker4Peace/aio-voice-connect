@@ -1,0 +1,29 @@
+[2026-08-07T00:34:54.603Z] Loaded config with 0 functions
+[2026-08-07T00:34:54.608Z] Starting HTTP API server on :19000
+[2026-08-07T00:34:54.609Z] 2026/08/07 02:34:54 DEBUG: Determined outbound IP as detecting...
+[2026-08-07T00:34:54.714Z] 2026/08/07 02:34:54 Local IP determined as: 13.140.151.164
+[2026-08-07T00:34:54.722Z] 2026/08/07 02:34:54 DEBUG: Retrieved external IP as 13.140.151.164
+[2026-08-07T00:34:54.722Z] 2026/08/07 02:34:54 External IP determined as: 13.140.151.164
+[2026-08-07T00:34:54.918Z] 2026/08/07 02:34:54 Starting SIP client with configuration:
+[2026-08-07T00:34:54.919Z] 2026/08/07 02:34:54 Username: 1005, Domain: aioprocess-demo.ras.yeastar.com, Server: aioprocess-demo.ras.yeastar.com:5060, Transport: UDP
+[2026-08-07T00:34:54.919Z] 2026/08/07 02:34:54 Auth ID: TjoCu4uhmD (using separate authorization ID)
+[2026-08-07T00:34:54.923Z] 2026/08/07 02:34:54 Outbound Proxy: 127.0.0.1:17060
+[2026-08-07T00:34:54.923Z] 2026/08/07 02:34:54 REGISTER via outbound proxy: 127.0.0.1:17060
+[2026-08-07T00:34:54.924Z] 2026/08/07 02:34:54 Sending REGISTER request via sipgo client.
+[2026-08-07T00:34:54.942Z] 2026/08/07 02:34:54 WARN SIP request handler not found caller=Server method=REGISTER
+[2026-08-07T00:34:54.949Z] 2026/08/07 02:34:54 SIP registration failed: registration failed: 405 Method Not Allowed
+[2026-08-07T00:35:13.079Z] Loaded config with 0 functions
+[2026-08-07T00:35:13.079Z] Starting HTTP API server on :19000
+[2026-08-07T00:35:13.079Z] 2026/08/07 02:35:13 DEBUG: Determined outbound IP as detecting...
+[2026-08-07T00:35:13.110Z] 2026/08/07 02:35:13 Local IP determined as: 13.140.151.164
+[2026-08-07T00:35:13.110Z] 2026/08/07 02:35:13 DEBUG: Retrieved external IP as 13.140.151.164
+[2026-08-07T00:35:13.110Z] 2026/08/07 02:35:13 External IP determined as: 13.140.151.164
+[2026-08-07T00:35:13.395Z] 2026/08/07 02:35:13 Starting SIP client with configuration:
+[2026-08-07T00:35:13.395Z] 2026/08/07 02:35:13 Username: 1005, Domain: aioprocess-demo.ras.yeastar.com, Server: aioprocess-demo.ras.yeastar.com:5060, Transport: UDP
+[2026-08-07T00:35:13.395Z] 2026/08/07 02:35:13 Auth ID: TjoCu4uhmD (using separate authorization ID)
+[2026-08-07T00:35:13.395Z] 2026/08/07 02:35:13 Outbound Proxy: 127.0.0.1:17060
+[2026-08-07T00:35:13.395Z] 2026/08/07 02:35:13 REGISTER via outbound proxy: 127.0.0.1:17060
+[2026-08-07T00:35:13.395Z] 2026/08/07 02:35:13 Sending REGISTER request via sipgo client.
+[2026-08-07T00:35:13.430Z] 2026/08/07 02:35:13 WARN DNS resolution is slow caller=TransportLayer dur=105.588048ms
+[2026-08-07T00:35:13.467Z] 2026/08/07 02:35:13 WARN SIP request handler not found caller=Server method=REGISTER
+[2026-08-07T00:35:13.468Z] 2026/08/07 02:35:13 SIP registration failed: registration failed: 405 Method Not Allowed

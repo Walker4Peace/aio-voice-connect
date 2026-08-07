@@ -222,12 +222,15 @@ func buildInviteRequest(c *SIPClient, target, callerID, sdpOffer string, cfg *Co
 	})
 	req.AppendHeader(sip.NewHeader("Content-Type", "application/sdp"))
 
-	if c.cfg.outboundProxy != "" {
-		req.AppendHeader(sip.NewHeader("Route", fmt.Sprintf("<sip:%s;lr>", c.cfg.outboundProxy)))
-	}
-
 	req.SetBody([]byte(sdpOffer))
-	req.SetDestination(fmt.Sprintf("%s:5060", host))
+	// Route through outbound proxy (transparent UDP relay) when configured,
+	// otherwise send directly to the PBX. No Route header needed — the proxy
+	// relays transparently at the UDP layer.
+	if c.cfg.outboundProxy != "" {
+		req.SetDestination(c.cfg.outboundProxy)
+	} else {
+		req.SetDestination(fmt.Sprintf("%s:5060", host))
+	}
 
 	return req
 }
