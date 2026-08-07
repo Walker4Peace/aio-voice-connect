@@ -1,0 +1,23 @@
+root@vmi3357322:/opt/aio-voice-connect# systemctl status aio-voice-connect-api
+● aio-voice-connect-api.service - AIO Voice Connect API Server
+     Loaded: loaded (/etc/systemd/system/aio-voice-connect-api.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-08-07 19:36:53 CEST; 5min ago
+       Docs: https://github.com/Walker4Peace/ai-agent
+   Main PID: 3748417 (node)
+      Tasks: 11 (limit: 28792)
+     Memory: 56.6M (peak: 92.7M)
+        CPU: 4.201s
+     CGroup: /system.slice/aio-voice-connect-api.service
+             └─3748417 /usr/bin/node --enable-source-maps /opt/aio-voice-connect/artifacts/api-server/dist/index.mjs
+
+Aug 07 19:41:14 vmi3357322 aio-voice-connect-api[3748417]: {"level":30,"time":1786124474435,"pid":3748417,"hostname":"vmi3357322","req":{"id":61,"method":"GET","url":"/api/deploy/1>
+Aug 07 19:41:14 vmi3357322 aio-voice-connect-api[3748417]: {"level":30,"time":1786124474859,"pid":3748417,"hostname":"vmi3357322","req":{"id":62,"method":"GET","url":"/api/deploy/1>
+Aug 07 19:41:59 vmi3357322 aio-voice-connect-api[3748417]: {"level":30,"time":1786124519443,"pid":3748417,"hostname":"vmi3357322","extensionId":1,"dir":"proxy→Yeastar","from":"0.0.>
+Aug 07 19:42:08 vmi3357322 aio-voice-connect-api[3748417]: {"level":30,"time":1786124528620,"pid":3748417,"hostname":"vmi3357322","extensionId":1,"dir":"proxy→Yeastar","from":"0.0.>
+Aug 07 19:42:13 vmi3357322 aio-voice-connect-api[3748417]: {"level":30,"time":1786124533809,"pid":3748417,"hostname":"vmi3357322","req":{"id":63,"method":"GET","url":"/api/auth/me">
+Aug 07 19:42:14 vmi3357322 aio-voice-connect-api[3748417]: {"level":30,"time":1786124534051,"pid":3748417,"hostname":"vmi3357322","req":{"id":64,"method":"GET","url":"/api/extensio>
+Aug 07 19:42:14 vmi3357322 aio-voice-connect-api[3748417]: {"level":30,"time":1786124534208,"pid":3748417,"hostname":"vmi3357322","req":{"id":66,"method":"GET","url":"/api/clients">
+Aug 07 19:42:14 vmi3357322 aio-voice-connect-api[3748417]: {"level":30,"time":1786124534221,"pid":3748417,"hostname":"vmi3357322","req":{"id":68,"method":"GET","url":"/api/deploy/1>
+Aug 07 19:42:14 vmi3357322 aio-voice-connect-api[3748417]: {"level":30,"time":1786124534263,"pid":3748417,"hostname":"vmi3357322","req":{"id":65,"method":"GET","url":"/api/agent-co>
+Aug 07 19:42:14 vmi3357322 aio-voice-connect-api[3748417]: {"level":30,"time":1786124534287,"pid":3748417,"hostname":"vmi3357322","req":{"id":67,"method":"GET","url":"/api/deploy/1>
+lines 1-21/21 (END)
