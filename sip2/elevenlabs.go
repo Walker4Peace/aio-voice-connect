@@ -348,6 +348,16 @@ func (b *ElevenLabsBridge) enqueuePCMU(pcmu []byte) {
 	}
 }
 
+// pcmuSilence160 is a 160-byte PCMU (µ-law) silence packet.
+// In G.711 µ-law, 0xFF encodes positive zero (silence).
+var pcmuSilence160 = func() []byte {
+	s := make([]byte, 160)
+	for i := range s {
+		s[i] = 0xFF
+	}
+	return s
+}()
+
 // rtpPacer sends one 160-byte PCMU chunk from rtpQueue every 20 ms.
 // This decouples ElevenLabs burst delivery from real-time RTP pacing so the
 // phone's jitter buffer is never overflowed.
@@ -360,7 +370,9 @@ func (b *ElevenLabsBridge) rtpPacer(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			// Non-blocking read: send one packet per tick if available.
+			// Non-blocking read: send one packet per tick.
+			// If no audio is ready, send a PCMU silence packet so the phone's
+			// jitter buffer never starves (avoids choppy/cutting audio).
 			select {
 			case pkt, ok := <-b.rtpQueue:
 				if !ok {
@@ -374,7 +386,11 @@ func (b *ElevenLabsBridge) rtpPacer(ctx context.Context) {
 					log.Printf("Outbound sent %d RTP packets to %s", sent, b.rtpConn.RemoteAddr())
 				}
 			default:
-				// No audio ready this tick — send nothing (natural silence).
+				// No audio queued — send PCMU silence (0xFF = µ-law encoded zero).
+				silence := pcmuSilence160
+				if err := b.rtpConn.SendPacket(silence); err != nil {
+					log.Printf("Error sending silence RTP packet: %v", err)
+				}
 			}
 		}
 	}
@@ -551,25 +567,27 @@ func (b *ElevenLabsBridge) rtpToElevenLabs(ctx context.Context) {
 
 		count++
 		if count == 1 || count%100 == 0 {
-			log.Printf("Outbound RTP packet #%d from %s, size=%d", count, b.rtpConn.RemoteAddr(), len(payload)+12)
+			log.Printf("Inbound RTP packet #%d from phone, pt=%d size=%d", count, pt, len(payload))
 		}
 
-		// Decode G.711 to PCM16
-		var pcm16 []byte
+		// ElevenLabs input is ulaw_8000: send raw µ-law bytes (base64-encoded).
+		// PCMU (pt=0): pass through directly.
+		// PCMA (pt=8): transcode A-law → µ-law.
+		// Unknown: skip.
+		var pcmu []byte
 		switch pt {
-		case 0: // PCMU
-			pcm16 = decodePCMU(payload)
-		case 8: // PCMA
-			pcm16 = decodePCMA(payload)
+		case 0: // PCMU — already µ-law
+			pcmu = payload
+		case 8: // PCMA — transcode
+			pcmu = encodePCMU(decodePCMA(payload))
 		default:
-			// Unknown codec - skip
 			continue
 		}
 
-		// Send as user_audio_chunk to ElevenLabs
+		// Send as user_audio_chunk to ElevenLabs (ulaw_8000 format = raw µ-law bytes)
 		msg := map[string]interface{}{
 			"type":             "user_audio_chunk",
-			"user_audio_chunk": pcm16ToBase64(pcm16),
+			"user_audio_chunk": base64.StdEncoding.EncodeToString(pcmu),
 		}
 		if err := b.conn.WriteJSON(msg); err != nil {
 			log.Printf("Error sending audio to ElevenLabs: %v", err)
