@@ -1,0 +1,65 @@
+[2026-08-07T13:50:23.733Z] Loaded config with 0 functions
+[2026-08-07T13:50:23.736Z] Starting HTTP API server on :19000
+[2026-08-07T13:50:23.737Z] 2026/08/07 15:50:23 DEBUG: Determined outbound IP as detecting...
+[2026-08-07T13:50:23.754Z] 2026/08/07 15:50:23 Local IP determined as: 13.140.151.164
+[2026-08-07T13:50:23.754Z] 2026/08/07 15:50:23 DEBUG: Retrieved external IP as 13.140.151.164
+[2026-08-07T13:50:23.754Z] 2026/08/07 15:50:23 External IP determined as: 13.140.151.164
+[2026-08-07T13:50:23.956Z] 2026/08/07 15:50:23 Starting SIP client with configuration:
+[2026-08-07T13:50:23.957Z] 2026/08/07 15:50:23 Username: 1005, Domain: aioprocess-demo.ras.yeastar.com, Server: aioprocess-demo.ras.yeastar.com:5060, Transport: UDP
+[2026-08-07T13:50:23.958Z] 2026/08/07 15:50:23 Auth ID: TjoCu4uhmD (using separate authorization ID)
+[2026-08-07T13:50:23.959Z] 2026/08/07 15:50:23 Outbound Proxy: 127.0.0.1:17060
+[2026-08-07T13:50:23.959Z] 2026/08/07 15:50:23 REGISTER via outbound proxy: 127.0.0.1:17060
+[2026-08-07T13:50:23.959Z] 2026/08/07 15:50:23 Sending REGISTER request via sipgo client.
+[2026-08-07T13:50:24.046Z] 2026/08/07 15:50:24 First 401 received. Response:
+[2026-08-07T13:50:24.046Z] 2026/08/07 15:50:24 SIP/2.0 401 Unauthorized
+[2026-08-07T13:50:24.046Z] 2026/08/07 15:50:24   Via: SIP/2.0/UDP 13.140.151.164:7060;rport=27060;received=13.140.151.164;branch=z9hG4bK.7qasnnfDtkmxrRt0
+[2026-08-07T13:50:24.046Z] 2026/08/07 15:50:24   Call-ID: ddfea672-3379-4b0b-b587-38ae5c9a5ecf
+[2026-08-07T13:50:24.046Z] 2026/08/07 15:50:24   From: <sip:1005@aioprocess-demo.ras.yeastar.com>;tag=6WwUITnU
+[2026-08-07T13:50:24.046Z] 2026/08/07 15:50:24   To: <sip:1005@aioprocess-demo.ras.yeastar.com>;tag=z9hG4bK9805.827e0bc3.0
+[2026-08-07T13:50:24.046Z] 2026/08/07 15:50:24   CSeq: 25402 REGISTER
+[2026-08-07T13:50:24.046Z] 2026/08/07 15:50:24   WWW-Authenticate: Digest  realm="YSAsterisk",nonce="1786105247/bf6bd2b4978937e98adec9f6c14959ff",opaque="0f5d29b674d853de",algorithm=md5,qop="auth"
+[2026-08-07T13:50:24.046Z] 2026/08/07 15:50:24   Server: Yeastar PSE
+[2026-08-07T13:50:24.046Z] 2026/08/07 15:50:24   Content-Length: 0
+[2026-08-07T13:50:24.046Z] 2026/08/07 15:50:24   YSUser-Agent: YSBC 2.12.30
+[2026-08-07T13:50:24.046Z] 2026/08/07 15:50:24 Auth: digestUsername=TjoCu4uhmD, realm=YSAsterisk, uri=sip:aioprocess-demo.ras.yeastar.com, password=EmkWA6lT7y
+[2026-08-07T13:50:24.046Z] 2026/08/07 15:50:24 Resending REGISTER with Authorization header (CSeq=2).
+[2026-08-07T13:50:24.131Z] 2026/08/07 15:50:24 Received REGISTER response: SIP/2.0 200 OK
+[2026-08-07T13:50:24.131Z] 2026/08/07 15:50:24 SIP/2.0 200 OK
+[2026-08-07T13:50:24.131Z] 2026/08/07 15:50:24   Via: SIP/2.0/UDP 13.140.151.164:7060;rport=27060;received=13.140.151.164;branch=z9hG4bK.siiNuNQoKpAARc6c
+[2026-08-07T13:50:24.131Z] 2026/08/07 15:50:24   Call-ID: ddfea672-3379-4b0b-b587-38ae5c9a5ecf
+[2026-08-07T13:50:24.131Z] 2026/08/07 15:50:24   From: <sip:1005@aioprocess-demo.ras.yeastar.com>;tag=6WwUITnU
+[2026-08-07T13:50:24.131Z] 2026/08/07 15:50:24   To: <sip:1005@aioprocess-demo.ras.yeastar.com>;tag=z9hG4bKa805.92482db4.0
+[2026-08-07T13:50:24.131Z] 2026/08/07 15:50:24   CSeq: 25403 REGISTER
+[2026-08-07T13:50:24.131Z] 2026/08/07 15:50:24   Contact: <sip:1005@aioprocess-demo.ras.yeastar.com:5060>;expires=3555
+[2026-08-07T13:50:24.131Z] 2026/08/07 15:50:24   Date: Fri, 07 Aug 2026 12:20:47 GMT
+[2026-08-07T13:50:24.131Z] 2026/08/07 15:50:24   Expires: 3557
+[2026-08-07T13:50:24.131Z] 2026/08/07 15:50:24   Server: Yeastar PSE
+[2026-08-07T13:50:24.131Z] 2026/08/07 15:50:24   Content-Length: 0
+[2026-08-07T13:50:24.131Z] 2026/08/07 15:50:24   YSUser-Agent: YSBC 2.12.30
+[2026-08-07T13:50:24.131Z] 2026/08/07 15:50:24 Registration successful!
+[2026-08-07T13:50:24.131Z] 2026/08/07 15:50:24 Registered with SIP provider
+[2026-08-07T13:50:24.151Z] 2026/08/07 15:50:24 Initial REGISTER request sent.
+[2026-08-07T13:50:24.151Z] 2026/08/07 15:50:24 SIP server is now listening for incoming messages.
+[2026-08-07T13:53:23.913Z] 2026/08/07 15:53:23 INVITE received for call: eb53404a-5081-4257-8cb0-cfdf3e94f734, auto-answering using sipgo.
+[2026-08-07T13:53:23.914Z] 2026/08/07 15:53:23 Stored remote Contact for dialog: sip:0661209845@aioprocess-demo.ras.yeastar.com
+[2026-08-07T13:53:23.914Z] 2026/08/07 15:53:23 Connecting to ElevenLabs Conversational AI (agent: agent_4601kzcmy96hfa090r0scfddmq71)...
+[2026-08-07T13:53:23.915Z] RTP listener created on 0.0.0.0:52903
+[2026-08-07T13:53:24.666Z] 2026/08/07 15:53:24 Connected to ElevenLabs Conversational AI
+[2026-08-07T13:53:24.666Z] AI responded — ElevenLabs Conversational AI - Hakim
+[2026-08-07T13:53:24.684Z] 2026/08/07 15:53:24 ElevenLabs outbound conversation: conv_2501kze800erfgd8cqaqnk6kva3k
+[2026-08-07T13:53:24.684Z] 2026/08/07 15:53:24 ElevenLabs conversation started: conv_2501kze800erfgd8cqaqnk6kva3k (audio format: ulaw_8000)
+[2026-08-07T13:53:24.702Z] 2026/08/07 15:53:24 Note: first_message/system_prompt in config require 'Allow client overrides' in ElevenLabs dashboard
+[2026-08-07T13:53:24.702Z] 2026/08/07 15:53:24 If override fails, the agent's default greeting will be used
+[2026-08-07T13:53:24.702Z] 2026/08/07 15:53:24 DEBUG: appConfig=true
+[2026-08-07T13:53:24.702Z] 2026/08/07 15:53:24 DEBUG: ElevenLabs.FirstMessage='Bonjour, vous êtes bien chez AIO PROCESS. Je suis Hakim, comment puis-je vous aider aujourd'hui ?', SystemPrompt='Vous êtes Hakim, consultant IT chez AIO PROCESS. Vous appelez pour programmer un rendez-vous avec le client. Proposez des créneaux disponibles cette semaine. Soyez bref et professionnel. Répondez en français et rependre après la réponse du client à l'appel.', Functions=0
+[2026-08-07T13:53:24.702Z] 2026/08/07 15:53:24 Overriding system prompt
+[2026-08-07T13:53:24.702Z] 2026/08/07 15:53:24 Sending conversation initiation to ElevenLabs: {"conversation_config_override":{"agent":{"prompt":{"prompt":"Vous êtes Hakim, consultant IT chez AIO PROCESS. Vous appelez pour programmer un rendez-vous avec le client. Proposez des créneaux disponibles cette semaine. Soyez bref et professionnel. Répondez en français et rependre après la réponse du client à l'appel."},"first_message":"Bonjour, vous êtes bien chez AIO PROCESS. Je suis Hakim, comment puis-je vous aider aujourd'hui ?"}},"type":"conversation_initiation_client_data"}
+[2026-08-07T13:53:24.702Z] 2026/08/07 15:53:24 Registered bridge for call: eb53404a-5081-4257-8cb0-cfdf3e94f734
+[2026-08-07T13:53:26.141Z] 2026/08/07 15:53:26 AI: Bonjour, vous êtes bien chez AIO PROCESS. Je suis Hakim, comment puis-je vous aider aujourd'hui ?
+[2026-08-07T13:53:26.390Z] 2026/08/07 15:53:26 WARN SIP request handler not found caller=Server method=ACK
+[2026-08-07T13:53:26.782Z] 2026/08/07 15:53:26 INFO TransactionLayer: Unhandled sip response. Possible retransmissions. Set UnhandledResponseHandler caller=transactionLayer msg="response status=183 reason=Session Progress transport=UDP source=127.0.0.1:17060"
+[2026-08-07T13:53:26.907Z] 2026/08/07 15:53:26 BYE received for call: eb53404a-5081-4257-8cb0-cfdf3e94f734
+[2026-08-07T13:53:28.199Z] 2026/08/07 15:53:28 Unregistered bridge for call: eb53404a-5081-4257-8cb0-cfdf3e94f734
+[2026-08-07T13:53:28.200Z] 2026/08/07 15:53:28 Call ended: eb53404a-5081-4257-8cb0-cfdf3e94f734
+[2026-08-07T13:53:32.177Z] 2026/08/07 15:53:32 INFO TransactionLayer: Unhandled sip response. Possible retransmissions. Set UnhandledResponseHandler caller=transactionLayer msg="response status=200 reason=OK transport=UDP source=127.0.0.1:17060"
+[2026-08-07T13:53:42.188Z] 2026/08/07 15:53:42 BYE received for call: w0EbJZpy-6433095183917048229

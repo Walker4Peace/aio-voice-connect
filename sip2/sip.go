@@ -104,6 +104,12 @@ func (c *SIPClient) Start(ctx context.Context) error {
 		tx.Respond(resp)
 	})
 
+	// Register ACK handler — sipgo warns if no handler is registered.
+	// The transaction layer already handles ACK internally; this just silences the warning.
+	server.OnAck(func(req *sip.Request, tx sip.ServerTransaction) {
+		// Nothing to do — ACK completes the 3-way handshake at the transaction layer.
+	})
+
 	// Start listening
 	go func() {
 		if err := server.ListenAndServe(ctx, strings.ToUpper(c.cfg.transport), listenAddr); err != nil && ctx.Err() == nil {
@@ -331,15 +337,27 @@ func handleInboundCall(ctx context.Context, sipClient *SIPClient, req *sip.Reque
 
 	// Build SDP answer
 	remoteSDP := string(req.Body())
+	log.Printf("INVITE SDP body (first 300 chars): %.300s", remoteSDP)
 	sdpAnswer := buildSDPOffer(sipClient.publicIP, rtpConn.Port)
 
-	// Parse remote RTP address from INVITE SDP
-	if remoteSDP != "" {
-		rip, rport, err := parseRemoteAudioAddr(remoteSDP)
-		if err == nil {
-			rtpConn.SetRemote(rip, rport)
-		}
+	// Parse remote RTP address from INVITE SDP — REQUIRED for audio to flow.
+	if remoteSDP == "" {
+		log.Printf("ERROR: INVITE has no SDP body — cannot establish RTP, rejecting call")
+		resp := sip.NewResponseFromRequest(req, 488, "Not Acceptable Here", nil)
+		tx.Respond(resp)
+		rtpConn.Close()
+		return
 	}
+	rip, rport, err := parseRemoteAudioAddr(remoteSDP)
+	if err != nil {
+		log.Printf("ERROR: failed to parse remote RTP address from SDP: %v — cannot establish RTP, rejecting call", err)
+		resp := sip.NewResponseFromRequest(req, 488, "Not Acceptable Here", nil)
+		tx.Respond(resp)
+		rtpConn.Close()
+		return
+	}
+	log.Printf("Remote RTP address: %s:%d", rip, rport)
+	rtpConn.SetRemote(rip, rport)
 
 	// Send 100 Trying
 	trying := sip.NewResponseFromRequest(req, 100, "Trying", nil)
@@ -350,6 +368,11 @@ func handleInboundCall(ctx context.Context, sipClient *SIPClient, req *sip.Reque
 	ok.AppendHeader(sip.NewHeader("Content-Type", "application/sdp"))
 	ok.SetBody([]byte(sdpAnswer))
 	tx.Respond(ok)
+
+	// NAT hole-punch — open the UDP path to Yeastar before audio starts.
+	// (Outbound calls do this too; inbound calls need it equally.)
+	log.Printf("Sending NAT hole-punch packets to %s:%d", rip, rport)
+	rtpConn.NATHolePunch()
 
 	// Bridge audio in a goroutine
 	callCtx, cancelCall := context.WithCancel(ctx)

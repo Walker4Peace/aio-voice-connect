@@ -365,6 +365,7 @@ func (b *ElevenLabsBridge) rtpPacer(ctx context.Context) {
 	ticker := time.NewTicker(20 * time.Millisecond)
 	defer ticker.Stop()
 	sent := 0
+	firstSent := false
 	for {
 		select {
 		case <-ctx.Done():
@@ -378,17 +379,24 @@ func (b *ElevenLabsBridge) rtpPacer(ctx context.Context) {
 				if !ok {
 					return // queue closed (conversation ended)
 				}
+				if !firstSent {
+					firstSent = true
+					log.Printf("RTP pacer: sending first audio packet to %s", b.rtpConn.RemoteAddr())
+				}
 				if err := b.rtpConn.SendPacket(pkt); err != nil {
 					log.Printf("Error sending RTP packet: %v", err)
 				}
 				sent++
 				if sent%100 == 0 {
-					log.Printf("Outbound sent %d RTP packets to %s", sent, b.rtpConn.RemoteAddr())
+					log.Printf("RTP pacer: sent %d audio packets to %s", sent, b.rtpConn.RemoteAddr())
 				}
 			default:
 				// No audio queued — send PCMU silence (0xFF = µ-law encoded zero).
-				silence := pcmuSilence160
-				if err := b.rtpConn.SendPacket(silence); err != nil {
+				if !firstSent {
+					firstSent = true
+					log.Printf("RTP pacer: sending first silence packet to %s", b.rtpConn.RemoteAddr())
+				}
+				if err := b.rtpConn.SendPacket(pcmuSilence160); err != nil {
 					log.Printf("Error sending silence RTP packet: %v", err)
 				}
 			}
