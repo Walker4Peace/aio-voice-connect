@@ -573,16 +573,29 @@ function parseAndStoreCallEvents(extensionId: number, line: string, timestamp: s
       logger.info({ extensionId, callId: lastInvite.callId }, "AI end_call tool detected — will tag ended event");
 
       if (outboundCallModes.has(extensionId)) {
-        // ── Outbound: binary placed the INVITE itself so its SIP dialog is intact.
-        // /bye endpoint works here because the dialog is tracked independently of
-        // the ElevenLabs bridge.
+        // ── Outbound: mirror the inbound approach exactly. ─────────────────────
+        // Use the Yeastar PBX API (call/drop) to terminate the call from the PBX
+        // side.  Yeastar sends SIP BYE to the binary via the proxy (now that the
+        // outbound INVITE Contact is rewritten to proxyExtPort — see rwOutboundReq).
+        // The binary's OnBye handler responds 200 OK, cancels the call context,
+        // and the watchdog goroutine closes the ElevenLabs WS.  The bridge then
+        // exits cleanly and "BYE received for call: X" is logged — the same path
+        // that byeMatch uses for inbound.
         //
-        // Delay the BYE by 2.5 s so any in-flight TTS audio (the last AI phrase)
-        // has time to finish streaming to the RTP bridge before the SIP teardown
-        // stops it mid-sentence.  The 10 s force-kill remains as a safety net.
-        setTimeout(() => {
+        // DO NOT call sendSipHangup here.  It hits the binary's HTTP /bye endpoint
+        // which calls cancelCall() — but cancelCall() alone does not unblock a
+        // ws.ReadMessage() call, so the bridge goroutine stays alive.  The proxy
+        // BYE path is the only reliable way to trigger the watchdog + WS close.
+        const ystData = extensionYeastarData.get(extensionId);
+        if (ystData) {
+          hangupCallViaYeastar(ystData.client, ystData.extensionNumber).catch(() => {});
+        } else {
+          // No Yeastar credentials — fall back to binary /bye endpoint.
+          logger.warn({ extensionId }, "end_call outbound: no Yeastar credentials — falling back to binary /bye");
           sendSipHangup(extensionId, lastInvite.callId).catch(() => {});
-        }, 2_500);
+        }
+        // Safety net: if the binary is still alive 10 s after AI end_call
+        // (e.g. BYE was lost in transit), force-kill it so the call closes.
         setTimeout(() => {
           if (outboundCallModes.has(extensionId) && processes.has(extensionId)) {
             logger.info({ extensionId }, "Outbound: binary still running 10 s after AI end_call — force-killing to close call");

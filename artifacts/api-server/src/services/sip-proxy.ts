@@ -236,8 +236,39 @@ function stripTimerFromSupported(pairs: Array<[string, string, string]>): Array<
   return result;
 }
 
-function rwOutboundReq(msg: SipMsg): Buffer {
+function rwOutboundReq(msg: SipMsg, s?: ProxyState): Buffer {
   const pairs = stripTimerFromSupported(ensureRport(msg.pairs));
+
+  // ── Rewrite Contact for outbound INVITE requests ────────────────────────
+  // The binary's INVITE sets Contact: <sip:user@VPS_IP:binaryPort> where
+  // binaryPort is the binary's SIP listen port (e.g. 7062).  When Yeastar
+  // sends BYE mid-dialog it targets that Contact address directly, bypassing
+  // our proxy extSock (proxyExtPort).  If the VPS firewall blocks that port
+  // from Yeastar's side the BYE is silently dropped and the binary never
+  // knows the call ended.
+  //
+  // Fix: replace the host:port in the Contact URI with VPS_IP:proxyExtPort
+  // so all mid-dialog requests from Yeastar (BYE, re-INVITE) flow through
+  // the proxy just like REGISTER-triggered INVITEs do.  This matches exactly
+  // what inbound mode does naturally (the binary registers through the proxy,
+  // so Yeastar learns proxyExtPort as the contact address).
+  if (s && sipMethod(msg.firstLine) === "INVITE") {
+    // Extract the external IP from the Via header (SIP/2.0/UDP ip:port;...)
+    const viaVal = pairs.find(([k]) => k === "via")?.[2] ?? "";
+    const viaIp  = viaVal.match(/SIP\/2\.0\/UDP\s+([0-9.]+)/i)?.[1] ?? "";
+    if (viaIp) {
+      const rewritten = pairs.map(([nKey, origKey, val]): [string, string, string] => {
+        if (nKey !== "contact") return [nKey, origKey, val];
+        // Replace @HOST:PORT inside the Contact URI with @viaIp:proxyExtPort.
+        // Handles both <sip:user@host:port> and bare sip:user@host:port forms.
+        const newVal = val.replace(/@([^;>\s:,]+):(\d+)/g,
+          () => `@${viaIp}:${s.proxyExtPort}`);
+        return [nKey, origKey, newVal];
+      });
+      return rebuild({ ...msg, pairs: rewritten });
+    }
+  }
+
   return rebuild({ ...msg, pairs });
 }
 
@@ -410,7 +441,7 @@ export async function startSipProxy(params: {
     } else if (!isRequest(msg.firstLine)) {
       out = rwOutboundResp(msg, s);
     } else {
-      out = rwOutboundReq(msg);
+      out = rwOutboundReq(msg, s);
     }
 
     // ── Track outbound INVITEs for ACK synthesis ───────────────────────────
