@@ -10,10 +10,10 @@ description: Source location, build command, concurrent-write fix, and sipgo v1.
 ```bash
 cd sip2
 go mod tidy  # first run: downloads dependencies (requires Go ≥1.23 — install go-1.25 module)
-CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o sip-agent-new .
-cp sip-agent-new ../.bin/sip-agent
-chmod +x ../.bin/sip-agent
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ../.bin/sip-agent .
 ```
+
+**CRITICAL: always use `CGO_ENABLED=0`.** Without it, Replit's Go toolchain produces a dynamically linked binary referencing `/nix/store/.../ld-linux-x86-64.so.2`, which does not exist on the VPS (Debian/Ubuntu). The binary silently fails to execute — no logs, no registration, no calls. Verify after every build: `file ../.bin/sip-agent` must say `statically linked`.
 
 ## The concurrent-write fix (WHY the old binary panicked)
 gorilla/websocket requires serialized writes. The old binary had two goroutines (`rtpToElevenLabs` and `elevenLabsToRTP`) writing to the same `*websocket.Conn` concurrently → `panic: concurrent write to websocket connection`.
