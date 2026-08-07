@@ -163,7 +163,9 @@ func (c *SIPClient) Register(ctx context.Context) error {
 	req := c.buildRegisterRequest()
 	req.SetDestination(fmt.Sprintf("%s:5060", host))
 
-	resp, err := c.client.Do(ctx, req, sipgo.ClientRequestAddVia)
+	// ClientRequestRegisterBuild adds all mandatory SIP headers (CSeq, CallID,
+	// Max-Forwards, Via) if missing. It also handles CSeq increment on re-sends.
+	resp, err := c.client.Do(ctx, req, sipgo.ClientRequestRegisterBuild)
 	if err != nil {
 		return fmt.Errorf("REGISTER failed: %w", err)
 	}

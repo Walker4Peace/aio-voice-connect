@@ -1,0 +1,50 @@
+[2026-08-07T00:24:43.998Z] Loaded config with 0 functions
+[2026-08-07T00:24:44.027Z] Starting HTTP API server on :19000
+[2026-08-07T00:24:44.029Z] 2026/08/07 02:24:43 DEBUG: Determined outbound IP as detecting...
+[2026-08-07T00:24:44.338Z] 2026/08/07 02:24:44 Local IP determined as: 13.140.151.164
+[2026-08-07T00:24:44.340Z] 2026/08/07 02:24:44 DEBUG: Retrieved external IP as 13.140.151.164
+[2026-08-07T00:24:44.341Z] 2026/08/07 02:24:44 External IP determined as: 13.140.151.164
+[2026-08-07T00:24:44.591Z] 2026/08/07 02:24:44 Starting SIP client with configuration:
+[2026-08-07T00:24:44.595Z] 2026/08/07 02:24:44 Username: 1005, Domain: aioprocess-demo.ras.yeastar.com, Server: aioprocess-demo.ras.yeastar.com:5060, Transport: UDP
+[2026-08-07T00:24:44.607Z] 2026/08/07 02:24:44 Auth ID: TjoCu4uhmD (using separate authorization ID)
+[2026-08-07T00:24:44.611Z] 2026/08/07 02:24:44 Outbound Proxy: 127.0.0.1:17060
+[2026-08-07T00:24:44.611Z] 2026/08/07 02:24:44 REGISTER via outbound proxy: 127.0.0.1:17060
+[2026-08-07T00:24:44.619Z] 2026/08/07 02:24:44 Sending REGISTER request via sipgo client.
+[2026-08-07T00:24:44.619Z] 2026/08/07 02:24:44 SIP registration failed: REGISTER failed: 'CSeq' header not found in message 'request method=REGISTER Recipient=sip:aioprocess-demo.ras.yeastar.com:5060 transport=UDP source=13.140.151.164:7060'
+[2026-08-07T00:24:58.049Z] Loaded config with 0 functions
+[2026-08-07T00:24:58.067Z] Starting HTTP API server on :19000
+[2026-08-07T00:24:58.069Z] 2026/08/07 02:24:58 DEBUG: Determined outbound IP as detecting...
+[2026-08-07T00:24:58.105Z] 2026/08/07 02:24:58 Local IP determined as: 13.140.151.164
+[2026-08-07T00:24:58.105Z] 2026/08/07 02:24:58 DEBUG: Retrieved external IP as 13.140.151.164
+[2026-08-07T00:24:58.105Z] 2026/08/07 02:24:58 External IP determined as: 13.140.151.164
+[2026-08-07T00:24:58.284Z] 2026/08/07 02:24:58 Starting SIP client with configuration:
+[2026-08-07T00:24:58.293Z] 2026/08/07 02:24:58 Username: 1005, Domain: aioprocess-demo.ras.yeastar.com, Server: aioprocess-demo.ras.yeastar.com:5060, Transport: UDP
+[2026-08-07T00:24:58.298Z] 2026/08/07 02:24:58 Auth ID: TjoCu4uhmD (using separate authorization ID)
+[2026-08-07T00:24:58.298Z] 2026/08/07 02:24:58 Outbound Proxy: 127.0.0.1:17060
+[2026-08-07T00:24:58.298Z] 2026/08/07 02:24:58 REGISTER via outbound proxy: 127.0.0.1:17060
+[2026-08-07T00:24:58.298Z] 2026/08/07 02:24:58 Sending REGISTER request via sipgo client.
+[2026-08-07T00:24:58.298Z] 2026/08/07 02:24:58 SIP registration failed: REGISTER failed: 'CSeq' header not found in message 'request method=REGISTER Recipient=sip:aioprocess-demo.ras.yeastar.com:5060 transport=UDP source=13.140.151.164:7060'
+[2026-08-07T00:25:32.480Z] Loaded config with 0 functions
+[2026-08-07T00:25:32.484Z] Starting HTTP API server on :19000
+[2026-08-07T00:25:32.494Z] 2026/08/07 02:25:32 DEBUG: Determined outbound IP as detecting...
+[2026-08-07T00:25:32.518Z] 2026/08/07 02:25:32 Local IP determined as: 13.140.151.164
+[2026-08-07T00:25:32.518Z] 2026/08/07 02:25:32 DEBUG: Retrieved external IP as 13.140.151.164
+[2026-08-07T00:25:32.518Z] 2026/08/07 02:25:32 External IP determined as: 13.140.151.164
+[2026-08-07T00:25:32.702Z] 2026/08/07 02:25:32 Starting SIP client with configuration:
+[2026-08-07T00:25:32.702Z] 2026/08/07 02:25:32 Username: 1005, Domain: aioprocess-demo.ras.yeastar.com, Server: aioprocess-demo.ras.yeastar.com:5060, Transport: UDP
+[2026-08-07T00:25:32.702Z] 2026/08/07 02:25:32 Auth ID: TjoCu4uhmD (using separate authorization ID)
+[2026-08-07T00:25:32.702Z] 2026/08/07 02:25:32 Outbound Proxy: 127.0.0.1:17060
+[2026-08-07T00:25:32.702Z] 2026/08/07 02:25:32 REGISTER via outbound proxy: 127.0.0.1:17060
+[2026-08-07T00:25:32.702Z] 2026/08/07 02:25:32 Sending REGISTER request via sipgo client.
+[2026-08-07T00:25:32.702Z] 2026/08/07 02:25:32 SIP registration failed: REGISTER failed: 'CSeq' header not found in message 'request method=REGISTER Recipient=sip:aioprocess-demo.ras.yeastar.com:5060 transport=UDP source=13.140.151.164:7060'
+[2026-08-07T00:27:01.216Z] Loaded config with 0 functions
+[2026-08-07T00:27:01.216Z] Starting HTTP API server on :19000
+[2026-08-07T00:27:01.216Z] 2026/08/07 02:27:01 DEBUG: Determined outbound IP as detecting...
+[2026-08-07T00:27:01.265Z] 2026/08/07 02:27:01 Local IP determined as: 13.140.151.164
+[2026-08-07T00:27:01.265Z] 2026/08/07 02:27:01 DEBUG: Retrieved external IP as 13.140.151.164
+[2026-08-07T00:27:01.266Z] 2026/08/07 02:27:01 External IP determined as: 13.140.151.164
+[2026-08-07T00:27:01.471Z] 2026/08/07 02:27:01 Starting SIP client with configuration:
+[2026-08-07T00:27:01.471Z] 2026/08/07 02:27:01 Username: 1005, Domain: 196.115.247.82, Server: 196.115.247.82:5060, Transport: UDP
+[2026-08-07T00:27:01.471Z] 2026/08/07 02:27:01 Auth ID: TjoCu4uhmD (using separate authorization ID)
+[2026-08-07T00:27:01.471Z] 2026/08/07 02:27:01 Sending REGISTER request via sipgo client.
+[2026-08-07T00:27:01.471Z] 2026/08/07 02:27:01 SIP registration failed: REGISTER failed: 'CSeq' header not found in message 'request method=REGISTER Recipient=sip:196.115.247.82:5060 transport=UDP source=13.140.151.164:7060'

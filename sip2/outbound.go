@@ -47,8 +47,9 @@ func runOutboundMode(ctx context.Context, sipClient *SIPClient, cfg *Config, api
 	// Build the INVITE request
 	inviteReq := buildInviteRequest(sipClient, ob.TargetNumber, ob.CallerID, sdpOffer, cfg)
 
-	// Use Dialog API for INVITE (handles auth automatically via WaitAnswer)
-	session, err := sipClient.dialogUA.WriteInvite(ctx, inviteReq, sipgo.ClientRequestAddVia)
+	// Use Dialog API for INVITE (handles auth automatically via WaitAnswer).
+	// ClientRequestBuild adds CSeq, CallID, Max-Forwards if missing.
+	session, err := sipClient.dialogUA.WriteInvite(ctx, inviteReq, sipgo.ClientRequestBuild)
 	if err != nil {
 		return fmt.Errorf("INVITE failed: %w", err)
 	}
