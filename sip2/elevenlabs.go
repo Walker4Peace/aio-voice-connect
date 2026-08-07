@@ -302,18 +302,23 @@ func (b *ElevenLabsBridge) Start(ctx context.Context) {
 	var wg sync.WaitGroup
 	wg.Add(3)
 
-	// 1. ElevenLabs reader
+	// 1. ElevenLabs reader — closes queue when done.
+	//    Does NOT cancel bridgeCtx here: the pacer must drain any remaining
+	//    queued audio (e.g. farewell phrase) before the bridge tears down.
 	go func() {
 		defer wg.Done()
-		defer cancelBridge() // unblocks rtpToElevenLabs
-		defer closeQueue()   // unblocks rtpPacer after drain
+		defer closeQueue()
 		b.elevenLabsReader(bridgeCtx)
 	}()
 
-	// 2. RTP pacer (one packet per 20 ms)
+	// 2. RTP pacer — drains the queue to completion, then cancels bridge.
+	//    Receives parent ctx so it stops on BYE/shutdown even mid-drain.
+	//    When it exits (queue drained or parent cancelled) it cancels
+	//    bridgeCtx, which unblocks rtpToElevenLabs.
 	go func() {
 		defer wg.Done()
-		b.rtpPacer(bridgeCtx)
+		defer cancelBridge()
+		b.rtpPacer(ctx) // parent ctx — not bridgeCtx
 	}()
 
 	// 3. Phone → ElevenLabs forwarder
@@ -323,7 +328,7 @@ func (b *ElevenLabsBridge) Start(ctx context.Context) {
 	}()
 
 	wg.Wait()
-	cancelBridge() // ensure no leak if Start returns first
+	cancelBridge() // safety: ensure no leak
 }
 
 // enqueuePCMU splits a raw PCMU buffer into 160-byte (20 ms) chunks and
@@ -359,46 +364,72 @@ var pcmuSilence160 = func() []byte {
 }()
 
 // rtpPacer sends one 160-byte PCMU chunk from rtpQueue every 20 ms.
-// This decouples ElevenLabs burst delivery from real-time RTP pacing so the
-// phone's jitter buffer is never overflowed.
+//
+// Timing: uses an absolute start-time reference so each packet fires at
+// start + N×20ms. Unlike time.Ticker, drift never accumulates — if a tick
+// is late the next one fires immediately to catch up, keeping the inter-
+// packet spacing centred on exactly 20 ms over the life of the call.
+//
+// Lifecycle:
+//   - Runs until ctx is cancelled (BYE / shutdown) OR rtpQueue is closed
+//     and fully drained (conversation_ended / WS close).
+//   - Caller defers cancelBridge() so rtpToElevenLabs is unblocked only
+//     after the pacer finishes — ensuring farewell audio is delivered.
 func (b *ElevenLabsBridge) rtpPacer(ctx context.Context) {
-	ticker := time.NewTicker(20 * time.Millisecond)
-	defer ticker.Stop()
+	const period = 20 * time.Millisecond
+	start := time.Now()
+	pktNum := 0 // how many 20-ms slots have elapsed since start
 	sent := 0
 	firstSent := false
+
 	for {
+		// Calculate when the next packet should be sent.
+		nextAt := start.Add(time.Duration(pktNum) * period)
+		waitFor := time.Until(nextAt)
+
+		if waitFor > 0 {
+			select {
+			case <-ctx.Done():
+				return
+			case <-time.After(waitFor):
+			}
+		}
+		pktNum++
+
+		// Check context once more before sending.
 		select {
 		case <-ctx.Done():
 			return
-		case <-ticker.C:
-			// Non-blocking read: send one packet per tick.
-			// If no audio is ready, send a PCMU silence packet so the phone's
-			// jitter buffer never starves (avoids choppy/cutting audio).
-			select {
-			case pkt, ok := <-b.rtpQueue:
-				if !ok {
-					return // queue closed (conversation ended)
-				}
-				if !firstSent {
-					firstSent = true
-					log.Printf("RTP pacer: sending first audio packet to %s", b.rtpConn.RemoteAddr())
-				}
-				if err := b.rtpConn.SendPacket(pkt); err != nil {
-					log.Printf("Error sending RTP packet: %v", err)
-				}
-				sent++
-				if sent%100 == 0 {
-					log.Printf("RTP pacer: sent %d audio packets to %s", sent, b.rtpConn.RemoteAddr())
-				}
-			default:
-				// No audio queued — send PCMU silence (0xFF = µ-law encoded zero).
-				if !firstSent {
-					firstSent = true
-					log.Printf("RTP pacer: sending first silence packet to %s", b.rtpConn.RemoteAddr())
-				}
-				if err := b.rtpConn.SendPacket(pcmuSilence160); err != nil {
-					log.Printf("Error sending silence RTP packet: %v", err)
-				}
+		default:
+		}
+
+		// Non-blocking read: send queued audio or silence.
+		select {
+		case pkt, ok := <-b.rtpQueue:
+			if !ok {
+				// Queue closed and drained — conversation fully delivered.
+				log.Printf("RTP pacer: queue drained, stopping (sent %d audio packets)", sent)
+				return
+			}
+			if !firstSent {
+				firstSent = true
+				log.Printf("RTP pacer: sending first audio packet to %s", b.rtpConn.RemoteAddr())
+			}
+			if err := b.rtpConn.SendPacket(pkt); err != nil {
+				log.Printf("Error sending RTP packet: %v", err)
+			}
+			sent++
+			if sent%100 == 0 {
+				log.Printf("RTP pacer: sent %d audio packets to %s", sent, b.rtpConn.RemoteAddr())
+			}
+		default:
+			// No audio queued — send PCMU silence (0xFF = µ-law zero).
+			if !firstSent {
+				firstSent = true
+				log.Printf("RTP pacer: sending first silence packet to %s", b.rtpConn.RemoteAddr())
+			}
+			if err := b.rtpConn.SendPacket(pcmuSilence160); err != nil {
+				log.Printf("Error sending silence RTP packet: %v", err)
 			}
 		}
 	}
