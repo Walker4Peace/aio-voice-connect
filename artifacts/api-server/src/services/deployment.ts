@@ -339,6 +339,28 @@ function parseAndStoreCallEvents(extensionId: number, line: string, timestamp: s
   // Note: the process kill + finalizeOutboundCall also fires from handleData
   // (the outbound BYE kill block); this is the companion event-storage side.
   if (outboundCallModes.has(extensionId) && /WARN SIP request handler not found.*method=BYE/i.test(body)) {
+    // Guard: only act if this extension actually has an answered (bridged) call.
+    // When two outbound calls run simultaneously, one extension's INVITE may be
+    // mis-routed through the other extension's proxy.  Yeastar then sends the
+    // BYE to the wrong extSock → wrong binary → WARN log.  sip-proxy.ts has a
+    // first-line interceptor (phantom BYE → auto 200 OK, no forward), but if the
+    // BYE slips through before the proxy can catch it, this guard is the safety net.
+    // If this extension has no active bridge (call not yet answered / still
+    // dialling), the BYE is definitely for another extension's call — ignore it.
+    const hasActiveBridge = persistedCallEvents.some(inv => {
+      if (inv.extensionId !== extensionId || inv.event !== "invite") return false;
+      return !persistedCallEvents.some(
+        en => en.extensionId === extensionId && en.callId === inv.callId && en.event === "ended",
+      );
+    });
+    if (!hasActiveBridge) {
+      logger.warn(
+        { extensionId },
+        "Outbound BYE WARN received with no active bridge — likely cross-ext mis-routed BYE; ignoring to protect ongoing dial",
+      );
+      return;
+    }
+
     const lastInvite = [...persistedCallEvents].reverse().find(
       e => e.extensionId === extensionId && e.event === "invite"
     );
