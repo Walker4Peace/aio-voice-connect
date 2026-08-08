@@ -133,6 +133,9 @@ function eventLabel(ev: CallEvent, isOutbound: boolean, extLabel: string, t: (ke
       return translatedDetail ? t("calls.eventAiResponded", { detail: translatedDetail }) : t("calls.eventAiRespondedSimple");
     }
     case "ended":
+      // "No response from +NNN" is set for unanswered / declined outbound
+      // calls — display it verbatim rather than wrapping in "Call ended by …".
+      if (ev.detail?.startsWith("No response")) return ev.detail;
       return ev.detail ? t("calls.eventCallEnded", { detail: ev.detail }) : t("calls.eventCallEndedSimple");
     case "error":
       return ev.detail ? t("calls.eventError", { detail: ev.detail }) : t("calls.eventErrorSimple");

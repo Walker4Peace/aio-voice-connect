@@ -20,6 +20,7 @@ import {
   clearOutboundBYEHandler,
   setInboundBYEHandler,
   clearInboundBYEHandler,
+  getFirstPendingCallId,
 } from "./sip-proxy.js";
 import { dropCallViaYeastar, hangupCallViaYeastar, type YeastarClient } from "./yeastarCalls.js";
 
@@ -64,6 +65,9 @@ const outboundCallModes = new Set<number>();
 // Buffer for connected_ai events that fired before the bridge callId was known.
 // Drained (with the real callId) when "Registered bridge for call:" is detected.
 const pendingConnectedAi = new Map<number, Array<{ timestamp: string; detail: string }>>();
+// Tracks the phone number of the active outbound call per extension so that
+// no-answer / declined events can include it in the call history detail.
+const outboundPhoneNumbers = new Map<number, string>();
 // Active interval timers pinging the Yeastar server
 const watchdogTimers = new Map<number, ReturnType<typeof setInterval>>();
 const WATCHDOG_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
@@ -347,6 +351,31 @@ function parseAndStoreCallEvents(extensionId: number, line: string, timestamp: s
       pushEvent({ extensionId, callId, event: "ended", timestamp, detail: endedBy });
     }
     finalizeOutboundCall(extensionId, "completed");
+    return;
+  }
+
+  // ── Outbound INVITE rejected (not answered / declined / timeout) ─────────
+  // Yeastar replies with 4xx (typically 486 Busy Here for declined / ring
+  // timeout) and the binary logs this line before exiting with code 1.
+  // No bridge is ever registered so no invite event exists yet — create
+  // both invite and ended so the call appears in Call History.
+  if (
+    outboundCallModes.has(extensionId) &&
+    /Outbound call error:.*Invite failed with response:/i.test(body)
+  ) {
+    const alreadyInvited = persistedCallEvents.some(
+      e => e.extensionId === extensionId && e.event === "invite"
+    );
+    if (!alreadyInvited) {
+      // The SIP Call-ID is still in the proxy's pendingInvites (never deleted
+      // for 4xx, only for BYE) so we can retrieve the real Call-ID here.
+      const callId =
+        getFirstPendingCallId(extensionId) ?? `outbound-noanswer-${Date.now()}`;
+      const phoneNumber = outboundPhoneNumbers.get(extensionId);
+      const endedDetail = phoneNumber ? `No response from ${phoneNumber}` : "No response";
+      pushEvent({ extensionId, callId, event: "invite", timestamp });
+      pushEvent({ extensionId, callId, event: "ended", timestamp, detail: endedDetail });
+    }
     return;
   }
 
@@ -1141,7 +1170,10 @@ export async function applyOutboundConfigAndRestart(
   outboundTarget?: { phoneNumber: string; callerId?: string | null; taskDescription?: string | null },
 ): Promise<boolean> {
   // 1. Track outbound mode so proc.on("exit") knows to stay stopped after the call.
-  if (outboundTarget) outboundCallModes.add(extensionId);
+  if (outboundTarget) {
+    outboundCallModes.add(extensionId);
+    outboundPhoneNumbers.set(extensionId, outboundTarget.phoneNumber);
+  }
 
   // 2. Kill existing process if running — does not set manuallyStopped.
   const info = processes.get(extensionId);
@@ -1617,6 +1649,7 @@ export async function startExtension(extensionId: number, opts?: {
     // BYE WARN log line was not detected (e.g. process killed externally).
     if (outboundCallModes.has(extensionId)) {
       outboundCallModes.delete(extensionId);
+      outboundPhoneNumbers.delete(extensionId);
       // Store "ended" event for any open invite so Call History shows the call as finished.
       // This covers crashes/panics that prevent the BYE log line from being emitted.
       const exitTimestamp = new Date().toISOString();

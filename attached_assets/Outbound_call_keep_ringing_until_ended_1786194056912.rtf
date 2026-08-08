@@ -1,0 +1,259 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2868
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww29200\viewh15740\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 root@vmi3357322:/opt/aio-voice-connect# journalctl -u aio-voice-connect-api -f\
+Aug 08 14:52:18 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193538029,"pid":3901258,"hostname":"vmi3357322","extensionId":1,"dir":"proxy\uc0\u8594 Yeastar","from":"0.0.0.0:27060","to":"52.47.94.244:5060","sip":"SIP/2.0 200 OK (auto: OPTIONS)","msg":"SIP proxy packet"\}\
+Aug 08 14:52:19 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193539918,"pid":3901258,"hostname":"vmi3357322","req":\{"id":321,"method":"GET","url":"/api/deploy/system/logs"\},"res":\{"statusCode":200\},"responseTime":3,"msg":"request completed"\}\
+Aug 08 14:52:20 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193540921,"pid":3901258,"hostname":"vmi3357322","req":\{"id":322,"method":"GET","url":"/api/extensions"\},"res":\{"statusCode":304\},"responseTime":7,"msg":"request completed"\}\
+Aug 08 14:52:20 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193540978,"pid":3901258,"hostname":"vmi3357322","req":\{"id":323,"method":"GET","url":"/api/outbound/calls"\},"res":\{"statusCode":304\},"responseTime":14,"msg":"request completed"\}\
+Aug 08 14:52:21 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193541991,"pid":3901258,"hostname":"vmi3357322","req":\{"id":324,"method":"GET","url":"/api/extensions"\},"res":\{"statusCode":304\},"responseTime":18,"msg":"request completed"\}\
+Aug 08 14:52:22 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193542079,"pid":3901258,"hostname":"vmi3357322","req":\{"id":325,"method":"GET","url":"/api/deploy/call-events"\},"res":\{"statusCode":304\},"responseTime":38,"msg":"request completed"\}\
+Aug 08 14:52:28 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193548054,"pid":3901258,"hostname":"vmi3357322","extensionId":1,"dir":"proxy\uc0\u8594 Yeastar","from":"0.0.0.0:27060","to":"52.47.94.244:5060","sip":"SIP/2.0 200 OK (auto: OPTIONS)","msg":"SIP proxy packet"\}\
+Aug 08 14:52:28 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193548577,"pid":3901258,"hostname":"vmi3357322","req":\{"id":326,"method":"GET","url":"/api/deploy/system/logs"\},"res":\{"statusCode":200\},"responseTime":7,"msg":"request completed"\}\
+Aug 08 14:54:18 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193658033,"pid":3901258,"hostname":"vmi3357322","extensionId":1,"dir":"proxy\uc0\u8594 Yeastar","from":"0.0.0.0:27060","to":"52.47.94.244:5060","sip":"SIP/2.0 200 OK (auto: OPTIONS)","msg":"SIP proxy packet"\}\
+Aug 08 14:54:28 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193668056,"pid":3901258,"hostname":"vmi3357322","extensionId":1,"dir":"proxy\uc0\u8594 Yeastar","from":"0.0.0.0:27060","to":"52.47.94.244:5060","sip":"SIP/2.0 200 OK (auto: OPTIONS)","msg":"SIP proxy packet"\}\
+Aug 08 14:54:47 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193687271,"pid":3901258,"hostname":"vmi3357322","extensionId":2,"callId":96,"phoneNumber":"+212661209845","msg":"Restarting extension in outbound mode \'97 binary will place the call itself"\}\
+Aug 08 14:54:47 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193687335,"pid":3901258,"hostname":"vmi3357322","extensionId":2,"msg":"SIP FQDN proxy stopped"\}\
+Aug 08 14:54:47 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193687351,"pid":3901258,"hostname":"vmi3357322","extensionId":2,"yeastarHost":"aioprocess-demo.ras.yeastar.com","yeastarIp":"52.47.94.244","msg":"SIP proxy: resolved Yeastar FQDN"\}\
+Aug 08 14:54:47 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193687352,"pid":3901258,"hostname":"vmi3357322","extensionId":2,"proxyLocalPort":17062,"proxyExtPort":27062,"binaryListenPort":7062,"yeastarIp":"52.47.94.244","yeastarHost":"aioprocess-demo.ras.yeastar.com","yeastarPort":5060,"msg":"SIP FQDN proxy started \'97 direct FQDN interception (no /etc/hosts)"\}\
+Aug 08 14:54:47 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193687352,"pid":3901258,"hostname":"vmi3357322","extensionId":2,"sipLocalPort":7062,"realSipServer":"aioprocess-demo.ras.yeastar.com:5060","proxyAddress":"127.0.0.1:17062","msg":"SIP FQDN proxy active \'97 binary will use SIP_OUTBOUND_PROXY"\}\
+Aug 08 14:54:47 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193687540,"pid":3901258,"hostname":"vmi3357322","extensionId":2,"sipLocalPort":7062,"offset":4261180,"msg":"Patched sip-agent binary local SIP port"\}\
+Aug 08 14:54:47 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193687613,"pid":3901258,"hostname":"vmi3357322","extensionId":2,"patchedBin":"/tmp/sip-agent/2/sip-agent","sipLocalPort":7062,"msg":"Spawning patched sip-agent"\}\
+Aug 08 14:54:47 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:47.645Z] Loaded config with 0 functions\
+Aug 08 14:54:47 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:47.645Z] Starting HTTP API server on :19001\
+Aug 08 14:54:47 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:47.645Z] 2026/08/08 14:54:47 DEBUG: Determined outbound IP as detecting...\
+Aug 08 14:54:47 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:47.678Z] 2026/08/08 14:54:47 Local IP determined as: 13.140.151.164\
+Aug 08 14:54:47 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:47.678Z] 2026/08/08 14:54:47 DEBUG: Retrieved external IP as 13.140.151.164\
+Aug 08 14:54:47 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:47.678Z] 2026/08/08 14:54:47 External IP determined as: 13.140.151.164\
+Aug 08 14:54:47 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:47.881Z] 2026/08/08 14:54:47 Starting SIP client with configuration:\
+Aug 08 14:54:47 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:47.882Z] 2026/08/08 14:54:47 Username: 1004, Domain: aioprocess-demo.ras.yeastar.com, Server: aioprocess-demo.ras.yeastar.com:5060, Transport: UDP\
+Aug 08 14:54:47 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:47.882Z] 2026/08/08 14:54:47 Auth ID: qjFB7cTE9q (using separate authorization ID)\
+Aug 08 14:54:47 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:47.882Z] 2026/08/08 14:54:47 Outbound Proxy: 127.0.0.1:17062\
+Aug 08 14:54:47 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:47.882Z] 2026/08/08 14:54:47 REGISTER via outbound proxy: 127.0.0.1:17062\
+Aug 08 14:54:47 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:47.882Z] 2026/08/08 14:54:47 Sending REGISTER request via sipgo client.\
+Aug 08 14:54:47 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193687882,"pid":3901258,"hostname":"vmi3357322","extensionId":2,"dir":"binary\uc0\u8594 Yeastar","from":"127.0.0.1:35140","to":"52.47.94.244:5060","sip":"REGISTER sip:aioprocess-demo.ras.yeastar.com:5060 SIP/2.0","msg":"SIP proxy packet"\}\
+Aug 08 14:54:47 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193687893,"pid":3901258,"hostname":"vmi3357322","extensionId":1,"dir":"binary\uc0\u8594 Yeastar","from":"13.140.151.164:27062","to":"52.47.94.244:5060","sip":"REGISTER sip:aioprocess-demo.ras.yeastar.com:5060 SIP/2.0","msg":"SIP proxy packet"\}\
+Aug 08 14:54:47 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193687952,"pid":3901258,"hostname":"vmi3357322","extensionId":1,"dir":"Yeastar\uc0\u8594 binary","from":"52.47.94.244:5060","to":"127.0.0.1:27062","sip":"SIP/2.0 401 Unauthorized","msg":"SIP proxy packet"\}\
+Aug 08 14:54:47 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193687969,"pid":3901258,"hostname":"vmi3357322","extensionId":2,"dir":"Yeastar\uc0\u8594 binary","from":"127.0.0.1:17060","to":"127.0.0.1:35140","sip":"SIP/2.0 401 Unauthorized","msg":"SIP proxy packet"\}\
+Aug 08 14:54:47 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:47.977Z] 2026/08/08 14:54:47 First 401 received. Response:\
+Aug 08 14:54:47 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:47.989Z] 2026/08/08 14:54:47 SIP/2.0 401 Unauthorized\
+Aug 08 14:54:47 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:47.989Z] 2026/08/08 14:54:47   Via: SIP/2.0/UDP 13.140.151.164:7062;received=13.140.151.164;branch=z9hG4bK.RqnlxU8dQtzI2oih;rport=27060\
+Aug 08 14:54:47 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:47.989Z] 2026/08/08 14:54:47   Call-ID: f8be8671-a9b1-496a-a839-58c2729c8f1b\
+Aug 08 14:54:47 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:47.989Z] 2026/08/08 14:54:47   From: <sip:1004@aioprocess-demo.ras.yeastar.com>;tag=l9eC1RYS\
+Aug 08 14:54:47 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:47.989Z] 2026/08/08 14:54:47   To: <sip:1004@aioprocess-demo.ras.yeastar.com>;tag=z9hG4bK859b.3bd6d4b6.0\
+Aug 08 14:54:47 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:47.990Z] 2026/08/08 14:54:47   CSeq: 16749 REGISTER\
+Aug 08 14:54:47 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:47.990Z] 2026/08/08 14:54:47   WWW-Authenticate: Digest  realm="YSAsterisk",nonce="1786188311/f738e7c6bfecace22ef25ae32503b874",opaque="5f1d5c464b7e520b",algorithm=md5,qop="auth"\
+Aug 08 14:54:47 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:47.990Z] 2026/08/08 14:54:47   Server: Yeastar PSE\
+Aug 08 14:54:47 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:47.990Z] 2026/08/08 14:54:47   Content-Length: 0\
+Aug 08 14:54:47 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:47.990Z] 2026/08/08 14:54:47   YSUser-Agent: YSBC 2.12.30\
+Aug 08 14:54:47 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:47.990Z] 2026/08/08 14:54:47 Auth: digestUsername=qjFB7cTE9q, realm=YSAsterisk, uri=sip:aioprocess-demo.ras.yeastar.com, password=WQHy0b05PJ\
+Aug 08 14:54:47 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:47.990Z] 2026/08/08 14:54:47 Resending REGISTER with Authorization header (CSeq=2).\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193687990,"pid":3901258,"hostname":"vmi3357322","extensionId":2,"dir":"binary\uc0\u8594 Yeastar","from":"127.0.0.1:35140","to":"52.47.94.244:5060","sip":"REGISTER sip:aioprocess-demo.ras.yeastar.com:5060 SIP/2.0","msg":"SIP proxy packet"\}\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193687992,"pid":3901258,"hostname":"vmi3357322","extensionId":1,"dir":"binary\uc0\u8594 Yeastar","from":"13.140.151.164:27062","to":"52.47.94.244:5060","sip":"REGISTER sip:aioprocess-demo.ras.yeastar.com:5060 SIP/2.0","msg":"SIP proxy packet"\}\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193688062,"pid":3901258,"hostname":"vmi3357322","extensionId":1,"dir":"Yeastar\uc0\u8594 binary","from":"52.47.94.244:5060","to":"127.0.0.1:27062","sip":"SIP/2.0 200 OK","msg":"SIP proxy packet"\}\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193688063,"pid":3901258,"hostname":"vmi3357322","extensionId":1,"dir":"proxy\uc0\u8594 Yeastar","from":"0.0.0.0:27060","to":"52.47.94.244:5060","sip":"SIP/2.0 200 OK (auto: NOTIFY)","msg":"SIP proxy packet"\}\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193688063,"pid":3901258,"hostname":"vmi3357322","extensionId":2,"dir":"Yeastar\uc0\u8594 binary","from":"127.0.0.1:17060","to":"127.0.0.1:35140","sip":"SIP/2.0 200 OK","msg":"SIP proxy packet"\}\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:48.072Z] 2026/08/08 14:54:48 Received REGISTER response: SIP/2.0 200 OK\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:48.073Z] 2026/08/08 14:54:48 SIP/2.0 200 OK\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:48.073Z] 2026/08/08 14:54:48   Via: SIP/2.0/UDP 13.140.151.164:7062;received=13.140.151.164;branch=z9hG4bK.ZithWcVOB5tR2nyD;rport=27060\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:48.073Z] 2026/08/08 14:54:48   Call-ID: f8be8671-a9b1-496a-a839-58c2729c8f1b\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:48.073Z] 2026/08/08 14:54:48   From: <sip:1004@aioprocess-demo.ras.yeastar.com>;tag=l9eC1RYS\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:48.073Z] 2026/08/08 14:54:48   To: <sip:1004@aioprocess-demo.ras.yeastar.com>;tag=z9hG4bK159b.169992e7.0\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:48.073Z] 2026/08/08 14:54:48   CSeq: 16750 REGISTER\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:48.073Z] 2026/08/08 14:54:48   Contact: <sip:1004@aioprocess-demo.ras.yeastar.com:5060>;expires=3577\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:48.073Z] 2026/08/08 14:54:48   Date: Sat, 08 Aug 2026 11:25:11 GMT\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:48.073Z] 2026/08/08 14:54:48   Expires: 3595\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:48.073Z] 2026/08/08 14:54:48   Server: Yeastar PSE\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:48.073Z] 2026/08/08 14:54:48   Content-Length: 0\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:48.073Z] 2026/08/08 14:54:48   YSUser-Agent: YSBC 2.12.30\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:48.073Z] 2026/08/08 14:54:48 Registration successful!\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:48.074Z] 2026/08/08 14:54:48 Registered with SIP provider\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:48.074Z] 2026/08/08 14:54:48 === OUTBOUND CALLING MODE ===\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:48.074Z] 2026/08/08 14:54:48 Target: +212661209845\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:48.074Z] 2026/08/08 14:54:48 Task:\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:48.074Z] 2026/08/08 14:54:48 Initiating outbound call to +212661209845\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:48.074Z] 2026/08/08 14:54:48 Sending INVITE to sip:+212661209845@aioprocess-demo.ras.yeastar.com\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:48.074Z] 2026/08/08 14:54:48 SDP Offer:\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:48.074Z] 2026/08/08 14:54:48 v=0\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:48.074Z] 2026/08/08 14:54:48 o=- 5819014490103091225 6824095947271956352 IN IP4 13.140.151.164\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:48.074Z] 2026/08/08 14:54:48 s=-\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:48.074Z] 2026/08/08 14:54:48 c=IN IP4 13.140.151.164\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:48.074Z] 2026/08/08 14:54:48 t=0 0\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:48.074Z] 2026/08/08 14:54:48 m=audio 54979 RTP/AVP 0 8 18 101\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:48.074Z] 2026/08/08 14:54:48 a=rtpmap:0 PCMU/8000\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:48.074Z] 2026/08/08 14:54:48 a=rtpmap:8 PCMA/8000\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:48.074Z] 2026/08/08 14:54:48 a=rtpmap:18 G729/8000\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:48.074Z] 2026/08/08 14:54:48 a=rtpmap:101 telephone-event/8000\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:48.074Z] 2026/08/08 14:54:48 a=fmtp:101 0-16\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:48.074Z] 2026/08/08 14:54:48 a=ptime:20\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:48.074Z] 2026/08/08 14:54:48 a=sendrecv\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:48.074Z] 2026/08/08 14:54:48 Using outbound proxy: 127.0.0.1:17062\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:48.078Z] RTP listener created on 0.0.0.0:54979\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193688080,"pid":3901258,"hostname":"vmi3357322","extensionId":2,"dir":"binary\uc0\u8594 Yeastar","from":"127.0.0.1:35140","to":"52.47.94.244:5060","sip":"INVITE sip:+212661209845@aioprocess-demo.ras.yeastar.com SIP/2.0","msg":"SIP proxy packet"\}\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193688082,"pid":3901258,"hostname":"vmi3357322","extensionId":1,"dir":"binary\uc0\u8594 Yeastar","from":"13.140.151.164:27062","to":"52.47.94.244:5060","sip":"INVITE sip:+212661209845@aioprocess-demo.ras.yeastar.com SIP/2.0","msg":"SIP proxy packet"\}\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193688143,"pid":3901258,"hostname":"vmi3357322","extensionId":1,"dir":"Yeastar\uc0\u8594 binary","from":"52.47.94.244:5060","to":"127.0.0.1:27062","sip":"SIP/2.0 401 Unauthorized","msg":"SIP proxy packet"\}\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193688144,"pid":3901258,"hostname":"vmi3357322","extensionId":2,"dir":"Yeastar\uc0\u8594 binary","from":"127.0.0.1:17060","to":"127.0.0.1:35140","sip":"SIP/2.0 401 Unauthorized","msg":"SIP proxy packet"\}\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193688145,"pid":3901258,"hostname":"vmi3357322","extensionId":2,"dir":"binary\uc0\u8594 Yeastar","from":"127.0.0.1:35140","to":"52.47.94.244:5060","sip":"ACK sip:+212661209845@aioprocess-demo.ras.yeastar.com SIP/2.0","msg":"SIP proxy packet"\}\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:48.146Z] 2026/08/08 14:54:48 Received 401 Unauthorized\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:48.146Z] 2026/08/08 14:54:48 First 401 received. Response:\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:48.146Z] 2026/08/08 14:54:48 SIP/2.0 401 Unauthorized\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:48.146Z] 2026/08/08 14:54:48   Via: SIP/2.0/UDP 13.140.151.164:7062;received=13.140.151.164;rport=27060;branch=z9hG4bK.I5arI8ypAPU7yVGq\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:48.146Z] 2026/08/08 14:54:48   Call-ID: 5agiIapL-3078048602531352512\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:48.146Z] 2026/08/08 14:54:48   From: "1004" <sip:1004@aioprocess-demo.ras.yeastar.com>;tag=1fHlcImO\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:48.146Z] 2026/08/08 14:54:48   To: <sip:+212661209845@aioprocess-demo.ras.yeastar.com>;tag=z9hG4bK08b1.520538d2.0\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:48.146Z] 2026/08/08 14:54:48   CSeq: 7451 INVITE\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193688147,"pid":3901258,"hostname":"vmi3357322","extensionId":1,"dir":"binary\uc0\u8594 Yeastar","from":"13.140.151.164:27062","to":"52.47.94.244:5060","sip":"ACK sip:+212661209845@aioprocess-demo.ras.yeastar.com SIP/2.0","msg":"SIP proxy packet"\}\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:48.150Z] 2026/08/08 14:54:48   WWW-Authenticate: Digest  realm="YSAsterisk",nonce="1786188311/f738e7c6bfecace22ef25ae32503b874",opaque="26fdd5102da3e240",algorithm=md5,qop="auth"\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:48.151Z] 2026/08/08 14:54:48   Server: Yeastar PSE\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:48.151Z] 2026/08/08 14:54:48   Content-Length: 0\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:48.151Z] 2026/08/08 14:54:48   YSUser-Agent: YSBC 2.12.30\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193688156,"pid":3901258,"hostname":"vmi3357322","extensionId":2,"dir":"binary\uc0\u8594 Yeastar","from":"127.0.0.1:35140","to":"52.47.94.244:5060","sip":"INVITE sip:+212661209845@aioprocess-demo.ras.yeastar.com SIP/2.0","msg":"SIP proxy packet"\}\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193688197,"pid":3901258,"hostname":"vmi3357322","extensionId":2,"msg":"Extension re-registered with outbound config \'97 binary is dialling"\}\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193688283,"pid":3901258,"hostname":"vmi3357322","extensionId":1,"dir":"binary\uc0\u8594 Yeastar","from":"13.140.151.164:27062","to":"52.47.94.244:5060","sip":"INVITE sip:+212661209845@aioprocess-demo.ras.yeastar.com SIP/2.0","msg":"SIP proxy packet"\}\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193688289,"pid":3901258,"hostname":"vmi3357322","req":\{"id":327,"method":"POST","url":"/api/outbound/call"\},"res":\{"statusCode":202\},"responseTime":1162,"msg":"request completed"\}\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193688344,"pid":3901258,"hostname":"vmi3357322","extensionId":1,"dir":"Yeastar\uc0\u8594 binary","from":"52.47.94.244:5060","to":"127.0.0.1:27062","sip":"SIP/2.0 100 Trying","msg":"SIP proxy packet"\}\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193688344,"pid":3901258,"hostname":"vmi3357322","extensionId":2,"dir":"Yeastar\uc0\u8594 binary","from":"127.0.0.1:17060","to":"127.0.0.1:35140","sip":"SIP/2.0 100 Trying","msg":"SIP proxy packet"\}\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:48.346Z] 2026/08/08 14:54:48 Received 100 Trying\
+Aug 08 14:54:48 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:48.346Z] 2026/08/08 14:54:48 Call progress: Trying\
+Aug 08 14:54:50 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193690171,"pid":3901258,"hostname":"vmi3357322","extensionId":1,"dir":"Yeastar\uc0\u8594 binary","from":"52.47.94.244:5060","to":"127.0.0.1:27062","sip":"SIP/2.0 183 Session Progress","msg":"SIP proxy packet"\}\
+Aug 08 14:54:50 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193690172,"pid":3901258,"hostname":"vmi3357322","extensionId":2,"dir":"Yeastar\uc0\u8594 binary","from":"127.0.0.1:17060","to":"127.0.0.1:35140","sip":"SIP/2.0 183 Session Progress","msg":"SIP proxy packet"\}\
+Aug 08 14:54:50 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:50.175Z] 2026/08/08 14:54:50 Received 183 Session Progress\
+Aug 08 14:54:50 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:54:50.175Z] 2026/08/08 14:54:50 Call progress: Session Progress\
+Aug 08 14:55:50 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193750166,"pid":3901258,"hostname":"vmi3357322","extensionId":1,"dir":"Yeastar\uc0\u8594 binary","from":"52.47.94.244:5060","to":"127.0.0.1:27062","sip":"SIP/2.0 183 Session Progress","msg":"SIP proxy packet"\}\
+Aug 08 14:55:50 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193750171,"pid":3901258,"hostname":"vmi3357322","extensionId":2,"dir":"Yeastar\uc0\u8594 binary","from":"127.0.0.1:17060","to":"127.0.0.1:35140","sip":"SIP/2.0 183 Session Progress","msg":"SIP proxy packet"\}\
+Aug 08 14:55:50 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:55:50.174Z] 2026/08/08 14:55:50 Received 183 Session Progress\
+Aug 08 14:55:50 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:55:50.175Z] 2026/08/08 14:55:50 Call progress: Session Progress\
+Aug 08 14:56:13 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193773000,"pid":3901258,"hostname":"vmi3357322","req":\{"id":328,"method":"GET","url":"/api/deploy/all"\},"res":\{"statusCode":200\},"responseTime":92,"msg":"request completed"\}\
+Aug 08 14:56:13 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193773027,"pid":3901258,"hostname":"vmi3357322","req":\{"id":329,"method":"GET","url":"/api/extensions"\},"res":\{"statusCode":304\},"responseTime":89,"msg":"request completed"\}\
+Aug 08 14:56:13 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193773984,"pid":3901258,"hostname":"vmi3357322","req":\{"id":330,"method":"GET","url":"/api/deploy/2/logs"\},"res":\{"statusCode":200\},"responseTime":3,"msg":"request completed"\}\
+Aug 08 14:56:15 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193775359,"pid":3901258,"hostname":"vmi3357322","extensionId":1,"dir":"Yeastar\uc0\u8594 binary","from":"52.47.94.244:5060","to":"127.0.0.1:27062","sip":"SIP/2.0 486 Busy Here","msg":"SIP proxy packet"\}\
+Aug 08 14:56:15 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193775360,"pid":3901258,"hostname":"vmi3357322","extensionId":2,"dir":"Yeastar\uc0\u8594 binary","from":"127.0.0.1:17060","to":"127.0.0.1:35140","sip":"SIP/2.0 486 Busy Here","msg":"SIP proxy packet"\}\
+Aug 08 14:56:15 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193775362,"pid":3901258,"hostname":"vmi3357322","extensionId":2,"dir":"binary\uc0\u8594 Yeastar","from":"127.0.0.1:35140","to":"52.47.94.244:5060","sip":"ACK sip:+212661209845@aioprocess-demo.ras.yeastar.com SIP/2.0","msg":"SIP proxy packet"\}\
+Aug 08 14:56:15 vmi3357322 aio-voice-connect-api[3901258]: [ext:2] [2026-08-08T12:56:15.362Z] 2026/08/08 14:56:15 Outbound call error: call failed: Invite failed with response: SIP/2.0 486 Busy Here\
+Aug 08 14:56:15 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193775363,"pid":3901258,"hostname":"vmi3357322","extensionId":1,"dir":"binary\uc0\u8594 Yeastar","from":"13.140.151.164:27062","to":"52.47.94.244:5060","sip":"ACK sip:+212661209845@aioprocess-demo.ras.yeastar.com SIP/2.0","msg":"SIP proxy packet"\}\
+Aug 08 14:56:15 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193775367,"pid":3901258,"hostname":"vmi3357322","extensionId":2,"code":1,"signal":null,"msg":"sip-agent process exited"\}\
+Aug 08 14:56:15 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193775368,"pid":3901258,"hostname":"vmi3357322","extensionId":2,"code":1,"signal":null,"msg":"Outbound call ended \'97 extension returning to stopped (one-shot mode)"\}\
+Aug 08 14:56:15 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193775368,"pid":3901258,"hostname":"vmi3357322","extensionId":2,"code":1,"msg":"Outbound binary crashed \'97 hanging up via Yeastar API"\}\
+Aug 08 14:56:15 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193775415,"pid":3901258,"hostname":"vmi3357322","extensionId":2,"callId":96,"status":"completed","msg":"Outbound call finalized (no webhook configured)"\}\
+Aug 08 14:56:15 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193775434,"pid":3901258,"hostname":"vmi3357322","extensionId":2,"msg":"Outbound config override cleared \'97 base config restored"\}\
+Aug 08 14:56:15 vmi3357322 aio-voice-connect-api[3901258]: \{"level":40,"time":1786193775660,"pid":3901258,"hostname":"vmi3357322","extensionNumber":"1004","msg":"hangupCallViaYeastar: no active calls found for extension \'97 cannot hang up"\}\
+Aug 08 14:56:18 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193778025,"pid":3901258,"hostname":"vmi3357322","extensionId":1,"dir":"proxy\uc0\u8594 Yeastar","from":"0.0.0.0:27060","to":"52.47.94.244:5060","sip":"SIP/2.0 200 OK (auto: OPTIONS)","msg":"SIP proxy packet"\}\
+Aug 08 14:56:18 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193778091,"pid":3901258,"hostname":"vmi3357322","req":\{"id":331,"method":"GET","url":"/api/deploy/all"\},"res":\{"statusCode":200\},"responseTime":6,"msg":"request completed"\}\
+Aug 08 14:56:22 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193782154,"pid":3901258,"hostname":"vmi3357322","req":\{"id":332,"method":"GET","url":"/api/deploy/2/logs"\},"res":\{"statusCode":200\},"responseTime":3,"msg":"request completed"\}\
+Aug 08 14:56:24 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193784406,"pid":3901258,"hostname":"vmi3357322","req":\{"id":333,"method":"GET","url":"/api/deploy/2/logs"\},"res":\{"statusCode":304\},"responseTime":3,"msg":"request completed"\}\
+Aug 08 14:56:26 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193786506,"pid":3901258,"hostname":"vmi3357322","req":\{"id":334,"method":"GET","url":"/api/deploy/2/logs"\},"res":\{"statusCode":304\},"responseTime":7,"msg":"request completed"\}\
+Aug 08 14:56:28 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193788056,"pid":3901258,"hostname":"vmi3357322","extensionId":1,"dir":"proxy\uc0\u8594 Yeastar","from":"0.0.0.0:27060","to":"52.47.94.244:5060","sip":"SIP/2.0 200 OK (auto: OPTIONS)","msg":"SIP proxy packet"\}\
+Aug 08 14:56:28 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193788302,"pid":3901258,"hostname":"vmi3357322","req":\{"id":335,"method":"GET","url":"/api/deploy/all"\},"res":\{"statusCode":200\},"responseTime":96,"msg":"request completed"\}\
+Aug 08 14:56:28 vmi3357322 aio-voice-connect-api[3901258]: \{"level":30,"time":1786193788585,"pid":3901258,"hostname":"vmi3357322","req":\{"id":336,"method":"GET","url":"/api/deploy/2/logs"\},"res":\{"statusCode":304\},"responseTime":3,"msg":"request completed"\}\
+\
+\
+\
+\
+root@vmi3357322:~# sudo journalctl -u aio-voice-connect-api -f --no-pager -o cat   | grep --line-buffered -E     "BYE received|Call ended|Unregistered bridge|Registered bridge|pushEvent|aiEnded|SIP proxy|outbound|invite|ended|Caller|AI Agent|end_call|conversation_ended|ElevenLabs|binary|hangup|Bye|stderr"\
+\{"level":30,"time":1786193538029,"pid":3901258,"hostname":"vmi3357322","extensionId":1,"dir":"proxy\uc0\u8594 Yeastar","from":"0.0.0.0:27060","to":"52.47.94.244:5060","sip":"SIP/2.0 200 OK (auto: OPTIONS)","msg":"SIP proxy packet"\}\
+\{"level":30,"time":1786193540978,"pid":3901258,"hostname":"vmi3357322","req":\{"id":323,"method":"GET","url":"/api/outbound/calls"\},"res":\{"statusCode":304\},"responseTime":14,"msg":"request completed"\}\
+\{"level":30,"time":1786193548054,"pid":3901258,"hostname":"vmi3357322","extensionId":1,"dir":"proxy\uc0\u8594 Yeastar","from":"0.0.0.0:27060","to":"52.47.94.244:5060","sip":"SIP/2.0 200 OK (auto: OPTIONS)","msg":"SIP proxy packet"\}\
+\{"level":30,"time":1786193658033,"pid":3901258,"hostname":"vmi3357322","extensionId":1,"dir":"proxy\uc0\u8594 Yeastar","from":"0.0.0.0:27060","to":"52.47.94.244:5060","sip":"SIP/2.0 200 OK (auto: OPTIONS)","msg":"SIP proxy packet"\}\
+\{"level":30,"time":1786193668056,"pid":3901258,"hostname":"vmi3357322","extensionId":1,"dir":"proxy\uc0\u8594 Yeastar","from":"0.0.0.0:27060","to":"52.47.94.244:5060","sip":"SIP/2.0 200 OK (auto: OPTIONS)","msg":"SIP proxy packet"\}\
+\{"level":30,"time":1786193687271,"pid":3901258,"hostname":"vmi3357322","extensionId":2,"callId":96,"phoneNumber":"+212661209845","msg":"Restarting extension in outbound mode \'97 binary will place the call itself"\}\
+\{"level":30,"time":1786193687351,"pid":3901258,"hostname":"vmi3357322","extensionId":2,"yeastarHost":"aioprocess-demo.ras.yeastar.com","yeastarIp":"52.47.94.244","msg":"SIP proxy: resolved Yeastar FQDN"\}\
+\{"level":30,"time":1786193687352,"pid":3901258,"hostname":"vmi3357322","extensionId":2,"proxyLocalPort":17062,"proxyExtPort":27062,"binaryListenPort":7062,"yeastarIp":"52.47.94.244","yeastarHost":"aioprocess-demo.ras.yeastar.com","yeastarPort":5060,"msg":"SIP FQDN proxy started \'97 direct FQDN interception (no /etc/hosts)"\}\
+\{"level":30,"time":1786193687352,"pid":3901258,"hostname":"vmi3357322","extensionId":2,"sipLocalPort":7062,"realSipServer":"aioprocess-demo.ras.yeastar.com:5060","proxyAddress":"127.0.0.1:17062","msg":"SIP FQDN proxy active \'97 binary will use SIP_OUTBOUND_PROXY"\}\
+\{"level":30,"time":1786193687540,"pid":3901258,"hostname":"vmi3357322","extensionId":2,"sipLocalPort":7062,"offset":4261180,"msg":"Patched sip-agent binary local SIP port"\}\
+[ext:2] [2026-08-08T12:54:47.645Z] 2026/08/08 14:54:47 DEBUG: Determined outbound IP as detecting...\
+[ext:2] [2026-08-08T12:54:47.882Z] 2026/08/08 14:54:47 REGISTER via outbound proxy: 127.0.0.1:17062\
+\{"level":30,"time":1786193687882,"pid":3901258,"hostname":"vmi3357322","extensionId":2,"dir":"binary\uc0\u8594 Yeastar","from":"127.0.0.1:35140","to":"52.47.94.244:5060","sip":"REGISTER sip:aioprocess-demo.ras.yeastar.com:5060 SIP/2.0","msg":"SIP proxy packet"\}\
+\{"level":30,"time":1786193687893,"pid":3901258,"hostname":"vmi3357322","extensionId":1,"dir":"binary\uc0\u8594 Yeastar","from":"13.140.151.164:27062","to":"52.47.94.244:5060","sip":"REGISTER sip:aioprocess-demo.ras.yeastar.com:5060 SIP/2.0","msg":"SIP proxy packet"\}\
+\{"level":30,"time":1786193687952,"pid":3901258,"hostname":"vmi3357322","extensionId":1,"dir":"Yeastar\uc0\u8594 binary","from":"52.47.94.244:5060","to":"127.0.0.1:27062","sip":"SIP/2.0 401 Unauthorized","msg":"SIP proxy packet"\}\
+\{"level":30,"time":1786193687969,"pid":3901258,"hostname":"vmi3357322","extensionId":2,"dir":"Yeastar\uc0\u8594 binary","from":"127.0.0.1:17060","to":"127.0.0.1:35140","sip":"SIP/2.0 401 Unauthorized","msg":"SIP proxy packet"\}\
+\{"level":30,"time":1786193687990,"pid":3901258,"hostname":"vmi3357322","extensionId":2,"dir":"binary\uc0\u8594 Yeastar","from":"127.0.0.1:35140","to":"52.47.94.244:5060","sip":"REGISTER sip:aioprocess-demo.ras.yeastar.com:5060 SIP/2.0","msg":"SIP proxy packet"\}\
+\{"level":30,"time":1786193687992,"pid":3901258,"hostname":"vmi3357322","extensionId":1,"dir":"binary\uc0\u8594 Yeastar","from":"13.140.151.164:27062","to":"52.47.94.244:5060","sip":"REGISTER sip:aioprocess-demo.ras.yeastar.com:5060 SIP/2.0","msg":"SIP proxy packet"\}\
+\{"level":30,"time":1786193688062,"pid":3901258,"hostname":"vmi3357322","extensionId":1,"dir":"Yeastar\uc0\u8594 binary","from":"52.47.94.244:5060","to":"127.0.0.1:27062","sip":"SIP/2.0 200 OK","msg":"SIP proxy packet"\}\
+\{"level":30,"time":1786193688063,"pid":3901258,"hostname":"vmi3357322","extensionId":1,"dir":"proxy\uc0\u8594 Yeastar","from":"0.0.0.0:27060","to":"52.47.94.244:5060","sip":"SIP/2.0 200 OK (auto: NOTIFY)","msg":"SIP proxy packet"\}\
+\{"level":30,"time":1786193688063,"pid":3901258,"hostname":"vmi3357322","extensionId":2,"dir":"Yeastar\uc0\u8594 binary","from":"127.0.0.1:17060","to":"127.0.0.1:35140","sip":"SIP/2.0 200 OK","msg":"SIP proxy packet"\}\
+[ext:2] [2026-08-08T12:54:48.074Z] 2026/08/08 14:54:48 Initiating outbound call to +212661209845\
+[ext:2] [2026-08-08T12:54:48.074Z] 2026/08/08 14:54:48 Using outbound proxy: 127.0.0.1:17062\
+\{"level":30,"time":1786193688080,"pid":3901258,"hostname":"vmi3357322","extensionId":2,"dir":"binary\uc0\u8594 Yeastar","from":"127.0.0.1:35140","to":"52.47.94.244:5060","sip":"INVITE sip:+212661209845@aioprocess-demo.ras.yeastar.com SIP/2.0","msg":"SIP proxy packet"\}\
+\{"level":30,"time":1786193688082,"pid":3901258,"hostname":"vmi3357322","extensionId":1,"dir":"binary\uc0\u8594 Yeastar","from":"13.140.151.164:27062","to":"52.47.94.244:5060","sip":"INVITE sip:+212661209845@aioprocess-demo.ras.yeastar.com SIP/2.0","msg":"SIP proxy packet"\}\
+\{"level":30,"time":1786193688143,"pid":3901258,"hostname":"vmi3357322","extensionId":1,"dir":"Yeastar\uc0\u8594 binary","from":"52.47.94.244:5060","to":"127.0.0.1:27062","sip":"SIP/2.0 401 Unauthorized","msg":"SIP proxy packet"\}\
+\{"level":30,"time":1786193688144,"pid":3901258,"hostname":"vmi3357322","extensionId":2,"dir":"Yeastar\uc0\u8594 binary","from":"127.0.0.1:17060","to":"127.0.0.1:35140","sip":"SIP/2.0 401 Unauthorized","msg":"SIP proxy packet"\}\
+\{"level":30,"time":1786193688145,"pid":3901258,"hostname":"vmi3357322","extensionId":2,"dir":"binary\uc0\u8594 Yeastar","from":"127.0.0.1:35140","to":"52.47.94.244:5060","sip":"ACK sip:+212661209845@aioprocess-demo.ras.yeastar.com SIP/2.0","msg":"SIP proxy packet"\}\
+\{"level":30,"time":1786193688147,"pid":3901258,"hostname":"vmi3357322","extensionId":1,"dir":"binary\uc0\u8594 Yeastar","from":"13.140.151.164:27062","to":"52.47.94.244:5060","sip":"ACK sip:+212661209845@aioprocess-demo.ras.yeastar.com SIP/2.0","msg":"SIP proxy packet"\}\
+\{"level":30,"time":1786193688156,"pid":3901258,"hostname":"vmi3357322","extensionId":2,"dir":"binary\uc0\u8594 Yeastar","from":"127.0.0.1:35140","to":"52.47.94.244:5060","sip":"INVITE sip:+212661209845@aioprocess-demo.ras.yeastar.com SIP/2.0","msg":"SIP proxy packet"\}\
+\{"level":30,"time":1786193688197,"pid":3901258,"hostname":"vmi3357322","extensionId":2,"msg":"Extension re-registered with outbound config \'97 binary is dialling"\}\
+\{"level":30,"time":1786193688283,"pid":3901258,"hostname":"vmi3357322","extensionId":1,"dir":"binary\uc0\u8594 Yeastar","from":"13.140.151.164:27062","to":"52.47.94.244:5060","sip":"INVITE sip:+212661209845@aioprocess-demo.ras.yeastar.com SIP/2.0","msg":"SIP proxy packet"\}\
+\{"level":30,"time":1786193688289,"pid":3901258,"hostname":"vmi3357322","req":\{"id":327,"method":"POST","url":"/api/outbound/call"\},"res":\{"statusCode":202\},"responseTime":1162,"msg":"request completed"\}\
+\{"level":30,"time":1786193688344,"pid":3901258,"hostname":"vmi3357322","extensionId":1,"dir":"Yeastar\uc0\u8594 binary","from":"52.47.94.244:5060","to":"127.0.0.1:27062","sip":"SIP/2.0 100 Trying","msg":"SIP proxy packet"\}\
+\{"level":30,"time":1786193688344,"pid":3901258,"hostname":"vmi3357322","extensionId":2,"dir":"Yeastar\uc0\u8594 binary","from":"127.0.0.1:17060","to":"127.0.0.1:35140","sip":"SIP/2.0 100 Trying","msg":"SIP proxy packet"\}\
+\{"level":30,"time":1786193690171,"pid":3901258,"hostname":"vmi3357322","extensionId":1,"dir":"Yeastar\uc0\u8594 binary","from":"52.47.94.244:5060","to":"127.0.0.1:27062","sip":"SIP/2.0 183 Session Progress","msg":"SIP proxy packet"\}\
+\{"level":30,"time":1786193690172,"pid":3901258,"hostname":"vmi3357322","extensionId":2,"dir":"Yeastar\uc0\u8594 binary","from":"127.0.0.1:17060","to":"127.0.0.1:35140","sip":"SIP/2.0 183 Session Progress","msg":"SIP proxy packet"\}\
+\{"level":30,"time":1786193750166,"pid":3901258,"hostname":"vmi3357322","extensionId":1,"dir":"Yeastar\uc0\u8594 binary","from":"52.47.94.244:5060","to":"127.0.0.1:27062","sip":"SIP/2.0 183 Session Progress","msg":"SIP proxy packet"\}\
+\{"level":30,"time":1786193750171,"pid":3901258,"hostname":"vmi3357322","extensionId":2,"dir":"Yeastar\uc0\u8594 binary","from":"127.0.0.1:17060","to":"127.0.0.1:35140","sip":"SIP/2.0 183 Session Progress","msg":"SIP proxy packet"\}\
+\{"level":30,"time":1786193775359,"pid":3901258,"hostname":"vmi3357322","extensionId":1,"dir":"Yeastar\uc0\u8594 binary","from":"52.47.94.244:5060","to":"127.0.0.1:27062","sip":"SIP/2.0 486 Busy Here","msg":"SIP proxy packet"\}\
+\{"level":30,"time":1786193775360,"pid":3901258,"hostname":"vmi3357322","extensionId":2,"dir":"Yeastar\uc0\u8594 binary","from":"127.0.0.1:17060","to":"127.0.0.1:35140","sip":"SIP/2.0 486 Busy Here","msg":"SIP proxy packet"\}\
+\{"level":30,"time":1786193775362,"pid":3901258,"hostname":"vmi3357322","extensionId":2,"dir":"binary\uc0\u8594 Yeastar","from":"127.0.0.1:35140","to":"52.47.94.244:5060","sip":"ACK sip:+212661209845@aioprocess-demo.ras.yeastar.com SIP/2.0","msg":"SIP proxy packet"\}\
+\{"level":30,"time":1786193775363,"pid":3901258,"hostname":"vmi3357322","extensionId":1,"dir":"binary\uc0\u8594 Yeastar","from":"13.140.151.164:27062","to":"52.47.94.244:5060","sip":"ACK sip:+212661209845@aioprocess-demo.ras.yeastar.com SIP/2.0","msg":"SIP proxy packet"\}\
+\{"level":30,"time":1786193775368,"pid":3901258,"hostname":"vmi3357322","extensionId":2,"code":1,"signal":null,"msg":"Outbound call ended \'97 extension returning to stopped (one-shot mode)"\}\
+\{"level":30,"time":1786193775368,"pid":3901258,"hostname":"vmi3357322","extensionId":2,"code":1,"msg":"Outbound binary crashed \'97 hanging up via Yeastar API"\}\
+\{"level":40,"time":1786193775660,"pid":3901258,"hostname":"vmi3357322","extensionNumber":"1004","msg":"hangupCallViaYeastar: no active calls found for extension \'97 cannot hang up"\}\
+\{"level":30,"time":1786193778025,"pid":3901258,"hostname":"vmi3357322","extensionId":1,"dir":"proxy\uc0\u8594 Yeastar","from":"0.0.0.0:27060","to":"52.47.94.244:5060","sip":"SIP/2.0 200 OK (auto: OPTIONS)","msg":"SIP proxy packet"\}\
+\{"level":30,"time":1786193788056,"pid":3901258,"hostname":"vmi3357322","extensionId":1,"dir":"proxy\uc0\u8594 Yeastar","from":"0.0.0.0:27060","to":"52.47.94.244:5060","sip":"SIP/2.0 200 OK (auto: OPTIONS)","msg":"SIP proxy packet"\}\
+\
+\
+\
+\
+root@vmi3357322:~# sudo tcpdump -i any -n -l -s 0   'udp and (portrange 27000-29999 or portrange 7060-7099 or port 5060)'   2>/dev/null   | grep --line-buffered -E     "^[0-9]\{2\}:|INVITE|BYE|REGISTER|ACK|200 OK|Contact:|Call-ID:|Via:|From:|To:"\
+14:54:47.882790 lo    In  IP 13.140.151.164.27062 > 127.0.0.1.17060: UDP, length 410\
+14:54:47.892661 eth0  Out IP 13.140.151.164.27060 > 52.47.94.244.5060: SIP: REGISTER sip:aioprocess-demo.ras.yeastar.com:5060 SIP/2.0\
+14:54:47.949761 eth0  In  IP 52.47.94.244.5060 > 13.140.151.164.27060: SIP: SIP/2.0 401 Unauthorized\
+14:54:47.950742 lo    In  IP 127.0.0.1.17060 > 127.0.0.1.27062: UDP, length 558\
+14:54:47.990938 lo    In  IP 13.140.151.164.27062 > 127.0.0.1.17060: UDP, length 713\
+14:54:47.992844 eth0  Out IP 13.140.151.164.27060 > 52.47.94.244.5060: SIP: REGISTER sip:aioprocess-demo.ras.yeastar.com:5060 SIP/2.0\
+14:54:48.058721 eth0  In  IP 52.47.94.244.5060 > 13.140.151.164.27060: SIP: SIP/2.0 200 OK\
+14:54:48.061748 eth0  In  IP 52.47.94.244.5060 > 13.140.151.164.27060: SIP: NOTIFY sip:1004@aioprocess-demo.ras.yeastar.com:5060 SIP/2.0\
+14:54:48.062497 lo    In  IP 127.0.0.1.17060 > 127.0.0.1.27062: UDP, length 522\
+14:54:48.063166 eth0  Out IP 13.140.151.164.27060 > 52.47.94.244.5060: SIP: SIP/2.0 200 OK\
+14:54:48.080317 lo    In  IP 13.140.151.164.27062 > 127.0.0.1.17060: UDP, length 727\
+14:54:48.086377 eth0  Out IP 13.140.151.164.27060 > 52.47.94.244.5060: SIP: INVITE sip:+212661209845@aioprocess-demo.ras.yeastar.com SIP/2.0\
+14:54:48.142458 eth0  In  IP 52.47.94.244.5060 > 13.140.151.164.27060: SIP: SIP/2.0 401 Unauthorized\
+14:54:48.143547 lo    In  IP 127.0.0.1.17060 > 127.0.0.1.27062: UDP, length 563\
+14:54:48.145901 lo    In  IP 13.140.151.164.27062 > 127.0.0.1.17060: UDP, length 428\
+14:54:48.147899 eth0  Out IP 13.140.151.164.27060 > 52.47.94.244.5060: SIP: ACK sip:+212661209845@aioprocess-demo.ras.yeastar.com SIP/2.0\
+14:54:48.156855 lo    In  IP 13.140.151.164.27062 > 127.0.0.1.17060: UDP, length 1039\
+14:54:48.281680 eth0  Out IP 13.140.151.164.27060 > 52.47.94.244.5060: SIP: INVITE sip:+212661209845@aioprocess-demo.ras.yeastar.com SIP/2.0\
+14:54:48.343554 eth0  In  IP 52.47.94.244.5060 > 13.140.151.164.27060: SIP: SIP/2.0 100 Trying\
+14:54:48.344429 lo    In  IP 127.0.0.1.17060 > 127.0.0.1.27062: UDP, length 381\
+14:54:50.170042 eth0  In  IP 52.47.94.244.5060 > 13.140.151.164.27060: SIP: SIP/2.0 183 Session Progress\
+14:54:50.171457 lo    In  IP 127.0.0.1.17060 > 127.0.0.1.27062: UDP, length 998\
+14:54:56.564244 eth0  In  IP 40.160.62.6.26067 > 13.140.151.164.5060: SIP: OPTIONS sip:100@13.140.151.164 SIP/2.0\
+14:55:50.165064 eth0  In  IP 52.47.94.244.5060 > 13.140.151.164.27060: SIP: SIP/2.0 183 Session Progress\
+14:55:50.166318 lo    In  IP 127.0.0.1.17060 > 127.0.0.1.27062: UDP, length 998\
+14:56:15.354596 eth0  In  IP 52.47.94.244.5060 > 13.140.151.164.27060: SIP: SIP/2.0 486 Busy Here\
+14:56:15.359085 lo    In  IP 127.0.0.1.17060 > 127.0.0.1.27062: UDP, length 706\
+14:56:15.362548 lo    In  IP 13.140.151.164.27062 > 127.0.0.1.17060: UDP, length 442\
+14:56:15.363213 eth0  Out IP 13.140.151.164.27060 > 52.47.94.244.5060: SIP: ACK sip:+212661209845@aioprocess-demo.ras.yeastar.com SIP/2.0\
+14:56:18.024061 eth0  In  IP 52.47.94.244.5060 > 13.140.151.164.27060: SIP: OPTIONS sip:1005@aioprocess-demo.ras.yeastar.com:5060 SIP/2.0\
+14:56:18.025295 eth0  Out IP 13.140.151.164.27060 > 52.47.94.244.5060: SIP: SIP/2.0 200 OK\
+14:56:28.054196 eth0  In  IP 52.47.94.244.5060 > 13.140.151.164.27060: SIP: OPTIONS sip:1004@aioprocess-demo.ras.yeastar.com:5060 SIP/2.0\
+14:56:28.056028 eth0  Out IP 13.140.151.164.27060 > 52.47.94.244.5060: SIP: SIP/2.0 200 OK\
+14:56:28.223262 eth0  In  IP 46.19.137.194.33183 > 13.140.151.164.5060: SIP: INVITE sip:0023908351673002@13.140.151.164:5060;transport=UDP SIP/2.0\
+\
+\
+\
+\
+                                                                          sngrep - SIP messages flow viewer\
+  Current Mode: Online [any]                 Dialogs: 7\
+  Match Expression:                          BPF Filter:\
+  Display Filter:\
+      ^Idx Method     SIP From                  SIP To                    Msgs  Source                 Destination            Call State\
+  [ ] 1    REGISTER   1004@aioprocess-demo.ras. 1004@aioprocess-demo.ras. 12    127.0.0.1:35140        127.0.0.1:17062\
+  [ ] 2    NOTIFY     1004@aioprocess-demo.ras. 1004@aioprocess-demo.ras. 2     52.47.94.244:5060      13.140.151.164:27060\
+  [ ] 3    INVITE     1004@aioprocess-demo.ras. +212661209845@aioprocess- 27    127.0.0.1:35140        127.0.0.1:17062        BUSY\
+  [ ] 4    OPTIONS    100@1.1.1.1               100@1.1.1.1               1     40.160.62.6:26067      13.140.151.164:5060\
+  [ ] 5    OPTIONS    unknown@aioprocess-demo.r 1005@aioprocess-demo.ras. 2     52.47.94.244:5060      13.140.151.164:27060\
+  [ ] 6    OPTIONS    unknown@aioprocess-demo.r 1004@aioprocess-demo.ras. 2     52.47.94.244:5060      13.140.151.164:27060\
+  [ ] 7    INVITE     12140614032@10.0.0.2      0023908351673002@13.140.1 1     46.19.137.194:33183    13.140.151.164:5060    CALL SETUP}

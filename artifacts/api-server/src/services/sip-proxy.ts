@@ -734,3 +734,15 @@ export async function stopSipProxy(extensionId: number): Promise<void> {
 export function isSipProxyActive(extensionId: number): boolean {
   return proxies.has(extensionId);
 }
+
+/**
+ * Return the SIP Call-ID of the first pending outbound INVITE tracked by this
+ * extension's proxy.  Used to record a call-history entry when the INVITE is
+ * rejected (486/487/408) before a bridge is ever registered.
+ */
+export function getFirstPendingCallId(extensionId: number): string | null {
+  const s = proxies.get(extensionId);
+  if (!s) return null;
+  const first = s.pendingInvites.keys().next();
+  return first.done ? null : first.value;
+}
