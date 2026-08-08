@@ -164,6 +164,14 @@ interface ProxyState {
    * when a BYE is seen on that dialog.
    */
   pendingInvites: Map<string, InviteRecord>;
+  /** SIP extension number (e.g. "1004", "1005") registered by this proxy's binary. */
+  sipExtensionNumber: string;
+  /**
+   * Tracks INVITEs that arrived here but belong to another extension (cross-ext
+   * inbound routing anomaly).  Keyed by Call-ID → owning proxy's ProxyState.
+   * Used to correctly route subsequent ACK/BYE from Yeastar to the right binary.
+   */
+  crossExtDialogs: Map<string, ProxyState>;
 }
 
 const proxies = new Map<number, ProxyState>();
@@ -379,8 +387,11 @@ export async function startSipProxy(params: {
   proxyLocalPort: number;
   proxyExtPort: number;
   yeastarServer: string;
+  /** SIP extension number (e.g. "1004") used to detect mis-delivered INVITEs. */
+  sipExtensionNumber?: string;
 }): Promise<string> {
-  const { extensionId, sipLocalPort, proxyLocalPort, proxyExtPort, yeastarServer } = params;
+  const { extensionId, sipLocalPort, proxyLocalPort, proxyExtPort, yeastarServer,
+          sipExtensionNumber = "" } = params;
   await stopSipProxy(extensionId);
 
   // Parse Yeastar host:port
@@ -429,6 +440,8 @@ export async function startSipProxy(params: {
     yeastarIp, yeastarPort,
     binarySrcPort: sipLocalPort,
     pendingInvites: new Map(),
+    sipExtensionNumber,
+    crossExtDialogs: new Map(),
   };
 
   // ── Binary → Yeastar ──────────────────────────────────────────────────────
@@ -508,6 +521,86 @@ export async function startSipProxy(params: {
         return; // do not forward to binary
       }
 
+      // ── Cross-extension INVITE routing ─────────────────────────────────────
+      // When two extensions register concurrently, Yeastar can learn the wrong
+      // proxyExtPort for one of them (both REGISTERs appear to come from the
+      // same external IP, and Yeastar picks the port it last saw for that IP).
+      // The result: inbound calls for ext:2 (e.g. 1004) arrive at ext:1's
+      // extSock (port 27060) instead of ext:2's (27062).
+      //
+      // Fix: if we receive an INVITE whose To user differs from our own SIP
+      // extension number, locate the correct proxy by number, then:
+      //   1. Forward the INVITE to the correct binary via the correct proxy's
+      //      localSock — using OUR proxyLocalPort in the Via so the binary's
+      //      200 OK routes back through OUR localSock → OUR extSock → Yeastar.
+      //   2. Track the Call-ID in crossExtDialogs so ACK from Yeastar is also
+      //      forwarded to the correct binary (not ours).
+      //   3. Track the Call-ID in the correct proxy's pendingInvites so the
+      //      existing cross-ext BYE routing correctly delivers BYE there too.
+      if (method === "INVITE" && s.sipExtensionNumber) {
+        const toHdr = msg.pairs.find(([k]) => k === "to")?.[2] ?? "";
+        // Request-URI user part is more reliable than To — use firstLine
+        const reqLineUser = msg.firstLine.match(/sip:([^@]+)@/i)?.[1] ?? "";
+        const toUser = reqLineUser || (toHdr.match(/sip:([^@]+)@/i)?.[1] ?? "");
+        if (toUser && toUser !== s.sipExtensionNumber) {
+          const targetProxy = [...proxies.values()].find(p => p.sipExtensionNumber === toUser);
+          if (targetProxy) {
+            const callId = msg.pairs.find(([k]) => k === "call-id")?.[2] ?? "";
+            logger.warn(
+              { extensionId, ownExt: s.sipExtensionNumber, targetExt: toUser, callId },
+              "SIP proxy: INVITE for different extension — cross-routing to correct binary",
+            );
+            if (callId) {
+              // Track so ACK gets forwarded to correct binary too.
+              s.crossExtDialogs.set(callId, targetProxy);
+              // Dummy InviteRecord in target's pendingInvites so cross-ext BYE routing
+              // finds it and forwards BYE to the correct binary.
+              targetProxy.pendingInvites.set(callId, {
+                fromHdr: msg.pairs.find(([k]) => k === "from")?.[2] ?? "",
+                cseqNum: (msg.pairs.find(([k]) => k === "cseq")?.[2] ?? "").split(/\s/)[0] ?? "",
+                requestUri: msg.firstLine.split(/\s/)[1] ?? "",
+                viaIp: "",
+              });
+            }
+            // Forward with Via pointing to OUR proxyLocalPort so the binary's
+            // 200 OK response comes back through OUR localSock → Yeastar.
+            const fwdInvite = rwInboundReq(msg, s);
+            targetProxy.localSock.send(fwdInvite, targetProxy.binaryListenPort, "127.0.0.1", (err) => {
+              if (err) {
+                logger.warn({ extensionId, targetExt: toUser, callId, err }, "SIP proxy: cross-ext INVITE forward error");
+              } else {
+                logger.info(
+                  { extensionId, targetExt: toUser, dir: "Yeastar→binary (cross-ext INVITE)", callId },
+                  "SIP proxy packet",
+                );
+              }
+            });
+            return; // do NOT forward to own binary
+          }
+          // No matching proxy found — fall through to own binary (best effort).
+          logger.warn(
+            { extensionId, ownExt: s.sipExtensionNumber, targetExt: toUser },
+            "SIP proxy: INVITE for unknown extension, no matching proxy — forwarding to own binary",
+          );
+        }
+      }
+
+      // ── Cross-extension ACK routing ─────────────────────────────────────────
+      // When a cross-ext INVITE was handled (above), Yeastar sends ACK for the
+      // 200 OK back to this extSock.  Route it to the correct binary.
+      if (method === "ACK") {
+        const ackCallId = msg.pairs.find(([k]) => k === "call-id")?.[2] ?? "";
+        const crossTarget = ackCallId ? s.crossExtDialogs.get(ackCallId) : undefined;
+        if (crossTarget) {
+          const fwdAck = rwInboundReq(msg, s);
+          crossTarget.localSock.send(fwdAck, crossTarget.binaryListenPort, "127.0.0.1", (err) => {
+            if (err) logger.warn({ extensionId, ackCallId, err }, "SIP proxy: cross-ext ACK forward error");
+            else logger.info({ extensionId, dir: "Yeastar→binary (cross-ext ACK)", ackCallId }, "SIP proxy packet");
+          });
+          return;
+        }
+      }
+
       // BYE handling — forward to binary for BOTH inbound and outbound calls.
       //
       // The binary has a built-in OnBye handler (outbound.go + inbound handler)
@@ -524,7 +617,10 @@ export async function startSipProxy(params: {
       // its own OnBye handler.
       if (method === "BYE") {
         const byeCallId = msg.pairs.find(([k]) => k === "call-id")?.[2] ?? "";
-        if (byeCallId) s.pendingInvites.delete(byeCallId);
+        if (byeCallId) {
+          s.pendingInvites.delete(byeCallId);
+          s.crossExtDialogs.delete(byeCallId); // clean up cross-ext INVITE tracking
+        }
 
         // ── Cross-extension BYE routing ──────────────────────────────────────
         // When both extensions make simultaneous outbound calls, one extension's

@@ -1550,6 +1550,7 @@ export async function startExtension(extensionId: number, opts?: {
         proxyLocalPort: proxyLocalPortFor(sipLocalPort),
         proxyExtPort: proxyExtPortFor(sipLocalPort),
         yeastarServer: realSipServer,
+        sipExtensionNumber: ext.extensionNumber,
       });
       logger.info({ extensionId, sipLocalPort, realSipServer, proxyAddress }, "SIP FQDN proxy active — binary will use SIP_OUTBOUND_PROXY");
 
