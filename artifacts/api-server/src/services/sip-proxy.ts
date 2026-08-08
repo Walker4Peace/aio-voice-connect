@@ -525,6 +525,65 @@ export async function startSipProxy(params: {
         const byeCallId = msg.pairs.find(([k]) => k === "call-id")?.[2] ?? "";
         if (byeCallId) s.pendingInvites.delete(byeCallId);
 
+        // ── Cross-extension BYE routing ──────────────────────────────────────
+        // When the outbound proxy mis-routes SIP through the inbound proxy,
+        // Yeastar learns the inbound extSock port (27060) as the contact and
+        // sends all mid-dialog requests — including BYE — here.  Detect this
+        // by checking if the callId appears in another extension's outbound
+        // pendingInvites.  If so:
+        //   1. Auto-respond 200 OK from this extSock so Yeastar is satisfied.
+        //   2. Forward BYE to the correct binary via its localSock so it can
+        //      cancel its call context and close the ElevenLabs WebSocket.
+        //   3. Skip the normal forward to our binary (the inbound extension
+        //      knows nothing about this outbound call).
+        if (byeCallId) {
+          for (const [otherExtId, otherProxy] of proxies) {
+            if (otherExtId === extensionId) continue;
+            if (!otherProxy.pendingInvites.has(byeCallId)) continue;
+
+            logger.info(
+              { extensionId, otherExtId, byeCallId },
+              "SIP proxy: cross-ext BYE — routing to correct binary and auto-responding 200 OK",
+            );
+
+            // 1. Respond 200 OK to Yeastar directly from this extSock.
+            const okResp = buildAutoResponse(msg, 200, "OK", "BYE");
+            extSock.send(okResp, rinfo.port, rinfo.address, (err) => {
+              if (err) {
+                logger.warn({ extensionId, byeCallId, err }, "SIP proxy: cross-ext BYE 200 OK send error");
+              } else {
+                logger.info(
+                  { extensionId, dir: "proxy→Yeastar",
+                    from: `0.0.0.0:${s.proxyExtPort}`, to: `${rinfo.address}:${rinfo.port}`,
+                    sip: "SIP/2.0 200 OK (cross-ext BYE)" },
+                  "SIP proxy packet",
+                );
+              }
+            });
+
+            // 2. Forward BYE to the correct binary via its localSock.
+            //    rwInboundReq prepends a proxy Via so the binary's 200 OK
+            //    response routes back through the correct localSock.
+            const fwdBye = rwInboundReq(msg, otherProxy);
+            otherProxy.localSock.send(fwdBye, otherProxy.binaryListenPort, "127.0.0.1", (err) => {
+              if (err) {
+                logger.warn({ extensionId: otherExtId, byeCallId, err }, "SIP proxy: cross-ext BYE forward error");
+              } else {
+                logger.info(
+                  { extensionId: otherExtId, dir: "Yeastar→binary (cross-ext BYE)",
+                    to: `127.0.0.1:${otherProxy.binaryListenPort}`, sip: "BYE" },
+                  "SIP proxy packet",
+                );
+              }
+            });
+
+            // 3. Clean up pendingInvite on the receiving proxy.
+            otherProxy.pendingInvites.delete(byeCallId);
+
+            return; // do not forward to this extension's binary
+          }
+        }
+
         const dir = outboundByeHandlers.has(extensionId) ? "outbound" : "inbound";
         logger.info(
           { extensionId, dir: `Yeastar→binary (BYE forward, ${dir})`,
