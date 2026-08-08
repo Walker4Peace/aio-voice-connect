@@ -179,26 +179,6 @@ const proxies = new Map<number, ProxyState>();
 const outboundByeHandlers = new Map<number, () => void>();
 const inboundByeHandlers  = new Map<number, () => void>();
 
-/**
- * Global handler called when a phantom BYE is detected — a BYE that arrived at
- * this extension's proxy but belongs to a different extension's call (cross-ext
- * routing anomaly with concurrent outbound calls).
- *
- * deployment.ts registers this once on startup so it can look up the owning
- * extension from the SIP Call-ID and clean it up immediately, without waiting
- * for the ElevenLabs safety-net timeout.
- *
- * Arguments: (receivingExtId, rawByeCallId)
- *   receivingExtId — extension whose proxy intercepted the phantom BYE
- *   rawByeCallId   — raw SIP Call-ID from the BYE header
- */
-let phantomByeGlobalHandler: ((receivingExtId: number, rawByeCallId: string) => void) | null = null;
-
-export function setPhantomByeGlobalHandler(
-  cb: (receivingExtId: number, rawByeCallId: string) => void,
-): void {
-  phantomByeGlobalHandler = cb;
-}
 
 /**
  * Register a callback to be fired once when Yeastar sends BYE for an outbound
@@ -544,10 +524,6 @@ export async function startSipProxy(params: {
       // its own OnBye handler.
       if (method === "BYE") {
         const byeCallId = msg.pairs.find(([k]) => k === "call-id")?.[2] ?? "";
-
-        // Remember whether this Call-ID was tracked by our proxy BEFORE deleting.
-        // Used below to detect phantom BYEs from cross-ext routing.
-        const wasInOwnPendingInvites = byeCallId ? s.pendingInvites.has(byeCallId) : false;
         if (byeCallId) s.pendingInvites.delete(byeCallId);
 
         // ── Cross-extension BYE routing ──────────────────────────────────────
@@ -607,43 +583,6 @@ export async function startSipProxy(params: {
             return; // do not forward to this extension's binary
           }
 
-          // ── Phantom BYE (cross-ext routing, no pendingInvite match) ────────
-          // The BYE Call-ID was tracked by THIS proxy (it processed the INVITE)
-          // but no other proxy has it — this happens when two outbound calls run
-          // simultaneously and one extension's INVITE is routed through the other
-          // extension's proxy.  Yeastar then sends the BYE here even though the
-          // call belongs to the other extension.
-          //
-          // Auto-respond 200 OK so Yeastar is satisfied and does NOT retry the
-          // BYE.  Do NOT forward to our binary: our binary is still dialling its
-          // own call and must not be killed by a phantom BYE.
-          //
-          // Deployment.ts has a companion guard (active-bridge check on the WARN
-          // BYE handler) that handles the case where the BYE does reach our
-          // binary before the proxy can intercept.
-          if (wasInOwnPendingInvites) {
-            logger.warn(
-              { extensionId, byeCallId },
-              "SIP proxy: phantom BYE — Call-ID was proxied here but belongs to another ext; auto-responding 200 OK, suppressing forward",
-            );
-            const okResp = buildAutoResponse(msg, 200, "OK", "BYE");
-            extSock.send(okResp, rinfo.port, rinfo.address, (err) => {
-              if (err) {
-                logger.warn({ extensionId, byeCallId, err }, "SIP proxy: phantom BYE 200 OK send error");
-              } else {
-                logger.info(
-                  { extensionId, dir: "proxy→Yeastar",
-                    from: `0.0.0.0:${s.proxyExtPort}`, to: `${rinfo.address}:${rinfo.port}`,
-                    sip: "SIP/2.0 200 OK (phantom BYE)" },
-                  "SIP proxy packet",
-                );
-              }
-            });
-            // Notify deployment.ts so it can immediately clean up the owning
-            // extension's binary (instead of waiting ~13 s for safety-net).
-            if (phantomByeGlobalHandler) phantomByeGlobalHandler(extensionId, byeCallId);
-            return; // do NOT forward to our binary
-          }
         }
 
         const dir = outboundByeHandlers.has(extensionId) ? "outbound" : "inbound";
