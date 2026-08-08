@@ -363,18 +363,35 @@ function parseAndStoreCallEvents(extensionId: number, line: string, timestamp: s
     outboundCallModes.has(extensionId) &&
     /Outbound call error:.*Invite failed with response:/i.test(body)
   ) {
+    // Resolve the SIP Call-ID FIRST so the dedup check is callId-specific.
+    // Using a per-call check (not just per-extension) lets consecutive no-answer
+    // calls each produce their own entry in Call History.
+    const callId =
+      getFirstPendingCallId(extensionId) ?? `outbound-noanswer-${Date.now()}`;
     const alreadyInvited = persistedCallEvents.some(
-      e => e.extensionId === extensionId && e.event === "invite"
+      e => e.extensionId === extensionId && e.callId === callId && e.event === "invite"
     );
     if (!alreadyInvited) {
-      // The SIP Call-ID is still in the proxy's pendingInvites (never deleted
-      // for 4xx, only for BYE) so we can retrieve the real Call-ID here.
-      const callId =
-        getFirstPendingCallId(extensionId) ?? `outbound-noanswer-${Date.now()}`;
       const phoneNumber = outboundPhoneNumbers.get(extensionId);
       const endedDetail = phoneNumber ? `No response from ${phoneNumber}` : "No response";
       pushEvent({ extensionId, callId, event: "invite", timestamp });
       pushEvent({ extensionId, callId, event: "ended", timestamp, detail: endedDetail });
+      // Link the SIP Call-ID to the outbound_calls record so the Call History
+      // frontend knows this call was Outbound (not Inbound).
+      void (async () => {
+        try {
+          await db
+            .update(outboundCallsTable)
+            .set({ callId, updatedAt: new Date() })
+            .where(and(
+              eq(outboundCallsTable.extensionId, extensionId),
+              inArray(outboundCallsTable.status, ["pending", "dialing"]),
+            ));
+          logger.info({ extensionId, callId }, "No-answer outbound call: SIP callId linked to outbound record");
+        } catch (err) {
+          logger.error({ err, extensionId }, "Failed to link no-answer outbound SIP callId");
+        }
+      })();
     }
     return;
   }
