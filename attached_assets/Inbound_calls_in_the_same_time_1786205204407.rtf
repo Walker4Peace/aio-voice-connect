@@ -1,0 +1,268 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2868
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 root@vmi3357322:/opt/aio-voice-connect# journalctl -u aio-voice-connect-api -f\
+Aug 08 17:48:26 vmi3357322 aio-voice-connect-api[3925050]: [ext:2] [2026-08-08T15:48:26.573Z] 2026/08/08 17:48:26   Date: Sat, 08 Aug 2026 14:18:50 GMT\
+Aug 08 17:48:26 vmi3357322 aio-voice-connect-api[3925050]: [ext:2] [2026-08-08T15:48:26.573Z] 2026/08/08 17:48:26   Expires: 3577\
+Aug 08 17:48:26 vmi3357322 aio-voice-connect-api[3925050]: [ext:2] [2026-08-08T15:48:26.573Z] 2026/08/08 17:48:26   Server: Yeastar PSE\
+Aug 08 17:48:26 vmi3357322 aio-voice-connect-api[3925050]: [ext:2] [2026-08-08T15:48:26.573Z] 2026/08/08 17:48:26   Content-Length: 0\
+Aug 08 17:48:26 vmi3357322 aio-voice-connect-api[3925050]: [ext:2] [2026-08-08T15:48:26.573Z] 2026/08/08 17:48:26   YSUser-Agent: YSBC 2.12.30\
+Aug 08 17:48:26 vmi3357322 aio-voice-connect-api[3925050]: [ext:2] [2026-08-08T15:48:26.573Z] 2026/08/08 17:48:26 Registration successful!\
+Aug 08 17:48:26 vmi3357322 aio-voice-connect-api[3925050]: [ext:2] [2026-08-08T15:48:26.573Z] 2026/08/08 17:48:26 Registered with SIP provider\
+Aug 08 17:48:26 vmi3357322 aio-voice-connect-api[3925050]: [ext:2] [2026-08-08T15:48:26.573Z] 2026/08/08 17:48:26 Initial REGISTER request sent.\
+Aug 08 17:48:26 vmi3357322 aio-voice-connect-api[3925050]: [ext:2] [2026-08-08T15:48:26.573Z] 2026/08/08 17:48:26 SIP server is now listening for incoming messages.\
+Aug 08 17:48:28 vmi3357322 aio-voice-connect-api[3925050]: \{"level":30,"time":1786204108002,"pid":3925050,"hostname":"vmi3357322","extensionId":1,"dir":"proxy\uc0\u8594 Yeastar","from":"0.0.0.0:27060","to":"52.47.94.244:5060","sip":"SIP/2.0 200 OK (auto: OPTIONS)","msg":"SIP proxy packet"\}\
+Aug 08 17:49:03 vmi3357322 aio-voice-connect-api[3925050]: \{"level":30,"time":1786204143280,"pid":3925050,"hostname":"vmi3357322","extensionId":1,"dir":"Yeastar\uc0\u8594 binary","from":"52.47.94.244:5060","to":"127.0.0.1:7060","sip":"INVITE sip:1005@aioprocess-demo.ras.yeastar.com:5060 SIP/2.0","msg":"SIP proxy packet"\}\
+Aug 08 17:49:03 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:03.283Z] 2026/08/08 17:49:03 INVITE received for call: 7ca4005d-47c4-454d-a653-f72114f8977c, auto-answering using sipgo.\
+Aug 08 17:49:03 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:03.292Z] 2026/08/08 17:49:03 Stored remote Contact for dialog: sip:0658881157@aioprocess-demo.ras.yeastar.com\
+Aug 08 17:49:03 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:03.292Z] 2026/08/08 17:49:03 INVITE SDP body (first 300 chars): v=0\
+Aug 08 17:49:03 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:03.292Z] o=- 1451417680 1451417680 IN IP4 52.47.94.244\
+Aug 08 17:49:03 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:03.292Z] s=Asterisk\
+Aug 08 17:49:03 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:03.292Z] c=IN IP4 52.47.94.244\
+Aug 08 17:49:03 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:03.292Z] t=0 0\
+Aug 08 17:49:03 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:03.292Z] a=rtpengine:b1075258a86c\
+Aug 08 17:49:03 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:03.292Z] m=audio 46422 RTP/AVP 0 8 18 3 97 9 111 101\
+Aug 08 17:49:03 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:03.292Z] a=maxptime:20\
+Aug 08 17:49:03 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:03.292Z] a=rtpmap:0 PCMU/8000\
+Aug 08 17:49:03 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:03.292Z] a=rtpmap:8 PCMA/8000\
+Aug 08 17:49:03 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:03.292Z] a=rtpmap:18 G729/8000\
+Aug 08 17:49:03 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:03.292Z] a=rtpmap:3 GSM/8000\
+Aug 08 17:49:03 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:03.292Z] a=rtpmap:97 iLBC/8000\
+Aug 08 17:49:03 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:03.292Z] a=rtpmap:\
+Aug 08 17:49:03 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:03.292Z] 2026/08/08 17:49:03 Remote RTP address: 52.47.94.244:46422\
+Aug 08 17:49:03 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:03.292Z] 2026/08/08 17:49:03 Sending NAT hole-punch packets to 52.47.94.244:46422\
+Aug 08 17:49:03 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:03.293Z] RTP listener created on 0.0.0.0:55264\
+Aug 08 17:49:03 vmi3357322 aio-voice-connect-api[3925050]: \{"level":30,"time":1786204143295,"pid":3925050,"hostname":"vmi3357322","extensionId":1,"dir":"binary\uc0\u8594 Yeastar","from":"127.0.0.1:7060","to":"52.47.94.244:5060","sip":"SIP/2.0 100 Trying","msg":"SIP proxy packet"\}\
+Aug 08 17:49:03 vmi3357322 aio-voice-connect-api[3925050]: \{"level":30,"time":1786204143297,"pid":3925050,"hostname":"vmi3357322","extensionId":1,"dir":"binary\uc0\u8594 Yeastar","from":"127.0.0.1:7060","to":"52.47.94.244:5060","sip":"SIP/2.0 200 OK","msg":"SIP proxy packet"\}\
+Aug 08 17:49:03 vmi3357322 aio-voice-connect-api[3925050]: \{"level":30,"time":1786204143366,"pid":3925050,"hostname":"vmi3357322","extensionId":1,"dir":"Yeastar\uc0\u8594 binary","from":"52.47.94.244:5060","to":"127.0.0.1:7060","sip":"ACK sip:1005@aioprocess-demo.ras.yeastar.com:5060 SIP/2.0","msg":"SIP proxy packet"\}\
+Aug 08 17:49:03 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:03.396Z] 2026/08/08 17:49:03 Connecting to ElevenLabs Conversational AI (agent: agent_6901kzgk4bazegcagcp7anhbqthn)...\
+Aug 08 17:49:03 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:03.903Z] 2026/08/08 17:49:03 Connected to ElevenLabs Conversational AI\
+Aug 08 17:49:03 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:03.903Z] AI responded \'97 ElevenLabs Conversational AI - Hakim\
+Aug 08 17:49:03 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:03.903Z] 2026/08/08 17:49:03 ElevenLabs outbound conversation: conv_5101kzh10g3nfqd9egpgjt99mpk8\
+Aug 08 17:49:03 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:03.903Z] 2026/08/08 17:49:03 ElevenLabs conversation started: conv_5101kzh10g3nfqd9egpgjt99mpk8 (audio format: ulaw_8000)\
+Aug 08 17:49:03 vmi3357322 aio-voice-connect-api[3925050]: \{"level":30,"time":1786204143904,"pid":3925050,"hostname":"vmi3357322","extensionId":1,"callId":"7ca4005d-47c4-454d-a653-f72114f8977c","convId":"conv_5101kzh10g3nfqd9egpgjt99mpk8","msg":"Linked ElevenLabs conversation_id to call"\}\
+Aug 08 17:49:03 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:03.904Z] 2026/08/08 17:49:03 Note: first_message/system_prompt in config require 'Allow client overrides' in ElevenLabs dashboard\
+Aug 08 17:49:03 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:03.904Z] 2026/08/08 17:49:03 If override fails, the agent's default greeting will be used\
+Aug 08 17:49:03 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:03.904Z] 2026/08/08 17:49:03 DEBUG: appConfig=true\
+Aug 08 17:49:03 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:03.904Z] 2026/08/08 17:49:03 DEBUG: ElevenLabs.FirstMessage='Bonjour, vous \'eates bien chez AIO PROCESS. Je suis Hakim, comment puis-je vous aider aujourd'hui ?', SystemPrompt='Vous \'eates Hakim, consultant IT chez AIO PROCESS. Vous appelez pour programmer un rendez-vous avec le client. Proposez des cr\'e9neaux disponibles cette semaine. Soyez bref et professionnel. R\'e9pondez en fran\'e7ais et rependre apr\'e8s la r\'e9ponse du client \'e0 l'appel.', Functions=0\
+Aug 08 17:49:03 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:03.904Z] 2026/08/08 17:49:03 Overriding system prompt\
+Aug 08 17:49:03 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:03.904Z] 2026/08/08 17:49:03 Sending conversation initiation to ElevenLabs: \{"conversation_config_override":\{"agent":\{"prompt":\{"prompt":"Vous \'eates Hakim, consultant IT chez AIO PROCESS. Vous appelez pour programmer un rendez-vous avec le client. Proposez des cr\'e9neaux disponibles cette semaine. Soyez bref et professionnel. R\'e9pondez en fran\'e7ais et rependre apr\'e8s la r\'e9ponse du client \'e0 l'appel."\},"first_message":"Bonjour, vous \'eates bien chez AIO PROCESS. Je suis Hakim, comment puis-je vous aider aujourd'hui ?"\}\},"type":"conversation_initiation_client_data"\}\
+Aug 08 17:49:03 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:03.904Z] 2026/08/08 17:49:03 Registered bridge for call: 7ca4005d-47c4-454d-a653-f72114f8977c\
+Aug 08 17:49:03 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:03.904Z] 2026/08/08 17:49:03 Inbound RTP packet #1 from phone, pt=0 size=160\
+Aug 08 17:49:03 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:03.913Z] 2026/08/08 17:49:03 RTP pacer: sending first silence packet to 52.47.94.244:46422\
+Aug 08 17:49:05 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:05.390Z] 2026/08/08 17:49:05 Inbound RTP packet #100 from phone, pt=0 size=160\
+Aug 08 17:49:05 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:05.412Z] 2026/08/08 17:49:05 AI: Bonjour, vous \'eates bien chez AIO PROCESS. Je suis Hakim, comment puis-je vous aider aujourd'hui ?\
+Aug 08 17:49:06 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:06.254Z] 2026/08/08 17:49:06 RTP pacer: sent 100 audio packets to 52.47.94.244:46422\
+Aug 08 17:49:07 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:07.387Z] 2026/08/08 17:49:07 Inbound RTP packet #200 from phone, pt=0 size=160\
+Aug 08 17:49:08 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:08.257Z] 2026/08/08 17:49:08 RTP pacer: sent 200 audio packets to 52.47.94.244:46422\
+Aug 08 17:49:09 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:09.397Z] 2026/08/08 17:49:09 Inbound RTP packet #300 from phone, pt=0 size=160\
+Aug 08 17:49:10 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:10.291Z] 2026/08/08 17:49:10 RTP pacer: sent 300 audio packets to 52.47.94.244:46422\
+Aug 08 17:49:11 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:11.415Z] 2026/08/08 17:49:11 Inbound RTP packet #400 from phone, pt=0 size=160\
+Aug 08 17:49:13 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:13.394Z] 2026/08/08 17:49:13 Inbound RTP packet #500 from phone, pt=0 size=160\
+Aug 08 17:49:14 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:14.395Z] 2026/08/08 17:49:14 Remote: Bonjour.\
+Aug 08 17:49:15 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:15.389Z] 2026/08/08 17:49:15 Inbound RTP packet #600 from phone, pt=0 size=160\
+Aug 08 17:49:15 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:15.553Z] 2026/08/08 17:49:15 RTP pacer: sent 400 audio packets to 52.47.94.244:46422\
+Aug 08 17:49:16 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:16.205Z] 2026/08/08 17:49:16 AI: Bonjour. Je suis Hakim, consultant IT chez AIO PROCESS. Je vous appelle pour planifier un rendez-vous cette semaine. Seriez-vous disponible ?\
+Aug 08 17:49:17 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:17.413Z] 2026/08/08 17:49:17 Inbound RTP packet #700 from phone, pt=0 size=160\
+Aug 08 17:49:17 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:17.553Z] 2026/08/08 17:49:17 RTP pacer: sent 500 audio packets to 52.47.94.244:46422\
+Aug 08 17:49:19 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:19.389Z] 2026/08/08 17:49:19 Inbound RTP packet #800 from phone, pt=0 size=160\
+Aug 08 17:49:19 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:19.554Z] 2026/08/08 17:49:19 RTP pacer: sent 600 audio packets to 52.47.94.244:46422\
+Aug 08 17:49:21 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:21.388Z] 2026/08/08 17:49:21 Inbound RTP packet #900 from phone, pt=0 size=160\
+Aug 08 17:49:21 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:21.560Z] 2026/08/08 17:49:21 RTP pacer: sent 700 audio packets to 52.47.94.244:46422\
+Aug 08 17:49:23 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:23.387Z] 2026/08/08 17:49:23 Inbound RTP packet #1000 from phone, pt=0 size=160\
+Aug 08 17:49:24 vmi3357322 aio-voice-connect-api[3925050]: \{"level":30,"time":1786204164917,"pid":3925050,"hostname":"vmi3357322","extensionId":1,"dir":"Yeastar\uc0\u8594 binary","from":"52.47.94.244:5060","to":"127.0.0.1:7060","sip":"INVITE sip:1004@aioprocess-demo.ras.yeastar.com:5060 SIP/2.0","msg":"SIP proxy packet"\}\
+Aug 08 17:49:24 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:24.918Z] 2026/08/08 17:49:24 INVITE received for call: 9336211d-6461-4958-b503-7387b5a5a916, auto-answering using sipgo.\
+Aug 08 17:49:24 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:24.919Z] 2026/08/08 17:49:24 Stored remote Contact for dialog: sip:+212656249945@aioprocess-demo.ras.yeastar.com\
+Aug 08 17:49:24 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:24.919Z] 2026/08/08 17:49:24 INVITE SDP body (first 300 chars): v=0\
+Aug 08 17:49:24 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:24.919Z] o=- 597876436 597876436 IN IP4 52.47.94.244\
+Aug 08 17:49:24 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:24.919Z] s=Asterisk\
+Aug 08 17:49:24 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:24.919Z] c=IN IP4 52.47.94.244\
+Aug 08 17:49:24 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:24.919Z] t=0 0\
+Aug 08 17:49:24 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:24.919Z] a=rtpengine:b1075258a86c\
+Aug 08 17:49:24 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:24.919Z] m=audio 44634 RTP/AVP 0 8 18 3 97 9 111 101\
+Aug 08 17:49:24 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:24.919Z] a=maxptime:20\
+Aug 08 17:49:24 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:24.919Z] a=rtpmap:0 PCMU/8000\
+Aug 08 17:49:24 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:24.919Z] a=rtpmap:8 PCMA/8000\
+Aug 08 17:49:24 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:24.919Z] a=rtpmap:18 G729/8000\
+Aug 08 17:49:24 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:24.919Z] a=rtpmap:3 GSM/8000\
+Aug 08 17:49:24 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:24.919Z] a=rtpmap:97 iLBC/8000\
+Aug 08 17:49:24 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:24.919Z] a=rtpmap:9\
+Aug 08 17:49:24 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:24.919Z] 2026/08/08 17:49:24 Remote RTP address: 52.47.94.244:44634\
+Aug 08 17:49:24 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:24.920Z] RTP listener created on 0.0.0.0:34954\
+Aug 08 17:49:24 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:24.921Z] 2026/08/08 17:49:24 Sending NAT hole-punch packets to 52.47.94.244:44634\
+Aug 08 17:49:24 vmi3357322 aio-voice-connect-api[3925050]: \{"level":30,"time":1786204164921,"pid":3925050,"hostname":"vmi3357322","extensionId":1,"dir":"binary\uc0\u8594 Yeastar","from":"127.0.0.1:7060","to":"52.47.94.244:5060","sip":"SIP/2.0 100 Trying","msg":"SIP proxy packet"\}\
+Aug 08 17:49:24 vmi3357322 aio-voice-connect-api[3925050]: \{"level":30,"time":1786204164921,"pid":3925050,"hostname":"vmi3357322","extensionId":1,"dir":"binary\uc0\u8594 Yeastar","from":"127.0.0.1:7060","to":"52.47.94.244:5060","sip":"SIP/2.0 200 OK","msg":"SIP proxy packet"\}\
+Aug 08 17:49:25 vmi3357322 aio-voice-connect-api[3925050]: \{"level":30,"time":1786204165013,"pid":3925050,"hostname":"vmi3357322","extensionId":1,"dir":"Yeastar\uc0\u8594 binary","from":"52.47.94.244:5060","to":"127.0.0.1:7060","sip":"ACK sip:1004@aioprocess-demo.ras.yeastar.com:5060 SIP/2.0","msg":"SIP proxy packet"\}\
+Aug 08 17:49:25 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:25.052Z] 2026/08/08 17:49:25 Connecting to ElevenLabs Conversational AI (agent: agent_6901kzgk4bazegcagcp7anhbqthn)...\
+Aug 08 17:49:25 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:25.328Z] 2026/08/08 17:49:25 Connected to ElevenLabs Conversational AI\
+Aug 08 17:49:25 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:25.328Z] AI responded \'97 ElevenLabs Conversational AI - Hakim\
+Aug 08 17:49:25 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:25.331Z] 2026/08/08 17:49:25 ElevenLabs outbound conversation: conv_0201kzh1151hef7rhjff0atz0wdm\
+Aug 08 17:49:25 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:25.331Z] 2026/08/08 17:49:25 ElevenLabs conversation started: conv_0201kzh1151hef7rhjff0atz0wdm (audio format: ulaw_8000)\
+Aug 08 17:49:25 vmi3357322 aio-voice-connect-api[3925050]: \{"level":30,"time":1786204165332,"pid":3925050,"hostname":"vmi3357322","extensionId":1,"callId":"9336211d-6461-4958-b503-7387b5a5a916","convId":"conv_0201kzh1151hef7rhjff0atz0wdm","msg":"Linked ElevenLabs conversation_id to call"\}\
+Aug 08 17:49:25 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:25.332Z] 2026/08/08 17:49:25 Note: first_message/system_prompt in config require 'Allow client overrides' in ElevenLabs dashboard\
+Aug 08 17:49:25 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:25.332Z] 2026/08/08 17:49:25 If override fails, the agent's default greeting will be used\
+Aug 08 17:49:25 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:25.332Z] 2026/08/08 17:49:25 DEBUG: appConfig=true\
+Aug 08 17:49:25 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:25.332Z] 2026/08/08 17:49:25 DEBUG: ElevenLabs.FirstMessage='Bonjour, vous \'eates bien chez AIO PROCESS. Je suis Hakim, comment puis-je vous aider aujourd'hui ?', SystemPrompt='Vous \'eates Hakim, consultant IT chez AIO PROCESS. Vous appelez pour programmer un rendez-vous avec le client. Proposez des cr\'e9neaux disponibles cette semaine. Soyez bref et professionnel. R\'e9pondez en fran\'e7ais et rependre apr\'e8s la r\'e9ponse du client \'e0 l'appel.', Functions=0\
+Aug 08 17:49:25 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:25.332Z] 2026/08/08 17:49:25 Overriding system prompt\
+Aug 08 17:49:25 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:25.332Z] 2026/08/08 17:49:25 Sending conversation initiation to ElevenLabs: \{"conversation_config_override":\{"agent":\{"prompt":\{"prompt":"Vous \'eates Hakim, consultant IT chez AIO PROCESS. Vous appelez pour programmer un rendez-vous avec le client. Proposez des cr\'e9neaux disponibles cette semaine. Soyez bref et professionnel. R\'e9pondez en fran\'e7ais et rependre apr\'e8s la r\'e9ponse du client \'e0 l'appel."\},"first_message":"Bonjour, vous \'eates bien chez AIO PROCESS. Je suis Hakim, comment puis-je vous aider aujourd'hui ?"\}\},"type":"conversation_initiation_client_data"\}\
+Aug 08 17:49:25 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:25.332Z] 2026/08/08 17:49:25 Registered bridge for call: 9336211d-6461-4958-b503-7387b5a5a916\
+Aug 08 17:49:25 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:25.332Z] 2026/08/08 17:49:25 Inbound RTP packet #1 from phone, pt=13 size=1\
+Aug 08 17:49:25 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:25.332Z] 2026/08/08 17:49:25 RTP pacer: sending first silence packet to 52.47.94.244:44634\
+Aug 08 17:49:25 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:25.391Z] 2026/08/08 17:49:25 Inbound RTP packet #1100 from phone, pt=0 size=160\
+Aug 08 17:49:26 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:26.740Z] 2026/08/08 17:49:26 AI: Bonjour, vous \'eates bien chez AIO PROCESS. Je suis Hakim, comment puis-je vous aider aujourd'hui ?\
+Aug 08 17:49:27 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:27.008Z] 2026/08/08 17:49:27 Inbound RTP packet #100 from phone, pt=0 size=160\
+Aug 08 17:49:27 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:27.394Z] 2026/08/08 17:49:27 Inbound RTP packet #1200 from phone, pt=0 size=160\
+Aug 08 17:49:27 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:27.651Z] 2026/08/08 17:49:27 RTP pacer: sent 100 audio packets to 52.47.94.244:44634\
+Aug 08 17:49:29 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:29.019Z] 2026/08/08 17:49:29 Inbound RTP packet #200 from phone, pt=0 size=160\
+Aug 08 17:49:29 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:29.472Z] 2026/08/08 17:49:29 Inbound RTP packet #1300 from phone, pt=0 size=160\
+Aug 08 17:49:29 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:29.659Z] 2026/08/08 17:49:29 RTP pacer: sent 200 audio packets to 52.47.94.244:44634\
+Aug 08 17:49:30 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:30.232Z] 2026/08/08 17:49:30 Remote: Je suis pas disponible aujourd'hui. La prochaine, inch'Allah.\
+Aug 08 17:49:31 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:31.008Z] 2026/08/08 17:49:31 Inbound RTP packet #300 from phone, pt=0 size=160\
+Aug 08 17:49:31 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:31.217Z] 2026/08/08 17:49:31 RTP pacer: sent 800 audio packets to 52.47.94.244:46422\
+Aug 08 17:49:31 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:31.389Z] 2026/08/08 17:49:31 Inbound RTP packet #1400 from phone, pt=0 size=160\
+Aug 08 17:49:31 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:31.652Z] 2026/08/08 17:49:31 RTP pacer: sent 300 audio packets to 52.47.94.244:44634\
+Aug 08 17:49:32 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:32.707Z] 2026/08/08 17:49:32 AI: D'accord, je comprends. Pour cette semaine, je peux vous proposer un rendez-vous [slow] lundi apr\'e8s-midi, [slow] mercredi matin ou [slow] jeudi en fin de journ\'e9e. Est-ce qu'un de ces cr\'e9neaux vous conviendrait ?\
+Aug 08 17:49:33 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:33.010Z] 2026/08/08 17:49:33 Inbound RTP packet #400 from phone, pt=0 size=160\
+Aug 08 17:49:33 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:33.215Z] 2026/08/08 17:49:33 RTP pacer: sent 900 audio packets to 52.47.94.244:46422\
+Aug 08 17:49:33 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:33.430Z] 2026/08/08 17:49:33 Inbound RTP packet #1500 from phone, pt=0 size=160\
+Aug 08 17:49:35 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:35.009Z] 2026/08/08 17:49:35 Inbound RTP packet #500 from phone, pt=0 size=160\
+Aug 08 17:49:35 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:35.213Z] 2026/08/08 17:49:35 RTP pacer: sent 1000 audio packets to 52.47.94.244:46422\
+Aug 08 17:49:35 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:35.397Z] 2026/08/08 17:49:35 Inbound RTP packet #1600 from phone, pt=0 size=160\
+Aug 08 17:49:37 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:37.015Z] 2026/08/08 17:49:37 Inbound RTP packet #600 from phone, pt=0 size=160\
+Aug 08 17:49:37 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:37.214Z] 2026/08/08 17:49:37 RTP pacer: sent 1100 audio packets to 52.47.94.244:46422\
+Aug 08 17:49:37 vmi3357322 aio-voice-connect-api[3925050]: \{"level":30,"time":1786204177855,"pid":3925050,"hostname":"vmi3357322","extensionId":1,"dir":"Yeastar\uc0\u8594 binary (BYE forward, inbound)","from":"52.47.94.244:5060","msg":"SIP proxy: forwarding BYE to binary for internal handling"\}\
+Aug 08 17:49:37 vmi3357322 aio-voice-connect-api[3925050]: \{"level":30,"time":1786204177855,"pid":3925050,"hostname":"vmi3357322","extensionId":1,"dir":"Yeastar\uc0\u8594 binary","from":"52.47.94.244:5060","to":"127.0.0.1:7060","sip":"BYE sip:1005@aioprocess-demo.ras.yeastar.com:5060 SIP/2.0","msg":"SIP proxy packet"\}\
+Aug 08 17:49:37 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:37.856Z] 2026/08/08 17:49:37 BYE received for call: 7ca4005d-47c4-454d-a653-f72114f8977c\
+Aug 08 17:49:37 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:37.858Z] 2026/08/08 17:49:37 Error reading from ElevenLabs: read tcp 13.140.151.164:45734->34.8.184.191:443: use of closed network connection\
+Aug 08 17:49:37 vmi3357322 aio-voice-connect-api[3925050]: \{"level":30,"time":1786204177860,"pid":3925050,"hostname":"vmi3357322","extensionId":1,"dir":"binary\uc0\u8594 Yeastar","from":"127.0.0.1:7060","to":"52.47.94.244:5060","sip":"SIP/2.0 200 OK","msg":"SIP proxy packet"\}\
+Aug 08 17:49:37 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:37.866Z] 2026/08/08 17:49:37 Error sending audio to ElevenLabs: websocket closed\
+Aug 08 17:49:37 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:37.867Z] 2026/08/08 17:49:37 Unregistered bridge for call: 9336211d-6461-4958-b503-7387b5a5a916\
+Aug 08 17:49:37 vmi3357322 aio-voice-connect-api[3925050]: \{"level":30,"time":1786204177868,"pid":3925050,"hostname":"vmi3357322","extensionId":1,"callId":"9336211d-6461-4958-b503-7387b5a5a916","msg":"ElevenLabs WS closed without SIP BYE \'97 terminating SIP leg"\}\
+Aug 08 17:49:37 vmi3357322 aio-voice-connect-api[3925050]: \{"level":30,"time":1786204177873,"pid":3925050,"hostname":"vmi3357322","url":"https://aioprocess-demo.ras.yeastar.com/openapi/v1.0/get_token","requestFields":["username","password"],"clientIdLength":32,"clientSecretLength":32,"msg":"Yeastar: requesting new access token"\}\
+Aug 08 17:49:37 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:37.900Z] 2026/08/08 17:49:37 Call ended: 9336211d-6461-4958-b503-7387b5a5a916\
+Aug 08 17:49:38 vmi3357322 aio-voice-connect-api[3925050]: \{"level":30,"time":1786204178239,"pid":3925050,"hostname":"vmi3357322","status":200,"errcode":0,"errmsg":"SUCCESS","rawBody":"\{\\"errcode\\":0,\\"errmsg\\":\\"SUCCESS\\",\\"access_token_expire_time\\":1800,\\"access_token\\":\\"Q85RshuyYN041gKvw9Y4WJkQiya5AxCH\\",\\"refresh_token_expire_time\\":86400,\\"refresh_token\\":\\"BCTdNsETM1hnMmLxM31ZEWHr07iMIcte\\",\\"ys_id\\":\\"\\"\}","msg":"Yeastar: get_token response"\}\
+Aug 08 17:49:38 vmi3357322 aio-voice-connect-api[3925050]: \{"level":40,"time":1786204178409,"pid":3925050,"hostname":"vmi3357322","extensionNumber":"1005","msg":"hangupCallViaYeastar: no active calls found for extension \'97 cannot hang up"\}\
+Aug 08 17:49:39 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:49:39.213Z] 2026/08/08 17:49:39 RTP pacer: sent 1200 audio packets to 52.47.94.244:46422\
+Aug 08 17:49:50 vmi3357322 aio-voice-connect-api[3925050]: \{"level":30,"time":1786204190901,"pid":3925050,"hostname":"vmi3357322","agentId":"agent_6901kzgk4bazegcagcp7anhbqthn","conversationId":"conv_0201kzh1151hef7rhjff0atz0wdm","status":"done","msg":"ElevenLabs post-call webhook received"\}\
+Aug 08 17:49:50 vmi3357322 aio-voice-connect-api[3925050]: \{"level":30,"time":1786204190901,"pid":3925050,"hostname":"vmi3357322","convId":"conv_0201kzh1151hef7rhjff0atz0wdm","msg":"Stored ElevenLabs post-call result"\}\
+Aug 08 17:49:51 vmi3357322 aio-voice-connect-api[3925050]: \{"level":30,"time":1786204191003,"pid":3925050,"hostname":"vmi3357322","conversationId":"conv_0201kzh1151hef7rhjff0atz0wdm","callId":"9336211d-6461-4958-b503-7387b5a5a916","msg":"ElevenLabs webhook: persisted to call_results DB"\}\
+Aug 08 17:49:51 vmi3357322 aio-voice-connect-api[3925050]: \{"level":30,"time":1786204191128,"pid":3925050,"hostname":"vmi3357322","agentId":"agent_6901kzgk4bazegcagcp7anhbqthn","conversationId":"conv_0201kzh1151hef7rhjff0atz0wdm","inboundCallId":"9336211d-6461-4958-b503-7387b5a5a916","msg":"ElevenLabs webhook: result stored for inbound call"\}\
+Aug 08 17:49:51 vmi3357322 aio-voice-connect-api[3925050]: \{"level":30,"time":1786204191140,"pid":3925050,"hostname":"vmi3357322","req":\{"id":449,"method":"POST","url":"/api/providers/elevenlabs/post-call"\},"res":\{"statusCode":200\},"responseTime":348,"msg":"request completed"\}\
+Aug 08 17:50:17 vmi3357322 aio-voice-connect-api[3925050]: \{"level":30,"time":1786204217969,"pid":3925050,"hostname":"vmi3357322","extensionId":1,"dir":"proxy\uc0\u8594 Yeastar","from":"0.0.0.0:27060","to":"52.47.94.244:5060","sip":"SIP/2.0 200 OK (auto: OPTIONS)","msg":"SIP proxy packet"\}\
+Aug 08 17:50:18 vmi3357322 aio-voice-connect-api[3925050]: \{"level":30,"time":1786204218345,"pid":3925050,"hostname":"vmi3357322","extensionId":1,"dir":"Yeastar\uc0\u8594 binary (BYE forward, inbound)","from":"52.47.94.244:5060","msg":"SIP proxy: forwarding BYE to binary for internal handling"\}\
+Aug 08 17:50:18 vmi3357322 aio-voice-connect-api[3925050]: \{"level":30,"time":1786204218346,"pid":3925050,"hostname":"vmi3357322","extensionId":1,"dir":"Yeastar\uc0\u8594 binary","from":"52.47.94.244:5060","to":"127.0.0.1:7060","sip":"BYE sip:1004@aioprocess-demo.ras.yeastar.com:5060 SIP/2.0","msg":"SIP proxy packet"\}\
+Aug 08 17:50:18 vmi3357322 aio-voice-connect-api[3925050]: [ext:1] [2026-08-08T15:50:18.346Z] 2026/08/08 17:50:18 BYE received for call: 9336211d-6461-4958-b503-7387b5a5a916\
+Aug 08 17:50:18 vmi3357322 aio-voice-connect-api[3925050]: \{"level":30,"time":1786204218348,"pid":3925050,"hostname":"vmi3357322","extensionId":1,"dir":"binary\uc0\u8594 Yeastar","from":"127.0.0.1:7060","to":"52.47.94.244:5060","sip":"SIP/2.0 200 OK","msg":"SIP proxy packet"\}\
+\
+\
+\
+\
+\
+root@vmi3357322:~# sudo journalctl -u aio-voice-connect-api -f --no-pager -o cat   | grep --line-buffered -E     "BYE received|Call ended|Unregistered bridge|Registered bridge|pushEvent|aiEnded|SIP proxy|outbound|invite|ended|Caller|AI Agent|end_call|conversation_ended|ElevenLabs|binary|hangup|Bye|stderr"\
+\{"level":30,"time":1786204108002,"pid":3925050,"hostname":"vmi3357322","extensionId":1,"dir":"proxy\uc0\u8594 Yeastar","from":"0.0.0.0:27060","to":"52.47.94.244:5060","sip":"SIP/2.0 200 OK (auto: OPTIONS)","msg":"SIP proxy packet"\}\
+\{"level":30,"time":1786204143280,"pid":3925050,"hostname":"vmi3357322","extensionId":1,"dir":"Yeastar\uc0\u8594 binary","from":"52.47.94.244:5060","to":"127.0.0.1:7060","sip":"INVITE sip:1005@aioprocess-demo.ras.yeastar.com:5060 SIP/2.0","msg":"SIP proxy packet"\}\
+\{"level":30,"time":1786204143295,"pid":3925050,"hostname":"vmi3357322","extensionId":1,"dir":"binary\uc0\u8594 Yeastar","from":"127.0.0.1:7060","to":"52.47.94.244:5060","sip":"SIP/2.0 100 Trying","msg":"SIP proxy packet"\}\
+\{"level":30,"time":1786204143297,"pid":3925050,"hostname":"vmi3357322","extensionId":1,"dir":"binary\uc0\u8594 Yeastar","from":"127.0.0.1:7060","to":"52.47.94.244:5060","sip":"SIP/2.0 200 OK","msg":"SIP proxy packet"\}\
+\{"level":30,"time":1786204143366,"pid":3925050,"hostname":"vmi3357322","extensionId":1,"dir":"Yeastar\uc0\u8594 binary","from":"52.47.94.244:5060","to":"127.0.0.1:7060","sip":"ACK sip:1005@aioprocess-demo.ras.yeastar.com:5060 SIP/2.0","msg":"SIP proxy packet"\}\
+[ext:1] [2026-08-08T15:49:03.396Z] 2026/08/08 17:49:03 Connecting to ElevenLabs Conversational AI (agent: agent_6901kzgk4bazegcagcp7anhbqthn)...\
+[ext:1] [2026-08-08T15:49:03.903Z] 2026/08/08 17:49:03 Connected to ElevenLabs Conversational AI\
+[ext:1] [2026-08-08T15:49:03.903Z] AI responded \'97 ElevenLabs Conversational AI - Hakim\
+[ext:1] [2026-08-08T15:49:03.903Z] 2026/08/08 17:49:03 ElevenLabs outbound conversation: conv_5101kzh10g3nfqd9egpgjt99mpk8\
+[ext:1] [2026-08-08T15:49:03.903Z] 2026/08/08 17:49:03 ElevenLabs conversation started: conv_5101kzh10g3nfqd9egpgjt99mpk8 (audio format: ulaw_8000)\
+\{"level":30,"time":1786204143904,"pid":3925050,"hostname":"vmi3357322","extensionId":1,"callId":"7ca4005d-47c4-454d-a653-f72114f8977c","convId":"conv_5101kzh10g3nfqd9egpgjt99mpk8","msg":"Linked ElevenLabs conversation_id to call"\}\
+[ext:1] [2026-08-08T15:49:03.904Z] 2026/08/08 17:49:03 Note: first_message/system_prompt in config require 'Allow client overrides' in ElevenLabs dashboard\
+[ext:1] [2026-08-08T15:49:03.904Z] 2026/08/08 17:49:03 DEBUG: ElevenLabs.FirstMessage='Bonjour, vous \'eates bien chez AIO PROCESS. Je suis Hakim, comment puis-je vous aider aujourd'hui ?', SystemPrompt='Vous \'eates Hakim, consultant IT chez AIO PROCESS. Vous appelez pour programmer un rendez-vous avec le client. Proposez des cr\'e9neaux disponibles cette semaine. Soyez bref et professionnel. R\'e9pondez en fran\'e7ais et rependre apr\'e8s la r\'e9ponse du client \'e0 l'appel.', Functions=0\
+[ext:1] [2026-08-08T15:49:03.904Z] 2026/08/08 17:49:03 Sending conversation initiation to ElevenLabs: \{"conversation_config_override":\{"agent":\{"prompt":\{"prompt":"Vous \'eates Hakim, consultant IT chez AIO PROCESS. Vous appelez pour programmer un rendez-vous avec le client. Proposez des cr\'e9neaux disponibles cette semaine. Soyez bref et professionnel. R\'e9pondez en fran\'e7ais et rependre apr\'e8s la r\'e9ponse du client \'e0 l'appel."\},"first_message":"Bonjour, vous \'eates bien chez AIO PROCESS. Je suis Hakim, comment puis-je vous aider aujourd'hui ?"\}\},"type":"conversation_initiation_client_data"\}\
+[ext:1] [2026-08-08T15:49:03.904Z] 2026/08/08 17:49:03 Registered bridge for call: 7ca4005d-47c4-454d-a653-f72114f8977c\
+\{"level":30,"time":1786204164917,"pid":3925050,"hostname":"vmi3357322","extensionId":1,"dir":"Yeastar\uc0\u8594 binary","from":"52.47.94.244:5060","to":"127.0.0.1:7060","sip":"INVITE sip:1004@aioprocess-demo.ras.yeastar.com:5060 SIP/2.0","msg":"SIP proxy packet"\}\
+\{"level":30,"time":1786204164921,"pid":3925050,"hostname":"vmi3357322","extensionId":1,"dir":"binary\uc0\u8594 Yeastar","from":"127.0.0.1:7060","to":"52.47.94.244:5060","sip":"SIP/2.0 100 Trying","msg":"SIP proxy packet"\}\
+\{"level":30,"time":1786204164921,"pid":3925050,"hostname":"vmi3357322","extensionId":1,"dir":"binary\uc0\u8594 Yeastar","from":"127.0.0.1:7060","to":"52.47.94.244:5060","sip":"SIP/2.0 200 OK","msg":"SIP proxy packet"\}\
+\{"level":30,"time":1786204165013,"pid":3925050,"hostname":"vmi3357322","extensionId":1,"dir":"Yeastar\uc0\u8594 binary","from":"52.47.94.244:5060","to":"127.0.0.1:7060","sip":"ACK sip:1004@aioprocess-demo.ras.yeastar.com:5060 SIP/2.0","msg":"SIP proxy packet"\}\
+[ext:1] [2026-08-08T15:49:25.052Z] 2026/08/08 17:49:25 Connecting to ElevenLabs Conversational AI (agent: agent_6901kzgk4bazegcagcp7anhbqthn)...\
+[ext:1] [2026-08-08T15:49:25.328Z] 2026/08/08 17:49:25 Connected to ElevenLabs Conversational AI\
+[ext:1] [2026-08-08T15:49:25.328Z] AI responded \'97 ElevenLabs Conversational AI - Hakim\
+[ext:1] [2026-08-08T15:49:25.331Z] 2026/08/08 17:49:25 ElevenLabs outbound conversation: conv_0201kzh1151hef7rhjff0atz0wdm\
+[ext:1] [2026-08-08T15:49:25.331Z] 2026/08/08 17:49:25 ElevenLabs conversation started: conv_0201kzh1151hef7rhjff0atz0wdm (audio format: ulaw_8000)\
+\{"level":30,"time":1786204165332,"pid":3925050,"hostname":"vmi3357322","extensionId":1,"callId":"9336211d-6461-4958-b503-7387b5a5a916","convId":"conv_0201kzh1151hef7rhjff0atz0wdm","msg":"Linked ElevenLabs conversation_id to call"\}\
+[ext:1] [2026-08-08T15:49:25.332Z] 2026/08/08 17:49:25 Note: first_message/system_prompt in config require 'Allow client overrides' in ElevenLabs dashboard\
+[ext:1] [2026-08-08T15:49:25.332Z] 2026/08/08 17:49:25 DEBUG: ElevenLabs.FirstMessage='Bonjour, vous \'eates bien chez AIO PROCESS. Je suis Hakim, comment puis-je vous aider aujourd'hui ?', SystemPrompt='Vous \'eates Hakim, consultant IT chez AIO PROCESS. Vous appelez pour programmer un rendez-vous avec le client. Proposez des cr\'e9neaux disponibles cette semaine. Soyez bref et professionnel. R\'e9pondez en fran\'e7ais et rependre apr\'e8s la r\'e9ponse du client \'e0 l'appel.', Functions=0\
+[ext:1] [2026-08-08T15:49:25.332Z] 2026/08/08 17:49:25 Sending conversation initiation to ElevenLabs: \{"conversation_config_override":\{"agent":\{"prompt":\{"prompt":"Vous \'eates Hakim, consultant IT chez AIO PROCESS. Vous appelez pour programmer un rendez-vous avec le client. Proposez des cr\'e9neaux disponibles cette semaine. Soyez bref et professionnel. R\'e9pondez en fran\'e7ais et rependre apr\'e8s la r\'e9ponse du client \'e0 l'appel."\},"first_message":"Bonjour, vous \'eates bien chez AIO PROCESS. Je suis Hakim, comment puis-je vous aider aujourd'hui ?"\}\},"type":"conversation_initiation_client_data"\}\
+[ext:1] [2026-08-08T15:49:25.332Z] 2026/08/08 17:49:25 Registered bridge for call: 9336211d-6461-4958-b503-7387b5a5a916\
+\{"level":30,"time":1786204177855,"pid":3925050,"hostname":"vmi3357322","extensionId":1,"dir":"Yeastar\uc0\u8594 binary (BYE forward, inbound)","from":"52.47.94.244:5060","msg":"SIP proxy: forwarding BYE to binary for internal handling"\}\
+\{"level":30,"time":1786204177855,"pid":3925050,"hostname":"vmi3357322","extensionId":1,"dir":"Yeastar\uc0\u8594 binary","from":"52.47.94.244:5060","to":"127.0.0.1:7060","sip":"BYE sip:1005@aioprocess-demo.ras.yeastar.com:5060 SIP/2.0","msg":"SIP proxy packet"\}\
+[ext:1] [2026-08-08T15:49:37.856Z] 2026/08/08 17:49:37 BYE received for call: 7ca4005d-47c4-454d-a653-f72114f8977c\
+[ext:1] [2026-08-08T15:49:37.858Z] 2026/08/08 17:49:37 Error reading from ElevenLabs: read tcp 13.140.151.164:45734->34.8.184.191:443: use of closed network connection\
+\{"level":30,"time":1786204177860,"pid":3925050,"hostname":"vmi3357322","extensionId":1,"dir":"binary\uc0\u8594 Yeastar","from":"127.0.0.1:7060","to":"52.47.94.244:5060","sip":"SIP/2.0 200 OK","msg":"SIP proxy packet"\}\
+[ext:1] [2026-08-08T15:49:37.866Z] 2026/08/08 17:49:37 Error sending audio to ElevenLabs: websocket closed\
+[ext:1] [2026-08-08T15:49:37.867Z] 2026/08/08 17:49:37 Unregistered bridge for call: 9336211d-6461-4958-b503-7387b5a5a916\
+\{"level":30,"time":1786204177868,"pid":3925050,"hostname":"vmi3357322","extensionId":1,"callId":"9336211d-6461-4958-b503-7387b5a5a916","msg":"ElevenLabs WS closed without SIP BYE \'97 terminating SIP leg"\}\
+[ext:1] [2026-08-08T15:49:37.900Z] 2026/08/08 17:49:37 Call ended: 9336211d-6461-4958-b503-7387b5a5a916\
+\{"level":40,"time":1786204178409,"pid":3925050,"hostname":"vmi3357322","extensionNumber":"1005","msg":"hangupCallViaYeastar: no active calls found for extension \'97 cannot hang up"\}\
+\{"level":30,"time":1786204190901,"pid":3925050,"hostname":"vmi3357322","agentId":"agent_6901kzgk4bazegcagcp7anhbqthn","conversationId":"conv_0201kzh1151hef7rhjff0atz0wdm","status":"done","msg":"ElevenLabs post-call webhook received"\}\
+\{"level":30,"time":1786204190901,"pid":3925050,"hostname":"vmi3357322","convId":"conv_0201kzh1151hef7rhjff0atz0wdm","msg":"Stored ElevenLabs post-call result"\}\
+\{"level":30,"time":1786204191003,"pid":3925050,"hostname":"vmi3357322","conversationId":"conv_0201kzh1151hef7rhjff0atz0wdm","callId":"9336211d-6461-4958-b503-7387b5a5a916","msg":"ElevenLabs webhook: persisted to call_results DB"\}\
+\{"level":30,"time":1786204191128,"pid":3925050,"hostname":"vmi3357322","agentId":"agent_6901kzgk4bazegcagcp7anhbqthn","conversationId":"conv_0201kzh1151hef7rhjff0atz0wdm","inboundCallId":"9336211d-6461-4958-b503-7387b5a5a916","msg":"ElevenLabs webhook: result stored for inbound call"\}\
+\{"level":30,"time":1786204217969,"pid":3925050,"hostname":"vmi3357322","extensionId":1,"dir":"proxy\uc0\u8594 Yeastar","from":"0.0.0.0:27060","to":"52.47.94.244:5060","sip":"SIP/2.0 200 OK (auto: OPTIONS)","msg":"SIP proxy packet"\}\
+\{"level":30,"time":1786204218345,"pid":3925050,"hostname":"vmi3357322","extensionId":1,"dir":"Yeastar\uc0\u8594 binary (BYE forward, inbound)","from":"52.47.94.244:5060","msg":"SIP proxy: forwarding BYE to binary for internal handling"\}\
+\{"level":30,"time":1786204218346,"pid":3925050,"hostname":"vmi3357322","extensionId":1,"dir":"Yeastar\uc0\u8594 binary","from":"52.47.94.244:5060","to":"127.0.0.1:7060","sip":"BYE sip:1004@aioprocess-demo.ras.yeastar.com:5060 SIP/2.0","msg":"SIP proxy packet"\}\
+[ext:1] [2026-08-08T15:50:18.346Z] 2026/08/08 17:50:18 BYE received for call: 9336211d-6461-4958-b503-7387b5a5a916\
+\{"level":30,"time":1786204218348,"pid":3925050,"hostname":"vmi3357322","extensionId":1,"dir":"binary\uc0\u8594 Yeastar","from":"127.0.0.1:7060","to":"52.47.94.244:5060","sip":"SIP/2.0 200 OK","msg":"SIP proxy packet"\}\
+\{"level":30,"time":1786204227995,"pid":3925050,"hostname":"vmi3357322","extensionId":1,"dir":"proxy\uc0\u8594 Yeastar","from":"0.0.0.0:27060","to":"52.47.94.244:5060","sip":"SIP/2.0 200 OK (auto: OPTIONS)","msg":"SIP proxy packet"\}\
+\
+\
+\
+\
+\
+root@vmi3357322:~# sudo tcpdump -i any -n -l -s 0   'udp and (portrange 27000-29999 or portrange 7060-7099 or port 5060)'   2>/dev/null   | grep --line-buffered -E     "^[0-9]\{2\}:|INVITE|BYE|REGISTER|ACK|200 OK|Contact:|Call-ID:|Via:|From:|To:"\
+17:49:03.279582 eth0  In  IP 52.47.94.244.5060 > 13.140.151.164.27060: SIP: INVITE sip:1005@aioprocess-demo.ras.yeastar.com:5060 SIP/2.0\
+17:49:03.280543 lo    In  IP 127.0.0.1.17060 > 127.0.0.1.7060: UDP, length 1395\
+17:49:03.282895 lo    In  IP 127.0.0.1.7060 > 127.0.0.1.17060: UDP, length 392\
+17:49:03.282954 lo    In  IP 127.0.0.1.7060 > 127.0.0.1.17060: UDP, length 748\
+17:49:03.293501 eth0  Out IP 13.140.151.164.27060 > 52.47.94.244.5060: SIP: SIP/2.0 100 Trying\
+17:49:03.297501 eth0  Out IP 13.140.151.164.27060 > 52.47.94.244.5060: SIP: SIP/2.0 200 OK\
+17:49:03.364985 eth0  In  IP 52.47.94.244.5060 > 13.140.151.164.27060: SIP: ACK sip:1005@aioprocess-demo.ras.yeastar.com:5060 SIP/2.0\
+17:49:03.365951 lo    In  IP 127.0.0.1.17060 > 127.0.0.1.7060: UDP, length 540\
+17:49:24.916226 eth0  In  IP 52.47.94.244.5060 > 13.140.151.164.27060: SIP: INVITE sip:1004@aioprocess-demo.ras.yeastar.com:5060 SIP/2.0\
+17:49:24.917322 lo    In  IP 127.0.0.1.17060 > 127.0.0.1.7060: UDP, length 1408\
+17:49:24.918254 lo    In  IP 127.0.0.1.7060 > 127.0.0.1.17060: UDP, length 398\
+17:49:24.918318 lo    In  IP 127.0.0.1.7060 > 127.0.0.1.17060: UDP, length 754\
+17:49:24.921249 eth0  Out IP 13.140.151.164.27060 > 52.47.94.244.5060: SIP: SIP/2.0 100 Trying\
+17:49:24.921543 eth0  Out IP 13.140.151.164.27060 > 52.47.94.244.5060: SIP: SIP/2.0 200 OK\
+17:49:24.997927 eth0  In  IP 52.47.94.244.5060 > 13.140.151.164.27060: SIP: ACK sip:1004@aioprocess-demo.ras.yeastar.com:5060 SIP/2.0\
+17:49:25.013077 lo    In  IP 127.0.0.1.17060 > 127.0.0.1.7060: UDP, length 546\
+17:49:37.854224 eth0  In  IP 52.47.94.244.5060 > 13.140.151.164.27060: SIP: BYE sip:1005@aioprocess-demo.ras.yeastar.com:5060 SIP/2.0\
+17:49:37.855596 lo    In  IP 127.0.0.1.17060 > 127.0.0.1.7060: UDP, length 707\
+17:49:37.856311 lo    In  IP 127.0.0.1.7060 > 127.0.0.1.17060: UDP, length 545\
+17:49:37.860011 eth0  Out IP 13.140.151.164.27060 > 52.47.94.244.5060: SIP: SIP/2.0 200 OK\
+17:50:17.967240 eth0  In  IP 52.47.94.244.5060 > 13.140.151.164.27060: SIP: OPTIONS sip:1005@aioprocess-demo.ras.yeastar.com:5060 SIP/2.0\
+17:50:17.969274 eth0  Out IP 13.140.151.164.27060 > 52.47.94.244.5060: SIP: SIP/2.0 200 OK\
+17:50:18.344318 eth0  In  IP 52.47.94.244.5060 > 13.140.151.164.27060: SIP: BYE sip:1004@aioprocess-demo.ras.yeastar.com:5060 SIP/2.0\
+17:50:18.346071 lo    In  IP 127.0.0.1.17060 > 127.0.0.1.7060: UDP, length 714\
+17:50:18.347626 lo    In  IP 127.0.0.1.7060 > 127.0.0.1.17060: UDP, length 552\
+17:50:18.348287 eth0  Out IP 13.140.151.164.27060 > 52.47.94.244.5060: SIP: SIP/2.0 200 OK\
+17:50:27.993573 eth0  In  IP 52.47.94.244.5060 > 13.140.151.164.27060: SIP: OPTIONS sip:1004@aioprocess-demo.ras.yeastar.com:5060 SIP/2.0\
+17:50:27.995157 eth0  Out IP 13.140.151.164.27060 > 52.47.94.244.5060: SIP: SIP/2.0 200 OK\
+\
+\
+\
+\
+\
+                                                                          sngrep - SIP messages flow viewer\
+  Current Mode: Online [any]                 Dialogs: 10\
+  Match Expression:                          BPF Filter:\
+  Display Filter:\
+      ^Idx Method     SIP From                  SIP To                    Msgs  Source                 Destination            Call State\
+  [ ] 1    INVITE     0658881157@aioprocess-dem 1005@aioprocess-demo.ras. 12    52.47.94.244:5060      13.140.151.164:27060   COMPLETED\
+  [ ] 2    INVITE     +212656249945@aioprocess- 1004@aioprocess-demo.ras. 12    52.47.94.244:5060      13.140.151.164:27060   COMPLETED\
+  [ ] 3    OPTIONS    unknown@aioprocess-demo.r 1005@aioprocess-demo.ras. 2     52.47.94.244:5060      13.140.151.164:27060\
+  [ ] 4    OPTIONS    unknown@aioprocess-demo.r 1004@aioprocess-demo.ras. 2     52.47.94.244:5060      13.140.151.164:27060\
+  [ ] 5    REGISTER   1005@aioprocess-demo.ras. 1005@aioprocess-demo.ras. 8     127.0.0.1:52716        127.0.0.1:17060\
+  [ ] 6    NOTIFY     1005@aioprocess-demo.ras. 1005@aioprocess-demo.ras. 2     52.47.94.244:5060      13.140.151.164:27060\
+  [ ] 7    REGISTER   1004@aioprocess-demo.ras. 1004@aioprocess-demo.ras. 12    127.0.0.1:53864        127.0.0.1:17062\
+  [ ] 8    NOTIFY     1004@aioprocess-demo.ras. 1004@aioprocess-demo.ras. 2     52.47.94.244:5060      13.140.151.164:27060\
+  [ ] 9    OPTIONS    unknown@aioprocess-demo.r 1005@aioprocess-demo.ras. 2     52.47.94.244:5060      13.140.151.164:27060\
+  [ ] 10   OPTIONS    unknown@aioprocess-demo.r 1004@aioprocess-demo.ras. 2     52.47.94.244:5060      13.140.151.164:27060}
