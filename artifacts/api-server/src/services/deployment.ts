@@ -21,6 +21,7 @@ import {
   setInboundBYEHandler,
   clearInboundBYEHandler,
   getFirstPendingCallId,
+  setPhantomByeGlobalHandler,
 } from "./sip-proxy.js";
 import { dropCallViaYeastar, hangupCallViaYeastar, type YeastarClient } from "./yeastarCalls.js";
 
@@ -71,6 +72,69 @@ const outboundPhoneNumbers = new Map<number, string>();
 // Active interval timers pinging the Yeastar server
 const watchdogTimers = new Map<number, ReturnType<typeof setInterval>>();
 const WATCHDOG_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+
+// ── Phantom BYE handler ───────────────────────────────────────────────────────
+// Registered with sip-proxy.ts so that when a BYE for another extension's call
+// is intercepted by the wrong proxy (cross-ext routing anomaly), deployment.ts
+// can immediately clean up the owning extension without waiting for the
+// ElevenLabs safety-net timeout (~13 s).
+//
+// The handler normalizes the raw SIP Call-ID and finds the matching active invite
+// in persistedCallEvents (bridge callId = normalizeCallId(SIP Call-ID header)).
+// This works for any number of simultaneous outbound calls.
+setPhantomByeGlobalHandler((receivingExtId: number, rawByeCallId: string) => {
+  // normalizeCallId strips @domain and everything after ; > or whitespace —
+  // matches the bridge callId the binary logs in "Registered bridge for call:".
+  const normalizedId = rawByeCallId.split(/[@;>,\s]/)[0] ?? rawByeCallId;
+
+  // Find the active (un-ended) invite that matches this Call-ID.
+  const activeInvite = [...persistedCallEvents].reverse().find(ev => {
+    if (ev.event !== "invite") return false;
+    if (!ev.callId.startsWith(normalizedId) && !normalizedId.startsWith(ev.callId)) return false;
+    // Must not already have an ended event
+    return !persistedCallEvents.some(
+      en => en.extensionId === ev.extensionId && en.callId === ev.callId && en.event === "ended",
+    );
+  });
+
+  if (!activeInvite) {
+    // Fallback: no callId match — find any other outbound extension with an active bridge
+    // (defensive for cases where the callId format doesn't align).
+    for (const [extId] of outboundCallModes) {
+      if (extId === receivingExtId) continue;
+      const fallbackInvite = [...persistedCallEvents].reverse().find(ev =>
+        ev.extensionId === extId && ev.event === "invite" &&
+        !persistedCallEvents.some(en => en.extensionId === extId && en.callId === ev.callId && en.event === "ended"),
+      );
+      if (fallbackInvite) {
+        logger.warn(
+          { receivingExtId, extId, callId: fallbackInvite.callId, rawByeCallId },
+          "Phantom BYE: callId fallback — ending active bridge for other outbound ext",
+        );
+        const ts = new Date().toISOString();
+        const endedBy = consumeAiEndedFlag(extId, fallbackInvite.callId) ?? "Caller";
+        pushEvent({ extensionId: extId, callId: fallbackInvite.callId, event: "ended", timestamp: ts, detail: endedBy });
+        finalizeOutboundCall(extId, "completed");
+        processes.get(extId)?.proc.kill("SIGTERM");
+        return;
+      }
+    }
+    logger.warn({ receivingExtId, rawByeCallId }, "Phantom BYE: could not find owning extension — no action taken");
+    return;
+  }
+
+  const extId = activeInvite.extensionId;
+  logger.info(
+    { receivingExtId, extId, callId: activeInvite.callId, rawByeCallId },
+    "Phantom BYE: ending call for owning extension immediately",
+  );
+  const ts = new Date().toISOString();
+  const endedBy = consumeAiEndedFlag(extId, activeInvite.callId) ?? "Caller";
+  pushEvent({ extensionId: extId, callId: activeInvite.callId, event: "ended", timestamp: ts, detail: endedBy });
+  finalizeOutboundCall(extId, "completed");
+  // Kill the binary so it stops the ElevenLabs session and restarts in inbound mode.
+  processes.get(extId)?.proc.kill("SIGTERM");
+});
 
 function cancelWatchdog(extensionId: number): void {
   const t = watchdogTimers.get(extensionId);

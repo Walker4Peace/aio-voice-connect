@@ -180,6 +180,27 @@ const outboundByeHandlers = new Map<number, () => void>();
 const inboundByeHandlers  = new Map<number, () => void>();
 
 /**
+ * Global handler called when a phantom BYE is detected — a BYE that arrived at
+ * this extension's proxy but belongs to a different extension's call (cross-ext
+ * routing anomaly with concurrent outbound calls).
+ *
+ * deployment.ts registers this once on startup so it can look up the owning
+ * extension from the SIP Call-ID and clean it up immediately, without waiting
+ * for the ElevenLabs safety-net timeout.
+ *
+ * Arguments: (receivingExtId, rawByeCallId)
+ *   receivingExtId — extension whose proxy intercepted the phantom BYE
+ *   rawByeCallId   — raw SIP Call-ID from the BYE header
+ */
+let phantomByeGlobalHandler: ((receivingExtId: number, rawByeCallId: string) => void) | null = null;
+
+export function setPhantomByeGlobalHandler(
+  cb: (receivingExtId: number, rawByeCallId: string) => void,
+): void {
+  phantomByeGlobalHandler = cb;
+}
+
+/**
  * Register a callback to be fired once when Yeastar sends BYE for an outbound
  * call.  The proxy responds 200 OK automatically so Yeastar is satisfied, then
  * calls the callback so the binary can be terminated.
@@ -618,6 +639,9 @@ export async function startSipProxy(params: {
                 );
               }
             });
+            // Notify deployment.ts so it can immediately clean up the owning
+            // extension's binary (instead of waiting ~13 s for safety-net).
+            if (phantomByeGlobalHandler) phantomByeGlobalHandler(extensionId, byeCallId);
             return; // do NOT forward to our binary
           }
         }
