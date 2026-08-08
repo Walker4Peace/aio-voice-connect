@@ -338,15 +338,23 @@ function parseAndStoreCallEvents(extensionId: number, line: string, timestamp: s
   // We store the ended event here so Call History shows the call as finished.
   // Note: the process kill + finalizeOutboundCall also fires from handleData
   // (the outbound BYE kill block); this is the companion event-storage side.
-  if (outboundCallModes.has(extensionId) && /WARN SIP request handler not found.*method=BYE/i.test(body)) {
+  const byeWarnMatch = outboundCallModes.has(extensionId)
+    ? body.match(/WARN SIP request handler not found.*method=BYE(?:.*callId=(\S+))?/i)
+    : null;
+  if (byeWarnMatch) {
+    // The binary now includes the SIP Call-ID in the WARN line:
+    //   "WARN SIP request handler not found caller=Server method=BYE callId=<id>"
+    // When present, use it to precisely identify which extension owns that call.
+    // When absent (older binary build), fall back to the hasActiveBridge heuristic.
+    const rawByeCallId = byeWarnMatch[1] ?? "";
+    const normalizedByeCallId = rawByeCallId ? normalizeCallId(rawByeCallId) : "";
+
     // Guard: only act if this extension actually has an answered (bridged) call.
     // When two outbound calls run simultaneously, one extension's INVITE may be
     // mis-routed through the other extension's proxy.  Yeastar then sends the
-    // BYE to the wrong extSock → wrong binary → WARN log.  sip-proxy.ts has a
-    // first-line interceptor (phantom BYE → auto 200 OK, no forward), but if the
-    // BYE slips through before the proxy can catch it, this guard is the safety net.
-    // If this extension has no active bridge (call not yet answered / still
-    // dialling), the BYE is definitely for another extension's call — ignore it.
+    // BYE to the wrong extSock → wrong binary → WARN log.
+    // If this extension has no active bridge (still dialling), the BYE belongs
+    // to another extension's call.
     const hasActiveBridge = persistedCallEvents.some(inv => {
       if (inv.extensionId !== extensionId || inv.event !== "invite") return false;
       return !persistedCallEvents.some(
@@ -354,35 +362,60 @@ function parseAndStoreCallEvents(extensionId: number, line: string, timestamp: s
       );
     });
     if (!hasActiveBridge) {
-      // This BYE reached the wrong binary (cross-ext routing anomaly with concurrent
-      // outbound calls).  Protect this extension's ongoing dial by NOT killing it.
-      // But the extension that actually owns the answered call needs to be cleaned up
-      // immediately so its slot is freed for the next batch call.
+      // This BYE reached the wrong binary (cross-ext routing anomaly).
+      // Protect this extension's ongoing dial, and immediately clean up the
+      // extension that actually owns the answered call.
       logger.warn(
-        { extensionId },
+        { extensionId, byeCallId: normalizedByeCallId || "(unknown)" },
         "Outbound BYE WARN: no active bridge on this ext — cross-ext mis-routed BYE; protecting dial, cleaning up owning ext",
       );
-      // Find another outbound extension that has an active answered bridge.
-      for (const [otherExtId] of outboundCallModes) {
-        if (otherExtId === extensionId) continue;
-        const owningInvite = [...persistedCallEvents].reverse().find(ev =>
-          ev.extensionId === otherExtId && ev.event === "invite" &&
-          !persistedCallEvents.some(
-            en => en.extensionId === otherExtId && en.callId === ev.callId && en.event === "ended",
-          ),
-        );
-        if (owningInvite) {
-          logger.info(
-            { extensionId, owningExtId: otherExtId, callId: owningInvite.callId },
-            "Outbound BYE WARN: ending call on owning extension immediately",
+
+      // ── Precise lookup: match the BYE Call-ID to a specific extension ─────
+      // The new binary includes callId= in the WARN line. If we have it, find
+      // the extension whose active bridge uses that exact Call-ID — works
+      // correctly even when many outbound calls are active simultaneously.
+      let owningExtId: number | undefined;
+      let owningCallId: string | undefined;
+      if (normalizedByeCallId) {
+        for (const [otherExtId] of outboundCallModes) {
+          if (otherExtId === extensionId) continue;
+          const found = persistedCallEvents.find(ev =>
+            ev.extensionId === otherExtId && ev.event === "invite" &&
+            normalizeCallId(ev.callId) === normalizedByeCallId &&
+            !persistedCallEvents.some(
+              en => en.extensionId === otherExtId && en.callId === ev.callId && en.event === "ended",
+            ),
           );
-          const ts = new Date().toISOString();
-          const endedBy = consumeAiEndedFlag(otherExtId, owningInvite.callId) ?? "Caller";
-          pushEvent({ extensionId: otherExtId, callId: owningInvite.callId, event: "ended", timestamp: ts, detail: endedBy });
-          finalizeOutboundCall(otherExtId, "completed");
-          processes.get(otherExtId)?.proc.kill("SIGTERM");
-          break;
+          if (found) { owningExtId = otherExtId; owningCallId = found.callId; break; }
         }
+      }
+
+      // ── Fallback: if no callId match, find any other ext with an active bridge ─
+      if (!owningExtId) {
+        for (const [otherExtId] of outboundCallModes) {
+          if (otherExtId === extensionId) continue;
+          const found = [...persistedCallEvents].reverse().find(ev =>
+            ev.extensionId === otherExtId && ev.event === "invite" &&
+            !persistedCallEvents.some(
+              en => en.extensionId === otherExtId && en.callId === ev.callId && en.event === "ended",
+            ),
+          );
+          if (found) { owningExtId = otherExtId; owningCallId = found.callId; break; }
+        }
+      }
+
+      if (owningExtId && owningCallId) {
+        logger.info(
+          { extensionId, owningExtId, callId: owningCallId, byeCallId: normalizedByeCallId || "(unknown)" },
+          "Outbound BYE WARN: ending call on owning extension immediately",
+        );
+        const ts = new Date().toISOString();
+        const endedBy = consumeAiEndedFlag(owningExtId, owningCallId) ?? "Caller";
+        pushEvent({ extensionId: owningExtId, callId: owningCallId, event: "ended", timestamp: ts, detail: endedBy });
+        finalizeOutboundCall(owningExtId, "completed");
+        processes.get(owningExtId)?.proc.kill("SIGTERM");
+      } else {
+        logger.warn({ extensionId }, "Outbound BYE WARN: could not find owning extension — no cleanup performed");
       }
       return;
     }

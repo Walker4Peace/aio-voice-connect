@@ -23,6 +23,10 @@ type SIPClient struct {
 	publicIP  string
 	mu        sync.Mutex
 	registered bool
+	// Active BYE handler — set by the current inbound/outbound call.
+	// The global BYE dispatcher (registered once in Start) delegates here.
+	byeMu      sync.Mutex
+	byeHandler func(req *sip.Request, tx sip.ServerTransaction)
 }
 
 type sipCfg struct {
@@ -108,6 +112,36 @@ func (c *SIPClient) Start(ctx context.Context) error {
 	// The transaction layer already handles ACK internally; this just silences the warning.
 	server.OnAck(func(req *sip.Request, tx sip.ServerTransaction) {
 		// Nothing to do — ACK completes the 3-way handshake at the transaction layer.
+	})
+
+	// Register ONE global BYE dispatcher.
+	// All inbound and outbound BYE handling goes through this single handler so that
+	// sipgo never falls through to its internal "no handler" WARN path.
+	//
+	// When an active call has registered its handler (via SetByeHandlerGlobal), that
+	// handler is invoked.  When no call is active (e.g. a phantom/cross-ext BYE
+	// arrives while the binary is still dialling), we emit our own WARN line that
+	// includes the Call-ID — Node.js parses this to identify the owning extension and
+	// clean it up immediately instead of waiting for the ElevenLabs safety-net.
+	server.OnBye(func(req *sip.Request, tx sip.ServerTransaction) {
+		callID := ""
+		if h := req.CallID(); h != nil {
+			callID = h.Value()
+		}
+		c.byeMu.Lock()
+		h := c.byeHandler
+		c.byeMu.Unlock()
+		if h != nil {
+			h(req, tx)
+		} else {
+			// No active call owns this BYE — emit a structured WARN so Node.js can
+			// parse the Call-ID and identify the correct owning extension.
+			log.Printf("WARN SIP request handler not found caller=Server method=BYE callId=%s", callID)
+			resp := sip.NewResponseFromRequest(req, 405, "Method Not Allowed", nil)
+			if err := tx.Respond(resp); err != nil {
+				log.Printf("BYE 405 respond error: %v", err)
+			}
+		}
 	})
 
 	// Start listening
@@ -270,9 +304,20 @@ func (c *SIPClient) SetInviteHandler(h func(req *sip.Request, tx sip.ServerTrans
 	c.server.OnInvite(h)
 }
 
-// SetByeHandlerGlobal registers the inbound BYE handler at the server level.
+// SetByeHandlerGlobal sets the active call's BYE handler.
+// The global BYE dispatcher registered in Start() will delegate to this handler.
 func (c *SIPClient) SetByeHandlerGlobal(h func(req *sip.Request, tx sip.ServerTransaction)) {
-	c.server.OnBye(h)
+	c.byeMu.Lock()
+	c.byeHandler = h
+	c.byeMu.Unlock()
+}
+
+// ClearByeHandler removes the active call's BYE handler so the global dispatcher
+// reverts to the "no handler" WARN path for any subsequent phantom BYEs.
+func (c *SIPClient) ClearByeHandler() {
+	c.byeMu.Lock()
+	c.byeHandler = nil
+	c.byeMu.Unlock()
 }
 
 // WaitForInbound blocks until ctx is cancelled.

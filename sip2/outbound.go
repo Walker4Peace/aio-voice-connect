@@ -116,17 +116,22 @@ func runOutboundMode(ctx context.Context, sipClient *SIPClient, cfg *Config, api
 	})
 	defer clearByeHandler()
 
-	// Also handle inbound BYE from the remote party
-	sipClient.server.OnBye(func(req *sip.Request, tx sip.ServerTransaction) {
+	// Register inbound BYE handler for this call via the global dispatcher so
+	// that sipgo's single OnBye slot is not overwritten and the fallback WARN
+	// path (which logs the Call-ID) is still reachable for phantom BYEs.
+	sipClient.SetByeHandlerGlobal(func(req *sip.Request, tx sip.ServerTransaction) {
 		callID := ""
 		if h := req.CallID(); h != nil {
 			callID = h.Value()
 		}
 		log.Printf("BYE received for call: %s", callID)
 		resp := sip.NewResponseFromRequest(req, 200, "OK", nil)
-		tx.Respond(resp)
+		if err := tx.Respond(resp); err != nil {
+			log.Printf("BYE 200 respond error: %v", err)
+		}
 		cancelCall()
 	})
+	defer sipClient.ClearByeHandler()
 
 	// Extract call ID for tracking
 	callID := ""
