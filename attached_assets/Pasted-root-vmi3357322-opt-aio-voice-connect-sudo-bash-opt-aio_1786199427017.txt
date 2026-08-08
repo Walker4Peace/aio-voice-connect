@@ -1,0 +1,50 @@
+root@vmi3357322:/opt/aio-voice-connect# sudo bash /opt/aio-voice-connect/update.sh
+  ✓ Loaded /opt/aio-voice-connect/.env
+
+▶ Pulling latest changes from GitHub (branch: main)
+remote: Enumerating objects: 27, done.
+remote: Counting objects: 100% (27/27), done.
+remote: Compressing objects: 100% (7/7), done.
+remote: Total 16 (delta 9), reused 16 (delta 9), pack-reused 0 (from 0)
+Unpacking objects: 100% (16/16), 293.91 KiB | 1023.00 KiB/s, done.
+From https://github.com/Walker4Peace/aio-voice-connect
+ * branch            main       -> FETCH_HEAD
+   46d8341..0ef9b19  main       -> origin/main
+HEAD is now at 0ef9b19 fix: no-answer call history direction + duplicate skip + timezone
+Removing artifacts/aio-voice-connect-manager/dist/
+Removing artifacts/aio-voice-connect-manager/tsconfig.tsbuildinfo
+Removing artifacts/api-server/.tsbuildinfo
+Removing artifacts/api-server/dist/
+Removing artifacts/mockup-sandbox/.tsbuildinfo
+Removing lib/api-client-react/dist/
+Removing lib/api-client-react/tsconfig.tsbuildinfo
+Removing lib/api-zod/dist/
+Removing lib/api-zod/tsconfig.tsbuildinfo
+Removing lib/db/dist/
+Removing lib/db/tsconfig.tsbuildinfo
+Removing nginx-helper.sh
+Removing scripts/tsconfig.tsbuildinfo
+  ✓ Code is up to date with origin/main
+
+▶ Installing dependencies
+Scope: all 9 workspace projects
+Already up to date
+Done in 2s using pnpm v11.16.0
+  ✓ Dependencies installed
+
+▶ Building workspace
+$ pnpm run typecheck && pnpm -r --filter '!./artifacts/mockup-sandbox' --if-present run build
+$ pnpm run typecheck:libs && pnpm -r --filter "./artifacts/**" --filter "./scripts" --if-present run typecheck
+$ tsc --build
+lib/db/src/index.ts:13:21 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'TypeId'.
+
+13 types.setTypeParser(1114 as unknown as string, (raw: string) => new Date(raw + "Z"));
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Found 1 error.
+
+[ELIFECYCLE] Command failed with exit code 2.
+[ELIFECYCLE] Command failed with exit code 2.
+[ELIFECYCLE] Command failed with exit code 2.
+root@vmi3357322:/opt/aio-voice-connect#
