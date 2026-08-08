@@ -10,7 +10,7 @@ const { Pool, types } = pg;
 // bug when the server runs in a non-UTC timezone.  Appending 'Z' tells the parser
 // the value is UTC, which is always correct since we only ever store UTC values.
 // OID 1114 = timestamp without time zone
-types.setTypeParser(1114 as unknown as string, (raw: string) => new Date(raw + "Z"));
+types.setTypeParser(1114, (raw: string) => new Date(raw + "Z"));
 
 if (!process.env.DATABASE_URL) {
   throw new Error(
